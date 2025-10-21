@@ -23,20 +23,20 @@ x  <!DOCTYPE html>
           </div>
         </div>
       </div>
-      <div class="container-wrapper mt-5">
-        <!-- Personal Form -->
-        <div class="login-container">
-          <!-- Back button -->
-          <button class="back-btn" onclick="history.back()">←</button>
-          <h1>Applicants Personal Information</h1>
-          <p class="subtitle">Fill out the required details below</p>
+      <!-- Back button -->
+      <button class="back-btn" onclick="history.back()">←</button>
+
+      <div class="max-w-4xl mx-auto mt-5 bg-white rounded-lg shadow-lg">
+        <div class="p-6">
+          <h1 class="text-2xl font-bold text-center mb-2">Applicants Registration</h1>
+          <p class="text-center text-gray-600 mb-6">Fill out the required details below</p>
 
           @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
+            <div class="alert alert-success mb-4">{{ session('success') }}</div>
           @endif
 
           @if($errors->any())
-            <div class="alert alert-danger">
+            <div class="alert alert-danger mb-4">
               <ul>
                 @foreach($errors->all() as $error)
                   <li>{{ $error }}</li>
@@ -45,275 +45,272 @@ x  <!DOCTYPE html>
             </div>
           @endif
 
+          <!-- Tab Navigation -->
+          <div class="flex border-b border-gray-200 mb-6">
+            <button id="tab1-btn" class="flex-1 py-3 px-4 text-center font-medium text-purple-600 border-b-2 border-purple-600 bg-purple-50 tab-button active" data-tab="1">
+              Personal Information
+            </button>
+            <button id="tab2-btn" class="flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700 tab-button" data-tab="2">
+              Educational Attainment
+            </button>
+            <button id="tab3-btn" class="flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700 tab-button" data-tab="3">
+              Application Requirements
+            </button>
+          </div>
+
           <form id="applicationForm" method="POST" action="{{ route('applicants.register') }}" enctype="multipart/form-data">
           @csrf
-            <!-- Name Fields -->
-            <div class="input-row">
-              <div class="input-group relative">
-                <input type="text" id="fname" name="applicant_fname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" required placeholder="First Name" />
-                <label for="fname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">First Name</label>
-                <small class="error-message"></small>
-              </div>
-              <div class="input-group relative">
-                <input type="text" id="mname" name="applicant_mname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" placeholder="Middle Name" />
-                <label for="mname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Middle Name</label>
-                <small class="error-message"></small>
-              </div>
-              <div class="input-group relative">
-                <input type="text" id="lname" name="applicant_lname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" required placeholder="Last Name" />
-                <label for="lname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Last Name</label>
-                <small class="error-message"></small>
-              </div>
-              <div class="input-group relative" style="width: 10px">
-                <input type="text" id="suffix" name="applicant_suffix" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" placeholder="Suffix" />
-                <label for="suffix" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Suffix</label>
-                <small class="error-message"></small>
-              </div>
-            </div>
 
-            <!-- Personal Details -->
-            <div class="input-row">
-              <div class="input-group">
-                <label for="gender">Gender</label>
-                <select id="gender" name="applicant_gender"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required>
-                  <option value="">Select Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-                <small class="error-message"></small>
-              </div>
-              <div class="input-group">
-                <label for="bdate">Birth Date</label>
-                <input type="date" id="bdate" name="applicant_bdate"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required />
-                <small class="error-message"></small>
-              </div>
-              <div class="input-group">
-                <label for="civil_status">Civil Status</label>
-                <select id="civil_status" name="applicant_civil_status"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required>
-                  <option value="">Select Civil Status</option>
-                  <option value="single">Single</option>
-                  <option value="married">Married</option>
-                  <option value="widowed">Widowed</option>
-                  <option value="divorced">Divorced</option>
-                </select>
-                <small class="error-message"></small>
-              </div>
-              <div class="input-group">
-                <label for="brgy">Barangay</label>
-                <select id="brgy" name="applicant_brgy"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required>
-                  <option value="">-- Select Barangay --</option>
-                  <option value="Sugbong cogon">Sugbong cogon</option>
-                  <option value="Baluarte">Baluarte</option>
-                  <option value="Casinglot">Casinglot</option>
-                  <option value="Gracia">Gracia</option>
-                  <option value="Mohon">Mohon</option>
-                  <option value="Natumolan">Natumolan</option>
-                  <option value="Poblacion">Poblacion</option>
-                  <option value="Rosario">Rosario</option>
-                  <option value="Santa Ana">Santa Ana</option>
-                  <option value="Santa Cruz">Santa Cruz</option>
-                </select>
-                <small class="error-message"></small>
-              </div>
-            </div>
-
-            <!-- Contact Details -->
-            <div class="input-row">
-              <div class="input-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="applicant_email"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="Email" />
-                <small class="error-message"></small>
-              </div>
-              <div class="input-group">
-                <label for="contact">Contact Number</label>
-                <input type="tel" id="contact" name="applicant_contact_number"
-                   class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="Contact Number" />
-                <small class="error-message"></small>
-              </div>
-
-              <div class="input-group" style="width: 100px">
-                <label for="school_name">School Name</label>
-                <select id="school_name" name="applicant_school_name"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required>
-                  <option value="">-- Select School --</option>
-
-                  <!-- State Universities -->
-                  <option value="USTP CDO">
-                    University of Science and Technology of Southern Philippines
-                    (USTP) – Cagayan de Oro
-                  </option>
-                  <option value="USTP Claveria">
-                    University of Science and Technology of Southern Philippines
-                    (USTP) – Claveria
-                  </option>
-                  <option value="USTP Villanueva">
-                    University of Science and Technology of Southern Philippines
-                    (USTP) – Villanueva
-                  </option>
-                  <option value="MSU Naawan">
-                    Mindanao State University – Naawan (MSU-Naawan)
-                  </option>
-                  <option value="MOSCAT">
-                    Misamis Oriental State College of Agriculture and Technology
-                    (MOSCAT), Claveria
-                  </option>
-
-                  <!-- Community Colleges -->
-                  <option value="Opol Community College">
-                    Opol Community College
-                  </option>
-                  <option value="Tagoloan Community College">
-                    Tagoloan Community College
-                  </option>
-                  <option value="Bugo Community College">
-                    Bugo Community College
-                  </option>
-                  <option value="Initao Community College">
-                    Initao Community College
-                  </option>
-                  <option value="Magsaysay College">
-                    Magsaysay College, Misamis Oriental
-                  </option>
-
-                  <!-- Private Colleges & Universities -->
-                  <option value="Liceo de Cagayan University">
-                    Liceo de Cagayan University, CDO
-                  </option>
-                  <option value="PHINMA COC">
-                    PHINMA Cagayan de Oro College
-                  </option>
-                  <option value="Capitol University">
-                    Capitol University, CDO
-                  </option>
-                  <option value="Lourdes College">Lourdes College, CDO</option>
-                  <option value="Blessed Mother College">
-                    Blessed Mother College, CDO
-                  </option>
-                  <option value="Pilgrim Christian College">
-                    Pilgrim Christian College, CDO
-                  </option>
-                  <option value="Gingoog Christian College">
-                    Gingoog Christian College
-                  </option>
-                  <option value="Christ the King College">
-                    Christ the King College, Gingoog City
-                  </option>
-                  <option value="St. Rita’s College">
-                    St. Rita’s College of Balingasag
-                  </option>
-                  <option value="St. Peter’s College">
-                    St. Peter’s College of Balingasag
-                  </option>
-                  <option value="Saint John Vianney Seminary">
-                    Saint John Vianney Theological Seminary, CDO
-                  </option>
-                  <option value="Asian College of Science and Technology">
-                    Asian College of Science and Technology, CDO
-                  </option>
-                  <!-- Others -->
-                  <option value="Others">Others</option>
-                </select>
-                <input type="text" id="school_name_other" name="applicant_school_name_other" placeholder="Please specify your school" style=" display: none; margin-top: 8px; padding: 10px; border: 1px solid black; border-radius: 8px; font-size: 14px; outline: none; width: 100%;"/>
-                <small class="error-message"></small>
-              </div>
-            </div>
-
-            <script>
-              const schoolSelect = document.getElementById("school_name");
-              const schoolOtherInput =
-                document.getElementById("school_name_other");
-
-              schoolSelect.addEventListener("change", function () {
-                if (this.value === "Others") {
-                  schoolOtherInput.style.display = "block";
-                  schoolOtherInput.setAttribute("required", "required");
-                } else {
-                  schoolOtherInput.style.display = "none";
-                  schoolOtherInput.removeAttribute("required");
-                  schoolOtherInput.value = "";
-                }
-              });
-            </script>
-
-            <!-- Academic Details -->
-            <div class="input-row">
-              <div class="input-group">
-                <label for="year_level">Year Level</label>
-                <select id="year_level" name="applicant_year_level"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required>
-                  <option value="">Select Year Level</option>
-                  <option value="1st Year">1st Year</option>
-                  <option value="2nd Year">2nd Year</option>
-                  <option value="3rd Year">3rd Year</option>
-                  <option value="4th Year">4th Year</option>
-                  <option value="5th Year">5th Year</option>
-                </select>
-                <small class="error-message"></small>
-              </div>
-              <div class="input-group">
-                <label for="course">Course</label>
-                <input type="text" id="course" name="applicant_course"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required placeholder="Course" />
-                <small class="error-message"></small>
-              </div>
-            <div class="input-group">
-              <label for="acad_year">Academic Year</label>
-              <input type="text" id="acad_year" name="applicant_acad_year" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="e.g., 2023-2024" readonly />
-              <small class="error-message"></small>
-            </div>
-
-            <script>
-              // Kunin ang current year
-              const currentYear = new Date().getFullYear();
-              const acadYearInput = document.getElementById("acad_year");
-              // Auto-set sa current acad year (e.g., 2025-2026)
-              acadYearInput.value = `${currentYear}-${currentYear + 1}`;
-            </script>
-
-            </div>
-         </div>
-
-        <!-- Credentials Form -->
-        <div class="credentials-container">
-          <h1>Upload Documents</h1>
-          <p class="subtitle">Submit required PDF files</p>
-            <div class="credentials-row">
+            <!-- Tab 1: Personal Information -->
+            <div id="tab1" class="tab-content active">
+              <!-- Name Fields -->
               <div class="input-row">
-              <div class="input-group">
-                <label for="application_letter">Application Letter</label>
-                <input type="file" id="application_letter" name="application_letter" accept="application/pdf" required class="input-file"/>
-                <small class="error-message"></small>
+                <div class="input-group relative">
+                  <input type="text" id="fname" name="applicant_fname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" required placeholder="First Name" />
+                  <label for="fname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">First Name</label>
+                  <small class="error-message"></small>
+                </div>
+                <div class="input-group relative">
+                  <input type="text" id="mname" name="applicant_mname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" placeholder="Middle Name" />
+                  <label for="mname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Middle Name</label>
+                  <small class="error-message"></small>
+                </div>
+                <div class="input-group relative">
+                  <input type="text" id="lname" name="applicant_lname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" required placeholder="Last Name" />
+                  <label for="lname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Last Name</label>
+                  <small class="error-message"></small>
+                </div>
+                <div class="input-group relative" style="width: 10px">
+                  <input type="text" id="suffix" name="applicant_suffix" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" placeholder="Suffix" />
+                  <label for="suffix" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Suffix</label>
+                  <small class="error-message"></small>
+                </div>
               </div>
 
-              <div class="input-group">
-                <label for="grade_slip">Grade Slip</label>
-                <input type="file" id="grade_slip" name="grade_slip" accept="application/pdf" required class="input-file" />
-                <small class="error-message"></small>
+              <!-- Personal Details -->
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="gender">Gender</label>
+                  <select id="gender" name="applicant_gender"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required>
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <small class="error-message"></small>
+                </div>
+                <div class="input-group">
+                  <label for="bdate">Birth Date</label>
+                  <input type="date" id="bdate" name="applicant_bdate"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required />
+                  <small class="error-message"></small>
+                </div>
+                <div class="input-group">
+                  <label for="civil_status">Civil Status</label>
+                  <select id="civil_status" name="applicant_civil_status"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required>
+                    <option value="">Select Civil Status</option>
+                    <option value="single">Single</option>
+                    <option value="married">Married</option>
+                    <option value="widowed">Widowed</option>
+                    <option value="divorced">Divorced</option>
+                  </select>
+                  <small class="error-message"></small>
+                </div>
+                <div class="input-group">
+                  <label for="brgy">Barangay</label>
+                  <select id="brgy" name="applicant_brgy"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required>
+                    <option value="">-- Select Barangay --</option>
+                    <option value="Sugbong cogon">Sugbong cogon</option>
+                    <option value="Baluarte">Baluarte</option>
+                    <option value="Casinglot">Casinglot</option>
+                    <option value="Gracia">Gracia</option>
+                    <option value="Mohon">Mohon</option>
+                    <option value="Natumolan">Natumolan</option>
+                    <option value="Poblacion">Poblacion</option>
+                    <option value="Rosario">Rosario</option>
+                    <option value="Santa Ana">Santa Ana</option>
+                    <option value="Santa Cruz">Santa Cruz</option>
+                  </select>
+                  <small class="error-message"></small>
+                </div>
               </div>
+
+              <!-- Contact Details -->
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="email">Email</label>
+                  <input type="email" id="email" name="applicant_email"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="Email" />
+                  <small class="error-message"></small>
+                </div>
+                <div class="input-group">
+                  <label for="contact">Contact Number</label>
+                  <input type="tel" id="contact" name="applicant_contact_number"
+                     class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="Contact Number" />
+                  <small class="error-message"></small>
+                </div>
+              </div>
+
+              <div class="flex justify-end mt-6">
+                <button type="button" class="next-btn bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700" onclick="nextTab(1)">Next</button>
+              </div>
+            </div>
+
+            <!-- Tab 2: Educational Attainment -->
+            <div id="tab2" class="tab-content hidden">
+              <div class="input-row">
+                <div class="input-group" style="width: 100%">
+                  <label for="school_name">School Name</label>
+                  <select id="school_name" name="applicant_school_name"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required>
+                    <option value="">-- Select School --</option>
+                    <!-- State Universities -->
+                    <option value="USTP CDO">
+                      University of Science and Technology of Southern Philippines
+                      (USTP) – Cagayan de Oro
+                    </option>
+                    <option value="USTP Claveria">
+                      University of Science and Technology of Southern Philippines
+                      (USTP) – Claveria
+                    </option>
+                    <option value="USTP Villanueva">
+                      University of Science and Technology of Southern Philippines
+                      (USTP) – Villanueva
+                    </option>
+                    <option value="MSU Naawan">
+                      Mindanao State University – Naawan (MSU-Naawan)
+                    </option>
+                    <option value="MOSCAT">
+                      Misamis Oriental State College of Agriculture and Technology
+                      (MOSCAT), Claveria
+                    </option>
+                    <!-- Community Colleges -->
+                    <option value="Opol Community College">
+                      Opol Community College
+                    </option>
+                    <option value="Tagoloan Community College">
+                      Tagoloan Community College
+                    </option>
+                    <option value="Bugo Community College">
+                      Bugo Community College
+                    </option>
+                    <option value="Initao Community College">
+                      Initao Community College
+                    </option>
+                    <option value="Magsaysay College">
+                      Magsaysay College, Misamis Oriental
+                    </option>
+                    <!-- Private Colleges & Universities -->
+                    <option value="Liceo de Cagayan University">
+                      Liceo de Cagayan University, CDO
+                    </option>
+                    <option value="PHINMA COC">
+                      PHINMA Cagayan de Oro College
+                    </option>
+                    <option value="Capitol University">
+                      Capitol University, CDO
+                    </option>
+                    <option value="Lourdes College">Lourdes College, CDO</option>
+                    <option value="Blessed Mother College">
+                      Blessed Mother College, CDO
+                    </option>
+                    <option value="Pilgrim Christian College">
+                      Pilgrim Christian College, CDO
+                    </option>
+                    <option value="Gingoog Christian College">
+                      Gingoog Christian College
+                    </option>
+                    <option value="Christ the King College">
+                      Christ the King College, Gingoog City
+                    </option>
+                    <option value="St. Rita’s College">
+                      St. Rita’s College of Balingasag
+                    </option>
+                    <option value="St. Peter’s College">
+                      St. Peter’s College of Balingasag
+                    </option>
+                    <option value="Saint John Vianney Seminary">
+                      Saint John Vianney Theological Seminary, CDO
+                    </option>
+                    <option value="Asian College of Science and Technology">
+                      Asian College of Science and Technology, CDO
+                    </option>
+                    <!-- Others -->
+                    <option value="Others">Others</option>
+                  </select>
+                  <input type="text" id="school_name_other" name="applicant_school_name_other" placeholder="Please specify your school" style=" display: none; margin-top: 8px; padding: 10px; border: 1px solid black; border-radius: 8px; font-size: 14px; outline: none; width: 100%;"/>
+                  <small class="error-message"></small>
+                </div>
+              </div>
+
+              <!-- Academic Details -->
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="year_level">Year Level</label>
+                  <select id="year_level" name="applicant_year_level"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required>
+                    <option value="">Select Year Level</option>
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                    <option value="5th Year">5th Year</option>
+                  </select>
+                  <small class="error-message"></small>
+                </div>
+                <div class="input-group">
+                  <label for="course">Course</label>
+                  <input type="text" id="course" name="applicant_course"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required placeholder="Course" />
+                  <small class="error-message"></small>
+                </div>
+                <div class="input-group">
+                  <label for="acad_year">Academic Year</label>
+                  <input type="text" id="acad_year" name="applicant_acad_year" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="e.g., 2023-2024" readonly />
+                  <small class="error-message"></small>
+                </div>
+              </div>
+
+              <div class="flex justify-between mt-6">
+                <button type="button" class="prev-btn bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600" onclick="prevTab(2)">Previous</button>
+                <button type="button" class="next-btn bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700" onclick="nextTab(2)">Next</button>
+              </div>
+            </div>
+
+            <!-- Tab 3: Application Requirements -->
+            <div id="tab3" class="tab-content hidden">
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="application_letter">Application Letter</label>
+                  <input type="file" id="application_letter" name="application_letter" accept="application/pdf" required class="input-file"/>
+                  <small class="error-message"></small>
+                </div>
+                <div class="input-group">
+                  <label for="grade_slip">Grade Slip</label>
+                  <input type="file" id="grade_slip" name="grade_slip" accept="application/pdf" required class="input-file" />
+                  <small class="error-message"></small>
+                </div>
               </div>
 
               <div class="input-row">
-              <div class="input-group">
-                <label for="certificate_of_registration">Certificate of Registration</label>
-                <input type="file" id="certificate_of_registration" name="certificate_of_registration" accept="application/pdf" required class="input-file"/>
-                <small class="error-message"></small>
-              </div>
-
-              <div class="input-group">
-                <label for="barangay_indigency">Barangay Indigency</label>
-                <input type="file" id="barangay_indigency" name="barangay_indigency" accept="application/pdf" required class="input-file"/>
-                <small class="error-message"></small>
-              </div>
+                <div class="input-group">
+                  <label for="certificate_of_registration">Certificate of Registration</label>
+                  <input type="file" id="certificate_of_registration" name="certificate_of_registration" accept="application/pdf" required class="input-file"/>
+                  <small class="error-message"></small>
+                </div>
+                <div class="input-group">
+                  <label for="barangay_indigency">Barangay Indigency</label>
+                  <input type="file" id="barangay_indigency" name="barangay_indigency" accept="application/pdf" required class="input-file"/>
+                  <small class="error-message"></small>
+                </div>
               </div>
 
               <div class="input-row">
-              <div class="input-group">
-                <label for="student_id">Student ID</label>
-                <input type="file" id="student_id" name="student_id" accept="application/pdf"required class="input-file"/>
-                <small class="error-message"></small>
-              </div>
+                <div class="input-group">
+                  <label for="student_id">Student ID</label>
+                  <input type="file" id="student_id" name="student_id" accept="application/pdf"required class="input-file"/>
+                  <small class="error-message"></small>
+                </div>
               </div>
 
-              <div class="input-group btn-group">
-                <button type="submit" class="login-btn flex justify-center items-center" id="submitBtn">
+              <div class="flex justify-between mt-6">
+                <button type="button" class="prev-btn bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600" onclick="prevTab(3)">Previous</button>
+                <button type="submit" class="login-btn flex justify-center items-center bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700" id="submitBtn">
                   <span id="submitBtnText">Submit</span>
                   <svg id="submitBtnSpinner" class="hidden animate-spin h-5 w-5 ml-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -570,6 +567,97 @@ x  <!DOCTYPE html>
       }
     });
   });
+  </script>
+
+  <script>
+  // Tab switching functionality
+  function showTab(tabNumber) {
+    // Hide all tabs
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => tab.classList.add('hidden'));
+
+    // Remove active class from all tab buttons
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(btn => {
+      btn.classList.remove('active', 'text-purple-600', 'border-purple-600', 'bg-purple-50');
+      btn.classList.add('text-gray-500');
+    });
+
+    // Show selected tab
+    document.getElementById('tab' + tabNumber).classList.remove('hidden');
+
+    // Activate selected tab button
+    const activeBtn = document.getElementById('tab' + tabNumber + '-btn');
+    activeBtn.classList.add('active', 'text-purple-600', 'border-purple-600', 'bg-purple-50');
+    activeBtn.classList.remove('text-gray-500');
+  }
+
+  function nextTab(currentTab) {
+    // Validate current tab before proceeding
+    if (!validateTab(currentTab)) {
+      return;
+    }
+    showTab(currentTab + 1);
+  }
+
+  function prevTab(currentTab) {
+    showTab(currentTab - 1);
+  }
+
+  function validateTab(tabNumber) {
+    let isValid = true;
+    const tab = document.getElementById('tab' + tabNumber);
+    const requiredInputs = tab.querySelectorAll('input[required], select[required]');
+
+    requiredInputs.forEach(input => {
+      if (input.type === 'file') {
+        if (input.files.length === 0) {
+          isValid = false;
+          validateFile(input);
+        }
+      } else if (!input.value.trim()) {
+        isValid = false;
+        validateInput(input);
+      }
+    });
+
+    return isValid;
+  }
+
+  // Initialize first tab as active
+  showTab(1);
+
+  // Add click event listeners to tab buttons
+  document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', function() {
+      const tabNumber = parseInt(this.getAttribute('data-tab'));
+      showTab(tabNumber);
+    });
+  });
+  </script>
+
+  <script>
+  const schoolSelect = document.getElementById("school_name");
+  const schoolOtherInput = document.getElementById("school_name_other");
+
+  schoolSelect.addEventListener("change", function () {
+    if (this.value === "Others") {
+      schoolOtherInput.style.display = "block";
+      schoolOtherInput.setAttribute("required", "required");
+    } else {
+      schoolOtherInput.style.display = "none";
+      schoolOtherInput.removeAttribute("required");
+      schoolOtherInput.value = "";
+    }
+  });
+  </script>
+
+  <script>
+  // Kunin ang current year
+  const currentYear = new Date().getFullYear();
+  const acadYearInput = document.getElementById("acad_year");
+  // Auto-set sa current acad year (e.g., 2025-2026)
+  acadYearInput.value = `${currentYear}-${currentYear + 1}`;
   </script>
 
   <script>

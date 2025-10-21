@@ -1,9 +1,12 @@
-# Restructure Applicants Registration Form into 3 Tabs
+# TODO: Convert applicants_reg.blade.php to 3-Tab Interface
 
 ## Tasks
-- [ ] Restructure HTML to use Tailwind tabs for 3 sections: Personal Information, Educational Attainment, Application Requirements
-- [ ] Move name fields, gender, birth date, civil status, barangay, email, contact to Personal Information tab
-- [ ] Move school name, year level, course, academic year to Educational Attainment tab
-- [ ] Move document upload fields to Application Requirements tab
-- [ ] Ensure form submission and all JavaScript validations work across tabs
-- [ ] Test the form for responsiveness and functionality
+- [x] Add tab navigation HTML structure with 3 tabs (Personal Information, Educational Attainment, Application Requirements)
+- [x] Create tab content containers and distribute form fields accordingly
+- [x] Implement JavaScript for tab switching functionality
+- [x] Add Next/Previous navigation buttons within tabs
+- [x] Move submit button to the last tab
+- [x] Update form validation to work across tabs
+- [ ] Test tab navigation and form submission
+- [ ] Verify validation works on each tab
+- [ ] Check mobile responsiveness
