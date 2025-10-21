@@ -12,8 +12,9 @@ x  <!DOCTYPE html>
         /* Enhanced input focus styles */
         input:focus, select:focus {
           border-color: #7B2CBF;
-          box-shadow: 0 0 4px #a855f7;
+          box-shadow: 0 0 8px rgba(123, 44, 191, 0.3);
           outline: none;
+          transition: all 0.3s ease;
         }
 
         /* Icon positioning inside inputs */
@@ -30,39 +31,147 @@ x  <!DOCTYPE html>
           pointer-events: none;
         }
 
-        /* Progress indicator */
+        /* Circular Progress Indicator */
         .progress-container {
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 20px;
+          margin-bottom: 30px;
+          position: relative;
         }
 
-        .progress-bar {
-          width: 200px;
-          height: 4px;
-          background-color: #E5E7EB;
-          border-radius: 2px;
-          margin-left: 10px;
-          overflow: hidden;
+        .progress-steps {
+          display: flex;
+          align-items: center;
+          gap: 20px;
         }
 
-        .progress-fill {
-          height: 100%;
+        .progress-step {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          position: relative;
+        }
+
+        .progress-circle {
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          background: #E5E7EB;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #9CA3AF;
+          font-size: 18px;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-circle.active {
+          background: linear-gradient(135deg, #7b2cbf, #9d4edd);
+          color: white;
+          transform: scale(1.1);
+          box-shadow: 0 4px 12px rgba(123, 44, 191, 0.4);
+        }
+
+        .progress-line {
+          position: absolute;
+          top: 25px;
+          left: 50px;
+          width: 40px;
+          height: 2px;
+          background: #E5E7EB;
+          z-index: -1;
+          transition: background 0.3s ease;
+        }
+
+        .progress-line.active {
           background: linear-gradient(to right, #7b2cbf, #9d4edd);
-          transition: width 0.3s ease;
+        }
+
+        .progress-label {
+          margin-top: 8px;
+          font-size: 12px;
+          color: #6B7280;
+          text-align: center;
+          font-weight: 500;
+        }
+
+        /* Modern Tab Design */
+        .tab-navigation {
+          display: flex;
+          background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+          border-radius: 12px;
+          padding: 6px;
+          margin-bottom: 30px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .tab-button {
+          flex: 1;
+          padding: 12px 16px;
+          border-radius: 8px;
+          background: transparent;
+          border: none;
+          color: #6B7280;
+          font-weight: 500;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          cursor: pointer;
+        }
+
+        .tab-button:hover {
+          background: rgba(255,255,255,0.8);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .tab-button.active {
+          background: linear-gradient(135deg, #7b2cbf, #9d4edd);
+          color: white;
+          box-shadow: 0 4px 12px rgba(123, 44, 191, 0.3);
+        }
+
+        /* Card-based Layout */
+        .form-card {
+          background: white;
+          border-radius: 16px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+          padding: 32px;
+          margin-bottom: 24px;
+          transition: all 0.3s ease;
+        }
+
+        .form-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 15px 35px rgba(0,0,0,0.15);
         }
 
         /* Enhanced button styles */
         .enhanced-btn {
-          background: linear-gradient(to right, #7b2cbf, #9d4edd);
-          transition: transform 0.2s, box-shadow 0.2s;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          background: linear-gradient(135deg, #7b2cbf, #9d4edd);
+          border: none;
+          color: white;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-weight: 600;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 12px rgba(123, 44, 191, 0.3);
+          cursor: pointer;
         }
 
         .enhanced-btn:hover {
-          transform: scale(1.05);
-          box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(123, 44, 191, 0.4);
+        }
+
+        .enhanced-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none;
         }
 
         /* Required field asterisk */
@@ -96,6 +205,58 @@ x  <!DOCTYPE html>
         .tooltip:hover .tooltiptext {
           visibility: visible;
           opacity: 1;
+        }
+
+        /* Input row improvements */
+        .input-row {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 20px;
+          margin-bottom: 24px;
+        }
+
+        .input-group {
+          position: relative;
+        }
+
+        .input-group label {
+          display: block;
+          margin-bottom: 6px;
+          font-weight: 600;
+          color: #374151;
+          font-size: 14px;
+        }
+
+        .input-group input,
+        .input-group select {
+          width: 100%;
+          padding: 12px 16px;
+          border: 2px solid #E5E7EB;
+          border-radius: 8px;
+          font-size: 14px;
+          transition: all 0.3s ease;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+          border-color: #7B2CBF;
+          box-shadow: 0 0 0 3px rgba(123, 44, 191, 0.1);
+        }
+
+        /* Animation keyframes */
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .tab-content {
+          animation: fadeInUp 0.5s ease-out;
         }
       </style>
       <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
@@ -135,23 +296,44 @@ x  <!DOCTYPE html>
             </div>
           @endif
 
-          <!-- Progress Indicator -->
+          <!-- Circular Progress Indicator -->
           <div class="progress-container">
-            <span id="progress-text" class="text-sm font-medium text-gray-700">Step 1 of 3: Personal Information</span>
-            <div class="progress-bar">
-              <div id="progress-fill" class="progress-fill" style="width: 33%;"></div>
+            <div class="progress-steps">
+              <div class="progress-step">
+                <div class="progress-circle active" id="step1-circle">
+                  <i class="fas fa-user"></i>
+                </div>
+                <div class="progress-label">Personal Info</div>
+              </div>
+              <div class="progress-line" id="line1"></div>
+              <div class="progress-step">
+                <div class="progress-circle" id="step2-circle">
+                  <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="progress-label">Education</div>
+              </div>
+              <div class="progress-line" id="line2"></div>
+              <div class="progress-step">
+                <div class="progress-circle" id="step3-circle">
+                  <i class="fas fa-file-upload"></i>
+                </div>
+                <div class="progress-label">Requirements</div>
+              </div>
             </div>
           </div>
 
-          <!-- Tab Navigation -->
-          <div class="flex border-b border-gray-200 mb-6">
-            <button id="tab1-btn" class="flex-1 py-3 px-4 text-center font-medium text-purple-600 border-b-2 border-purple-600 bg-purple-50 tab-button active" data-tab="1">
+          <!-- Modern Tab Navigation -->
+          <div class="tab-navigation">
+            <button id="tab1-btn" class="tab-button active" data-tab="1">
+              <i class="fas fa-user"></i>
               Personal Information
             </button>
-            <button id="tab2-btn" class="flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700 tab-button" data-tab="2">
+            <button id="tab2-btn" class="tab-button" data-tab="2">
+              <i class="fas fa-graduation-cap"></i>
               Educational Attainment
             </button>
-            <button id="tab3-btn" class="flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700 tab-button" data-tab="3">
+            <button id="tab3-btn" class="tab-button" data-tab="3">
+              <i class="fas fa-file-upload"></i>
               Application Requirements
             </button>
           </div>
@@ -694,14 +876,19 @@ x  <!DOCTYPE html>
   }
 
   function updateProgress(tabNumber) {
-    const progressText = document.getElementById('progress-text');
-    const progressFill = document.getElementById('progress-fill');
+    // Update circular progress indicators
+    for (let i = 1; i <= 3; i++) {
+      const circle = document.getElementById(`step${i}-circle`);
+      const line = document.getElementById(`line${i - 1}`);
 
-    const steps = ['Personal Information', 'Educational Attainment', 'Application Requirements'];
-    const percentages = ['33%', '66%', '100%'];
-
-    progressText.textContent = `Step ${tabNumber} of 3: ${steps[tabNumber - 1]}`;
-    progressFill.style.width = percentages[tabNumber - 1];
+      if (i <= tabNumber) {
+        circle.classList.add('active');
+        if (line) line.classList.add('active');
+      } else {
+        circle.classList.remove('active');
+        if (line) line.classList.remove('active');
+      }
+    }
   }
 
   function nextTab(currentTab) {
