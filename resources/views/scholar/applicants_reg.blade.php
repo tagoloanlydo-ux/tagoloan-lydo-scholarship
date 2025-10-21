@@ -55,7 +55,7 @@
           <div class="tab-content">
             <!-- Personal Information Tab -->
             <div class="tab-pane active">
-              <h1>Personal Information</h1>
+    
               <p class="subtitle">Fill out the required details below</p>
 
               <!-- Name Fields -->
@@ -142,11 +142,16 @@
                   <small class="error-message"></small>
                 </div>
               </div>
+
+              <!-- Navigation Buttons -->
+              <div class="input-group btn-group btn-group-single">
+                <button type="button" class="nav-btn next-btn" onclick="nextTab()">Next</button>
+              </div>
             </div>
 
             <!-- Educational Attainment Tab -->
             <div class="tab-pane">
-              <h1>Educational Attainment</h1>
+      
               <p class="subtitle">Provide your educational details</p>
 
               <div class="input-row">
@@ -211,11 +216,17 @@
                   <small class="error-message"></small>
                 </div>
               </div>
+
+              <!-- Navigation Buttons -->
+              <div class="input-group btn-group">
+                <button type="button" class="nav-btn prev-btn" onclick="prevTab()">Previous</button>
+                <button type="button" class="nav-btn next-btn" onclick="nextTab()">Next</button>
+              </div>
             </div>
 
             <!-- Application Requirements Tab -->
             <div class="tab-pane">
-              <h1>Application Requirements</h1>
+          
               <p class="subtitle">Submit required PDF files</p>
 
               <div class="input-row">
@@ -253,6 +264,7 @@
               </div>
 
               <div class="input-group btn-group">
+                <button type="button" class="nav-btn prev-btn" onclick="prevTab()">Previous</button>
                 <button type="submit" class="login-btn flex justify-center items-center" id="submitBtn">
                   <span id="submitBtnText">Submit</span>
                   <svg id="submitBtnSpinner" class="hidden animate-spin h-5 w-5 ml-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -533,6 +545,23 @@
         button.classList.remove('active');
       }
     });
+  }
+
+  // Navigation functions
+  function nextTab() {
+    const activeTab = document.querySelector('.tab-pane.active');
+    const activeIndex = Array.from(document.querySelectorAll('.tab-pane')).indexOf(activeTab);
+    if (activeIndex < 2) {
+      showTab(activeIndex + 1);
+    }
+  }
+
+  function prevTab() {
+    const activeTab = document.querySelector('.tab-pane.active');
+    const activeIndex = Array.from(document.querySelectorAll('.tab-pane')).indexOf(activeTab);
+    if (activeIndex > 0) {
+      showTab(activeIndex - 1);
+    }
   }
 
   // School name toggle functionality

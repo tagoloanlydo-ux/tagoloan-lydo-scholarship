@@ -70,22 +70,22 @@ body {
     display: block;
 }
 
-/* Headers */
-.login-container h1,
-.credentials-container h1 {
+/* Tab Pane Headers */
+.tab-pane h1 {
     color: #000000;
     font-size: 30px;
     margin-bottom: 6px;
     font-weight: 800;
     text-align: center;
 }
-.login-container p.subtitle,
-.credentials-container p.subtitle {
+.tab-pane p.subtitle {
     color: #000000;
     margin-bottom: 25px;
     font-size: 15px;
     text-align: center;
 }
+
+
 
 /* ===== Form ===== */
 form {
@@ -210,6 +210,45 @@ input[type="file"]::file-selector-button:hover {
 }
 .login-btn:hover {
     background: linear-gradient(90deg, #5b21b6 0%, #3b0066 100%);
+}
+
+/* Navigation Buttons (Previous and Next) */
+.nav-btn {
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 14px;
+    background: linear-gradient(90deg, #7c3aed 0%, #5b21b6 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 42px;
+    box-shadow: 0 4px 8px rgba(124, 58, 237, 0.3);
+}
+.nav-btn:hover {
+    background: linear-gradient(90deg, #5b21b6 0%, #4c1d95 100%);
+    box-shadow: 0 6px 12px rgba(124, 58, 237, 0.4);
+    transform: translateY(-1px);
+}
+.nav-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(124, 58, 237, 0.3);
+}
+
+/* Button Group Layout */
+.btn-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+.btn-group-reverse {
+    flex-direction: row-reverse;
+}
+.btn-group-single {
+    justify-content: flex-end;
 }
 
 /* ===== Decorative Elements ===== */
@@ -378,6 +417,25 @@ svg {
         font-size: 16px;
     }
 
+    .nav-btn {
+        width: 48%;
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+
+    .btn-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .btn-group .nav-btn:first-child {
+        margin-right: 0;
+        width: 100%;
+    }
+    .btn-group .login-btn {
+        margin-left: 0;
+        width: 100%;
+    }
+
     .banner-grad {
         height: 80px;
         clip-path: none; /* Remove clip-path to avoid cutting the banner on mobile */
@@ -465,6 +523,25 @@ svg {
         padding: 12px 16px;
         font-size: 15px;
         height: 40px;
+    }
+
+    .nav-btn {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .btn-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .btn-group .nav-btn:first-child {
+        margin-right: 0;
+        width: 100%;
+    }
+    .btn-group .login-btn {
+        margin-left: 0;
+        width: 100%;
     }
 
     .banner-grad {
