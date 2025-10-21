@@ -10,6 +10,12 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="{{ asset('css/renewal.css') }}" />
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 </head>
 <body class="bg-gray-50">
  <div class="dashboard-grid">
@@ -109,27 +115,15 @@
                 </div>
 
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        
-        <form id="filterForm" method="GET" action="{{ route('LydoStaff.renewal') }}" class="flex gap-2 mb-4">
-        
-            <input type="text" name="search" 
-                value="{{ request('search') }}" 
-                placeholder="Search name..." 
-                class="border rounded px-3 py-2 w-64"
-                oninput="document.getElementById('filterForm').submit()">
-
-        
-            <select name="barangay" 
-                class="border rounded px-3 py-2"
-                onchange="document.getElementById('filterForm').submit()">
-                <option value="">All Barangays</option>
-                @foreach($barangays as $brgy)
-                    <option value="{{ $brgy }}" {{ request('barangay') == $brgy ? 'selected' : '' }}>
-                        {{ $brgy }}
-                    </option>
-                @endforeach
-            </select>
-        </form>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="nameSearch" placeholder="Search name..." class="border rounded px-3 py-2 w-64">
+                <select id="barangayFilter" class="border rounded px-3 py-2">
+                    <option value="">All Barangays</option>
+                    @foreach($barangays as $brgy)
+                        <option value="{{ $brgy }}">{{ $brgy }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="flex gap-2">
                 <div onclick="showTable()" class="tab active" id="tab-renewal">
                     <i class="fas fa-table mr-1"></i> Process Renewals
@@ -968,6 +962,43 @@ Scholarship Office`;
 function closeEmailModal() {
     document.getElementById("emailModal").classList.add("hidden");
 }
+</script>
+
+<script>
+// Client-side filtering for tableView
+document.addEventListener('DOMContentLoaded', function() {
+    const nameSearch = document.getElementById('nameSearch');
+    const barangayFilter = document.getElementById('barangayFilter');
+
+    function filterTable() {
+        const searchValue = nameSearch.value.toLowerCase();
+        const barangayValue = barangayFilter.value;
+
+        const rows = document.querySelectorAll('#tableView tbody tr');
+
+        rows.forEach(row => {
+            const nameCell = row.querySelector('td:nth-child(2)'); // Name column
+            const barangayCell = row.querySelector('td:nth-child(3)'); // Barangay column
+
+            if (nameCell && barangayCell) {
+                const nameText = nameCell.textContent.toLowerCase();
+                const barangayText = barangayCell.textContent;
+
+                const nameMatch = nameText.includes(searchValue);
+                const barangayMatch = barangayValue === '' || barangayText === barangayValue;
+
+                if (nameMatch && barangayMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    nameSearch.addEventListener('input', filterTable);
+    barangayFilter.addEventListener('change', filterTable);
+});
 </script>
 </body>
 </html>
