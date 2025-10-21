@@ -340,21 +340,7 @@ x  <!DOCTYPE html>
             </div>
           </div>
 
-          <!-- Modern Tab Navigation -->
-          <div class="tab-navigation">
-            <button id="tab1-btn" class="tab-button active" data-tab="1">
-              <i class="fas fa-user"></i>
-              Personal Information
-            </button>
-            <button id="tab2-btn" class="tab-button" data-tab="2">
-              <i class="fas fa-graduation-cap"></i>
-              Educational Attainment
-            </button>
-            <button id="tab3-btn" class="tab-button" data-tab="3">
-              <i class="fas fa-file-upload"></i>
-              Application Requirements
-            </button>
-          </div>
+
 
           <form id="applicationForm" method="POST" action="{{ route('applicants.register') }}" enctype="multipart/form-data">
           @csrf
