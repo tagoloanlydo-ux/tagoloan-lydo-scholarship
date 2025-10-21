@@ -8,6 +8,96 @@ x  <!DOCTYPE html>
       <script src="https://cdn.tailwindcss.com"></script>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
       <link rel="stylesheet" href="{{ asset('css/application_reg.css') }}">
+      <style>
+        /* Enhanced input focus styles */
+        input:focus, select:focus {
+          border-color: #7B2CBF;
+          box-shadow: 0 0 4px #a855f7;
+          outline: none;
+        }
+
+        /* Icon positioning inside inputs */
+        .input-with-icon {
+          position: relative;
+        }
+
+        .input-icon {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #9CA3AF;
+          pointer-events: none;
+        }
+
+        /* Progress indicator */
+        .progress-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 20px;
+        }
+
+        .progress-bar {
+          width: 200px;
+          height: 4px;
+          background-color: #E5E7EB;
+          border-radius: 2px;
+          margin-left: 10px;
+          overflow: hidden;
+        }
+
+        .progress-fill {
+          height: 100%;
+          background: linear-gradient(to right, #7b2cbf, #9d4edd);
+          transition: width 0.3s ease;
+        }
+
+        /* Enhanced button styles */
+        .enhanced-btn {
+          background: linear-gradient(to right, #7b2cbf, #9d4edd);
+          transition: transform 0.2s, box-shadow 0.2s;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .enhanced-btn:hover {
+          transform: scale(1.05);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        /* Required field asterisk */
+        .required-asterisk {
+          color: #EF4444;
+        }
+
+        /* Tooltip styles */
+        .tooltip {
+          position: relative;
+          display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+          visibility: hidden;
+          width: 200px;
+          background-color: #555;
+          color: #fff;
+          text-align: center;
+          border-radius: 6px;
+          padding: 5px;
+          position: absolute;
+          z-index: 1;
+          bottom: 125%;
+          left: 50%;
+          margin-left: -100px;
+          opacity: 0;
+          transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+          visibility: visible;
+          opacity: 1;
+        }
+      </style>
       <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <title>Personal Information Form</title>
     </head>
@@ -26,7 +116,7 @@ x  <!DOCTYPE html>
       <!-- Back button -->
       <button class="back-btn" onclick="history.back()">←</button>
 
-      <div class="max-w-4xl mx-auto mt-5 bg-white rounded-lg shadow-lg">
+      <div class="w-full mt-5">
         <div class="p-6">
           <h1 class="text-2xl font-bold text-center mb-2">Applicants Registration</h1>
           <p class="text-center text-gray-600 mb-6">Fill out the required details below</p>
@@ -44,6 +134,14 @@ x  <!DOCTYPE html>
               </ul>
             </div>
           @endif
+
+          <!-- Progress Indicator -->
+          <div class="progress-container">
+            <span id="progress-text" class="text-sm font-medium text-gray-700">Step 1 of 3: Personal Information</span>
+            <div class="progress-bar">
+              <div id="progress-fill" class="progress-fill" style="width: 33%;"></div>
+            </div>
+          </div>
 
           <!-- Tab Navigation -->
           <div class="flex border-b border-gray-200 mb-6">
@@ -590,6 +688,20 @@ x  <!DOCTYPE html>
     const activeBtn = document.getElementById('tab' + tabNumber + '-btn');
     activeBtn.classList.add('active', 'text-purple-600', 'border-purple-600', 'bg-purple-50');
     activeBtn.classList.remove('text-gray-500');
+
+    // Update progress indicator
+    updateProgress(tabNumber);
+  }
+
+  function updateProgress(tabNumber) {
+    const progressText = document.getElementById('progress-text');
+    const progressFill = document.getElementById('progress-fill');
+
+    const steps = ['Personal Information', 'Educational Attainment', 'Application Requirements'];
+    const percentages = ['33%', '66%', '100%'];
+
+    progressText.textContent = `Step ${tabNumber} of 3: ${steps[tabNumber - 1]}`;
+    progressFill.style.width = percentages[tabNumber - 1];
   }
 
   function nextTab(currentTab) {
