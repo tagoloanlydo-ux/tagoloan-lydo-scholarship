@@ -23,41 +23,39 @@
           </div>
         </div>
       </div>
-      <div class="tab-container mt-5">
+      <div class="container-wrapper mt-5">
         <!-- Back button -->
         <button class="back-btn" onclick="history.back()">←</button>
+        <div class="tab-container">
+          <h1>Applicant Registration</h1>
+          <p class="subtitle">Fill out the required details below</p>
 
-        @if(session('success'))
-          <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
+          @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+          @endif
 
-        @if($errors->any())
-          <div class="alert alert-danger">
-            <ul>
-              @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-              @endforeach
-            </ul>
+          @if($errors->any())
+            <div class="alert alert-danger">
+              <ul>
+                @foreach($errors->all() as $error)
+                  <li>{{ $error }}</li>
+                @endforeach
+              </ul>
+            </div>
+          @endif
+
+          <!-- Tab Navigation -->
+          <div class="tab-nav">
+            <button class="tab-button active" data-tab="personal">Personal Information</button>
+            <button class="tab-button" data-tab="education">Educational Attainment</button>
+            <button class="tab-button" data-tab="requirements">Application Requirements</button>
           </div>
-        @endif
 
-        <!-- Tab Navigation -->
-        <div class="tab-nav">
-          <button class="tab-button active" onclick="showTab(0)">Personal Information</button>
-          <button class="tab-button" onclick="showTab(1)">Educational Attainment</button>
-          <button class="tab-button" onclick="showTab(2)">Application Requirements</button>
-        </div>
+          <form id="applicationForm" method="POST" action="{{ route('applicants.register') }}" enctype="multipart/form-data">
+          @csrf
 
-        <form id="applicationForm" method="POST" action="{{ route('applicants.register') }}" enctype="multipart/form-data">
-        @csrf
-
-          <!-- Tab Content -->
-          <div class="tab-content">
-            <!-- Personal Information Tab -->
-            <div class="tab-pane active">
-    
-              <p class="subtitle">Fill out the required details below</p>
-
+            <!-- Tab Content: Personal Information -->
+            <div id="personal" class="tab-content active">
               <!-- Name Fields -->
               <div class="input-row">
                 <div class="input-group">
@@ -75,7 +73,7 @@
                   <input type="text" id="lname" name="applicant_lname" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="Last Name" />
                   <small class="error-message"></small>
                 </div>
-                <div class="input-group">
+                <div class="input-group" style="width: 10px">
                   <label for="suffix">Suffix</label>
                   <input type="text" id="suffix" name="applicant_suffix" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Suffix" />
                   <small class="error-message"></small>
@@ -142,20 +140,12 @@
                   <small class="error-message"></small>
                 </div>
               </div>
-
-              <!-- Navigation Buttons -->
-              <div class="input-group btn-group btn-group-single">
-                <button type="button" class="nav-btn next-btn" onclick="nextTab()">Next</button>
-              </div>
             </div>
 
-            <!-- Educational Attainment Tab -->
-            <div class="tab-pane">
-      
-              <p class="subtitle">Provide your educational details</p>
-
+            <!-- Tab Content: Educational Attainment -->
+            <div id="education" class="tab-content">
               <div class="input-row">
-                <div class="input-group">
+                <div class="input-group" style="width: 100px">
                   <label for="school_name">School Name</label>
                   <select id="school_name" name="applicant_school_name" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required>
                     <option value="">-- Select School --</option>
@@ -187,11 +177,27 @@
                     <!-- Others -->
                     <option value="Others">Others</option>
                   </select>
-                  <input type="text" id="school_name_other" name="applicant_school_name_other" placeholder="Please specify your school" style="display: none; margin-top: 8px; padding: 10px; border: 1px solid black; border-radius: 8px; font-size: 14px; outline: none; width: 100%;" />
+                  <input type="text" id="school_name_other" name="applicant_school_name_other" placeholder="Please specify your school" style="display: none; margin-top: 8px; padding: 10px; border: 1px solid black; border-radius: 8px; font-size: 14px; outline: none; width: 100%;"/>
                   <small class="error-message"></small>
                 </div>
               </div>
 
+              <script>
+                const schoolSelect = document.getElementById("school_name");
+                const schoolOtherInput = document.getElementById("school_name_other");
+                schoolSelect.addEventListener("change", function () {
+                  if (this.value === "Others") {
+                    schoolOtherInput.style.display = "block";
+                    schoolOtherInput.setAttribute("required", "required");
+                  } else {
+                    schoolOtherInput.style.display = "none";
+                    schoolOtherInput.removeAttribute("required");
+                    schoolOtherInput.value = "";
+                  }
+                });
+              </script>
+
+              <!-- Academic Details -->
               <div class="input-row">
                 <div class="input-group">
                   <label for="year_level">Year Level</label>
@@ -217,22 +223,19 @@
                 </div>
               </div>
 
-              <!-- Navigation Buttons -->
-              <div class="input-group btn-group">
-                <button type="button" class="nav-btn prev-btn" onclick="prevTab()">Previous</button>
-                <button type="button" class="nav-btn next-btn" onclick="nextTab()">Next</button>
-              </div>
+              <script>
+                const currentYear = new Date().getFullYear();
+                const acadYearInput = document.getElementById("acad_year");
+                acadYearInput.value = `${currentYear}-${currentYear + 1}`;
+              </script>
             </div>
 
-            <!-- Application Requirements Tab -->
-            <div class="tab-pane">
-          
-              <p class="subtitle">Submit required PDF files</p>
-
+            <!-- Tab Content: Application Requirements -->
+            <div id="requirements" class="tab-content">
               <div class="input-row">
                 <div class="input-group">
                   <label for="application_letter">Application Letter</label>
-                  <input type="file" id="application_letter" name="application_letter" accept="application/pdf" required class="input-file" />
+                  <input type="file" id="application_letter" name="application_letter" accept="application/pdf" required class="input-file"/>
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group">
@@ -245,12 +248,12 @@
               <div class="input-row">
                 <div class="input-group">
                   <label for="certificate_of_registration">Certificate of Registration</label>
-                  <input type="file" id="certificate_of_registration" name="certificate_of_registration" accept="application/pdf" required class="input-file" />
+                  <input type="file" id="certificate_of_registration" name="certificate_of_registration" accept="application/pdf" required class="input-file"/>
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group">
                   <label for="barangay_indigency">Barangay Indigency</label>
-                  <input type="file" id="barangay_indigency" name="barangay_indigency" accept="application/pdf" required class="input-file" />
+                  <input type="file" id="barangay_indigency" name="barangay_indigency" accept="application/pdf" required class="input-file"/>
                   <small class="error-message"></small>
                 </div>
               </div>
@@ -258,29 +261,73 @@
               <div class="input-row">
                 <div class="input-group">
                   <label for="student_id">Student ID</label>
-                  <input type="file" id="student_id" name="student_id" accept="application/pdf" required class="input-file" />
+                  <input type="file" id="student_id" name="student_id" accept="application/pdf" required class="input-file"/>
                   <small class="error-message"></small>
                 </div>
               </div>
-
-              <div class="input-group btn-group">
-                <button type="button" class="nav-btn prev-btn" onclick="prevTab()">Previous</button>
-                <button type="submit" class="login-btn flex justify-center items-center" id="submitBtn">
-                  <span id="submitBtnText">Submit</span>
-                  <svg id="submitBtnSpinner" class="hidden animate-spin h-5 w-5 ml-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                  </svg>
-                </button>
-              </div>
             </div>
-          </div>
-        </form>
+
+            <!-- Navigation Buttons -->
+            <div class="button-row">
+              <button type="button" id="prevBtn" class="nav-btn prev-btn" style="display: none;">Previous</button>
+              <button type="button" id="nextBtn" class="nav-btn next-btn">Next</button>
+              <button type="submit" id="submitBtn" class="nav-btn submit-btn" style="display: none;">
+                <span id="submitBtnText">Submit</span>
+                <svg id="submitBtnSpinner" class="hidden animate-spin h-5 w-5 ml-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
   <script>
+  // Tab switching logic
+  const tabButtons = document.querySelectorAll('.tab-button');
+  const tabContents = document.querySelectorAll('.tab-content');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  let currentTab = 0;
+
+  function showTab(index) {
+    tabContents.forEach(content => content.classList.remove('active'));
+    tabButtons.forEach(button => button.classList.remove('active'));
+    tabContents[index].classList.add('active');
+    tabButtons[index].classList.add('active');
+
+    prevBtn.style.display = index === 0 ? 'none' : 'inline-block';
+    nextBtn.style.display = index === tabContents.length - 1 ? 'none' : 'inline-block';
+    submitBtn.style.display = index === tabContents.length - 1 ? 'inline-block' : 'none';
+  }
+
+  tabButtons.forEach((button, index) => {
+    button.addEventListener('click', () => {
+      currentTab = index;
+      showTab(currentTab);
+    });
+  });
+
+  prevBtn.addEventListener('click', () => {
+    if (currentTab > 0) {
+      currentTab--;
+      showTab(currentTab);
+    }
+  });
+
+  nextBtn.addEventListener('click', () => {
+    if (currentTab < tabContents.length - 1) {
+      currentTab++;
+      showTab(currentTab);
+    }
+  });
+
+  // Initialize first tab
+  showTab(currentTab);
+
   const applicationForm = document.getElementById("applicationForm");
-  const submitBtn = document.getElementById("submitBtn");
   const submitBtnText = document.getElementById('submitBtnText');
   const submitBtnSpinner = document.getElementById('submitBtnSpinner');
 
@@ -351,18 +398,7 @@
 
 
   function toggleButton() {
-    const hasErrorMessage = Array.from(
-      applicationForm.querySelectorAll(".error-message")
-    ).some((msg) => msg.textContent.trim() !== "");
-
-    const hasEmptyRequired = Array.from(
-      applicationForm.querySelectorAll("input[required], select[required]")
-    ).some((input) => {
-      if (input.type === "file") return input.files.length === 0;
-      return !input.value.trim();
-    });
-
-    // Removed disabling of submit button to allow form submission
+    // Removed logic for disabling buttons as tabs handle navigation
   }
 
   // Attach events
@@ -522,67 +558,6 @@
       }
     });
   });
-  </script>
-
-  <script>
-  // Tab switching functionality
-  function showTab(tabIndex) {
-    const tabs = document.querySelectorAll('.tab-pane');
-    const buttons = document.querySelectorAll('.tab-button');
-
-    tabs.forEach((tab, index) => {
-      if (index === tabIndex) {
-        tab.classList.add('active');
-      } else {
-        tab.classList.remove('active');
-      }
-    });
-
-    buttons.forEach((button, index) => {
-      if (index === tabIndex) {
-        button.classList.add('active');
-      } else {
-        button.classList.remove('active');
-      }
-    });
-  }
-
-  // Navigation functions
-  function nextTab() {
-    const activeTab = document.querySelector('.tab-pane.active');
-    const activeIndex = Array.from(document.querySelectorAll('.tab-pane')).indexOf(activeTab);
-    if (activeIndex < 2) {
-      showTab(activeIndex + 1);
-    }
-  }
-
-  function prevTab() {
-    const activeTab = document.querySelector('.tab-pane.active');
-    const activeIndex = Array.from(document.querySelectorAll('.tab-pane')).indexOf(activeTab);
-    if (activeIndex > 0) {
-      showTab(activeIndex - 1);
-    }
-  }
-
-  // School name toggle functionality
-  const schoolSelect = document.getElementById("school_name");
-  const schoolOtherInput = document.getElementById("school_name_other");
-
-  schoolSelect.addEventListener("change", function () {
-    if (this.value === "Others") {
-      schoolOtherInput.style.display = "block";
-      schoolOtherInput.setAttribute("required", "required");
-    } else {
-      schoolOtherInput.style.display = "none";
-      schoolOtherInput.removeAttribute("required");
-      schoolOtherInput.value = "";
-    }
-  });
-
-  // Auto-set academic year
-  const currentYear = new Date().getFullYear();
-  const acadYearInput = document.getElementById("acad_year");
-  acadYearInput.value = `${currentYear}-${currentYear + 1}`;
   </script>
 
   <script>
