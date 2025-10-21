@@ -1,0 +1,440 @@
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f0f0f5 0%, #d9d9ff 100%);
+    display: flex;
+    flex-direction: column; /* column para nasa taas ang header */
+    justify-content: flex-start; /* hindi na center, sa taas */
+    align-items: center; /* center horizontally */
+    min-height: 100vh;
+    margin: 0;
+}
+
+.container-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+/* Mobile responsiveness adjustments */
+@media (max-width: 768px) {
+    .container-wrapper {
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 1rem;
+    }
+
+    .login-container {
+        width: 100% !important;
+        padding: 10px 15px 50px !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    .credentials-container {
+        width: 100% !important;
+        padding: 10px 15px 50px !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    .banner-grad {
+        height: 80px; /* Reduce height on mobile */
+        clip-path: none; /* Remove clip-path to avoid cutting the banner on mobile */
+    }
+
+    /* Reduce text sizes on mobile */
+    h1 {
+        font-size: 1.5rem; /* text-3xl equivalent smaller */
+    }
+
+    h2,
+    h3 {
+        font-size: 2rem; /* text-5xl to smaller */
+    }
+
+    p {
+        font-size: 1rem; /* text-xl to smaller */
+    }
+
+    /* Adjust main padding and gap */
+    main {
+        padding: 1rem; /* Reduce padding */
+        gap: 2rem; /* Reduce gap */
+    }
+
+    /* Form adjustments */
+    .max-w-sm {
+        max-width: 100%; /* Allow full width on mobile */
+        padding: 0 1rem; /* Add some padding */
+    }
+
+    /* Button adjustments */
+    button {
+        font-size: 1rem; /* Smaller text */
+        padding: 0.75rem; /* Adjust padding */
+    }
+
+    /* Footer */
+    footer {
+        padding: 1rem; /* Adjust padding */
+    }
+}
+
+.login-container {
+    background: transparent;
+    padding: 5px 30px 90px;
+    border-radius: 16px;
+    box-shadow: 0 15px 30px rgba(102, 51, 153, 0.2);
+    width: 850px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+.credentials-container {
+    background: transparent;
+    padding: 5px 30px 50px;
+    border-radius: 16px;
+    box-shadow: 0 15px 30px rgba(102, 51, 153, 0.2);
+    width: 400px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.credentials-container h1 {
+    color: #3b0066;
+    font-size: 30px;
+    margin-bottom: 6px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.credentials-container p.subtitle {
+    color: #000000;
+    margin-bottom: 25px;
+    font-size: 15px;
+    text-align: center;
+}
+/* Back button */
+.back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    color: #3b0066;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.login-container h1 {
+    color: #3b0066;
+    font-size: 30px;
+    margin-bottom: 6px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.login-container p.subtitle {
+    color: #000000;
+    margin-bottom: 25px;
+    font-size: 15px;
+    text-align: center;
+}
+
+/* ==== FORM STYLE ==== */
+.login-container,
+.credentials-container,
+form {
+    position: relative;
+    z-index: 5; /* mas mataas kaysa wave */
+}
+
+.input-row {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 12px;
+    margin-bottom: 15px;
+}
+.login-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    position: relative;
+    z-index: 20;
+}
+.input-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.input-group.wide {
+    flex: 2;
+}
+
+.input-group.small {
+    max-width: 100px;
+}
+
+label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #3b0066;
+    font-size: 14px;
+}
+
+input,
+select {
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 8px;
+    font-size: 14px;
+    height: 40px;
+    outline: none;
+}
+
+input.error,
+select.error {
+    border: 2px solid red;
+}
+
+input.valid,
+select.valid {
+    border: 2px solid green;
+}
+
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 3px;
+    display: block;
+}
+
+.login-btn {
+    padding: 12px 20px;
+    font-weight: 700;
+    font-size: 14px;
+    background: linear-gradient(90deg, #4b2b8d 0%, #230061 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    margin-top: 14px;
+    box-shadow: 0 10px 20px #5132a6cc;
+    transition: background 0.3s ease;
+    height: 42px; /* match input height */
+    position: relative; /* kailangan para gumana ang z-index */
+    z-index: 20;
+}
+
+.login-btn:hover {
+    background: #0056b3;
+}
+
+.loading-spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.login-btn.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* === Credentials Row === */
+.credentials-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+}
+
+.credentials-row .input-group {
+    flex: 1;
+    min-width: 120px;
+}
+
+.credentials-row .btn-group {
+    flex: 0 0 auto;
+}
+
+/* Decorative Waves */
+.decorative-wave-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    z-index: 0;
+    overflow: hidden;
+}
+
+svg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+}
+
+.wave1 {
+    animation: waveMove 10s linear infinite;
+}
+.wave2 {
+    animation: waveMove 14s linear infinite;
+}
+.wave3 {
+    animation: waveMove 20s linear infinite;
+}
+.wave4 {
+    animation: waveMove 25s linear infinite;
+}
+.wave5 {
+    animation: waveMove 30s linear infinite;
+}
+
+@keyframes waveMove {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Decorative shapes */
+.decorative-shape {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(161, 143, 255, 0.3);
+    box-shadow: 0 0 8px rgba(161, 143, 255, 0.5);
+    z-index: 1;
+}
+
+.floating-circles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* para hindi maka-apekto sa click */
+    z-index: 0;
+}
+
+/* Circle base style */
+.circle {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    background: rgba(109, 83, 211, 0.25);
+    border-radius: 50%;
+    animation: floatUp 12s infinite ease-in-out;
+}
+
+/* Smaller variation */
+.circle.small {
+    width: 15px;
+    height: 15px;
+    background: rgba(140, 112, 247, 0.3);
+    animation-duration: 15s;
+}
+.square1 {
+    width: 14px;
+    height: 14px;
+    right: 40px;
+    top: 80%;
+    border-radius: 4px;
+    background: rgba(109, 83, 211, 0.3);
+    box-shadow: 0 0 6px rgba(109, 83, 211, 0.5);
+}
+.page-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.header-content {
+    display: flex;
+    align-items: center; /* <-- ito ang magpapagitna sa text at logo */
+    gap: 20px;
+}
+
+.logo {
+    width: 80px;
+    height: auto;
+    margin-top: 10px;
+    display: block;
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.2;
+    text-align: center; /* <-- center align ng buong text block */
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 900;
+    color: #3b0066;
+    margin: 0;
+}
+
+.subtitle-footer {
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+    margin: 4px 0 0 0;
+}
+.banner-grad {
+    background: #7c3aed; /* solid light purple */
+    height: 100px;
+    clip-path: polygon(0 0, 100% 0, 100% 40%, 55% 45%, 50% 100%, 0 100%);
+    position: relative;
+}
+
+/* Mobile responsiveness for banner */
+@media (max-width: 768px) {
+    .banner-grad {
+        clip-path: none;
+        height: 80px; /* Adjust height for mobile if needed */
+    }
+}
+
+/* Back button */
+.back-btn {
+    background: transparent;
+    border: none;
+    margin-right: 20px;
+    font-size: 28px;
+    color: rgb(0, 0, 0);
+    font-size: 50px;
+    cursor: pointer;
+}

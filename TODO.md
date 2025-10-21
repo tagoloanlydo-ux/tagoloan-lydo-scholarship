@@ -1,0 +1,2 @@
+-   [x] Update button backgrounds in front-page.blade.php to use a complementary color (yellow) instead of the current colors, ensuring it complements the purple gradient body background.
+-   [ ] Test the changes to ensure buttons are visible and functional without damaging existing code.

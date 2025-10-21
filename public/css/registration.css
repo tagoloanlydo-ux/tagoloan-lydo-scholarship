@@ -1,0 +1,333 @@
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f0f0f5 0%, #d9d9ff 100%);
+    display: flex;
+    flex-direction: column; /* column para nasa taas ang header */
+    justify-content: flex-start; /* hindi na center, sa taas */
+    align-items: center; /* center horizontally */
+    min-height: 100vh;
+    margin: 0;
+}
+
+.container-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.login-container {
+    background: #fff;
+    padding: 5px 30px 80px;
+    border-radius: 16px;
+    box-shadow: 0 15px 30px rgba(102, 51, 153, 0.2);
+    width: 750px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+.credentials-container {
+    background: #fff;
+    padding: 5px 30px 70px;
+    border-radius: 16px;
+    box-shadow: 0 15px 30px rgba(102, 51, 153, 0.2);
+    width: 300px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.credentials-container h1 {
+    color: #3b0066;
+    font-size: 30px;
+    margin-bottom: 6px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.credentials-container p.subtitle {
+    color: #777;
+    margin-bottom: 25px;
+    font-size: 15px;
+    text-align: center;
+}
+/* Back button */
+.back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    color: #3b0066;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.login-container h1 {
+    color: #3b0066;
+    font-size: 30px;
+    margin-bottom: 6px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.login-container p.subtitle {
+    color: #777;
+    margin-bottom: 25px;
+    font-size: 15px;
+    text-align: center;
+}
+
+/* ==== FORM STYLE ==== */
+form {
+    z-index: 3;
+    position: relative;
+}
+
+.input-row {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.input-group.wide {
+    flex: 2;
+}
+
+.input-group.small {
+    max-width: 100px;
+}
+
+label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #3b0066;
+    font-size: 14px;
+}
+
+input,
+select {
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+}
+
+input.error,
+select.error {
+    border: 2px solid red;
+}
+
+input.valid,
+select.valid {
+    border: 2px solid green;
+}
+
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 3px;
+    display: block;
+}
+
+.login-btn {
+    padding: 12px 20px;
+    font-weight: 700;
+    font-size: 14px;
+    background: linear-gradient(90deg, #4b2b8d 0%, #230061 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px #5132a6cc;
+    transition: background 0.3s ease;
+    height: 42px; /* match input height */
+}
+
+.login-btn:hover {
+    background: #0056b3;
+}
+
+.loading-spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.login-btn.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* === Credentials Row === */
+.credentials-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+}
+
+.credentials-row .input-group {
+    flex: 1;
+    min-width: 120px;
+}
+
+.credentials-row .btn-group {
+    flex: 0 0 auto;
+}
+
+/* Decorative Waves */
+.decorative-wave-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    z-index: -1;
+    overflow: hidden;
+}
+
+svg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+}
+
+.wave1 {
+    animation: waveMove 10s linear infinite;
+}
+.wave2 {
+    animation: waveMove 14s linear infinite;
+}
+.wave3 {
+    animation: waveMove 20s linear infinite;
+}
+.wave4 {
+    animation: waveMove 25s linear infinite;
+}
+.wave5 {
+    animation: waveMove 30s linear infinite;
+}
+
+@keyframes waveMove {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Decorative shapes */
+.decorative-shape {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(161, 143, 255, 0.3);
+    box-shadow: 0 0 8px rgba(161, 143, 255, 0.5);
+    z-index: 1;
+}
+
+.circle1 {
+    width: 20px;
+    height: 20px;
+    right: 60px;
+    top: 30%;
+}
+.circle2 {
+    width: 12px;
+    height: 12px;
+    right: 90px;
+    top: 60%;
+}
+.square1 {
+    width: 14px;
+    height: 14px;
+    right: 40px;
+    top: 80%;
+    border-radius: 4px;
+    background: rgba(109, 83, 211, 0.3);
+    box-shadow: 0 0 6px rgba(109, 83, 211, 0.5);
+}
+.page-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.header-content {
+    display: flex;
+    align-items: center; /* <-- ito ang magpapagitna sa text at logo */
+    gap: 20px;
+}
+
+.logo {
+    width: 80px;
+    height: auto;
+    margin-top: 10px;
+    display: block;
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.2;
+    text-align: center; /* <-- center align ng buong text block */
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 900;
+    color: #3b0066;
+    margin: 0;
+}
+
+.subtitle-footer {
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+    margin: 4px 0 0 0;
+}
+.toggle-password {
+    position: absolute;
+    right: 14px;
+    top: 28px; /* para align sa loob ng input */
+    cursor: pointer;
+    font-size: 18px;
+    user-select: none;
+    color: #555;
+}

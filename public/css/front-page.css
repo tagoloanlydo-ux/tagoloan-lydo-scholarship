@@ -1,0 +1,41 @@
+.transition-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom right, #2a1e78, #6a4fd4, #7a58f7);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 1s ease-in-out, opacity 1s ease-in-out;
+}
+.transition-overlay.fade-out {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+/* Fade-in animation for hero content */
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.fade-in-up {
+    animation: fadeInUp 1s ease-out forwards;
+}
+.fade-delay-1 {
+    animation-delay: 0.5s;
+}
+.fade-delay-2 {
+    animation-delay: 1s;
+}
+.fade-delay-3 {
+    animation-delay: 1.5s;
+}

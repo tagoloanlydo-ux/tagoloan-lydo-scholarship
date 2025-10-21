@@ -1,0 +1,481 @@
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f0f0f5 0%, #d9d9ff 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+@keyframes waveMotion {
+    0% {
+        clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%);
+    }
+    50% {
+        clip-path: polygon(40% 1%, 100% 0, 100% 100%, 0 95%);
+    }
+    100% {
+        clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%);
+    }
+}
+.wave-layer1 {
+    background: #6d53d3;
+    right: 0;
+    top: 0;
+    opacity: 0.6;
+    z-index: 3;
+    clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%);
+    animation: waveMotion 6s ease-in-out infinite; /* gumagalaw */
+}
+
+.wave-layer2 {
+    background: #a18fff;
+    right: 20px;
+    top: 20px;
+    opacity: 0.4;
+    z-index: 2;
+    clip-path: polygon(20% 0, 100% 0, 100% 100%, 0 100%);
+    animation: waveMotion 8s ease-in-out infinite; /* mas bagal */
+}
+
+.wave-layer3 {
+    background: #b9aaff;
+    right: 40px;
+    top: 40px;
+    opacity: 0.3;
+    z-index: 1;
+    clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);
+    animation: waveMotion 10s ease-in-out infinite; /* pinakabagal */
+}
+.wave-layer1 {
+    background: #6d53d3;
+    right: 0;
+    top: 0;
+    opacity: 0.6;
+    z-index: 3;
+    clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%);
+    animation: waveMotion 6s ease-in-out infinite;
+}
+
+.wave-layer2 {
+    background: #a18fff;
+    right: 20px;
+    top: 20px;
+    opacity: 0.4;
+    z-index: 2;
+    clip-path: polygon(20% 0, 100% 0, 100% 100%, 0 100%);
+    animation: waveMotion 8s ease-in-out infinite;
+}
+
+.wave-layer3 {
+    background: #b9aaff;
+    right: 40px;
+    top: 40px;
+    opacity: 0.3;
+    z-index: 1;
+    clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);
+    animation: waveMotion 10s ease-in-out infinite;
+}
+
+.login-container {
+    background: #fff;
+    padding: 30px 50px;
+    border-radius: 16px;
+    box-shadow: 0 15px 30px rgba(102, 51, 153, 0.2);
+    width: 450px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.login-container h1 {
+    color: #3b0066;
+    font-size: 32px;
+    margin-bottom: 1px;
+    font-weight: 800;
+}
+
+.login-container p.subtitle {
+    color: #777;
+
+    font-size: 16px;
+}
+
+.logo {
+    display: block;
+    margin: 0 auto 1px;
+    width: 80px;
+    height: auto;
+}
+
+h1 {
+    margin-top: 0; /* tanggalin yung default taas */
+}
+
+.title {
+    color: #3b0066;
+    font-size: 32px;
+    margin: 0; /* tanggalin lahat ng default margins */
+    font-weight: 800;
+    text-align: center;
+}
+
+.subtitle-footer {
+    color: #777;
+    margin-bottom: 40px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 10px; /* dagdag konti para may space sa error */
+    min-height: 70px;
+}
+
+.input-group svg {
+    position: absolute;
+    top: 35%;
+    left: 14px;
+    transform: translateY(-50%);
+    fill: #000000ff;
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+}
+
+.input-group input {
+    width: 85%;
+    padding: 14px 14px 16px 50px; /* para may space sa icon */
+    font-size: 15px;
+    border: 1.5px solid #000000;
+    border-radius: 12px;
+    outline: none;
+    box-shadow: 0 4px 6px rgba(179, 167, 246, 0.15);
+}
+
+input.error {
+    border: 2px solid red;
+}
+
+input.valid {
+    border: 2px solid green;
+}
+
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 3px;
+    display: block;
+}
+
+.checkbox-group {
+    margin-bottom: 20px;
+    color: #555;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.forgot-password {
+    color: #000000;
+    font-size: 14px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.forgot-password:hover {
+    color: #3b0066;
+    text-decoration: underline;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+}
+
+.login-btn {
+    width: 50%;
+    padding: 15px;
+    font-weight: 700;
+    font-size: 16px;
+    background: linear-gradient(90deg, #4b2b8d 0%, #230061 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px #5132a6cc;
+    transition: background 0.3s ease;
+    margin: 0 auto;
+    display: block;
+}
+
+.login-btn:hover {
+    background: linear-gradient(90deg, #230061 0%, #4b2b8d 100%);
+}
+
+/* Purple wavy decoration on the right */
+.decorative-wave-container {
+    position: absolute;
+    right: -40px;
+    top: 0;
+    height: 100%;
+    width: 220px;
+    overflow: visible;
+    z-index: 0;
+}
+
+.login-container h1,
+.login-container p,
+.input-group,
+.checkbox-group,
+.login-btn,
+.separator .signup-btn {
+    position: relative;
+    z-index: 2;
+}
+.decorative-wave {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 220px;
+    border-radius: 0 16px 16px 0;
+    overflow: visible;
+}
+
+.wave-layer {
+    position: absolute;
+    width: 180px;
+    height: 100%;
+    border-radius: 50% / 100%;
+    opacity: 0.3;
+    filter: drop-shadow(0 0 10px rgba(109, 83, 211, 0.3));
+}
+.separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 25px 0;
+    color: #000000;
+    font-size: 14px;
+    font-weight: 600;
+}
+.separator::before,
+.separator::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #ccc;
+}
+.separator:not(:empty)::before {
+    margin-right: 10px;
+}
+.separator:not(:empty)::after {
+    margin-left: 10px;
+}
+
+.wave-layer1 {
+    background: #6d53d3;
+    right: 0;
+    top: 0;
+    opacity: 0.6;
+    z-index: 3;
+    clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.wave-layer2 {
+    background: #a18fff;
+    right: 20px;
+    top: 20px;
+    opacity: 0.4;
+    z-index: 2;
+    clip-path: polygon(20% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.wave-layer3 {
+    background: #b9aaff;
+    right: 40px;
+    top: 40px;
+    opacity: 0.3;
+    z-index: 1;
+    clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+/* Decorative circles and squares */
+.decorative-shape {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(161, 143, 255, 0.3);
+    box-shadow: 0 0 8px rgba(161, 143, 255, 0.5);
+    z-index: 4;
+}
+
+.circle1 {
+    width: 20px;
+    height: 20px;
+    right: 60px;
+    top: 30%;
+}
+
+.circle2 {
+    width: 12px;
+    height: 12px;
+    right: 90px;
+    top: 60%;
+}
+
+.square1 {
+    width: 14px;
+    height: 14px;
+    right: 40px;
+    top: 80%;
+    border-radius: 4px;
+    background: rgba(109, 83, 211, 0.3);
+    box-shadow: 0 0 6px rgba(109, 83, 211, 0.5);
+}
+
+.toggle-password {
+    position: absolute;
+    right: 14px;
+    top: 35%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px;
+    user-select: none;
+}
+.signup-btn {
+    width: 40%;
+    padding: 15px;
+    margin-top: 10px;
+    font-weight: 700;
+    font-size: 16px;
+    background: linear-gradient(90deg, #230061 0%, #4b2b8d 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px #5132a6cc;
+    transition: background 0.3s ease;
+    margin: 0 auto;
+    display: block;
+}
+.signup-btn:hover {
+    background: linear-gradient(90deg, #4b2b8d 0%, #230061 100%);
+}
+
+.loading-spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.login-btn.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.otp-modal {
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.otp-modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    width: 350px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+.otp-inputs {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+    gap: 8px;
+}
+.otp-box {
+    width: 40px;
+    height: 50px;
+    font-size: 22px;
+    text-align: center;
+}
+.verify-btn {
+    padding: 10px 20px;
+    background: #6a0dad;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.close {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 28px;
+    cursor: pointer;
+}
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+    position: relative; /* para gumana ang z-index */
+    z-index: 3; /* mas mataas kaysa waves */
+}
+
+.back-btn,
+.signup-btn {
+    padding: 10px 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.back-btn {
+    width: 40%;
+    padding: 13px;
+    margin-top: 10px;
+    font-weight: 700;
+    font-size: 16px;
+    background: linear-gradient(90deg, #230061 0%, #4b2b8d 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px #5132a6cc;
+    transition: background 0.3s ease;
+    margin: 0 auto;
+    display: block;
+}

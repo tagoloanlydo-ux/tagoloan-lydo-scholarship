@@ -1,0 +1,54 @@
+.banner-grad {
+    background: #7c3aed; /* solid light purple */
+    height: 100px;
+    clip-path: polygon(0 0, 100% 0, 100% 40%, 55% 45%, 50% 100%, 0 100%);
+    position: relative;
+}
+.toggle-password {
+    cursor: pointer;
+}
+
+/* Mobile responsiveness adjustments */
+@media (max-width: 768px) {
+    .banner-grad {
+        height: 80px; /* Reduce height on mobile */
+        clip-path: none; /* Remove clip-path to avoid cutting the banner on mobile */
+    }
+
+    /* Reduce text sizes on mobile */
+    h1 {
+        font-size: 1.5rem; /* text-3xl equivalent smaller */
+    }
+
+    h2,
+    h3 {
+        font-size: 2rem; /* text-5xl to smaller */
+    }
+
+    p {
+        font-size: 1rem; /* text-xl to smaller */
+    }
+
+    /* Adjust main padding and gap */
+    main {
+        padding: 1rem; /* Reduce padding */
+        gap: 2rem; /* Reduce gap */
+    }
+
+    /* Form adjustments */
+    .max-w-sm {
+        max-width: 100%; /* Allow full width on mobile */
+        padding: 0 1rem; /* Add some padding */
+    }
+
+    /* Button adjustments */
+    button {
+        font-size: 1rem; /* Smaller text */
+        padding: 0.75rem; /* Adjust padding */
+    }
+
+    /* Footer */
+    footer {
+        padding: 1rem; /* Adjust padding */
+    }
+}

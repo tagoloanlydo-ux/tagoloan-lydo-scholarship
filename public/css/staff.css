@@ -1,0 +1,222 @@
+:root {
+    --primary: #7c3aed;
+    --secondary: #3a0ca3;
+    --success: #4cc9f0;
+    --danger: #f94144;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100vh;
+}
+
+.flex-1 {
+    overflow-y: auto;
+}
+
+.main-content-area {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-renewed {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.sidebar-item {
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.sidebar-item:hover::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background-color: var(--primary);
+}
+
+.application-card:hover {
+    transform: translateY(-2px);
+}
+
+.active-filter {
+    background-color: var(--primary) !important;
+    color: white !important;
+}
+
+.application-card {
+    border: 2px solid #000000ff;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+/* Enhanced Modal Styles */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.show {
+    opacity: 1;
+}
+
+.modal-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+
+.modal-container.show {
+    transform: scale(1);
+}
+
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f9fafb;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    color: #374151;
+    background-color: #f3f4f6;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.modal-content {
+    line-height: 1.6;
+    color: #4b5563;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    background: #f9fafb;
+}
+
+.modal-action-btn {
+    padding: 0.5rem 1rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.modal-action-btn:hover {
+    background-color: #2563eb;
+}
+
+/* Content button styling */
+.content-preview-btn {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    cursor: pointer;
+    padding: 0.25rem;
+    text-align: left;
+    transition: color 0.2s ease;
+}
+
+.content-preview-btn:hover {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+/* Scrollbar styling for modal content */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Center all table cell content */
+td {
+    text-align: center;
+    vertical-align: middle;
+}
