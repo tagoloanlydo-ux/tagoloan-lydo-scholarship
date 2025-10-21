@@ -86,17 +86,45 @@
             @enderror
           </div>
 
-          <div class="relative">
-            <label for="scholar_pass" class="block text-lg font-medium " style="color: #3b0066;">Password</label>
-            <input id="scholar_pass" name="scholar_pass" type="password" required class="mt-2 w-full bg-white rounded-lg pl-12 pr-12 py-3 text-gray-700 shadow-sm text-lg border border-gray-300 focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 @error('scholar_pass') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror" placeholder="Enter your password"/>
-            <i id="password-icon" style="margin-top:20px;" class="fa-solid fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-500"></i>
-            <button type="button" style="margin-top:20px;" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-600" onclick="togglePasswordVisibility()" aria-label="Toggle password visibility">
-              <i data-feather="eye" id="scholar-pass-eye-icon" class="w-5 h-5"></i>
-            </button>
-            @error('scholar_pass')
-              <p class="text-red-600 text-sm mt-1"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ $message == 'Incorrect password.' ? 'incorrect password' : $message }}</p>
-            @enderror
-          </div>
+<div class="mt-5">
+  <label for="scholar_pass" class="block text-lg font-medium" style="color: #3b0066;">Password</label>
+
+  <div class="relative mt-2">
+    <!-- Lock icon -->
+    <i id="password-icon" class="fa-solid fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-500"></i>
+
+    <!-- Password input -->
+    <input
+      id="scholar_pass"
+      name="scholar_pass"
+      type="password"
+      required
+      placeholder="Enter your password"
+      class="w-full bg-white rounded-lg pl-12 pr-12 py-3 text-gray-700 shadow-sm text-lg border
+      @error('scholar_pass') border-red-500 focus:border-red-500 focus:ring-red-200 @else border-gray-300 focus:border-purple-600 focus:ring-purple-200 @enderror
+      focus:outline-none focus:ring-2"
+    />
+
+    <!-- Eye toggle button -->
+    <button
+      type="button"
+      class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-600"
+      onclick="togglePasswordVisibility()"
+      aria-label="Toggle password visibility"
+    >
+      <i id="scholar-pass-eye-icon" class="fa-solid fa-eye"></i>
+    </button>
+  </div>
+
+  <!-- Error message -->
+  @error('scholar_pass')
+    <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      {{ $message == 'Incorrect password.' ? 'incorrect password' : $message }}
+    </p>
+  @enderror
+</div>
+
           <a href="{{ route('scholar.forgot-password') }}" class="text-sm text-purple-600 hover:underline mt-3 block text-right">
             Forgot Password?
           </a>
