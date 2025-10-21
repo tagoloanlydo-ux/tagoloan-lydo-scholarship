@@ -215,6 +215,13 @@ x  <!DOCTYPE html>
           margin-bottom: 24px;
         }
 
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+          .input-row {
+            grid-template-columns: 1fr;
+          }
+        }
+
         .input-group {
           position: relative;
         }
@@ -225,22 +232,38 @@ x  <!DOCTYPE html>
           font-weight: 600;
           color: #374151;
           font-size: 14px;
+          transition: 0.2s ease all;
         }
 
         .input-group input,
         .input-group select {
           width: 100%;
-          padding: 12px 16px;
+          padding: 0.75rem 1rem;
           border: 2px solid #E5E7EB;
           border-radius: 8px;
           font-size: 14px;
           transition: all 0.3s ease;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .input-group input:focus,
         .input-group select:focus {
-          border-color: #7B2CBF;
-          box-shadow: 0 0 0 3px rgba(123, 44, 191, 0.1);
+          border-color: #7b2cbf;
+          box-shadow: 0 0 6px rgba(123, 44, 191, 0.3);
+          outline: none;
+        }
+
+        .input-group input:hover,
+        .input-group select:hover {
+          border-color: #9d4edd;
+        }
+
+        /* Floating label adjustments */
+        .peer:focus ~ label,
+        .peer:not(:placeholder-shown) ~ label {
+          top: 0;
+          font-size: 0.85rem;
+          color: #7b2cbf;
         }
 
         /* Animation keyframes */
@@ -263,7 +286,8 @@ x  <!DOCTYPE html>
     <title>Personal Information Form</title>
     </head>
     <body>
-      <div class="banner-grad flex items-center justify-between w-full h-25  px-6 text-white">
+      <div class="banner-grad flex items-center justify-center w-full h-16 px-6 text-white relative">
+        <button class="back-btn absolute left-6" onclick="history.back()">←</button>
         <div class="flex items-center">
              <img src="/images/LYDO.png" alt="LYDO Logo" class="h-10 mr-4"/>
           <div>
@@ -274,13 +298,12 @@ x  <!DOCTYPE html>
           </div>
         </div>
       </div>
-      <!-- Back button -->
-      <button class="back-btn" onclick="history.back()">←</button>
 
-      <div class="w-full mt-5">
+      <div class="w-full overflow-y-auto" style="height: calc(100vh - 4rem);">
         <div class="p-6">
           <h1 class="text-2xl font-bold text-center mb-2">Applicants Registration</h1>
           <p class="text-center text-gray-600 mb-6">Fill out the required details below</p>
+          <p class="text-center text-red-500 text-sm mb-4">* Indicates required fields</p>
 
           @if(session('success'))
             <div class="alert alert-success mb-4">{{ session('success') }}</div>
@@ -347,7 +370,7 @@ x  <!DOCTYPE html>
               <div class="input-row">
                 <div class="input-group relative">
                   <input type="text" id="fname" name="applicant_fname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" required placeholder="First Name" />
-                  <label for="fname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">First Name</label>
+                  <label for="fname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">First Name<span class="required-asterisk">*</span></label>
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group relative">
@@ -357,7 +380,7 @@ x  <!DOCTYPE html>
                 </div>
                 <div class="input-group relative">
                   <input type="text" id="lname" name="applicant_lname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" required placeholder="Last Name" />
-                  <label for="lname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Last Name</label>
+                  <label for="lname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Last Name<span class="required-asterisk">*</span></label>
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group relative" style="width: 10px">
@@ -370,7 +393,7 @@ x  <!DOCTYPE html>
               <!-- Personal Details -->
               <div class="input-row">
                 <div class="input-group">
-                  <label for="gender">Gender</label>
+                  <label for="gender">Gender<span class="required-asterisk">*</span></label>
                   <select id="gender" name="applicant_gender"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required>
                     <option value="">Select Gender</option>
                     <option value="male">Male</option>
@@ -380,12 +403,12 @@ x  <!DOCTYPE html>
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group">
-                  <label for="bdate">Birth Date</label>
+                  <label for="bdate">Birth Date<span class="required-asterisk">*</span></label>
                   <input type="date" id="bdate" name="applicant_bdate"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required />
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group">
-                  <label for="civil_status">Civil Status</label>
+                  <label for="civil_status">Civil Status<span class="required-asterisk">*</span></label>
                   <select id="civil_status" name="applicant_civil_status"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required>
                     <option value="">Select Civil Status</option>
                     <option value="single">Single</option>
@@ -396,7 +419,7 @@ x  <!DOCTYPE html>
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group">
-                  <label for="brgy">Barangay</label>
+                  <label for="brgy">Barangay<span class="required-asterisk">*</span></label>
                   <select id="brgy" name="applicant_brgy"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  required>
                     <option value="">-- Select Barangay --</option>
                     <option value="Sugbong cogon">Sugbong cogon</option>

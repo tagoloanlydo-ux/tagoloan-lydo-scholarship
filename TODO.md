@@ -1,23 +1,16 @@
-# TODO: Enhance applicants_reg.blade.php with UI/UX Improvements
+# TODO: Enhance applicants_reg.blade.php UI/UX
 
-## Tasks
-- [x] Add tab navigation HTML structure with 3 tabs (Personal Information, Educational Attainment, Application Requirements)
-- [x] Create tab content containers and distribute form fields accordingly
-- [x] Implement JavaScript for tab switching functionality
-- [x] Add Next/Previous navigation buttons within tabs
-- [x] Move submit button to the last tab
-- [x] Update form validation to work across tabs
-- [x] Test tab navigation and form submission
-- [x] Verify validation works on each tab
-- [x] Check mobile responsiveness
-- [ ] Add subtle shadows and borders to input fields on focus
-- [ ] Add icons inside input fields (👤 for name, 📅 for birth date, 📧 for email, 📱 for contact)
-- [ ] Make responsive alignment (one-column on mobile, grid on larger screens)
-- [ ] Add progress indicator (step bar) above tabs
-- [ ] Enhance buttons with gradient and hover effects
-- [ ] Add placeholder hints for better guidance
-- [ ] Implement real-time validation feedback
-- [ ] Add auto-formatting for date and contact number
-- [ ] Show required fields with red asterisks and note
-- [ ] Add tooltip help icons for complex fields
-proceed
+## Pending Tasks
+- [ ] Add icons inside input fields (👤 for name fields, 📅 for birth date, 📧 for email, 📱 for contact)
+- [ ] Update CSS for responsive alignment (single column on mobile, grid on larger screens)
+- [ ] Add red asterisks to required field labels with a note at the top
+- [ ] Add tooltip help icons for complex fields (contact format, email requirements)
+- [ ] Implement auto-formatting for contact number input
+- [ ] Add placeholder hints for better user guidance
+- [ ] Test mobile responsiveness and UI enhancements
+
+## Completed Tasks
+- Tab navigation
+- Progress indicators
+- Basic validation
+- Styling
