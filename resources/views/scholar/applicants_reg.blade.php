@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+x  <!DOCTYPE html>
   <html lang="en">
     <head>
       <meta charset="UTF-8" />
@@ -49,24 +49,24 @@
           @csrf
             <!-- Name Fields -->
             <div class="input-row">
-              <div class="input-group">
-                <label for="fname">First Name</label>
-                <input type="text" id="fname" name="applicant_fname"   class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="First Name" class="input-field" />
+              <div class="input-group relative">
+                <input type="text" id="fname" name="applicant_fname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" required placeholder="First Name" />
+                <label for="fname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">First Name</label>
                 <small class="error-message"></small>
               </div>
-              <div class="input-group">
-                <label for="mname">Middle Name</label>
-                <input type="text" id="mname" name="applicant_mname"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"  placeholder="Middle Name" class="input-field" />
+              <div class="input-group relative">
+                <input type="text" id="mname" name="applicant_mname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" placeholder="Middle Name" />
+                <label for="mname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Middle Name</label>
                 <small class="error-message"></small>
               </div>
-              <div class="input-group">
-                <label for="lname">Last Name</label>
-                <input type="text" id="lname" name="applicant_lname"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="Last Name" class="input-field" />
+              <div class="input-group relative">
+                <input type="text" id="lname" name="applicant_lname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" required placeholder="Last Name" />
+                <label for="lname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Last Name</label>
                 <small class="error-message"></small>
               </div>
-              <div class="input-group" style="width: 10px">
-                <label for="suffix">Suffix</label>
-                <input type="text" id="suffix" name="applicant_suffix"  class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Suffix" class="input-field" />
+              <div class="input-group relative" style="width: 10px">
+                <input type="text" id="suffix" name="applicant_suffix" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" placeholder="Suffix" />
+                <label for="suffix" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Suffix</label>
                 <small class="error-message"></small>
               </div>
             </div>
