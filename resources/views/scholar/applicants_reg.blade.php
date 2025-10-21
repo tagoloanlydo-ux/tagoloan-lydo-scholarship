@@ -297,15 +297,13 @@ x  <!DOCTYPE html>
       <div class="w-full overflow-y-auto" style="height: calc(100vh - 4rem);">
         <div class="p-6">
           <h1 class="text-2xl font-bold text-center mb-2">Applicants Registration</h1>
-          <p class="text-center text-gray-600 mb-6">Fill out the required details below</p>
-          <p class="text-center text-red-500 text-sm mb-4">* Indicates required fields</p>
-
+          <p class="text-center text-gray-600 mb-2">Fill out the required details below</p>
           @if(session('success'))
             <div class="alert alert-success mb-4">{{ session('success') }}</div>
           @endif
 
           @if($errors->any())
-            <div class="alert alert-danger mb-4">
+            <div class="alert alert-danger mb-2">
               <ul>
                 @foreach($errors->all() as $error)
                   <li>{{ $error }}</li>
