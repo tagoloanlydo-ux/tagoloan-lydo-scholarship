@@ -87,17 +87,45 @@
             @enderror
           </div>
 
-          <div class="relative">
-            <label for="lydopers_pass" class="block text-lg mt-5 font-medium " style="color: #3b0066;">Password</label>
-            <input id="lydopers_pass" name="lydopers_pass" type="password" required class="mt-2 w-full bg-white rounded-lg pl-12 pr-12 py-3 text-gray-700 shadow-sm text-lg border border-gray-300 focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 @error('lydopers_pass') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror" placeholder="Enter your password"/>
-              <i id="password-icon" style="margin-top:20px;" class="fa-solid fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-500"></i>
-              <button type="button" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-600" style="margin-top:20px;" onclick="togglePasswordVisibility()" aria-label="Toggle password visibility">
-                <i data-feather="eye" id="lydopers-pass-eye-icon" class="w-5 h-5"></i>
-              </button>
-            @error('lydopers_pass')
-              <p class="text-red-600 text-sm mt-1"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ $message == 'Incorrect password.' ? 'incorrect password' : $message }}</p>
-            @enderror
-          </div>
+<div class="relative mt-5">
+  <label for="lydopers_pass" class="block text-lg font-medium text-[#3b0066]">
+    Password
+  </label>
+
+  <div class="relative mt-2">
+    <!-- Lock icon -->
+    <i class="fa-solid fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-500"></i>
+
+    <!-- Password input -->
+    <input
+      id="lydopers_pass"
+      name="lydopers_pass"
+      type="password"
+      required
+      class="w-full bg-white rounded-lg pl-12 pr-12 py-3 text-gray-700 shadow-sm text-lg border border-gray-300 focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 @error('lydopers_pass') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror"
+      placeholder="Enter your password"
+    />
+
+    <!-- Eye icon -->
+    <button
+      type="button"
+      onclick="togglePasswordVisibility()"
+      class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-600"
+      aria-label="Toggle password visibility"
+    >
+      <i id="lydopers-pass-eye-icon" class="fa-solid fa-eye"></i>
+    </button>
+  </div>
+
+  <!-- Error message -->
+  @error('lydopers_pass')
+    <p class="text-red-600 text-sm mt-1">
+      <i class="fa-solid fa-circle-exclamation mr-1"></i>
+      {{ $message == 'Incorrect password.' ? 'incorrect password' : $message }}
+    </p>
+  @enderror
+</div>
+
 
           <div class="flex items-center justify-between mt-3">
             <label class="flex items-center">
