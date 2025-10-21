@@ -62,7 +62,7 @@
         LYDO Team
       </h3>
 
-      <p class="text-xl leading-relaxed text-violet-700 mb-4">
+      <p class="text-xl leading-relaxed text-purple-700 mb-4">
         Access your dashboard, manage scholarships, and oversee operations.
       </p>
         <button onclick="window.location='{{ route('home') }}'" class="flex items-center gap-2 text-purple-600 hover:text-purple-800 font-semibold mt-4">
