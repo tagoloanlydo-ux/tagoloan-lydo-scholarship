@@ -30,8 +30,8 @@
         <p class="text-xl leading-relaxed text-gray-700 mb-4">
           Stay updated with the latest scholarship announcements, requirements, and important information.
         </p>
-        <button onclick="window.location='{{ route('scholar.login') }}'" class="flex items-center gap-2 text-purple-600 hover:text-purple-800 font-semibold mt-4">
-          <i class="fa-solid fa-arrow-left"></i> ← Back to Login
+        <button onclick="window.location='{{ route('home') }}'" class="flex items-center gap-2 text-purple-600 hover:text-purple-800 font-semibold mt-4">
+          <i class="fa-solid fa-arrow-left"></i> ← Back to portal
         </button>
       </div>
 

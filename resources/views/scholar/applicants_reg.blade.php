@@ -64,22 +64,22 @@
               <div class="input-row">
                 <div class="input-group">
                   <label for="fname">First Name</label>
-                  <input type="text" id="fname" name="applicant_fname" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="First Name" />
+                  <input type="text" id="fname" name="applicant_fname" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required />
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group">
                   <label for="mname">Middle Name</label>
-                  <input type="text" id="mname" name="applicant_mname" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Middle Name" />
+                  <input type="text" id="mname" name="applicant_mname" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" />
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group">
                   <label for="lname">Last Name</label>
-                  <input type="text" id="lname" name="applicant_lname" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="Last Name" />
+                  <input type="text" id="lname" name="applicant_lname" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required />
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group" style="width: 10px">
                   <label for="suffix">Suffix</label>
-                  <input type="text" id="suffix" name="applicant_suffix" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Suffix" />
+                  <input type="text" id="suffix" name="applicant_suffix" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" />
                   <small class="error-message"></small>
                 </div>
               </div>
@@ -89,7 +89,7 @@
                 <div class="input-group">
                   <label for="gender">Gender</label>
                   <select id="gender" name="applicant_gender" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required>
-                    <option value="">Select Gender</option>
+                    <option value=""></option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                   </select>
@@ -103,7 +103,7 @@
                 <div class="input-group">
                   <label for="civil_status">Civil Status</label>
                   <select id="civil_status" name="applicant_civil_status" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required>
-                    <option value="">Select Civil Status</option>
+                    <option value=""></option>
                     <option value="single">Single</option>
                     <option value="married">Married</option>
                     <option value="widowed">Widowed</option>
@@ -114,7 +114,7 @@
                 <div class="input-group">
                   <label for="brgy">Barangay</label>
                   <select id="brgy" name="applicant_brgy" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required>
-                    <option value="">-- Select Barangay --</option>
+                    <option value=""></option>
                     <option value="Sugbong cogon">Sugbong cogon</option>
                     <option value="Baluarte">Baluarte</option>
                     <option value="Casinglot">Casinglot</option>
@@ -134,12 +134,12 @@
               <div class="input-row">
                 <div class="input-group">
                   <label for="email">Email</label>
-                  <input type="email" id="email" name="applicant_email" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="Email" />
+                  <input type="email" id="email" name="applicant_email" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required />
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group">
                   <label for="contact">Contact Number</label>
-                  <input type="tel" id="contact" name="applicant_contact_number" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="Contact Number" />
+                  <input type="tel" id="contact" name="applicant_contact_number" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required />
                   <small class="error-message"></small>
                 </div>
               </div>

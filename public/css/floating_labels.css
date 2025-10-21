@@ -1,0 +1,28 @@
+/* Floating Labels */
+.floating-label {
+    position: relative;
+}
+
+.floating-label-text {
+    position: absolute;
+    left: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #000000;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    background-color: transparent;
+}
+
+.floating-label input:focus + .floating-label-text,
+.floating-label input:not(:placeholder-shown) + .floating-label-text,
+.floating-label select:focus + .floating-label-text,
+.floating-label select:not([value=""]) + .floating-label-text {
+    top: -0.5rem;
+    left: 0.25rem;
+    font-size: 0.75rem;
+    color: #7c3aed;
+    background-color: white;
+    padding: 0 0.2rem;
+}

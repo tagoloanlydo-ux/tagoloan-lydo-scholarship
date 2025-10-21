@@ -434,7 +434,6 @@ svg {
 .banner-grad {
     background: #7c3aed; /* solid light purple */
     height: 100px;
-    clip-path: polygon(0 0, 100% 0, 100% 40%, 55% 45%, 50% 100%, 0 100%);
     position: relative;
 }
 /* Back button */

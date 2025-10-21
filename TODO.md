@@ -1,7 +1,6 @@
-- [ ] Restructure HTML in applicants_reg.blade.php to use tabs instead of 2-column layout
-- [ ] Add tab navigation for Personal Information, Educational Attainment, Application Requirements
-- [ ] Wrap form sections into tab-content divs
-- [ ] Add JavaScript for tab switching and button logic (Previous left, Next/Submit right)
-- [ ] Update CSS in application_reg.css to style tabs consistently and adjust layout
-- [ ] Ensure form validation and submission work with tabs
-- [ ] Test the updated layout for responsiveness and consistency
+# TODO: Implement Floating Labels in applicants_reg.blade.php
+
+- [ ] Remove all `<label>` tags from HTML and wrap inputs/selects with floating label structure
+- [ ] Update application_reg.css with floating label styles
+- [ ] Add JavaScript to handle floating animation on focus/blur/input
+- [ ] Test floating effect and responsiveness
