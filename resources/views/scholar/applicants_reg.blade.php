@@ -227,12 +227,17 @@ x  <!DOCTYPE html>
         }
 
         .input-group label {
-          display: block;
-          margin-bottom: 6px;
-          font-weight: 600;
-          color: #374151;
+          position: absolute;
+          top: 50%;
+          left: 12px;
+          transform: translateY(-50%);
+          transition: all 0.3s ease;
+          pointer-events: none;
+          color: #9CA3AF;
           font-size: 14px;
-          transition: 0.2s ease all;
+          font-weight: 600;
+          background: transparent;
+          padding: 0 4px;
         }
 
         .input-group input,
@@ -256,6 +261,20 @@ x  <!DOCTYPE html>
         .input-group input:hover,
         .input-group select:hover {
           border-color: #9d4edd;
+        }
+
+        /* Floating label animations */
+        .input-group input:focus + label,
+        .input-group input:not(:placeholder-shown) + label,
+        .input-group select:focus + label,
+        .input-group select:not([value=""]) + label,
+        .input-group input[type="date"]:focus + label,
+        .input-group input[type="date"]:valid + label {
+          top: -8px;
+          left: 8px;
+          font-size: 12px;
+          color: #7b2cbf;
+          background: white;
         }
 
 
@@ -894,10 +913,6 @@ x  <!DOCTYPE html>
   }
 
   function nextTab(currentTab) {
-    // Validate current tab before proceeding
-    if (!validateTab(currentTab)) {
-      return;
-    }
     showTab(currentTab + 1);
   }
 
