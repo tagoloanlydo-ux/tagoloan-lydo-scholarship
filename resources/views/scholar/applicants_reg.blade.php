@@ -15,11 +15,11 @@
     <title>Personal Information Form</title>
     </head>
     <body>
-      <div class="banner-grad flex items-center justify-between w-full h-25  px-6 text-white">
-        <div class="flex items-center">
-             <img src="/images/LYDO.png" alt="LYDO Logo" class="h-10 mr-4"/>
+      <div class="banner-grad flex flex-col md:flex-row items-center justify-center md:justify-between w-full h-25 px-4 md:px-6 text-white">
+        <div class="flex flex-col md:flex-row items-center text-center md:text-left">
+             <img src="/images/LYDO.png" alt="LYDO Logo" class="h-8 md:h-10 mb-2 md:mb-0 md:mr-4"/>
           <div>
-            <h1 class="text-2xl font-bold">LYDO SCHOLARSHIP</h1>
+            <h1 class="text-xl md:text-2xl font-bold">LYDO SCHOLARSHIP</h1>
             <p class="text-xs tracking-widest">
               PARA SA KABATAAN, PARA SA KINABUKASAN.
             </p>
@@ -319,10 +319,45 @@
       });
       select2Initialized = true;
     }
+
+    updateButtonStates();
+  }
+
+  function updateButtonStates() {
+    const currentTabContent = tabContents[currentTab];
+    const hasErrorMessage = Array.from(
+      currentTabContent.querySelectorAll(".error-message")
+    ).some((msg) => msg.textContent.trim() !== "");
+
+    const hasEmptyRequired = Array.from(
+      currentTabContent.querySelectorAll("input[required], select[required]")
+    ).some((input) => {
+      if (input.type === "file") return input.files.length === 0;
+      return !input.value.trim();
+    });
+
+    nextBtn.disabled = hasErrorMessage || hasEmptyRequired;
   }
 
   tabButtons.forEach((button, index) => {
     button.addEventListener('click', () => {
+      // Validate current tab before allowing switch to another tab
+      const currentTabContent = tabContents[currentTab];
+      const hasErrorMessage = Array.from(
+        currentTabContent.querySelectorAll(".error-message")
+      ).some((msg) => msg.textContent.trim() !== "");
+
+      const hasEmptyRequired = Array.from(
+        currentTabContent.querySelectorAll("input[required], select[required]")
+      ).some((input) => {
+        if (input.type === "file") return input.files.length === 0;
+        return !input.value.trim();
+      });
+
+      if (index !== currentTab && (hasErrorMessage || hasEmptyRequired)) {
+        return; // Prevent switching to other tabs if current tab has errors
+      }
+
       currentTab = index;
       showTab(currentTab);
     });
@@ -336,6 +371,28 @@
   });
 
   nextBtn.addEventListener('click', () => {
+    // Validate current tab before proceeding
+    const currentTabContent = tabContents[currentTab];
+    const hasErrorMessage = Array.from(
+      currentTabContent.querySelectorAll(".error-message")
+    ).some((msg) => msg.textContent.trim() !== "");
+
+    const hasEmptyRequired = Array.from(
+      currentTabContent.querySelectorAll("input[required], select[required]")
+    ).some((input) => {
+      if (input.type === "file") return input.files.length === 0;
+      return !input.value.trim();
+    });
+
+    if (hasErrorMessage || hasEmptyRequired) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Please complete all required fields and fix any errors before proceeding to the next tab.",
+      });
+      return; // Prevent tab switch
+    }
+
     if (currentTab < tabContents.length - 1) {
       currentTab++;
       showTab(currentTab);
@@ -416,7 +473,7 @@
 
 
   function toggleButton() {
-    // Removed logic for disabling buttons as tabs handle navigation
+    updateButtonStates();
   }
 
   // Attach events
@@ -528,7 +585,7 @@
 
   // Attach to email input
   const emailInput = document.getElementById('email');
-  emailInput.addEventListener('blur', function() {
+  emailInput.addEventListener('input', function() {
     checkEmailDuplicate(this);
   });
   </script>
