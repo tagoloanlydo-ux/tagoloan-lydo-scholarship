@@ -270,11 +270,12 @@ x  <!DOCTYPE html>
         .input-group select:not([value=""]) + label,
         .input-group input[type="date"]:focus + label,
         .input-group input[type="date"]:valid + label {
-          top: -8px;
-          left: 8px;
+          top: -10px;
+          left: 16px;
           font-size: 12px;
           color: #7b2cbf;
           background: white;
+          padding: 0 4px;
         }
 
 
