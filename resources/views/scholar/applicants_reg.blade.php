@@ -258,13 +258,7 @@ x  <!DOCTYPE html>
           border-color: #9d4edd;
         }
 
-        /* Floating label adjustments */
-        .peer:focus ~ label,
-        .peer:not(:placeholder-shown) ~ label {
-          top: 0;
-          font-size: 0.85rem;
-          color: #7b2cbf;
-        }
+
 
         /* Animation keyframes */
         @keyframes fadeInUp {
@@ -368,25 +362,25 @@ x  <!DOCTYPE html>
             <!-- Tab 1: Personal Information -->
             <div id="tab1" class="tab-content active">
               <!-- Name Fields -->
-              <div class="input-row">
-                <div class="input-group relative">
-                  <input type="text" id="fname" name="applicant_fname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" required placeholder="First Name" />
-                  <label for="fname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">First Name<span class="required-asterisk">*</span></label>
+              <div class="input-row name-fields-row">
+                <div class="input-group">
+                  <label for="fname">First Name<span class="required-asterisk">*</span></label>
+                  <input type="text" id="fname" name="applicant_fname" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="First Name" />
                   <small class="error-message"></small>
                 </div>
-                <div class="input-group relative">
-                  <input type="text" id="mname" name="applicant_mname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" placeholder="Middle Name" />
-                  <label for="mname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Middle Name</label>
+                <div class="input-group">
+                  <label for="mname">Middle Name</label>
+                  <input type="text" id="mname" name="applicant_mname" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Middle Name" />
                   <small class="error-message"></small>
                 </div>
-                <div class="input-group relative">
-                  <input type="text" id="lname" name="applicant_lname" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" required placeholder="Last Name" />
-                  <label for="lname" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Last Name<span class="required-asterisk">*</span></label>
+                <div class="input-group">
+                  <label for="lname">Last Name<span class="required-asterisk">*</span></label>
+                  <input type="text" id="lname" name="applicant_lname" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required placeholder="Last Name" />
                   <small class="error-message"></small>
                 </div>
-                <div class="input-group relative" style="width: 10px">
-                  <input type="text" id="suffix" name="applicant_suffix" class="peer pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-transparent" placeholder="Suffix" />
-                  <label for="suffix" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-focus:top-0 peer-focus:text-sm peer-focus:text-purple-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-purple-600">Suffix</label>
+                <div class="input-group suffix-group">
+                  <label for="suffix">Suffix</label>
+                  <input type="text" id="suffix" name="applicant_suffix" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Suffix" />
                   <small class="error-message"></small>
                 </div>
               </div>
