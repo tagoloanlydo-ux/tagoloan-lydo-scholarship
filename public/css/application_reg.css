@@ -293,7 +293,7 @@ svg {
 
 /* Back button */
 .back-btn {
-    background: transparent;
+     background: #7c3aed;
     border: none;
     margin-right: 20px;
     font-size: 28px;
@@ -444,6 +444,7 @@ svg {
         clip-path: none; /* Remove clip-path to avoid cutting the banner on mobile */
         flex-direction: column;
         align-items: center;
+        
         justify-content: center;
         text-align: center;
     }

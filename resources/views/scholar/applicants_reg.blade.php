@@ -223,66 +223,32 @@ x  <!DOCTYPE html>
         }
 
         .input-group {
-          position: relative;
+          margin-bottom: 16px;
         }
 
         .input-group label {
-          position: absolute;
-          top: 50%;
-          left: 12px;
-          transform: translateY(-50%);
-          transition: all 0.3s ease;
-          pointer-events: none;
-          color: #9CA3AF;
+          display: block;
+          margin-bottom: 4px;
+          color: #374151;
           font-size: 14px;
-          font-weight: 600;
-          background: transparent;
-          padding: 0 4px;
+          font-weight: 500;
         }
 
         .input-group input,
         .input-group select {
           width: 100%;
-          padding: 1.5rem 1rem 0.5rem 1rem;
-          border: 2px solid #E5E7EB;
-          border-radius: 8px;
+          padding: 8px 12px;
+          border: 1px solid #D1D5DB;
+          border-radius: 4px;
           font-size: 14px;
-          transition: all 0.3s ease;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .input-group input:focus,
-        .input-group input:not(:placeholder-shown),
-        .input-group select:focus,
-        .input-group select:not([value=""]) {
-          padding: 0.75rem 1rem 0.25rem 1rem;
+          transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
         }
 
         .input-group input:focus,
         .input-group select:focus {
           border-color: #7b2cbf;
-          box-shadow: 0 0 6px rgba(123, 44, 191, 0.3);
           outline: none;
-        }
-
-        .input-group input:hover,
-        .input-group select:hover {
-          border-color: #9d4edd;
-        }
-
-        /* Floating label animations */
-        .input-group input:focus + label,
-        .input-group input:not(:placeholder-shown) + label,
-        .input-group select:focus + label,
-        .input-group select:not([value=""]) + label,
-        .input-group input[type="date"]:focus + label,
-        .input-group input[type="date"]:valid + label {
-          top: -10px;
-          left: 16px;
-          font-size: 12px;
-          color: #7b2cbf;
-          background: white;
-          padding: 0 4px;
+          box-shadow: 0 0 0 3px rgba(123, 44, 191, 0.1);
         }
 
 
@@ -437,22 +403,22 @@ x  <!DOCTYPE html>
               <div class="input-row name-fields-row">
                 <div class="input-group">
                   <label for="fname">First Name<span class="required-asterisk">*</span></label>
-                  <input type="text" id="fname" name="applicant_fname" class="w-full" required placeholder="First Name" />
+                  <input type="text" id="fname" name="applicant_fname" required placeholder="First Name" />
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group">
                   <label for="mname">Middle Name</label>
-                  <input type="text" id="mname" name="applicant_mname" class="w-full" placeholder="Middle Name" />
+                  <input type="text" id="mname" name="applicant_mname" placeholder="Middle Name" />
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group">
                   <label for="lname">Last Name<span class="required-asterisk">*</span></label>
-                  <input type="text" id="lname" name="applicant_lname" class="w-full" required placeholder="Last Name" />
+                  <input type="text" id="lname" name="applicant_lname" required placeholder="Last Name" />
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group suffix-group">
                   <label for="suffix">Suffix</label>
-                  <input type="text" id="suffix" name="applicant_suffix" class="w-full" placeholder="Suffix" />
+                  <input type="text" id="suffix" name="applicant_suffix" placeholder="Suffix" />
                   <small class="error-message"></small>
                 </div>
               </div>
@@ -461,7 +427,7 @@ x  <!DOCTYPE html>
               <div class="input-row">
                 <div class="input-group">
                   <label for="gender">Gender<span class="required-asterisk">*</span></label>
-                  <select id="gender" name="applicant_gender"  class="w-full"  required>
+                  <select id="gender" name="applicant_gender" required>
                     <option value="">Select Gender</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
@@ -471,12 +437,12 @@ x  <!DOCTYPE html>
                 </div>
                 <div class="input-group">
                   <label for="bdate">Birth Date<span class="required-asterisk">*</span></label>
-                  <input type="date" id="bdate" name="applicant_bdate"  class="w-full"  required />
+                  <input type="date" id="bdate" name="applicant_bdate" required />
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group">
                   <label for="civil_status">Civil Status<span class="required-asterisk">*</span></label>
-                  <select id="civil_status" name="applicant_civil_status"  class="w-full"  required>
+                  <select id="civil_status" name="applicant_civil_status" required>
                     <option value="">Select Civil Status</option>
                     <option value="single">Single</option>
                     <option value="married">Married</option>
@@ -487,7 +453,7 @@ x  <!DOCTYPE html>
                 </div>
                 <div class="input-group">
                   <label for="brgy">Barangay<span class="required-asterisk">*</span></label>
-                  <select id="brgy" name="applicant_brgy"  class="w-full"  required>
+                  <select id="brgy" name="applicant_brgy" required>
                     <option value="">-- Select Barangay --</option>
                     <option value="Sugbong cogon">Sugbong cogon</option>
                     <option value="Baluarte">Baluarte</option>
@@ -508,13 +474,12 @@ x  <!DOCTYPE html>
               <div class="input-row">
                 <div class="input-group">
                   <label for="email">Email</label>
-                  <input type="email" id="email" name="applicant_email"  class="w-full" required placeholder="Email" />
+                  <input type="email" id="email" name="applicant_email" required placeholder="Email" />
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group">
                   <label for="contact">Contact Number</label>
-                  <input type="tel" id="contact" name="applicant_contact_number"
-                     class="w-full" required placeholder="Contact Number" />
+                  <input type="tel" id="contact" name="applicant_contact_number" required placeholder="Contact Number" />
                   <small class="error-message"></small>
                 </div>
               </div>
@@ -529,7 +494,7 @@ x  <!DOCTYPE html>
               <div class="input-row">
                 <div class="input-group" style="width: 100%">
                   <label for="school_name">School Name</label>
-                  <select id="school_name" name="applicant_school_name"  class="w-full"  required>
+                  <select id="school_name" name="applicant_school_name" required>
                     <option value="">-- Select School --</option>
                     <!-- State Universities -->
                     <option value="USTP CDO">
@@ -614,7 +579,7 @@ x  <!DOCTYPE html>
               <div class="input-row">
                 <div class="input-group">
                   <label for="year_level">Year Level</label>
-                  <select id="year_level" name="applicant_year_level"  class="w-full"  required>
+                  <select id="year_level" name="applicant_year_level" required>
                     <option value="">Select Year Level</option>
                     <option value="1st Year">1st Year</option>
                     <option value="2nd Year">2nd Year</option>
@@ -626,12 +591,12 @@ x  <!DOCTYPE html>
                 </div>
                 <div class="input-group">
                   <label for="course">Course</label>
-                  <input type="text" id="course" name="applicant_course"  class="w-full"  required placeholder="Course" />
+                  <input type="text" id="course" name="applicant_course" required placeholder="Course" />
                   <small class="error-message"></small>
                 </div>
                 <div class="input-group">
                   <label for="acad_year">Academic Year</label>
-                  <input type="text" id="acad_year" name="applicant_acad_year" class="w-full" required placeholder="e.g., 2023-2024" readonly />
+                  <input type="text" id="acad_year" name="applicant_acad_year" required placeholder="e.g., 2023-2024" readonly />
                   <small class="error-message"></small>
                 </div>
               </div>
