@@ -54,15 +54,15 @@
     <main class="flex flex-1 flex-col md:flex-row items-center justify-center px-6 py-10 gap-12 flex-nowrap">
           <!-- LEFT SIDE -->
     <div class="flex flex-col items-center text-center md:text-left md:items-start max-w-lg min-w-0 md:min-w-[400px]" >
-      <h2 class="text-5xl font-extrabold mb-2 text-green-700 leading-tight">
+      <h2 class="text-5xl font-extrabold mb-2 text-violet-700 leading-tight">
         Welcome Back!
       </h2>
 
-      <h3 class="text-5xl font-extrabold mb-2 text-purple-700 leading-tight">
+      <h3 class="text-5xl font-extrabold mb-2 text-violet-700 leading-tight">
         LYDO Team
       </h3>
 
-      <p class="text-xl leading-relaxed text-gray-700 mb-4">
+      <p class="text-xl leading-relaxed text-violet-700 mb-4">
         Access your dashboard, manage scholarships, and oversee operations.
       </p>
         <button onclick="window.location='{{ route('home') }}'" class="flex items-center gap-2 text-purple-600 hover:text-purple-800 font-semibold mt-4">
