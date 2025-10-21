@@ -73,6 +73,7 @@ form {
     display: flex;
     flex-direction: column;
     flex: 1;
+    position: relative;
 }
 .input-group.wide {
     flex: 2;

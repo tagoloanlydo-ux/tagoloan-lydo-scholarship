@@ -294,14 +294,75 @@ x  <!DOCTYPE html>
         .tab-content {
           animation: fadeInUp 0.5s ease-out;
         }
+
+        /* Floating Circles Animation */
+        .floating-circles {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: -1;
+          overflow: hidden;
+        }
+
+        .circle {
+          position: absolute;
+          width: 60px;
+          height: 60px;
+          background: linear-gradient(135deg, rgba(123, 44, 191, 0.1), rgba(157, 78, 221, 0.1));
+          border-radius: 50%;
+          animation: float 20s infinite linear;
+        }
+
+        .circle.small {
+          width: 40px;
+          height: 40px;
+        }
+
+        .square1 {
+          position: absolute;
+          width: 50px;
+          height: 50px;
+          background: linear-gradient(135deg, rgba(123, 44, 191, 0.1), rgba(157, 78, 221, 0.1));
+          animation: float 25s infinite linear;
+          transform: rotate(45deg);
+        }
+
+        @keyframes float {
+          0% {
+            transform: translateY(100vh) rotate(0deg);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+          }
+          90% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(-100px) rotate(360deg);
+            opacity: 0;
+          }
+        }
       </style>
       <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <title>Personal Information Form</title>
     </head>
     <body>
+<!-- Floating Circles -->
+<div class="floating-circles">
+  <div class="circle" style="left: 10%; top: 20%; animation-delay: 0s;"></div>
+  <div class="circle small" style="left: 20%; top: 60%; animation-delay: 2s;"></div>
+  <div class="circle" style="left: 70%; top: 30%; animation-delay: 4s;"></div>
+  <div class="circle small" style="left: 80%; top: 70%; animation-delay: 6s;"></div>
+  <div class="circle" style="left: 50%; top: 80%; animation-delay: 8s;"></div>
+  <div class="square1" style="left: 90%; top: 50%; animation-delay: 10s;"></div>
+</div>
 <div class="banner-grad flex items-center w-full h-16 px-6 text-white relative">
   <div class="flex items-center space-x-3">
-    <button class="back-btn text-xl" onclick="history.back()">←</button>
+    <button class="back-btn text-white text-xl" onclick="history.back()">←</button>
     <img src="/images/LYDO.png" alt="LYDO Logo" class="h-10" />
     <div>
       <h1 class="text-xl font-bold leading-tight">LYDO SCHOLARSHIP</h1>
