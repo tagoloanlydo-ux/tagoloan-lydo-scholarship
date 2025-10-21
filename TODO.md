@@ -1,16 +1,19 @@
-# TODO: Enhance applicants_reg.blade.php UI/UX
+# Task: Change Applicant Registration UI to Tabbed Layout
 
-## Pending Tasks
-- [ ] Add icons inside input fields (👤 for name fields, 📅 for birth date, 📧 for email, 📱 for contact)
-- [ ] Update CSS for responsive alignment (single column on mobile, grid on larger screens)
-- [ ] Add red asterisks to required field labels with a note at the top
-- [ ] Add tooltip help icons for complex fields (contact format, email requirements)
-- [ ] Implement auto-formatting for contact number input
-- [ ] Add placeholder hints for better user guidance
-- [ ] Test mobile responsiveness and UI enhancements
+## Overview
+Transform the current 2-column layout (Personal Information and Documents) into a responsive tabbed interface with three tabs:
+1. Personal Information
+2. Educational Attainment
+3. Application Requirements
 
-## Completed Tasks
-- Tab navigation
-- Progress indicators
-- Basic validation
-- Styling
+## Steps
+- [ ] Modify HTML structure in `resources/views/scholar/applicants_reg.blade.php` to use tabs instead of containers
+- [ ] Group form fields into appropriate tabs:
+  - Personal Information: Name fields, Gender, Birth Date, Civil Status, Barangay, Email, Contact Number
+  - Educational Attainment: School Name, Year Level, Course, Academic Year
+  - Application Requirements: All file uploads (Application Letter, Grade Slip, Certificate of Registration, Barangay Indigency, Student ID)
+- [ ] Add tab navigation using Tailwind CSS classes
+- [ ] Implement JavaScript for tab switching functionality
+- [ ] Update CSS in `public/css/application_reg.css` to support tabbed layout and ensure responsiveness
+- [ ] Test responsiveness on different screen sizes
+- [ ] Verify form submission still works correctly

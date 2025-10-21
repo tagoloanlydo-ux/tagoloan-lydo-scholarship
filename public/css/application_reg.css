@@ -6,39 +6,68 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
-    overflow: hidden;
+    overflow: auto;
 }
 
-/* Wrapper */
-.container-wrapper {
+/* Tab Container */
+.tab-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+}
+
+/* Tab Navigation */
+.tab-nav {
     display: flex;
-    flex-direction: row;
-    gap: 20px;
     justify-content: center;
-    align-items: flex-start;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e5e7eb;
 }
 
-.login-container {
-    width: 800px;
+.tab-button {
+    background: none;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.tab-button:hover {
+    color: #7c3aed;
+}
+
+.tab-button.active {
+    color: #7c3aed;
+    border-bottom-color: #7c3aed;
+}
+
+/* Tab Content */
+.tab-content {
+    position: relative;
+}
+
+.tab-pane {
+    display: none;
     background: transparent;
-    padding: 30px 30px 10px;
+    padding: 30px;
     border-radius: 16px;
     box-shadow: 0 15px 30px rgba(102, 51, 153, 0.2);
     position: relative;
     overflow: hidden;
     z-index: 1;
 }
-.credentials-container {
-    width: 500px;
-    background: transparent;
-    padding: 30px 30px 50px;
-    border-radius: 16px;
-    box-shadow: 0 15px 30px rgba(102, 51, 153, 0.2);
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
+
+.tab-pane.active {
+    display: block;
 }
 
 /* Headers */
@@ -73,7 +102,6 @@ form {
     display: flex;
     flex-direction: column;
     flex: 1;
-    position: relative;
 }
 .input-group.wide {
     flex: 2;
@@ -286,18 +314,19 @@ svg {
     color: #555;
 }
 .banner-grad {
-    background: transparent;
-    height: 64px;
+    background: #7c3aed; /* solid light purple */
+    height: 100px;
+    clip-path: polygon(0 0, 100% 0, 100% 40%, 55% 45%, 50% 100%, 0 100%);
     position: relative;
 }
 
 /* Back button */
 .back-btn {
-     background: #7c3aed;
+    background: transparent;
     border: none;
     margin-right: 20px;
     font-size: 28px;
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
     font-size: 50px;
     cursor: pointer;
 }
@@ -444,7 +473,6 @@ svg {
         clip-path: none; /* Remove clip-path to avoid cutting the banner on mobile */
         flex-direction: column;
         align-items: center;
-        
         justify-content: center;
         text-align: center;
     }
