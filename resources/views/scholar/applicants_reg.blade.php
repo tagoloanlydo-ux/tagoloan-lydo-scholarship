@@ -286,18 +286,19 @@ x  <!DOCTYPE html>
     <title>Personal Information Form</title>
     </head>
     <body>
-      <div class="banner-grad flex items-center justify-center w-full h-16 px-6 text-white relative">
-        <button class="back-btn absolute left-6" onclick="history.back()">←</button>
-        <div class="flex items-center">
-             <img src="/images/LYDO.png" alt="LYDO Logo" class="h-10 mr-4"/>
-          <div>
-            <h1 class="text-2xl font-bold">LYDO SCHOLARSHIP</h1>
-            <p class="text-xs tracking-widest">
-              PARA SA KABATAAN, PARA SA KINABUKASAN.
-            </p>
-          </div>
-        </div>
-      </div>
+<div class="banner-grad flex items-center w-full h-16 px-6 text-white relative">
+  <div class="flex items-center space-x-3">
+    <button class="back-btn text-xl" onclick="history.back()">←</button>
+    <img src="/images/LYDO.png" alt="LYDO Logo" class="h-10" />
+    <div>
+      <h1 class="text-xl font-bold leading-tight">LYDO SCHOLARSHIP</h1>
+      <p class="text-[10px] uppercase tracking-widest">
+        PARA SA KABATAAN, PARA SA KINABUKASAN.
+      </p>
+    </div>
+  </div>
+</div>
+
 
       <div class="w-full overflow-y-auto" style="height: calc(100vh - 4rem);">
         <div class="p-6">
