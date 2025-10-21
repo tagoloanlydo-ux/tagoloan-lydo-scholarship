@@ -6,8 +6,11 @@
       <meta name="csrf-token" content="{{ csrf_token() }}">
       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
       <script src="https://cdn.tailwindcss.com"></script>
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
       <link rel="stylesheet" href="{{ asset('css/application_reg.css') }}">
+      <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+      <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
       <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <title>Personal Information Form</title>
     </head>
@@ -24,9 +27,10 @@
         </div>
       </div>
       <div class="container-wrapper mt-5">
-        <!-- Back button -->
-        <button class="back-btn" onclick="history.back()">←</button>
+     
         <div class="tab-container">
+           <!-- Back button -->
+        <button class="back-btn" onclick="history.back()">←</button>
           <h1>Applicant Registration</h1>
           <p class="subtitle">Fill out the required details below</p>
 
@@ -88,7 +92,6 @@
                     <option value="">Select Gender</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
-                    <option value="other">Other</option>
                   </select>
                   <small class="error-message"></small>
                 </div>
@@ -147,35 +150,39 @@
               <div class="input-row">
                 <div class="input-group" style="width: 100px">
                   <label for="school_name">School Name</label>
-                  <select id="school_name" name="applicant_school_name" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required>
-                    <option value="">-- Select School --</option>
-                    <!-- State Universities -->
-                    <option value="USTP CDO">University of Science and Technology of Southern Philippines (USTP) – Cagayan de Oro</option>
-                    <option value="USTP Claveria">University of Science and Technology of Southern Philippines (USTP) – Claveria</option>
-                    <option value="USTP Villanueva">University of Science and Technology of Southern Philippines (USTP) – Villanueva</option>
-                    <option value="MSU Naawan">Mindanao State University – Naawan (MSU-Naawan)</option>
-                    <option value="MOSCAT">Misamis Oriental State College of Agriculture and Technology (MOSCAT), Claveria</option>
-                    <!-- Community Colleges -->
-                    <option value="Opol Community College">Opol Community College</option>
-                    <option value="Tagoloan Community College">Tagoloan Community College</option>
-                    <option value="Bugo Community College">Bugo Community College</option>
-                    <option value="Initao Community College">Initao Community College</option>
-                    <option value="Magsaysay College">Magsaysay College, Misamis Oriental</option>
-                    <!-- Private Colleges & Universities -->
-                    <option value="Liceo de Cagayan University">Liceo de Cagayan University, CDO</option>
-                    <option value="PHINMA COC">PHINMA Cagayan de Oro College</option>
-                    <option value="Capitol University">Capitol University, CDO</option>
-                    <option value="Lourdes College">Lourdes College, CDO</option>
-                    <option value="Blessed Mother College">Blessed Mother College, CDO</option>
-                    <option value="Pilgrim Christian College">Pilgrim Christian College, CDO</option>
-                    <option value="Gingoog Christian College">Gingoog Christian College</option>
-                    <option value="Christ the King College">Christ the King College, Gingoog City</option>
-                    <option value="St. Rita’s College">St. Rita’s College of Balingasag</option>
-                    <option value="St. Peter’s College">St. Peter’s College of Balingasag</option>
-                    <option value="Saint John Vianney Seminary">Saint John Vianney Theological Seminary, CDO</option>
-                    <option value="Asian College of Science and Technology">Asian College of Science and Technology, CDO</option>
-                    <!-- Others -->
-                    <option value="Others">Others</option>
+                  <select id="school_name" name="applicant_school_name" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 select2" required>
+                    <option value=""></option>
+                    <optgroup label="State Universities">
+                      <option value="USTP CDO">University of Science and Technology of Southern Philippines (USTP) – Cagayan de Oro</option>
+                      <option value="USTP Claveria">University of Science and Technology of Southern Philippines (USTP) – Claveria</option>
+                      <option value="USTP Villanueva">University of Science and Technology of Southern Philippines (USTP) – Villanueva</option>
+                      <option value="MSU Naawan">Mindanao State University – Naawan (MSU-Naawan)</option>
+                      <option value="MOSCAT">Misamis Oriental State College of Agriculture and Technology (MOSCAT), Claveria</option>
+                    </optgroup>
+                    <optgroup label="Community Colleges">
+                      <option value="Opol Community College">Opol Community College</option>
+                      <option value="Tagoloan Community College">Tagoloan Community College</option>
+                      <option value="Bugo Community College">Bugo Community College</option>
+                      <option value="Initao Community College">Initao Community College</option>
+                      <option value="Magsaysay College">Magsaysay College, Misamis Oriental</option>
+                    </optgroup>
+                    <optgroup label="Private Colleges & Universities">
+                      <option value="Liceo de Cagayan University">Liceo de Cagayan University, CDO</option>
+                      <option value="PHINMA COC">PHINMA Cagayan de Oro College</option>
+                      <option value="Capitol University">Capitol University, CDO</option>
+                      <option value="Lourdes College">Lourdes College, CDO</option>
+                      <option value="Blessed Mother College">Blessed Mother College, CDO</option>
+                      <option value="Pilgrim Christian College">Pilgrim Christian College, CDO</option>
+                      <option value="Gingoog Christian College">Gingoog Christian College</option>
+                      <option value="Christ the King College">Christ the King College, Gingoog City</option>
+                      <option value="St. Rita’s College">St. Rita’s College of Balingasag</option>
+                      <option value="St. Peter’s College">St. Peter’s College of Balingasag</option>
+                      <option value="Saint John Vianney Seminary">Saint John Vianney Theological Seminary, CDO</option>
+                      <option value="Asian College of Science and Technology">Asian College of Science and Technology, CDO</option>
+                    </optgroup>
+                    <optgroup label="Others">
+                      <option value="Others">Others (Please specify below)</option>
+                    </optgroup>
                   </select>
                   <input type="text" id="school_name_other" name="applicant_school_name_other" placeholder="Please specify your school" style="display: none; margin-top: 8px; padding: 10px; border: 1px solid black; border-radius: 8px; font-size: 14px; outline: none; width: 100%;"/>
                   <small class="error-message"></small>
@@ -291,6 +298,7 @@
   const nextBtn = document.getElementById('nextBtn');
   const submitBtn = document.getElementById('submitBtn');
   let currentTab = 0;
+  let select2Initialized = false;
 
   function showTab(index) {
     tabContents.forEach(content => content.classList.remove('active'));
@@ -301,6 +309,16 @@
     prevBtn.style.display = index === 0 ? 'none' : 'inline-block';
     nextBtn.style.display = index === tabContents.length - 1 ? 'none' : 'inline-block';
     submitBtn.style.display = index === tabContents.length - 1 ? 'inline-block' : 'none';
+
+    // Initialize Select2 when education tab is shown
+    if (index === 1 && !select2Initialized) {
+      $('.select2').select2({
+        placeholder: 'Search and select your school...',
+        allowClear: true,
+        minimumInputLength: 1
+      });
+      select2Initialized = true;
+    }
   }
 
   tabButtons.forEach((button, index) => {
@@ -570,6 +588,8 @@
   });
   @endif
   </script>
-  
+
+
+
     </body>
   </html>

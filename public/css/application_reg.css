@@ -1,17 +1,13 @@
-/* ===== Base Styles ===== */
 body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #f0f0f5 0%, #d9d9ff 100%);
     display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
+    flex-direction: column; /* column para nasa taas ang header */
+    justify-content: flex-start; /* hindi na center, sa taas */
+    align-items: center; /* center horizontally */
     min-height: 100vh;
     margin: 0;
-    padding: 20px;
-    box-sizing: border-box;
 }
-
 /* Wrapper */
 .container-wrapper {
     display: flex;
@@ -379,13 +375,13 @@ svg {
     font-weight: 500;
     color: #555;
 }
+
 .banner-grad {
     background: #7c3aed; /* solid light purple */
     height: 100px;
     clip-path: polygon(0 0, 100% 0, 100% 40%, 55% 45%, 50% 100%, 0 100%);
     position: relative;
 }
-
 /* Back button */
 .back-btn {
     background: transparent;
@@ -495,10 +491,6 @@ svg {
         padding: 14px 20px;
     }
 
-    .banner-grad {
-        height: 90px;
-    }
-
     .back-btn {
         font-size: 45px;
     }
@@ -544,10 +536,6 @@ svg {
     .tab-button {
         padding: 12px 18px;
         font-size: 13px;
-    }
-
-    .banner-grad {
-        height: 80px;
     }
 
     .back-btn {
@@ -652,36 +640,6 @@ svg {
         font-size: 14px;
     }
 
-    .banner-grad {
-        height: 75px;
-        padding: 10px;
-        clip-path: none;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-    }
-
-    .banner-grad .flex.items-center {
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    .banner-grad img {
-        height: 35px;
-        margin: 0;
-    }
-
-    .banner-grad .text-2xl {
-        font-size: 1.1rem;
-        line-height: 1.3;
-    }
-
-    .banner-grad .text-xs {
-        font-size: 0.7rem;
-        line-height: 1.2;
-    }
-
     .back-btn {
         font-size: 38px;
         margin-right: 8px;
@@ -751,25 +709,6 @@ svg {
     .tab-button {
         padding: 10px 14px;
         font-size: 13px;
-    }
-
-    .banner-grad {
-        height: 70px;
-        padding: 8px;
-    }
-
-    .banner-grad img {
-        height: 30px;
-    }
-
-    .banner-grad .text-2xl {
-        font-size: 1rem;
-        line-height: 1.2;
-    }
-
-    .banner-grad .text-xs {
-        font-size: 0.625rem;
-        line-height: 1.1;
     }
 
     .back-btn {
