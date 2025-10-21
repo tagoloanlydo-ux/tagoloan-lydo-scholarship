@@ -87,8 +87,8 @@
             @enderror
           </div>
 
-<div class="relative mt-5">
-  <label for="lydopers_pass" class="block text-lg font-medium text-[#3b0066]">
+<div class="mt-5">
+  <label for="lydopers_pass" class="block text-lg font-medium" style="color: #3b0066;">
     Password
   </label>
 
@@ -102,8 +102,10 @@
       name="lydopers_pass"
       type="password"
       required
-      class="w-full bg-white rounded-lg pl-12 pr-12 py-3 text-gray-700 shadow-sm text-lg border border-gray-300 focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-200 @error('lydopers_pass') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror"
       placeholder="Enter your password"
+      class="w-full bg-white rounded-lg pl-12 pr-12 py-3 text-gray-700 shadow-sm text-lg border
+      @error('lydopers_pass') border-red-500 focus:border-red-500 focus:ring-red-200 @else border-gray-300 focus:border-purple-600 focus:ring-purple-200 @enderror
+      focus:outline-none focus:ring-2"
     />
 
     <!-- Eye icon -->
@@ -119,8 +121,8 @@
 
   <!-- Error message -->
   @error('lydopers_pass')
-    <p class="text-red-600 text-sm mt-1">
-      <i class="fa-solid fa-circle-exclamation mr-1"></i>
+    <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
+      <i class="fa-solid fa-circle-exclamation"></i>
       {{ $message == 'Incorrect password.' ? 'incorrect password' : $message }}
     </p>
   @enderror

@@ -1,10 +1,6 @@
-# Task: Convert applicants_reg.blade.php to Tabbed Interface
+# TODO: Restructure applicants_reg.blade.php into Tabbed Interface
 
 ## Steps to Complete:
-- [ ] Restructure HTML in applicants_reg.blade.php to include tab navigation and tab content areas
-- [ ] Move personal information fields to Tab 1: Personal Information
-- [ ] Move educational fields (school, year level, course, academic year) to Tab 2: Educational Attainment
-- [ ] Move file upload fields to Tab 3: Application Requirements
-- [ ] Add JavaScript for tab switching functionality
-- [ ] Update application_reg.css to style tabs, remove two-column layout, and ensure full-screen responsiveness
-- [ ] Verify the form submission and validation still work correctly
+- [ ] Update applicants_reg.blade.php: Restructure HTML into tabbed interface with 3 tabs (Personal Information, Educational Attainment, Application Requirements). Group fields accordingly and add tab navigation.
+- [ ] Update application_reg.css: Make layout full-screen responsive (remove fixed heights, allow scrolling), improve CSS with better tab styling, spacing, and animations.
+- [ ] Verify changes: Ensure form validation scripts still work and layout is responsive across screen sizes.
