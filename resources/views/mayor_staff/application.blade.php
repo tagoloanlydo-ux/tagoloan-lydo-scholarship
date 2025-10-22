@@ -450,35 +450,45 @@
                             Click one of the documents to view the application
                         </p>
     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <a href="${foundApp.application_letter}" target="_blank"
-        class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-blue-50 transition-all duration-200 hover:shadow-md">
+        <div class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-blue-50 transition-all duration-200 hover:shadow-md cursor-pointer document-link" data-doc="application_letter" onclick="viewDocument('${foundApp.application_letter}', 'application_letter', this)">
             <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
             <span class="text-sm font-medium text-gray-700 text-center">Application Letter</span>
-        </a>
-        <a href="${foundApp.cert_of_reg}" target="_blank"
-        class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-indigo-50 transition-all duration-200 hover:shadow-md">
+        </div>
+        <div class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-indigo-50 transition-all duration-200 hover:shadow-md cursor-pointer document-link" data-doc="cert_of_reg" onclick="viewDocument('${foundApp.cert_of_reg}', 'cert_of_reg', this)">
             <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
             <span class="text-sm font-medium text-gray-700 text-center">Certificate of Reg.</span>
-        </a>
-        <a href="${foundApp.grade_slip}" target="_blank"
-        class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-green-50 transition-all duration-200 hover:shadow-md">
+        </div>
+        <div class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-green-50 transition-all duration-200 hover:shadow-md cursor-pointer document-link" data-doc="grade_slip" onclick="viewDocument('${foundApp.grade_slip}', 'grade_slip', this)">
             <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
             <span class="text-sm font-medium text-gray-700 text-center">Grade Slip</span>
-        </a>
-        <a href="${foundApp.brgy_indigency}" target="_blank"
-        class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-purple-50 transition-all duration-200 hover:shadow-md">
+        </div>
+        <div class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-purple-50 transition-all duration-200 hover:shadow-md cursor-pointer document-link" data-doc="brgy_indigency" onclick="viewDocument('${foundApp.brgy_indigency}', 'brgy_indigency', this)">
             <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
             <span class="text-sm font-medium text-gray-700 text-center">Barangay Indigency</span>
-        </a>
-        <a href="${foundApp.student_id}" target="_blank"
-        class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-orange-50 transition-all duration-200 hover:shadow-md">
+        </div>
+        <div class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-orange-50 transition-all duration-200 hover:shadow-md cursor-pointer document-link" data-doc="student_id" onclick="viewDocument('${foundApp.student_id}', 'student_id', this)">
             <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
             <span class="text-sm font-medium text-gray-700 text-center">Student ID</span>
-        </a>
+        </div>
+    </div>
+    <div id="documentViewer" class="mt-6 hidden">
+        <h4 class="text-gray-800 font-semibold mb-4">Document Viewer</h4>
+        <iframe id="docIframe" src="" width="100%" height="600px" style="border:1px solid #ccc;"></iframe>
     </div>
 
                 </div>
             `;
+
+            // Load viewed documents from localStorage and apply styling
+            let viewed = JSON.parse(localStorage.getItem('viewed_docs_' + applicationPersonnelId) || '[]');
+            viewed.forEach(docName => {
+                const docElement = contentDiv.querySelector(`[data-doc="${docName}"]`);
+                if (docElement) {
+                    docElement.classList.add('bg-green-100', 'border-green-300');
+                    docElement.querySelector('i').classList.remove('text-purple-600');
+                    docElement.querySelector('i').classList.add('text-green-600');
+                }
+            });
         } else {
             contentDiv.innerHTML = `<p class="text-gray-500">No applications found for this scholar.</p>`;
         }
@@ -535,19 +545,29 @@
 
             // Add click listeners to document links
             setTimeout(() => {
-                const documentLinks = contentDiv.querySelectorAll('a[target="_blank"]');
-                documentLinks.forEach((link, index) => {
+                const documentLinks = contentDiv.querySelectorAll('.document-link');
+                documentLinks.forEach((link) => {
                     link.addEventListener('click', function() {
-                        clickedDocuments.add(index);
-                        // Add visual feedback
-                        this.classList.add('bg-green-100', 'border-green-300');
-                        this.querySelector('i').classList.remove('text-purple-600');
-                        this.querySelector('i').classList.add('text-green-600');
+                        const docName = this.getAttribute('data-doc');
+                        if (!clickedDocuments.has(docName)) {
+                            clickedDocuments.add(docName);
+                            // Add visual feedback
+                            this.classList.add('bg-green-100', 'border-green-300');
+                            this.querySelector('i').classList.remove('text-purple-600');
+                            this.querySelector('i').classList.add('text-green-600');
 
-                        // Check if all 5 documents are clicked
-                        if (clickedDocuments.size === 5) {
-                            document.getElementById('actionButtons').classList.remove('hidden');
-                            document.getElementById('reviewMessage').style.display = 'none';
+                            // Save to localStorage
+                            let viewed = JSON.parse(localStorage.getItem('viewed_docs_' + applicationPersonnelId) || '[]');
+                            if (!viewed.includes(docName)) {
+                                viewed.push(docName);
+                                localStorage.setItem('viewed_docs_' + applicationPersonnelId, JSON.stringify(viewed));
+                            }
+
+                            // Check if all 5 documents are clicked
+                            if (clickedDocuments.size === 5) {
+                                document.getElementById('actionButtons').classList.remove('hidden');
+                                document.getElementById('reviewMessage').style.display = 'none';
+                            }
                         }
                     });
                 });

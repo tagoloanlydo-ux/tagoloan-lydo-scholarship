@@ -13,6 +13,9 @@
 </head>
 
 <body class="bg-gray-50">
+@php
+    $badgeCount = ($notifications->where('initial_screening', 'Approved')->count() > 0 && $pendingRenewals > 0) ? $notifications->where('initial_screening', 'Approved')->count() : 0;
+@endphp
  <div class="dashboard-grid">
         <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
             <div class="flex items-center">
@@ -27,9 +30,9 @@
                 <div class="relative">
                     <button id="notifBell" class="relative focus:outline-none">
                         <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-                        @if($notifications->count() > 0)
+                        @if($badgeCount > 0)
                             <span id="notifCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                                {{ $notifications->count() }}
+                                {{ $badgeCount }}
                             </span>
                         @endif
                     </button>
