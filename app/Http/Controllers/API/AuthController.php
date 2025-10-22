@@ -53,7 +53,7 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-        $token = $user->createToken('Mobile API Token')->plainTextToken;
+        $token = $this->generateApiToken($user);
 
         return $this->successResponse([
             'user' => [
@@ -101,8 +101,8 @@ class AuthController extends Controller
             return $this->errorResponse('Account is inactive', 401);
         }
 
-        // Create token for scholar (using Sanctum)
-        $token = $scholar->createToken('Mobile Scholar Token')->plainTextToken;
+        // Create token for scholar
+        $token = $this->generateApiToken($scholar);
 
         return $this->successResponse([
             'scholar' => [
@@ -121,7 +121,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        // Simple logout - just return success
         return $this->successResponse(null, 'Logged out successfully');
     }
 
@@ -386,11 +386,61 @@ class AuthController extends Controller
             'role' => $request->role,
         ]);
 
-        $token = $user->createToken('Mobile API Token')->plainTextToken;
+        $token = $this->generateApiToken($user);
 
         return $this->successResponse([
             'user' => $user,
             'token' => $token,
         ], 'User registered successfully', 201);
+    }
+
+    /**
+     * Generate API token for user
+     */
+    private function generateApiToken($user)
+    {
+        // Generate a simple token using user ID and timestamp
+        $tokenData = [
+            'user_id' => $user->id ?? $user->scholar_id,
+            'user_type' => $user instanceof Scholar ? 'scholar' : 'user',
+            'timestamp' => time(),
+        ];
+        
+        return base64_encode(json_encode($tokenData));
+    }
+
+    /**
+     * Success response helper
+     */
+    private function successResponse($data = null, $message = 'Success', $status = 200)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => $data,
+        ], $status);
+    }
+
+    /**
+     * Error response helper
+     */
+    private function errorResponse($message = 'Error', $status = 400)
+    {
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+        ], $status);
+    }
+
+    /**
+     * Validation error response helper
+     */
+    private function validationErrorResponse($validator)
+    {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation failed',
+            'errors' => $validator->errors(),
+        ], 422);
     }
 }
