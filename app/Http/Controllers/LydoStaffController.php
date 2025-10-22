@@ -952,16 +952,16 @@ $listView = DB::table("tbl_renewal as r")
             ->count();
 
         // Fetch unsigned disbursements
-        $unsignedQuery = DB::table("tbl_disbursement")
-            ->join("tbl_scholar", "tbl_disbursement.scholar_id", "=", "tbl_scholar.scholar_id")
+        $unsignedQuery = DB::table("tbl_disburse")
+            ->join("tbl_scholar", "tbl_disburse.scholar_id", "=", "tbl_scholar.scholar_id")
             ->join("tbl_application", "tbl_scholar.application_id", "=", "tbl_application.application_id")
             ->join("tbl_applicant", "tbl_application.applicant_id", "=", "tbl_applicant.applicant_id")
             ->select(
-                "tbl_disbursement.*",
+                "tbl_disburse.*",
                 DB::raw("CONCAT(tbl_applicant.applicant_fname, ' ', COALESCE(tbl_applicant.applicant_mname, ''), ' ', tbl_applicant.applicant_lname, IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')) as full_name"),
                 "tbl_applicant.applicant_brgy"
             )
-            ->whereNull("tbl_disbursement.disburse_signature")
+            ->whereNull("tbl_disburse.disburse_signature")
             ->when($request->search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where("tbl_applicant.applicant_fname", "like", "%$search%")
@@ -972,25 +972,25 @@ $listView = DB::table("tbl_renewal as r")
                 $query->where("tbl_applicant.applicant_brgy", $barangay);
             })
             ->when($request->academic_year, function ($query, $academic_year) {
-                $query->where("tbl_disbursement.disburse_acad_year", $academic_year);
+                $query->where("tbl_disburse.disburse_acad_year", $academic_year);
             })
             ->when($request->semester, function ($query, $semester) {
-                $query->where("tbl_disbursement.disburse_semester", $semester);
+                $query->where("tbl_disburse.disburse_semester", $semester);
             });
 
         $unsignedDisbursements = $unsignedQuery->paginate(15, ['*'], 'unsigned_page');
 
         // Fetch signed disbursements
-        $signedQuery = DB::table("tbl_disbursement")
-            ->join("tbl_scholar", "tbl_disbursement.scholar_id", "=", "tbl_scholar.scholar_id")
+        $signedQuery = DB::table("tbl_disburse")
+            ->join("tbl_scholar", "tbl_disburse.scholar_id", "=", "tbl_scholar.scholar_id")
             ->join("tbl_application", "tbl_scholar.application_id", "=", "tbl_application.application_id")
             ->join("tbl_applicant", "tbl_application.applicant_id", "=", "tbl_applicant.applicant_id")
             ->select(
-                "tbl_disbursement.*",
+                "tbl_disburse.*",
                 DB::raw("CONCAT(tbl_applicant.applicant_fname, ' ', COALESCE(tbl_applicant.applicant_mname, ''), ' ', tbl_applicant.applicant_lname, IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')) as full_name"),
                 "tbl_applicant.applicant_brgy"
             )
-            ->whereNotNull("tbl_disbursement.disburse_signature")
+            ->whereNotNull("tbl_disburse.disburse_signature")
             ->when($request->search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where("tbl_applicant.applicant_fname", "like", "%$search%")
@@ -1001,10 +1001,10 @@ $listView = DB::table("tbl_renewal as r")
                 $query->where("tbl_applicant.applicant_brgy", $barangay);
             })
             ->when($request->academic_year, function ($query, $academic_year) {
-                $query->where("tbl_disbursement.disburse_acad_year", $academic_year);
+                $query->where("tbl_disburse.disburse_acad_year", $academic_year);
             })
             ->when($request->semester, function ($query, $semester) {
-                $query->where("tbl_disbursement.disburse_semester", $semester);
+                $query->where("tbl_disburse.disburse_semester", $semester);
             });
 
         $signedDisbursements = $signedQuery->paginate(15, ['*'], 'signed_page');
@@ -1014,13 +1014,13 @@ $listView = DB::table("tbl_renewal as r")
             ->distinct()
             ->pluck("applicant_brgy");
 
-        $academicYears = DB::table("tbl_disbursement")
+        $academicYears = DB::table("tbl_disburse")
             ->select("disburse_acad_year")
             ->distinct()
             ->orderBy("disburse_acad_year", "desc")
             ->pluck("disburse_acad_year");
 
-        $semesters = DB::table("tbl_disbursement")
+        $semesters = DB::table("tbl_disburse")
             ->select("disburse_semester")
             ->distinct()
             ->orderBy("disburse_semester")
@@ -1045,7 +1045,7 @@ $listView = DB::table("tbl_renewal as r")
             'signature' => 'required|string',
         ]);
 
-        DB::table('tbl_disbursement')
+        DB::table('tbl_disburse')
             ->where('disburse_id', $disburseId)
             ->update([
                 'disburse_signature' => $request->signature,
