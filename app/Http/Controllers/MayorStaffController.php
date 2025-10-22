@@ -286,7 +286,7 @@ $percentageReviewed = $totalApplications > 0
 
         $tableApplicants = $query->get();
 
-     
+
         $listApplicants = DB::table("tbl_applicant as a")
             ->join(
                 "tbl_application as app",
@@ -319,21 +319,21 @@ $percentageReviewed = $totalApplications > 0
                         ->format("Y"),
             )
             ->whereIn("ap.initial_screening", ["Approved", "Rejected"])
-            ->when($request->filled("search"), function ($q) use ($request) {
+            ->when($request->filled("search_reviewed"), function ($q) use ($request) {
                 $q->where(function ($q) use ($request) {
                     $q->where(
                         "a.applicant_fname",
                         "like",
-                        "%" . $request->search . "%",
+                        "%" . $request->search_reviewed . "%",
                     )->orWhere(
                         "a.applicant_lname",
                         "like",
-                        "%" . $request->search . "%",
+                        "%" . $request->search_reviewed . "%",
                     );
                 });
             })
-            ->when($request->filled("barangay"), function ($q) use ($request) {
-                $q->where("a.applicant_brgy", $request->barangay);
+            ->when($request->filled("barangay_reviewed"), function ($q) use ($request) {
+                $q->where("a.applicant_brgy", $request->barangay_reviewed);
             })
             ->get();
 
@@ -1708,6 +1708,112 @@ public function updateStatus(Request $request, $id)
             'tableApplicants' => $tableApplicants,
             'listApplicants' => $listApplicants,
             'applications' => $applications,
+        ]);
+    }
+
+    public function getApplicationsData(Request $request)
+    {
+        $type = $request->get('type', 'pending'); // 'pending' or 'reviewed'
+
+        $currentAcadYear = now()->format("Y") . "-" . now()->addYear()->format("Y");
+
+        $query = DB::table("tbl_applicant as a")
+            ->join("tbl_application as app", "a.applicant_id", "=", "app.applicant_id")
+            ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
+            ->select(
+                "a.applicant_fname",
+                "a.applicant_lname",
+                "a.applicant_brgy",
+                "a.applicant_gender",
+                "a.applicant_bdate",
+                "ap.application_personnel_id",
+                "ap.initial_screening"
+            )
+            ->where("a.applicant_acad_year", "=", $currentAcadYear);
+
+        if ($type === 'pending') {
+            $query->where("ap.initial_screening", "Pending");
+        } else {
+            $query->whereIn("ap.initial_screening", ["Approved", "Rejected"]);
+        }
+
+        // DataTables server-side processing
+        $totalRecords = $query->count();
+
+        // Apply search
+        if ($request->has('search') && !empty($request->search['value'])) {
+            $searchValue = $request->search['value'];
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('a.applicant_fname', 'like', '%' . $searchValue . '%')
+                  ->orWhere('a.applicant_lname', 'like', '%' . $searchValue . '%');
+            });
+        }
+
+        // Apply barangay filter (custom filter)
+        if ($request->has('barangay') && !empty($request->barangay)) {
+            $query->where('a.applicant_brgy', $request->barangay);
+        }
+
+        $filteredRecords = $query->count();
+
+        // Apply ordering
+        if ($request->has('order')) {
+            $orderColumn = $request->order[0]['column'];
+            $orderDir = $request->order[0]['dir'];
+
+            $columns = ['applicant_fname', 'applicant_lname', 'applicant_brgy', 'applicant_gender', 'applicant_bdate'];
+            if (isset($columns[$orderColumn])) {
+                $query->orderBy($columns[$orderColumn], $orderDir);
+            }
+        }
+
+        // Apply pagination
+        $start = $request->get('start', 0);
+        $length = $request->get('length', 10);
+        $query->skip($start)->take($length);
+
+        $data = $query->get()->map(function ($item, $index) use ($start) {
+            return [
+                ($start + $index + 1), // #
+                $item->applicant_fname . ' ' . $item->applicant_lname, // Name
+                $item->applicant_brgy, // Barangay
+                $item->applicant_gender, // Gender
+                $item->applicant_bdate, // Birthday
+                $type === 'pending' ?
+                    '<button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openApplicationModal(' . $item->application_personnel_id . ', \'pending\')">View Applications</button>' :
+                    '<button type="button" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openApplicationModal(' . $item->application_personnel_id . ', \'reviewed\')">View Requirements</button>', // Applications
+                $type === 'pending' ?
+                    '<div class="dropdown">
+                        <button class="text-gray-600 hover:text-gray-800 focus:outline-none" onclick="toggleDropdownMenu(' . $item->application_personnel_id . ')">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div id="dropdown-menu-' . $item->application_personnel_id . '" class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="openEmailModal(' . $item->application_personnel_id . ', ' . $item->application_personnel_id . ', \'' . $item->applicant_fname . ' ' . $item->applicant_lname . '\', \'\')">
+                                <i class="fas fa-envelope mr-2"></i>Send Email
+                            </a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="openDeleteModal(' . $item->application_personnel_id . ', \'' . $item->applicant_fname . ' ' . $item->applicant_lname . '\')">
+                                <i class="fas fa-trash mr-2"></i>Delete Application
+                            </a>
+                        </div>
+                    </div>' :
+                    '<div class="dropdown">
+                        <button class="text-gray-600 hover:text-gray-800 focus:outline-none" onclick="toggleDropdownMenu(' . $item->application_personnel_id . ')">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div id="dropdown-menu-' . $item->application_personnel_id . '" class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="openEditInitialScreeningModal(' . $item->application_personnel_id . ', \'' . $item->initial_screening . '\')">
+                                <i class="fas fa-edit mr-2"></i>Edit Initial Screening
+                            </a>
+                        </div>
+                    </div>' // Actions
+            ];
+        });
+
+        return response()->json([
+            'draw' => intval($request->get('draw')),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data' => $data
         ]);
     }
 

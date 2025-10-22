@@ -130,6 +130,7 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::get('/mayor_staff/application/updates', [MayorStaffController::class, 'getApplicationUpdates'])->name('MayorStaff.getApplicationUpdates');
     Route::get('/mayor_staff/status/updates', [MayorStaffController::class, 'getStatusUpdates'])->name('MayorStaff.getStatusUpdates');
     Route::get('/mayor_staff/sse-applicants', [MayorStaffController::class, 'sseApplicants'])->name('MayorStaff.sseApplicants');
+    Route::get('/mayor_staff/get-applications-data', [MayorStaffController::class, 'getApplicationsData'])->name('MayorStaff.getApplicationsData');
 
 });
 

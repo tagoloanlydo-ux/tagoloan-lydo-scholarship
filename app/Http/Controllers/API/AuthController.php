@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\ApiController;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -15,7 +15,7 @@ use App\Models\User;
 use App\Models\Scholar;
 use App\Models\Applicant;
 
-class AuthController extends ApiController
+class AuthController extends Controller
 {
     /**
      * Mobile login for different user types

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\ApiController;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +16,7 @@ use App\Models\Announce;
 use App\Models\User;
 use App\Models\Lydopers;
 
-class AdminController extends ApiController
+class AdminController extends Controller
 {
     /**
      * Get admin dashboard statistics

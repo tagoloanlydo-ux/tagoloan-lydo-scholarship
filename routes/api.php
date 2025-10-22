@@ -28,9 +28,7 @@ use App\Http\Controllers\Api\ApplicantController as ApiApplicantController;
 use App\Http\Controllers\Api\RenewalController as ApiRenewalController;
 use App\Http\Controllers\Api\AnnouncementController as ApiAnnouncementController;
 
-// ----------------------- MOBILE API ROUTES (v1) -----------------------
-
-Route::prefix('v1')->group(function () {
+// ----------------------- MOBILE API ROUTES -----------------------
 
     // ----------------------- PUBLIC ROUTES -----------------------
     Route::post('/auth/login', [ApiAuthController::class, 'login']);
@@ -161,10 +159,9 @@ Route::prefix('v1')->group(function () {
         Route::delete('/announcements/{id}', [ApiAnnouncementController::class, 'destroy']);
 
     });
-});
 
 // ----------------------- LEGACY ROUTES REMOVED -----------------------
-// Legacy routes have been removed to avoid confusion. Use v1 routes instead.
+// Legacy routes have been removed to avoid confusion. Use API routes instead.
 
 // ----------------------- PUBLIC APPLICATION SUBMISSION -----------------------
 Route::post('/applications', [ApplicantController::class, 'store']); // Allow public submission

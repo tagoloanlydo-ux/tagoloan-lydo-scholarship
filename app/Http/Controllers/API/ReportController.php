@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\ApiController;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -12,7 +12,7 @@ use App\Models\Application;
 use App\Models\Disburse;
 use App\Models\Renewal;
 
-class ReportController extends ApiController
+class ReportController extends Controller
 {
     /**
      * Get report statistics
