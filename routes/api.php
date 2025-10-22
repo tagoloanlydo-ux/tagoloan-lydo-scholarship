@@ -7,7 +7,6 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ScholarController;
 use App\Http\Controllers\ApplicantController;
 use App\Http\Controllers\DisbursementController;
-use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RenewalController;
@@ -17,16 +16,16 @@ use App\Http\Controllers\MayorApplicationController;
 use App\Http\Controllers\MayorStaffController;
 
 // API Controllers
-use App\Http\Controllers\Api\AuthController as ApiAuthController;
-use App\Http\Controllers\Api\ScholarController as ApiScholarController;
-use App\Http\Controllers\Api\ApplicationController as ApiApplicationController;
-use App\Http\Controllers\Api\AdminController as ApiAdminController;
-use App\Http\Controllers\Api\NotificationController as ApiNotificationController;
-use App\Http\Controllers\Api\ReportController as ApiReportController;
-use App\Http\Controllers\Api\DisbursementController as ApiDisbursementController;
-use App\Http\Controllers\Api\ApplicantController as ApiApplicantController;
-use App\Http\Controllers\Api\RenewalController as ApiRenewalController;
-use App\Http\Controllers\Api\AnnouncementController as ApiAnnouncementController;
+use App\Http\Controllers\API\AuthController as ApiAuthController;
+use App\Http\Controllers\API\ScholarController as ApiScholarController;
+use App\Http\Controllers\API\ApplicationController as ApiApplicationController;
+use App\Http\Controllers\API\AdminController as ApiAdminController;
+use App\Http\Controllers\API\NotificationController as ApiNotificationController;
+use App\Http\Controllers\API\ReportController as ApiReportController;
+use App\Http\Controllers\API\DisbursementController as ApiDisbursementController;
+use App\Http\Controllers\API\ApplicantController as ApiApplicantController;
+use App\Http\Controllers\API\RenewalController as ApiRenewalController;
+use App\Http\Controllers\API\AnnouncementController as ApiAnnouncementController;
 
 // ----------------------- MOBILE API ROUTES -----------------------
 
@@ -44,7 +43,7 @@ use App\Http\Controllers\Api\AnnouncementController as ApiAnnouncementController
     Route::post('/applications/{applicationId}/upload-document', [ApiApplicationController::class, 'uploadDocument']);
 
     // ----------------------- PROTECTED ROUTES (Require Authentication) -----------------------
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('auth:api')->group(function () {
 
         // ----------------------- AUTH -----------------------
         Route::post('/auth/logout', [ApiAuthController::class, 'logout']);
@@ -189,7 +188,7 @@ Route::post('/setup-test-user', function() {
 });
 
 // ----------------------- PROTECTED ROUTES (Require Authentication) -----------------------
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:api')->group(function () {
 
     // ----------------------- AUTH -----------------------
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -277,23 +276,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/disbursements', [DisbursementController::class, 'store']);
     Route::put('/disbursements/{id}', [DisbursementController::class, 'update']);
     Route::delete('/disbursements/{id}', [DisbursementController::class, 'destroy']);
-
-    // ----------------------- STAFF -----------------------
-    Route::get('/staff', [StaffController::class, 'index']);
-    Route::post('/staff', [StaffController::class, 'store']);
-    Route::put('/staff/{id}', [StaffController::class, 'update']);
-    Route::delete('/staff/{id}', [StaffController::class, 'destroy']);
-
-    // ----------------------- REPORTS -----------------------
-    Route::get('/reports', [ReportController::class, 'index']);
-    Route::post('/reports', [ReportController::class, 'store']);
-    Route::put('/reports/{id}', [ReportController::class, 'update']);
-    Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
-
-    // ----------------------- USERS -----------------------
-    Route::post('/users', [UserController::class, 'store']);
-    Route::put('/users/{id}', [UserController::class, 'update']);
-    Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
     // ----------------------- RENEWALS -----------------------
     Route::get('/renewals', [RenewalController::class, 'index']);
