@@ -30,11 +30,14 @@
                    <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Lydo Staff</span>
                 </div>
                 <div class="relative">
+                    @php
+                        $badgeCount = ($notifications->where('initial_screening', 'Approved')->count() > 0 && $pendingRenewals > 0) ? $notifications->where('initial_screening', 'Approved')->count() : 0;
+                    @endphp
                     <button id="notifBell" class="relative focus:outline-none">
                         <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-                        @if($notifications->count() > 0)
+                        @if($badgeCount > 0)
                             <span id="notifCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                                {{ $notifications->count() }}
+                                {{ $badgeCount }}
                             </span>
                         @endif
                     </button>
@@ -76,7 +79,7 @@
                                     <i class="bx bx-refresh text-center mx-auto md:mx-0 text-xl"></i>
                                     <span class="ml-4 hidden md:block text-lg">Renewals</span>
                                 </div>
-                                @if($pendingRenewals > 0) <span class="ml-2 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                                @if($pendingRenewals > 0) <span id="pendingRenewalsBadge" class="ml-2 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
                                     {{ $pendingRenewals }}
                                 </span> @endif
                             </a>
@@ -872,15 +875,9 @@ function updateRenewalRowStatus(scholarId, newStatus) {
     }
 }
 </script>
-<script>
-let notifCount = document.getElementById("notifCount");
-if (notifCount) {
-    notifCount.style.display = "none"; // mawawala yung badge
-}
 
-</script>
 
-@if($notifications->count() > 0)
+@if($notifications->where('initial_screening', 'Approved')->count() > 0 && $pendingRenewals > 0)
 <script>
     if (localStorage.getItem('notificationsViewed') !== 'true') {
         const audio = new Audio('/notification/blade.wav');
@@ -914,7 +911,7 @@ if (notifCount) {
                         localStorage.setItem('notificationsViewed', 'true');
                         let notifCount = document.getElementById("notifCount");
                         if (notifCount) {
-                            notifCount.style.display = 'none';
+                            notifCount.innerText = '0';
                         }
                     });
                 </script>

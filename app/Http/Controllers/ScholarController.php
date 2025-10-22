@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Events\ApplicantRegistered;
+use App\Events\ApplicantUpdated;
 
 class ScholarController extends Controller
 {
@@ -240,6 +242,18 @@ class ScholarController extends Controller
             'remarks' => 'Waiting',
             'status' => 'Waiting',
         ]);
+
+        // Broadcast new applicant registration
+        $currentAcadYear = DB::table("tbl_applicant")
+            ->select("applicant_acad_year")
+            ->orderBy("applicant_acad_year", "desc")
+            ->value("applicant_acad_year");
+
+        $applicantsCurrentYear = $currentAcadYear ? DB::table("tbl_applicant")
+            ->where("applicant_acad_year", $currentAcadYear)
+            ->count() : 0;
+
+        broadcast(new ApplicantRegistered('total_applicants', $applicantsCurrentYear))->toOthers();
 
         return redirect()->route('scholar.login')->with('success', 'Application submitted successfully!');
     }
@@ -734,6 +748,9 @@ public function updateApplication(Request $request, $applicant_id)
     }
 
     $application->save();
+
+    // Broadcast applicant update
+    broadcast(new ApplicantUpdated($applicant))->toOthers();
 
     return redirect()->route('scholar.dashboard')->with('success', 'Application updated successfully!');
 }

@@ -7,10 +7,12 @@
     <title>Scholarship Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="{{ asset('css/screening.css') }}" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 
 </head>
@@ -27,12 +29,15 @@
                    <!-- Navbar -->
                    <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Lydo Staff</span>
                 </div>
+@php
+    $badgeCount = ($notifications->where('initial_screening', 'Approved')->count() > 0 && $pendingRenewals > 0) ? $notifications->where('initial_screening', 'Approved')->count() : 0;
+@endphp
                 <div class="relative">
                     <button id="notifBell" class="relative focus:outline-none">
                         <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-                        @if($notifications->count() > 0)
+                        @if($badgeCount > 0)
                             <span id="notifCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                                {{ $notifications->count() }}
+                                {{ $badgeCount }}
                             </span>
                         @endif
                     </button>
@@ -44,14 +49,14 @@
                             </li> @empty <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li> @endforelse </ul>
                     </div>
                 </div>
-                @if($notifications->count() > 0)
-                <script>
-                    if (localStorage.getItem('notificationsViewed') !== 'true') {
-                        const audio = new Audio('/notification/blade.wav');
-                        audio.play().catch(e => console.log('Audio play failed', e));
-                    }
-                </script>
-                @endif
+@if($notifications->where('initial_screening', 'Approved')->count() > 0 && $pendingRenewals > 0)
+<script>
+    if (localStorage.getItem('notificationsViewed') !== 'true') {
+        const audio = new Audio('/notification/blade.wav');
+        audio.play().catch(e => console.log('Audio play failed', e));
+    }
+</script>
+@endif
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
                         if (localStorage.getItem('notificationsViewed') === 'true') {
@@ -68,7 +73,7 @@
                         localStorage.setItem('notificationsViewed', 'true');
                         let notifCount = document.getElementById("notifCount");
                         if (notifCount) {
-                            notifCount.style.display = 'none';
+                            notifCount.innerText = '0';
                         }
                     });
                 </script>
@@ -91,7 +96,7 @@
                                     <i class="bx bxs-file-blank text-center mx-auto md:mx-0 text-xl"></i>
                                     <span class="ml-4 hidden md:block text-lg">Screening</span>
                                 </div>
-                                @if($pendingScreening > 0) <span class="ml-2 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                                @if($pendingScreening > 0) <span id="pendingScreeningBadge" class="ml-2 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
                                     {{ $pendingScreening }}
                                 </span> @endif
                             </a>
@@ -140,19 +145,8 @@
                         <div class="flex justify-between items-center mb-6">
                         <h5 class="text-3xl font-bold text-gray-800">Screening Applicants</h5>
                     </div>
-                    <!-- 🔎 Search & Filter + View Switch -->
-                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                        <!-- Search & Filter -->
-                        <form id="filterForm" method="GET" action="{{ route('LydoStaff.screening') }}" class="flex gap-2 mb-4">
-                            {{-- Search --}}
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name..." class="border rounded px-3 py-2 w-64" oninput="document.getElementById('filterForm').submit()">
-                            {{-- Barangay dropdown --}}
-                            <select name="barangay" class="border rounded px-3 py-2" onchange="document.getElementById('filterForm').submit()">
-                                <option value="">All Barangays</option> @foreach($barangays as $brgy) <option value="{{ $brgy }}" {{ request('barangay') == $brgy ? 'selected' : '' }}>
-                                    {{ $brgy }}
-                                </option> @endforeach
-                            </select>
-                        </form>
+                    <!-- 🔎 View Switch -->
+                    <div class="flex justify-end items-center mb-6">
                         <!-- Tab Switch -->
             <div class="flex gap-2">
                 <div class="tab active" id="tab-screening" onclick="showTable()">Assign Remarks</div>
@@ -165,8 +159,18 @@
                             <h3 class="text-lg font-semibold text-gray-700 bg-blue-50 p-3  border border-blue-200">
                                Screening Table: Evaluate and assign remarks to applicants.
                             </h3>
+                            <!-- Search & Filter for Table View -->
+                            <div class="flex gap-2 mt-4">
+                                <input type="text" id="searchInput_table" placeholder="Search name..." class="border rounded px-3 py-2 w-64">
+                                <select id="barangaySelect_table" class="border rounded px-3 py-2">
+                                    <option value="">All Barangays</option>
+                                    @foreach($barangays as $brgy)
+                                        <option value="{{ $brgy }}">{{ $brgy }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
-                        <table class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
+                        <table id="screeningTable" class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
                             <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-4 py-3 border border-gray-200 text-center">#</th>
@@ -361,6 +365,16 @@
                             <h3 class="text-lg font-semibold text-gray-700 bg-green-50 p-3 rounded-lg border border-green-200">
                                 Review Table: View applicants with assigned remarks.
                             </h3>
+                            <!-- Search & Filter for List View -->
+                            <div class="flex gap-2 mt-4">
+                                <input type="text" id="searchInput_list" placeholder="Search name..." class="border rounded px-3 py-2 w-64">
+                                <select id="barangaySelect_list" class="border rounded px-3 py-2">
+                                    <option value="">All Barangays</option>
+                                    @foreach($barangays as $brgy)
+                                        <option value="{{ $brgy }}">{{ $brgy }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
                             <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
@@ -491,23 +505,41 @@
             function showTable() {
                 document.getElementById("tableView").classList.remove("hidden");
                 document.getElementById("listView").classList.add("hidden");
-                
+
                 // Update tab active states
                 document.getElementById("tab-screening").classList.add("active");
                 document.getElementById("tab-review").classList.remove("active");
-                
+
                 localStorage.setItem("viewMode", "table"); // save preference
+
+                // Restore filter values from localStorage for table view
+                const savedSearch = localStorage.getItem("searchValue_table") || "";
+                const savedBarangay = localStorage.getItem("barangayValue_table") || "";
+                document.getElementById("searchInput_table").value = savedSearch;
+                document.getElementById("barangaySelect_table").value = savedBarangay;
+
+                // Reapply filter to the new visible table
+                filterTable();
             }
 
             function showList() {
                 document.getElementById("listView").classList.remove("hidden");
                 document.getElementById("tableView").classList.add("hidden");
-                
+
                 // Update tab active states
                 document.getElementById("tab-review").classList.add("active");
                 document.getElementById("tab-screening").classList.remove("active");
-                
+
                 localStorage.setItem("viewMode", "list"); // save preference
+
+                // Restore filter values from localStorage for list view
+                const savedSearch = localStorage.getItem("searchValue_list") || "";
+                const savedBarangay = localStorage.getItem("barangayValue_list") || "";
+                document.getElementById("searchInput_list").value = savedSearch;
+                document.getElementById("barangaySelect_list").value = savedBarangay;
+
+                // Reapply filter to the new visible table
+                filterTable();
             }
             // ✅ Kapag nag-load ang page, i-apply yung last view
             document.addEventListener("DOMContentLoaded", function() {
@@ -517,6 +549,12 @@
                 } else {
                     showTable();
                 }
+
+                // Add event listeners for real-time filtering
+                document.getElementById('searchInput_table').addEventListener('input', filterTable);
+                document.getElementById('barangaySelect_table').addEventListener('change', filterTable);
+                document.getElementById('searchInput_list').addEventListener('input', filterTable);
+                document.getElementById('barangaySelect_list').addEventListener('change', filterTable);
             });
         </script>
 
@@ -678,7 +716,45 @@ function pollForNewApplicants() {
 
 // Poll every 10 seconds
 setInterval(pollForNewApplicants, 10000);
-</script>
+
+function filterTable() {
+    // Determine which table is visible
+    const isTableView = !document.getElementById('tableView').classList.contains('hidden');
+    const visibleTable = isTableView ? 'tableView' : 'listView';
+    const searchInput = document.getElementById(isTableView ? 'searchInput_table' : 'searchInput_list');
+    const barangaySelect = document.getElementById(isTableView ? 'barangaySelect_table' : 'barangaySelect_list');
+
+    const searchValue = searchInput.value.toLowerCase();
+    const barangayValue = barangaySelect.value.toLowerCase();
+
+    // Save filter values to localStorage with view-specific keys
+    const viewSuffix = isTableView ? '_table' : '_list';
+    localStorage.setItem("searchValue" + viewSuffix, searchInput.value);
+    localStorage.setItem("barangayValue" + viewSuffix, barangaySelect.value);
+
+    const tableBody = document.querySelector(`#${visibleTable} tbody`);
+    const rows = tableBody.querySelectorAll('tr');
+
+    rows.forEach(row => {
+        const nameCell = row.cells[1]; // Name column
+        const barangayCell = row.cells[2]; // Barangay column
+
+        if (nameCell && barangayCell) {
+            const nameText = nameCell.textContent.toLowerCase();
+            const barangayText = barangayCell.textContent.toLowerCase();
+
+            const matchesSearch = nameText.includes(searchValue);
+            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
+
+            if (matchesSearch && matchesBarangay) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
+}
+
 
 </body>
 

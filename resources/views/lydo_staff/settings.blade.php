@@ -46,7 +46,7 @@
                         document.getElementById("notifDropdown").classList.toggle("hidden");
                         let notifCount = document.getElementById("notifCount");
                         if (notifCount) {
-                            notifCount.remove(); // mawawala dayun
+                            notifCount.innerText = '0'; // magiging zero ang count
                             // Mark notifications as viewed
                             fetch('/lydo_staff/mark-notifications-viewed', {
                                 method: 'POST',
@@ -133,11 +133,11 @@
           <!-- Profile Picture Section -->
           <div class="relative inline-block mx-auto w-32 h-32 mb-4">
             <!-- Profile Picture -->
-            <img 
+            <img
               id="profileImage"
-              src="{{ asset('images/LYDO.png') }}" 
+              src="{{ asset('images/LYDO.png') }}"
               alt="Profile Picture"
-              class="rounded-full object-cover w-full h-full ring-4 ring-orange-100 hover:ring-orange-400 transition"
+              class="rounded-full object-cover w-full h-full ring-4 ring-violet-100 hover:ring-violet-400 transition"
             />
 
             <!-- Hidden file input -->
@@ -145,7 +145,7 @@
 
             <!-- Edit Icon -->
             <button aria-label="Edit Profile Picture" title="Edit Profile Picture"
-              class="absolute bottom-0 right-0 bg-orange-500 p-2 rounded-full border-2 border-white hover:bg-orange-600 transition text-white shadow-md"
+              class="absolute bottom-0 right-0 bg-violet-500 p-2 rounded-full border-2 border-white hover:bg-violet-600 transition text-white shadow-md"
               onclick="document.getElementById('fileInput').click();"
             >
               <i class="fas fa-pen text-sm"></i>
@@ -162,12 +162,12 @@
       </p>
 
     <nav class="flex flex-col gap-2 text-sm font-medium">
-      <button id="btnPersonal" type="button" 
-        class="flex items-center gap-2 py-2 px-4 rounded-xl bg-orange-100 text-orange-600 transition">
+      <button id="btnPersonal" type="button"
+        class="flex items-center gap-2 py-2 px-4 rounded-xl bg-violet-100 text-violet-600 transition">
         <i class="fas fa-user-circle"></i> Personal Information
       </button>
-      <button id="btnPassword" type="button" 
-        class="flex items-center gap-2 py-2 px-4 rounded-xl hover:bg-orange-50 transition">
+      <button id="btnPassword" type="button"
+        class="flex items-center gap-2 py-2 px-4 rounded-xl hover:bg-violet-50 transition">
         <i class="fas fa-lock"></i> Login & Password
       </button>
     </nav>
@@ -182,23 +182,23 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
           <label class="block text-base text-gray-600 mb-1">First Name</label>
-          <input type="text" name="lydopers_fname" value="{{ session('lydopers')->lydopers_fname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+          <input type="text" name="lydopers_fname" value="{{ session('lydopers')->lydopers_fname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
         </div>
         <div>
           <label class="block text-base text-gray-600 mb-1">Last Name</label>
-          <input type="text" name="lydopers_lname" value="{{ session('lydopers')->lydopers_lname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+          <input type="text" name="lydopers_lname" value="{{ session('lydopers')->lydopers_lname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
         </div>
         <div class="md:col-span-2">
           <label class="block text-base text-gray-600 mb-1">Email</label>
-          <input type="email" name="lydopers_email" value="{{ session('lydopers')->lydopers_email }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+          <input type="email" name="lydopers_email" value="{{ session('lydopers')->lydopers_email }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
         </div>
         <div class="md:col-span-2">
           <label class="block text-base text-gray-600 mb-1">Address</label>
-          <input type="text" name="lydopers_address" value="{{ session('lydopers')->lydopers_address }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+          <input type="text" name="lydopers_address" value="{{ session('lydopers')->lydopers_address }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
         </div>
         <div>
           <label class="block text-base text-gray-600 mb-1">Phone Number</label>
-          <input type="tel" name="lydopers_contact_number" value="{{ session('lydopers')->lydopers_contact_number }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+          <input type="tel" name="lydopers_contact_number" value="{{ session('lydopers')->lydopers_contact_number }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
         </div>
         <div>
           <label class="block text-base text-gray-600 mb-1">Date of Birth</label>
@@ -207,10 +207,10 @@
 
       <!-- Buttons -->
       <div class="flex justify-end gap-4">
-        <button type="reset" class="px-6 py-3 border border-orange-500 rounded-xl font-semibold text-orange-600 hover:bg-orange-50 transition">
+        <button type="reset" class="px-6 py-3 border border-violet-500 rounded-xl font-semibold text-violet-600 hover:bg-violet-50 transition">
           Discard
         </button>
-        <button type="submit" class="px-6 py-3 bg-orange-500 rounded-xl font-semibold text-white hover:bg-orange-600 transition">
+        <button type="submit" class="px-6 py-3 bg-violet-500 rounded-xl font-semibold text-white hover:bg-violet-600 transition">
           Save
         </button>
       </div>
@@ -224,23 +224,23 @@
 
       <div class="mb-6">
         <label class="block text-base text-gray-600 mb-1">Current Password</label>
-        <input type="password" name="current_password" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+        <input type="password" name="current_password" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
       </div>
       <div class="mb-6">
         <label class="block text-base text-gray-600 mb-1">New Password</label>
-        <input type="password" name="new_password" id="new_password" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+        <input type="password" name="new_password" id="new_password" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
       </div>
       <div class="mb-6">
         <label class="block text-base text-gray-600 mb-1">Confirm New Password</label>
-        <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+        <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
       </div>
 
       <!-- Buttons -->
       <div class="flex justify-end gap-4">
-        <button type="reset" class="px-6 py-3 border border-orange-500 rounded-xl font-semibold text-orange-600 hover:bg-orange-50 transition">
+        <button type="reset" class="px-6 py-3 border border-violet-500 rounded-xl font-semibold text-violet-600 hover:bg-violet-50 transition">
           Cancel
         </button>
-        <button type="submit" class="px-6 py-3 bg-orange-500 rounded-xl font-semibold text-white hover:bg-orange-600 transition">
+        <button type="submit" class="px-6 py-3 bg-violet-500 rounded-xl font-semibold text-white hover:bg-violet-600 transition">
           Update Password
         </button>
   </div>
@@ -275,8 +275,8 @@ const personalForm = document.getElementById("personalForm");
 const passwordForm = document.getElementById("passwordForm");
 
 function resetButtons() {
-  btnPersonal.classList.remove("bg-orange-100", "text-orange-600");
-  btnPassword.classList.remove("bg-orange-100", "text-orange-600");
+  btnPersonal.classList.remove("bg-violet-100", "text-violet-600");
+  btnPassword.classList.remove("bg-violet-100", "text-violet-600");
 }
 
 btnPersonal.addEventListener("click", () => {
@@ -284,7 +284,7 @@ btnPersonal.addEventListener("click", () => {
   passwordForm.classList.add("hidden");
 
   resetButtons();
-  btnPersonal.classList.add("bg-orange-100", "text-orange-600");
+  btnPersonal.classList.add("bg-violet-100", "text-violet-600");
 });
 
 btnPassword.addEventListener("click", () => {
@@ -292,7 +292,7 @@ btnPassword.addEventListener("click", () => {
   personalForm.classList.add("hidden");
 
   resetButtons();
-  btnPassword.classList.add("bg-orange-100", "text-orange-600");
+  btnPassword.classList.add("bg-violet-100", "text-violet-600");
 });
 
 </script>

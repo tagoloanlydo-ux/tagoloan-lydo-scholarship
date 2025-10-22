@@ -105,6 +105,7 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/latest-renewals', [LydoStaffController::class, 'getLatestRenewals'])->name('LydoStaff.getLatestRenewals');
     Route::get('/lydo_staff/latest-disbursements', [LydoStaffController::class, 'getLatestDisbursements'])->name('LydoStaff.getLatestDisbursements');
     Route::get('/lydo_staff/sse-applicants', [LydoStaffController::class, 'sse'])->name('LydoStaff.sse');
+    Route::get('/lydo_staff/reports', [LydoStaffController::class, 'reports'])->name('LydoStaff.reports');
 
 });
 

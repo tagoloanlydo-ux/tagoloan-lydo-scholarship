@@ -11,8 +11,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @vite('resources/js/app.js')
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 </head>
+@php
+    $badgeCount = ($notifications->where('initial_screening', 'Approved')->count() > 0 && $pendingRenewals > 0) ? $notifications->where('initial_screening', 'Approved')->count() : 0;
+@endphp
 <body class="bg-gray-50">
     <div class="dashboard-grid">
         <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
@@ -28,9 +32,9 @@
                 <div class="relative">
                     <button id="notifBell" class="relative focus:outline-none">
                         <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-                        @if($notifications->count() > 0)
+                        @if($badgeCount > 0)
                             <span id="notifCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                                {{ $notifications->count() }}
+                                {{ $badgeCount }}
                             </span>
                         @endif
                     </button>
@@ -260,7 +264,7 @@
 
                     </div>
                 </div>
-                @if($notifications->count() > 0)
+                @if($notifications->where('initial_screening', 'Approved')->count() > 0 && $pendingRenewals > 0)
                 <script>
                     if (localStorage.getItem('notificationsViewed') !== 'true') {
                         const audio = new Audio('/notification/blade.wav');
@@ -370,22 +374,76 @@
                         });
                     });
                 </script>
-              <script>
+                <script>
                     document.getElementById("notifBell").addEventListener("click", function() {
                         document.getElementById("notifDropdown").classList.toggle("hidden");
                         localStorage.setItem('notificationsViewed', 'true');
                         let notifCount = document.getElementById("notifCount");
                         if (notifCount) {
-                            notifCount.style.display = 'none';
+                            notifCount.innerText = '0';
                         }
                     });
                 </script>
                 <script src="{{ asset('js/logout.js') }}"></script>
-                <script>
-                    // Auto refresh the page every 10 seconds for realtime updates
-                    setInterval(() => {
-                        location.reload();
-                    }, 10000);
-                </script>
+<script>
+// Real-time updates using Laravel Echo and Pusher
+document.addEventListener('DOMContentLoaded', function() {
+    window.Echo.channel('lydo-staff-updates')
+        .listen('.applicant.updated', (e) => {
+            if (e.type === 'pending_initial') {
+                document.getElementById('pendingInitialCount').textContent = e.count;
+                // Update sidebar badge
+                const badge = document.getElementById('pendingScreeningBadge');
+                if (badge) {
+                    badge.textContent = e.count;
+                    if (e.count > 0) {
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+                approvedInitialCount = e.count;
+                updateNotifBadge();
+            }
+        })
+        .listen('.renewal.updated', (e) => {
+            if (e.type === 'approved_renewals') {
+                document.getElementById('approvedRenewalsCount').textContent = e.count;
+            } else if (e.type === 'pending_renewals') {
+                document.getElementById('pendingRenewalsCount').textContent = e.count;
+                // Update sidebar badge
+                const badge = document.getElementById('pendingRenewalsBadge');
+                if (badge) {
+                    badge.textContent = e.count;
+                    if (e.count > 0) {
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+                pendingRenewalsCount = e.count;
+                updateNotifBadge();
+            }
+        });
+});
+
+let approvedInitialCount = {{ $notifications->where('initial_screening', 'Approved')->count() }};
+let pendingRenewalsCount = {{ $pendingRenewals }};
+
+function updateNotifBadge() {
+    const badgeCount = (approvedInitialCount > 0 && pendingRenewalsCount > 0) ? approvedInitialCount : 0;
+    const notifCount = document.getElementById('notifCount');
+    if (notifCount) {
+        if (badgeCount > 0) {
+            notifCount.textContent = badgeCount;
+            notifCount.style.display = 'flex';
+        } else {
+            notifCount.style.display = 'none';
+        }
+    }
+}
+
+updateNotifBadge();
+</script>
 </body>
 </html>

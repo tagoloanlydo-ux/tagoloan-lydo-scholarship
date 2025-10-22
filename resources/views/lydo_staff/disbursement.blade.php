@@ -338,16 +338,34 @@
         });
     </script>
 
-    @if(session('success'))
-    <script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: '{{ session("success") }}',
-            confirmButtonText: 'OK'
-        });
-    </script>
-    @endif
+@if($notifications->where('initial_screening', 'Approved')->count() > 0 && $pendingRenewals > 0)
+<script>
+    if (localStorage.getItem('notificationsViewed') !== 'true') {
+        const audio = new Audio('/notification/blade.wav');
+        audio.play().catch(e => console.log('Audio play failed', e));
+    }
+</script>
+@endif
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (localStorage.getItem('notificationsViewed') === 'true') {
+            let notifCount = document.getElementById("notifCount");
+            if (notifCount) {
+                notifCount.style.display = 'none';
+            }
+        }
+    });
+</script>
+@if(session('success'))
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: '{{ session("success") }}',
+        confirmButtonText: 'OK'
+    });
+</script>
+@endif
 
     <!-- Signature Modal -->
     <div id="signatureModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
