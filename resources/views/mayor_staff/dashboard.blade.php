@@ -653,12 +653,7 @@
         document.getElementById('notificationSound').play();
     }
 </script>
-<script>
-    // Auto refresh the page every 10 seconds for realtime updates
-    setInterval(() => {
-        location.reload();
-    }, 10000);
-</script>
+
  <script src="{{ asset('js/logout.js') }}"></script>
 </div>
 </body>

@@ -1206,63 +1206,7 @@
             </script>
  <script src="{{ asset('js/logout.js') }}"></script>
 
-<script>
-// Real-time updates for new applications
-let lastUpdate = new Date().toISOString();
 
-function pollForUpdates() {
-    fetch(`/mayor_staff/application/updates?last_update=${encodeURIComponent(lastUpdate)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.length > 0) {
-                // Update lastUpdate to the latest created_at
-                const latest = data.reduce((max, app) => app.created_at > max ? app.created_at : max, lastUpdate);
-                lastUpdate = latest;
-
-                // Append new rows to tableView
-                const tableBody = document.querySelector('#tableView tbody');
-                if (tableBody) {
-                    data.forEach(app => {
-                        const row = document.createElement('tr');
-                        row.className = 'border-b border-gray-200 hover:bg-blue-50 transition-colors duration-200';
-                        row.innerHTML = `
-                            <td class="px-6 py-4 text-center">${tableBody.rows.length + 1}</td>
-                            <td class="px-6 py-4 text-center font-medium">${app.applicant_fname} ${app.applicant_lname}</td>
-                            <td class="px-6 py-4 text-center">${app.applicant_brgy}</td>
-                            <td class="px-6 py-4 text-center">${app.applicant_gender}</td>
-                            <td class="px-6 py-4 text-center">${app.applicant_bdate}</td>
-                            <td class="px-6 py-4 text-center">
-                                <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openApplicationModal(${app.application_personnel_id}, 'pending')">
-                                    View Applications
-                                </button>
-                            </td>
-                            <td class="px-6 py-4 text-center relative">
-                                <div class="dropdown">
-                                    <button class="text-gray-600 hover:text-gray-800 focus:outline-none" onclick="toggleDropdownMenu(${app.application_personnel_id})">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <div id="dropdown-menu-${app.application_personnel_id}" class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="openEmailModal(${app.application_personnel_id}, ${app.applicant_id}, '${app.applicant_fname} ${app.applicant_lname}', '${app.applicant_email}')">
-                                            <i class="fas fa-envelope mr-2"></i>Send Email
-                                        </a>
-                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="openDeleteModal(${app.application_personnel_id}, '${app.applicant_fname} ${app.applicant_lname}')">
-                                            <i class="fas fa-trash mr-2"></i>Delete Application
-                                        </a>
-                                    </div>
-                                </div>
-                            </td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
-                }
-            }
-        })
-        .catch(err => console.error('Polling error:', err));
-}
-
-// Poll every 10 seconds
-setInterval(pollForUpdates, 10000);
-</script>
 
 </body>
 </html>
