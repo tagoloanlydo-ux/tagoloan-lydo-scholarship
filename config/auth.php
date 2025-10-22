@@ -1,3 +1,4 @@
+
 <?php
 return [
     'defaults' => [
@@ -7,6 +8,10 @@ return [
 
     'guards' => [
         'web' => [
+            'driver' => 'session',
+            'provider' => 'lydopers',
+        ],
+        'api' => [
             'driver' => 'session',
             'provider' => 'lydopers',
         ],
