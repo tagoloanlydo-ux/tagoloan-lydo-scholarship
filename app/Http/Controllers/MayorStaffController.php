@@ -1912,6 +1912,100 @@ public function updateStatus(Request $request, $id)
         ]);
     }
 
+    public function submitIntakeSheet(Request $request)
+    {
+        $request->validate([
+            'application_personnel_id' => 'required|integer|exists:tbl_application_personnel,application_personnel_id',
+            'head' => 'required|array',
+            'head.fname' => 'required|string|max:255',
+            'head.lname' => 'required|string|max:255',
+            'head.sex' => 'required|in:Male,Female',
+            'head.address' => 'required|string|max:500',
+            'head.zone' => 'nullable|string|max:255',
+            'head.barangay' => 'nullable|string|max:255',
+            'head.dob' => 'nullable|date',
+            'head.pob' => 'nullable|string|max:255',
+            'head.educ' => 'nullable|string|max:255',
+            'head.occ' => 'nullable|string|max:255',
+            'head.religion' => 'nullable|string|max:255',
+            'head["_4ps"]' => 'nullable|string|max:255',
+            'head.ipno' => 'nullable|string|max:255',
+            'head.serial' => 'nullable|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'family' => 'required|array',
+            'family.*.name' => 'required|string|max:255',
+            'family.*.relation' => 'required|string|max:255',
+            'family.*.birth' => 'nullable|date',
+            'family.*.age' => 'nullable|integer|min:0',
+            'family.*.sex' => 'required|in:Male,Female',
+            'family.*.civil' => 'nullable|string|max:255',
+            'family.*.educ' => 'nullable|string|max:255',
+            'family.*.occ' => 'nullable|string|max:255',
+            'family.*.income' => 'nullable|numeric|min:0',
+            'family.*.remarks' => 'nullable|string|max:255',
+            'house' => 'required|array',
+            'house.total_income' => 'nullable|numeric|min:0',
+            'house.net_income' => 'nullable|numeric|min:0',
+            'house.other_income' => 'nullable|numeric|min:0',
+            'house.house' => 'nullable|string|max:255',
+            'house.lot' => 'nullable|string|max:255',
+            'house.house_value' => 'nullable|numeric|min:0',
+            'house.lot_value' => 'nullable|numeric|min:0',
+            'house.house_rent' => 'nullable|numeric|min:0',
+            'house.lot_rent' => 'nullable|numeric|min:0',
+            'house.water' => 'nullable|numeric|min:0',
+            'house.electric' => 'nullable|numeric|min:0',
+            'signatures' => 'nullable|array',
+            'signatures.client' => 'nullable|string',
+        ]);
 
+        try {
+            // Check if intake sheet already exists for this application
+            $existingSheet = \App\Models\FamilyIntakeSheet::where('application_personnel_id', $request->application_personnel_id)->first();
+            if ($existingSheet) {
+                return response()->json(['success' => false, 'message' => 'Family intake sheet already exists for this application.'], 422);
+            }
+
+            // Get the logged-in mayor staff ID
+            $lydoPersonnelId = session('lydopers')->lydopers_id ?? null;
+
+            // Create the intake sheet
+            $intakeSheet = \App\Models\FamilyIntakeSheet::create([
+                'application_personnel_id' => $request->application_personnel_id,
+                'lydo_personnel_id' => $lydoPersonnelId,
+                'head_4ps' => $request->head['_4ps'] ?? null,
+                'head_ipno' => $request->head['ipno'] ?? null,
+                'head_address' => $request->head['address'] ?? null,
+                'head_zone' => $request->head['zone'] ?? null,
+                'head_barangay' => $request->head['barangay'] ?? null,
+                'head_dob' => $request->head['dob'] ?? null,
+                'head_pob' => $request->head['pob'] ?? null,
+                'head_educ' => $request->head['educ'] ?? null,
+                'head_occ' => $request->head['occ'] ?? null,
+                'head_religion' => $request->head['religion'] ?? null,
+                'serial_number' => $request->head['serial'] ?? null,
+                'location' => $request->location ?? null,
+                'house_total_income' => $request->house['total_income'] ?? null,
+                'house_net_income' => $request->house['net_income'] ?? null,
+                'other_income' => $request->house['other_income'] ?? null,
+                'house_house' => $request->house['house'] ?? null,
+                'house_lot' => $request->house['lot'] ?? null,
+                'house_water' => $request->house['water'] ?? null,
+                'house_electric' => $request->house['electric'] ?? null,
+                'family_members' => json_encode($request->family),
+                'signature_client' => $request->signatures['client'] ?? null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Family intake sheet submitted successfully!',
+                'intake_sheet_id' => $intakeSheet->id
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error submitting family intake sheet: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to submit intake sheet. Please try again.'], 500);
+        }
+    }
 
 }

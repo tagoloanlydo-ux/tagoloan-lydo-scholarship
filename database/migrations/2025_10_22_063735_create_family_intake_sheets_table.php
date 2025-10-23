@@ -53,7 +53,6 @@ return new class extends Migration
             $table->string('house_lot')->nullable();
             $table->string('house_water')->nullable();
             $table->string('house_electric')->nullable();
-            $table->string('house_remarks')->nullable();
 
             /**
              * FAMILY MEMBERS (JSON)

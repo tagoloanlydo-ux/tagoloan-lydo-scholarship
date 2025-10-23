@@ -131,6 +131,7 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::get('/mayor_staff/status/updates', [MayorStaffController::class, 'getStatusUpdates'])->name('MayorStaff.getStatusUpdates');
     Route::get('/mayor_staff/sse-applicants', [MayorStaffController::class, 'sseApplicants'])->name('MayorStaff.sseApplicants');
     Route::get('/mayor_staff/get-applications-data', [MayorStaffController::class, 'getApplicationsData'])->name('MayorStaff.getApplicationsData');
+    Route::post('/mayor_staff/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheet'])->name('mayor_staff.submitIntakeSheet');
 
 });
 

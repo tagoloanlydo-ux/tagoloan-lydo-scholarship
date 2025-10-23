@@ -23,7 +23,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'email' => 'required|string', // Changed from email to string to accept username
             'password' => 'required|string',
             'user_type' => 'required|in:user,scholar', // user for staff/admin, scholar for scholars
         ]);
@@ -48,23 +48,48 @@ class AuthController extends Controller
      */
     private function userLogin(Request $request)
     {
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            return $this->errorResponse('Invalid credentials', 401);
+        // Try to authenticate with lydopers table first (existing system)
+        // Try both username and email
+        $lydopers = \App\Models\Lydopers::where(function($query) use ($request) {
+                $query->where('lydopers_username', $request->email)
+                      ->orWhere('lydopers_email', $request->email);
+            })
+            ->where('lydopers_status', 'active')
+            ->first();
+
+        if ($lydopers && Hash::check($request->password, $lydopers->lydopers_pass)) {
+            $token = $this->generateApiToken($lydopers);
+
+            return $this->successResponse([
+                'user' => [
+                    'id' => $lydopers->lydopers_id,
+                    'name' => $lydopers->lydopers_fname . ' ' . $lydopers->lydopers_lname,
+                    'email' => $lydopers->lydopers_email,
+                    'role' => $lydopers->lydopers_role,
+                ],
+                'token' => $token,
+                'token_type' => 'Bearer',
+            ], 'Login successful');
         }
 
-        $user = Auth::user();
-        $token = $this->generateApiToken($user);
+        // Fallback to Laravel's default users table
+        if (Auth::attempt($request->only('email', 'password'))) {
+            $user = Auth::user();
+            $token = $this->generateApiToken($user);
 
-        return $this->successResponse([
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-            ],
-            'token' => $token,
-            'token_type' => 'Bearer',
-        ], 'Login successful');
+            return $this->successResponse([
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                ],
+                'token' => $token,
+                'token_type' => 'Bearer',
+            ], 'Login successful');
+        }
+
+        return $this->errorResponse('Invalid credentials', 401);
     }
 
     /**
@@ -401,8 +426,9 @@ class AuthController extends Controller
     {
         // Generate a simple token using user ID and timestamp
         $tokenData = [
-            'user_id' => $user->id ?? $user->scholar_id,
-            'user_type' => $user instanceof Scholar ? 'scholar' : 'user',
+            'user_id' => $user->id ?? $user->scholar_id ?? $user->lydopers_id,
+            'user_type' => $user instanceof Scholar ? 'scholar' : 
+                          ($user instanceof \App\Models\Lydopers ? 'lydopers' : 'user'),
             'timestamp' => time(),
         ];
         
