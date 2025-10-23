@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -718,21 +720,7 @@ $percentageReviewed = $totalApplications > 0
         ->where('ap.status', 'Pending')
         ->where('lydo.lydopers_role', 'lydo_staff');
 
-    // ✅ Search by name
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function ($q) use ($search) {
-            $q->where('app.applicant_fname', 'like', "%$search%")
-              ->orWhere('app.applicant_lname', 'like', "%$search%");
-        });
-    }
-
-    // ✅ Filter by barangay
-    if ($request->filled('barangay')) {
-        $query->where('app.applicant_brgy', $request->barangay);
-    }
-
-    $applications = $query->paginate(15);
+$applications = $query->get();
 
     $barangays = DB::table('tbl_applicant')->distinct()->pluck('applicant_brgy');
 
