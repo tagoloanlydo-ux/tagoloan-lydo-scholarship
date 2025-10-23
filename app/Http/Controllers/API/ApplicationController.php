@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use App\Models\Application;
 use App\Models\Applicant;
 
@@ -15,14 +16,36 @@ class ApplicationController extends Controller
      */
     public function submit(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'applicant_id' => 'required|exists:tbl_applicant,applicant_id',
-            'application_letter' => 'nullable|string',
-            'cert_of_reg' => 'nullable|string',
-            'grade_slip' => 'nullable|string',
-            'brgy_indigency' => 'nullable|string',
-            'student_id' => 'nullable|string',
-        ]);
+        // Check if we're creating a new applicant or using existing applicant_id
+        if ($request->has('applicant_id')) {
+            // Existing applicant - validate as before
+            $validator = Validator::make($request->all(), [
+                'applicant_id' => 'required|exists:tbl_applicant,applicant_id',
+                'application_letter' => 'nullable|string',
+                'cert_of_reg' => 'nullable|string',
+                'grade_slip' => 'nullable|string',
+                'brgy_indigency' => 'nullable|string',
+                'student_id' => 'nullable|string',
+            ]);
+        } else {
+            // New applicant - validate applicant data
+            $validator = Validator::make($request->all(), [
+                'applicant_fname' => 'required|string|max:50',
+                'applicant_mname' => 'nullable|string|max:50',
+                'applicant_lname' => 'required|string|max:50',
+                'applicant_suffix' => 'nullable|string|max:10',
+                'applicant_gender' => 'required|string|max:10',
+                'applicant_bdate' => 'required|date',
+                'applicant_civil_status' => 'required|string|max:20',
+                'applicant_brgy' => 'required|string|max:100',
+                'applicant_email' => 'required|email|max:100|unique:tbl_applicant',
+                'applicant_contact_number' => 'required|string|max:20',
+                'applicant_school_name' => 'required|string|max:100',
+                'applicant_year_level' => 'required|string|max:20',
+                'applicant_course' => 'required|string|max:100',
+                'applicant_acad_year' => 'required|string|max:20',
+            ]);
+        }
 
         if ($validator->fails()) {
             return response()->json([
@@ -33,15 +56,44 @@ class ApplicationController extends Controller
         }
 
         try {
-            $application = Application::create($request->all());
+            DB::beginTransaction();
+
+            if ($request->has('applicant_id')) {
+                // Use existing applicant
+                $applicantId = $request->applicant_id;
+            } else {
+                // Create new applicant
+                $applicant = Applicant::create($request->all());
+                $applicantId = $applicant->applicant_id;
+            }
+
+            // Create application record
+            $application = DB::table('tbl_application')->insertGetId([
+                'applicant_id' => $applicantId,
+                'date_submitted' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Create application personnel record
+            DB::table('tbl_application_personnel')->insert([
+                'application_id' => $application,
+                'status' => 'Pending',
+                'initial_screening' => 'Pending',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            DB::commit();
             
             return response()->json([
                 'success' => true,
                 'message' => 'Application submitted successfully',
-                'data' => $application
+                'data' => ['application_id' => $application, 'applicant_id' => $applicantId]
             ], 201);
 
         } catch (\Exception $e) {
+            DB::rollback();
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to submit application: ' . $e->getMessage()
