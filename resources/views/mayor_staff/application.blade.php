@@ -201,7 +201,7 @@
                             <td class="px-6 py-4 text-center font-medium">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
                             <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
                             <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
-                            <td class="px-6 py-4 text-center">{{ $app->applicant_bdate }}</td>
+                            <td class="px-6 py-4 text-center">{{ \Carbon\Carbon::parse($app->applicant_bdate)->format('F j, Y') }}</td>
                             <td class="px-6 py-4 text-center">
                                 <button
                                     class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
@@ -302,7 +302,7 @@
                     <td class="px-6 py-4 text-center font-medium">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
                     <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
                     <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
-                    <td class="px-6 py-4 text-center">{{ $app->applicant_bdate }}</td>
+                    <td class="px-6 py-4 text-center">{{ \Carbon\Carbon::parse($app->applicant_bdate)->format('F j, Y') }}</td>
                     <td class="px-6 py-4 text-center">{{ $app->initial_screening }}</td>
                     <td class="px-6 py-4 text-center">
                         <button type="button"
