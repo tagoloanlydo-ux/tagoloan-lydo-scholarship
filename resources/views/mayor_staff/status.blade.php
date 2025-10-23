@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/x-icon" href="/img/LYDO.png">
     <link rel="stylesheet" href="{{ asset('css/mayor_status.css') }}" />
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
@@ -28,7 +29,7 @@
                 <!-- 🔔 Bell Icon -->
                 <button id="notifBell" class="relative focus:outline-none">
                     <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-                    @if($notifications->count() > 0)
+                    @if($showBadge && $notifications->count() > 0)
                         <span id="notifCount"
                             class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
                             {{ $notifications->count() }}
@@ -551,11 +552,22 @@
         let dropdown = document.getElementById("notifDropdown");
         dropdown.classList.toggle("hidden");
 
-        // remove badge when opened
-        let notifCount = document.getElementById("notifCount");
-        if (notifCount) {
-            notifCount.remove();
-        }
+        // Mark notifications as viewed on the server
+        fetch('/mayor_staff/notifications/mark-as-viewed', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        }).then(response => {
+            if (response.ok) {
+                // Remove badge after marking as viewed
+                let notifCount = document.getElementById("notifCount");
+                if (notifCount) {
+                    notifCount.remove();
+                }
+            }
+        }).catch(error => console.error('Error marking notifications as viewed:', error));
     });
 </script>
 
