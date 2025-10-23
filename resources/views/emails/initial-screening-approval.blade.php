@@ -44,7 +44,11 @@
     <div class="content">
         <p>Dear {{ $applicant_fname }} {{ $applicant_lname }},</p>
 
-        <p>Congratulations! We are pleased to inform you that your application for the LYDO Scholarship has passed the initial screening.</p>
+        <p>Congratulations! We are pleased to inform you that your application for the LYDO Scholarship has passed the initial screening conducted by the Mayor’s Office.</p>
+
+        <p>As part of the next step, please fill out the Family Intake Sheet by clicking the link below:</p>
+
+        <p><a href="{{ url('/intake-sheet/' . $application_personnel_id . '?token=' . $token) }}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Fill Out Intake Sheet</a></p>
 
         <p>Please wait for an announcement regarding the date and time for your face-to-face interview. We will notify you via email once the schedule is finalized.</p>
 

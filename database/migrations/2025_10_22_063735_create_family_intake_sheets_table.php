@@ -16,14 +16,11 @@ return new class extends Migration
              * -----------------------------
              * Links this intake sheet to an applicant and a LYDO staff.
              */
-            $table->foreignId('application_personnel_id')
-                  ->constrained('tbl_application_personnel')
-                  ->onDelete('cascade');
+            $table->unsignedBigInteger('application_personnel_id');
+            $table->foreign('application_personnel_id')->references('application_personnel_id')->on('tbl_application_personnel')->onDelete('cascade');
 
-            $table->foreignId('lydo_personnel_id')
-                  ->constrained('tbl_lydo_personnel')
-                  ->onDelete('set null')
-                  ->nullable();
+            $table->unsignedBigInteger('lydo_personnel_id')->nullable();
+            $table->foreign('lydo_personnel_id')->references('lydopers_id')->on('tbl_lydopers')->onDelete('set null');
 
             /**
              * HEAD OF FAMILY (extra info only)
@@ -35,7 +32,6 @@ return new class extends Migration
             $table->string('head_address')->nullable();
             $table->string('head_zone')->nullable();
             $table->date('head_dob')->nullable();
-            $table->string('head_pob')->nullable();
             $table->string('head_educ')->nullable();
             $table->string('head_occ')->nullable();
             $table->string('head_religion')->nullable();

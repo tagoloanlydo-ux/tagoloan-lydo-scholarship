@@ -112,7 +112,7 @@ Route::middleware(['role:lydo_staff'])->group(function () {
 // Mayor Staff Routes - Only accessible by mayor_staff role
 Route::middleware(['role:mayor_staff'])->group(function () {
     Route::get('/mayor_staff/dashboard', [MayorStaffController::class, 'index']) ->name('MayorStaff.dashboard');
-    Route::get('/application/{id}/requirements', [MayorStaffController::class, 'getApplicationRequirements'])->name('application.requirements');
+    Route::get('/application-personnel/{id}/requirements', [MayorStaffController::class, 'getApplicationRequirements'])->name('application.requirements');
     Route::get('/mayor_staff/application', [MayorStaffController::class, 'application'])->name('MayorStaff.application');
     Route::post('/mayor_staff/application/{id}/approve', [MayorStaffController::class, 'approveApplication'])->name('mayor_staff.approveApplication');
     Route::post('/mayor_staff/application/{id}/reject', [MayorStaffController::class, 'rejectApplication'])->name('mayor_staff.rejectApplication');
@@ -134,6 +134,10 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::post('/mayor_staff/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheet'])->name('mayor_staff.submitIntakeSheet');
 
 });
+
+// Public routes for intake sheet
+Route::get('/intake-sheet/{application_personnel_id}', [MayorStaffController::class, 'showIntakeSheet'])->name('intake_sheet.show');
+Route::post('/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheetPublic'])->name('intake_sheet.submit');
 
 
 Route::middleware(['scholar.auth'])->group(function () {

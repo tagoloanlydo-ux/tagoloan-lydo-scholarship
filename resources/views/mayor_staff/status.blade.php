@@ -139,33 +139,12 @@
                         </div>
                     </div>
 
-                    <!-- 🔎 Search & Filter + View Switch -->
-                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                        <!-- Search & Filter -->
-            <form id="filterForm" method="GET" action="{{ route('MayorStaff.application') }}" class="flex gap-2 mb-4">
-                {{-- Search --}}
-                <input type="text" name="search" 
-                    value="{{ request('search') }}" 
-                    placeholder="Search name..." 
-                    class="border rounded px-3 py-2 w-64"
-                    oninput="document.getElementById('filterForm').submit()">
-
-                {{-- Barangay dropdown --}}
-                <select name="barangay" 
-                    class="border rounded px-3 py-2"
-                    onchange="document.getElementById('filterForm').submit()">
-                    <option value="">All Barangays</option>
-                    @foreach($barangays as $brgy)
-                        <option value="{{ $brgy }}" {{ request('barangay') == $brgy ? 'selected' : '' }}>
-                            {{ $brgy }}
-                        </option>
-                    @endforeach
-                </select>
-            </form>
+                    <!-- 🔎 View Switch -->
+                    <div class="flex justify-start items-center mb-6 gap-4">
           <!-- Tab Switch -->
             <div class="flex gap-2">
-                <div class="tab active" onclick="showTable()">Review Applications</div>
-                <div class="tab" onclick="showList()">Processed Applications</div>
+                <div class="tab active" onclick="showTable()">Pending Review</div>
+                <div class="tab" onclick="showList()">Reviewed Applications</div>
             </div>
         </div>
 
@@ -176,6 +155,27 @@
                 <i class="fas fa-clock mr-2"></i>Pending Applications - Awaiting Review and Status Update
                 </h3>
             </div>
+            <!-- 🔎 Search & Filter -->
+            <form id="filterForm" method="GET" action="{{ route('MayorStaff.status') }}" class="flex gap-2 mb-4">
+                {{-- Search --}}
+                <input type="text" name="search"
+                    value="{{ request('search') }}"
+                    placeholder="Search name..."
+                    class="border rounded px-3 py-2 w-64"
+                    oninput="document.getElementById('filterForm').submit()">
+
+                {{-- Barangay dropdown --}}
+                <select name="barangay"
+                    class="border rounded px-3 py-2"
+                    onchange="document.getElementById('filterForm').submit()">
+                    <option value="">All Barangays</option>
+                    @foreach($barangays as $brgy)
+                        <option value="{{ $brgy }}" {{ request('barangay') == $brgy ? 'selected' : '' }}>
+                            {{ $brgy }}
+                        </option>
+                    @endforeach
+                </select>
+            </form>
             <table class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
             <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase text-sm">
                 <tr>
@@ -235,7 +235,9 @@
         </tbody>
         </table>
         <div class="mt-4">
-            {{ $applications->appends(request()->query())->links() }}
+            @if($applications && method_exists($applications, 'appends'))
+                {{ $applications->appends(request()->query())->links() }}
+            @endif
         </div>
     </div>
         <!-- ✅ List View (Approved and Rejected applications) -->
@@ -244,6 +246,40 @@
             <h3 class="text-lg font-semibold text-gray-700 bg-green-50 p-3 rounded-lg border border-green-200">
             <i class="fas fa-check-circle mr-2"></i>Processed Applications - Approved and Rejected
             </h3>
+        </div>
+        <!-- Search and Filter Section -->
+        <div class="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-sm border">
+            <div class="flex flex-col md:flex-row gap-4 w-full">
+                <!-- Search by Name -->
+                <div class="flex-1">
+                    <label for="searchInputList" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
+                    <input type="text" id="searchInputList" placeholder="Enter applicant name..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <!-- Filter by Barangay -->
+                <div class="flex-1">
+                    <label for="barangaySelectList" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
+                    <select id="barangaySelectList"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Barangays</option>
+                        @php
+                            $itemsList = is_object($listApplications) && method_exists($listApplications, 'items') ? $listApplications->items() : $listApplications;
+                            $uniqueBarangaysList = collect($itemsList)->pluck('barangay')->unique()->sort();
+                        @endphp
+                        @foreach($uniqueBarangaysList as $barangay)
+                            <option value="{{ $barangay }}">{{ $barangay }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <!-- Clear Filters Button -->
+            <div class="flex-shrink-0">
+                <button onclick="clearFiltersList()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200">
+                    <i class="fas fa-times mr-2"></i>Clear Filters
+                </button>
+            </div>
         </div>
         <table class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
             <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
@@ -297,9 +333,6 @@
             @endforelse
             </tbody>
         </table>
-        <div class="mt-4">
-        {{ $listApplications->appends(request()->query())->links() }}
-    </div>
 </div>
 </div>
 </div>
@@ -553,6 +586,57 @@
     });
 </script>
  <script src="{{ asset('js/logout.js') }}"></script>
+
+<script>
+    // Function to clear filters for list view
+    function clearFiltersList() {
+        document.getElementById('searchInputList').value = '';
+        document.getElementById('barangaySelectList').value = '';
+        filterListView();
+    }
+
+    // Function to filter the list view table
+    function filterListView() {
+        const searchValue = document.getElementById('searchInputList').value.toLowerCase().trim();
+        const barangayValue = document.getElementById('barangaySelectList').value;
+        const tableBody = document.querySelector('#listView tbody');
+        const rows = tableBody.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            const nameCell = row.querySelector('td:nth-child(2)');
+            const barangayCell = row.querySelector('td:nth-child(3)');
+
+            if (nameCell && barangayCell) {
+                const name = nameCell.textContent.toLowerCase().trim();
+                const barangay = barangayCell.textContent.trim();
+
+                // Split search value into terms and check if all are present in the name
+                const searchTerms = searchValue.split(' ').filter(term => term.length > 0);
+                const nameMatch = searchTerms.length === 0 || searchTerms.every(term => name.includes(term));
+                const barangayMatch = barangayValue === '' || barangay === barangayValue;
+
+                if (nameMatch && barangayMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    // Add event listeners for list view filters
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInputList = document.getElementById('searchInputList');
+        const barangaySelectList = document.getElementById('barangaySelectList');
+
+        if (searchInputList) {
+            searchInputList.addEventListener('input', filterListView);
+        }
+        if (barangaySelectList) {
+            barangaySelectList.addEventListener('change', filterListView);
+        }
+    });
+</script>
 
 <script>
 // Real-time updates for new applications and status changes

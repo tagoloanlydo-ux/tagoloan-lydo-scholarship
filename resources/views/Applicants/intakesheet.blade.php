@@ -3,12 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Family Intake Sheet - Wizard & Review (Landscape Print)</title>
-
+   <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SignaturePad -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 
@@ -19,7 +22,7 @@
         margin-bottom: 1rem;
       }
       .form-input {
-        border: 1px solid #cbd5e1;
+        border: 1px solid black;
         border-radius: 0.5rem;
         width: 100%;
         padding: 1rem 0.75rem 0.25rem 0.75rem;
@@ -122,6 +125,11 @@
           grid-template-columns: 1fr;
         }
       }
+
+      /* Step 1 and Step 3 field borders */
+      #step-1 .form-input, #householdForm .form-input {
+        border: 1px solid grey;
+      }
     </style>
   </head>
   <body class="bg-gray-100 min-h-screen">
@@ -133,7 +141,7 @@
         <div class="flex items-center space-x-4">
           <!-- placeholder logo: replace 'logo.png' in same folder -->
           <img
-            src="logo.png"
+            src="{{ asset('images/LYDO.png') }}"
             alt="Municipal Logo"
             class="w-16 h-16 object-contain"
           />
@@ -152,6 +160,7 @@
           <p class="text-xs italic text-gray-600">
             Serial No.: <span id="printSerial">AUTO_GENERATED</span>
           </p>
+          <input type="hidden" id="serial_number" />
           <h1 class="text-2xl font-bold text-gray-900">FAMILY INTAKE SHEET</h1>
         </div>
       </div>
@@ -173,17 +182,17 @@
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="form-group">
-              <input id="applicant_fname" placeholder=" " class="form-input" />
+              <input id="applicant_fname" placeholder=" " class="form-input" value="{{ $applicant->applicant_fname ?? '' }}" />
               <label class="form-label">First Name</label>
             </div>
             <div class="form-group">
-              <input id="applicant_mname" placeholder=" " class="form-input" /><label
+              <input id="applicant_mname" placeholder=" " class="form-input" value="{{ $applicant->applicant_mname ?? '' }}" /><label
                 class="form-label"
                 >Middle Name</label
               >
             </div>
             <div class="form-group">
-              <input id="applicant_lname" placeholder=" " class="form-input" /><label
+              <input id="applicant_lname" placeholder=" " class="form-input" value="{{ $applicant->applicant_lname ?? '' }}" /><label
                 class="form-label"
                 >Last Name</label
               >
@@ -194,27 +203,30 @@
                 id="applicant_suffix"
                 placeholder=" "
                 class="form-input"
-              /><label class="form-label">Suffix</label>
+                value="{{ $applicant->applicant_suffix ?? '' }}"
+              /><label class="form-label">Suffix (Optional)</label>
             </div>
             <!-- 4Ps, IP No., Sex in one row -->
             <div class="md:col-span-4 grid grid-cols-3 gap-4">
               <div class="form-group">
-                <input id="head_4ps" placeholder=" " class="form-input" /><label
-                  class="form-label"
-                  >4Ps Beneficiary (Yes/No)</label
-                >
+                <select id="head_4ps" class="form-input">
+                  <option value="" disabled selected>Select</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+                <label class="form-label">4Ps Beneficiary <span style="color: red;">*</span></label>
               </div>
               <div class="form-group">
                 <input id="head_ipno" placeholder=" " class="form-input" /><label
                   class="form-label"
-                  >IP No.</label
+                  >IP No. (Optional)</label
                 >
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Sex</label>
-                <div class="flex items-center gap-6">
-                  <label class="flex items-center gap-2"><input type="radio" name="applicant_gender" value="Male" checked /> Male</label>
-                  <label class="flex items-center gap-2"><input type="radio" name="applicant_gender" value="Female" /> Female</label>
+                <div class="flex items-center gap-6" data-initial-sex="{{ $applicant->applicant_gender ?? '' }}">
+                  <label class="flex items-center gap-2"><input type="radio" name="applicant_gender" value="Male" @if(($applicant->applicant_gender ?? '') == 'Male') checked @endif /> Male</label>
+                  <label class="flex items-center gap-2"><input type="radio" name="applicant_gender" value="Female" @if(($applicant->applicant_gender ?? '') == 'Female') checked @endif /> Female</label>
                 </div>
               </div>
             </div>
@@ -224,34 +236,36 @@
                 id="head_address"
                 placeholder=" "
                 class="form-input"
-              /><label class="form-label">Address</label>
+              /><label class="form-label">Address <span style="color: red;">*</span></label>
             </div>
             <div class="form-group">
               <input id="head_zone" placeholder=" " class="form-input" /><label
                 class="form-label"
-                >Zone</label
+                >Zone <span style="color: red;">*</span></label
               >
             </div>
             <div class="form-group">
               <input
-                id="head_barangay"
+                id="applicant_brgy"
                 placeholder=" "
                 class="form-input"
+                value="{{ $applicant->applicant_brgy ?? '' }}"
               /><label class="form-label">Barangay</label>
             </div>
 
             <div class="form-group">
               <input
-                id="head_dob"
+                id="applicant_bdate"
                 type="date"
                 placeholder=" "
                 class="form-input"
+                value="{{ $applicant->applicant_bdate ?? '' }}"
               /><label class="form-label">Date of Birth</label>
             </div>
             <div class="form-group">
               <input id="head_pob" placeholder=" " class="form-input" /><label
                 class="form-label"
-                >Place of Birth</label
+                >Place of Birth <span style="color: red;">*</span></label
               >
             </div>
             <div class="form-group">
@@ -262,12 +276,12 @@
                 <option value="College Level (3rd Year)">College Level (3rd Year)</option>
                 <option value="College Level (4th Year)">College Level (4th Year)</option>
               </select>
-              <label class="form-label">Educational Attainment</label>
+              <label class="form-label">Educational Attainment <span style="color: red;">*</span></label>
             </div>
             <div class="form-group">
               <input id="head_occ" placeholder=" " class="form-input" /><label
                 class="form-label"
-                >Occupation</label
+                >Occupation <span style="color: red;">*</span></label
               >
             </div>
             <div class="form-group md:col-span-2">
@@ -275,7 +289,7 @@
                 id="head_religion"
                 placeholder=" "
                 class="form-input"
-              /><label class="form-label">Religion</label>
+              /><label class="form-label">Religion <span style="color: red;">*</span></label>
             </div>
 
             <!-- Serial and location -->
@@ -300,6 +314,7 @@
         <!-- STEP 2: Family Members -->
         <section class="step hidden" id="step-2">
           <h3 class="text-lg font-semibold mb-3">Step 2 — Family Members</h3>
+          <p class="text-sm text-gray-600 mb-3">Please fill up all required fields in the family members table. Remarks should be selected based on the categories listed below.</p>
           <div class="overflow-x-auto">
             <table id="familyTable" class="min-w-full text-sm thin-border">
               <thead class="bg-gray-100">
@@ -312,7 +327,7 @@
                   <th class="border px-2 py-1">Civil Status</th>
                   <th class="border px-2 py-1">Educational Attainment</th>
                   <th class="border px-2 py-1">Occupation</th>
-                  <th class="border px-2 py-1">Income</th>
+                  <th class="border px-2 py-1">Monthly Income</th>
                   <th class="border px-2 py-1">Remarks</th>
                   <th class="border px-2 py-1">Action</th>
                 </tr>
@@ -412,16 +427,16 @@
             >
               + Add Member
             </button>
-          <div class="mt-3">
-            <h4 class="font-semibold mb-2">Remarks Categories:</h4>
-            <ul class="list-disc list-inside text-sm mb-3">
-              <li>A. Out of School Youth (OSY)</li>
-              <li>B. Solo Parent (SP)</li>
-              <li>C. Person with Disability (PWD)</li>
-              <li>D. Senior Citizen (SC)</li>
-              <li>E. Lactating Mother</li>
-              <li>F. Pregnant Mother</li>
-            </ul>
+          <div class="mt-4">
+            <h4 class="font-semibold mb-3 text-gray-800">Remarks Categories:</h4>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="text-sm text-black border border-gray-300 rounded p-2 hover:text-violet-600">Out of School Youth (OSY)</div>
+              <div class="text-sm text-black border border-gray-300 rounded p-2 hover:text-violet-600">Solo Parent (SP)</div>
+              <div class="text-sm text-black border border-gray-300 rounded p-2 hover:text-violet-600">Person with Disability (PWD)</div>
+              <div class="text-sm text-black border border-gray-300 rounded p-2 hover:text-violet-600">Senior Citizen (SC)</div>
+              <div class="text-sm text-black border border-gray-300 rounded p-2 hover:text-violet-600">Lactating Mother</div>
+              <div class="text-sm text-black border border-gray-300 rounded p-2 hover:text-violet-600">Pregnant Mother</div>
+            </div>
           </div>
         </section>
 
@@ -449,7 +464,7 @@
                   type="number"
                   class="form-input"
                   readonly
-                /><label class="form-label">Total Family Income</label>
+                /><label class="form-label">Total Family Income (Monthly)</label>
               </div>
             </div>
 
@@ -462,7 +477,7 @@
                     <option value="Owned">Owned</option>
                     <option value="Rented">Rented</option>
                   </select>
-                  <label class="form-label">House (Owned/Rented)</label>
+                  <label class="form-label">House (Owned/Rented) <span style="color: red;">*</span></label>
                 </div>
                 <div class="form-group hidden" id="house_value_group">
                   <input
@@ -478,7 +493,7 @@
                     placeholder=""
                     type="number"
                     class="form-input"
-                  /><label class="form-label">House Rent Amount</label>
+                  /><label class="form-label">House Rent Monthly Amount <span style="color: red;">*</span></label>
                 </div>
               </div>
               <div>
@@ -488,7 +503,7 @@
                     <option value="Owned">Owned</option>
                     <option value="Rented">Rented</option>
                   </select>
-                  <label class="form-label">Lot (Owned/Rented)</label>
+                  <label class="form-label">Lot (Owned/Rented) <span style="color: red;">*</span></label>
                 </div>
                 <div class="form-group hidden" id="lot_value_group">
                   <input
@@ -504,7 +519,7 @@
                     placeholder=""
                     type="number"
                     class="form-input"
-                  /><label class="form-label">Lot Rent Amount</label>
+                  /><label class="form-label">Lot Rent Monthly Amount <span style="color: red;">*</span></label>
                 </div>
               </div>
               <div class="form-group">
@@ -513,7 +528,7 @@
                   placeholder=""
                   type="number"
                   class="form-input"
-                /><label class="form-label">Electricity</label>
+                /><label class="form-label">Electricity Monthly Billing <span style="color: red;">*</span></label>
               </div>
               <div class="form-group">
                 <input
@@ -521,7 +536,7 @@
                   placeholder=""
                   type="number"
                   class="form-input"
-                /><label class="form-label">Water</label>
+                /><label class="form-label">Water Monthly Billing <span style="color: red;">*</span></label>
               </div>
             </div>
 
@@ -534,7 +549,7 @@
                   type="number"
                   class="form-input"
                   readonly
-                /><label class="form-label">Total Family Net Income</label>
+                /><label class="form-label">Total Family Net Income (Monthly)</label>
               </div>
             </div>
           </div>
@@ -544,7 +559,7 @@
             <h4 class="text-lg font-semibold">Signatures</h4>
             <div class="print-box p-4">
               <p class="font-semibold mb-2">Family Head Signature:</p>
-              <canvas id="signatureClient" class="border border-gray-300 w-full h-32"></canvas>
+              <canvas id="signatureClient" class="border border-gray-300 w-full h-80"></canvas>
               <button type="button" onclick="clearSignature('client')" class="mt-2 bg-gray-500 text-white px-3 py-1 rounded text-sm">Clear</button>
             </div>
           </div>
@@ -576,7 +591,7 @@
                         <th class="border px-2 py-1">Civil Status</th>
                         <th class="border px-2 py-1">Educational Attainment</th>
                         <th class="border px-2 py-1">Occupation</th>
-                        <th class="border px-2 py-1">Income</th>
+                        <th class="border px-2 py-1">Monthly Income</th>
                         <th class="border px-2 py-1">Remarks</th>
                       </tr>
                     </thead>
@@ -588,15 +603,15 @@
                   <table class="min-w-full text-sm">
                     <tr>
                         <td><strong>Other Source of Income:</strong> ₱<span id="rv_other_income"></span></td>
-                      <td><strong>Total Family Income:</strong> ₱<span id="rv_total_income"></span></td>
-                      <td><strong>Total Family Net Income:</strong> ₱<span id="rv_net_income"></span></td>
+                      <td><strong>Total Family Income (Monthly):</strong> ₱<span id="rv_total_income"></span></td>
+                      <td><strong>Total Family Net Income (Monthly):</strong> ₱<span id="rv_net_income"></span></td>
 
                     </tr>
     <tr>
       <td><strong>House (Owned/Rented):</strong> <span id="rv_house"></span><br><span id="rv_house_rent_display"></span></td>
       <td><strong>Lot (Owned/Rented):</strong> <span id="rv_lot"></span><br><span id="rv_lot_rent_display"></span></td>
-      <td><strong>Water:</strong> ₱<span id="rv_water"></span></td>
-      <td><strong>Electricity Source:</strong> ₱<span id="rv_electric"></span></td>
+      <td><strong>Water Monthly Billing:</strong> ₱<span id="rv_water"></span></td>
+      <td><strong>Electricity Monthly Billing:</strong> ₱<span id="rv_electric"></span></td>
     </tr>
     <tr id="rv_value_row" style="display: none;">
       <td><strong>House Value:</strong> ₱<span id="rv_house_value"></span></td>
@@ -612,15 +627,14 @@
                     <div id="rv_sig_client"></div>
                   </div>
                 </div>
-                <div class="mt-6 flex justify-center gap-4 no-print">
-                </div>
+
               </div>
             </div>
           </div>
         </section>
 
         <!-- Navigation controls -->
-        <div class="flex justify-between border-t pt-4 no-print">
+        <div id="navControls" class="flex justify-between border-t pt-4 no-print">
           <button
             type="button"
             id="prevBtn"
@@ -629,11 +643,11 @@
           >
             Back
           </button>
-          
+
           <button
             type="button"
             id="nextBtn"
-            onclick="nextPrev(1)"
+            onclick="handleNext()"
             class="bg-purple-600 text-white px-5 py-2 rounded hover:bg-purple-700"
           >
             Next
@@ -653,6 +667,19 @@
 
       // localStorage key
       const STORAGE_KEY = 'familyIntakeFormData';
+
+      // Generate serial number
+      function generateSerialNumber() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const serial = `FIS-${year}${month}${day}-${hours}${minutes}${seconds}`;
+        return serial;
+      }
 
       // Save form data to localStorage
       function saveFormData() {
@@ -674,24 +701,38 @@
 
       // Populate form with loaded data
       function populateForm(data) {
-        // Head of family
-        document.getElementById('applicant_fname').value = data.head.fname || '';
-        document.getElementById('applicant_mname').value = data.head.mname || '';
-        document.getElementById('applicant_lname').value = data.head.lname || '';
-        document.getElementById('applicant_suffix').value = data.head.suffix || '';
+        // Head of family - only set if field is empty to preserve initial applicant values
+        if (!document.getElementById('applicant_fname').value) {
+          document.getElementById('applicant_fname').value = data.head.fname || '';
+        }
+        if (!document.getElementById('applicant_mname').value) {
+          document.getElementById('applicant_mname').value = data.head.mname || '';
+        }
+        if (!document.getElementById('applicant_lname').value) {
+          document.getElementById('applicant_lname').value = data.head.lname || '';
+        }
+        if (!document.getElementById('applicant_suffix').value) {
+          document.getElementById('applicant_suffix').value = data.head.suffix || '';
+        }
         document.getElementById('head_4ps').value = data.head._4ps || '';
         document.getElementById('head_ipno').value = data.head.ipno || '';
         document.getElementById('head_address').value = data.head.address || '';
         document.getElementById('head_zone').value = data.head.zone || '';
-        document.getElementById('head_barangay').value = data.head.barangay || '';
-        document.getElementById('head_dob').value = data.head.dob || '';
+        if (!document.getElementById('applicant_brgy').value) {
+          document.getElementById('applicant_brgy').value = data.head.barangay || '';
+        }
+        if (!document.getElementById('applicant_bdate').value) {
+          document.getElementById('applicant_bdate').value = data.head.dob || '';
+        }
         document.getElementById('head_pob').value = data.head.pob || '';
         document.getElementById('head_educ').value = data.head.educ || '';
         document.getElementById('head_occ').value = data.head.occ || '';
         document.getElementById('head_religion').value = data.head.religion || '';
 
-        // Sex radio
-        if (data.head.sex) {
+        // Sex radio - only set if no radio is currently checked
+        const currentSex = document.querySelector('input[name="applicant_gender"]:checked')?.value;
+        if (!currentSex && data.head.sex && data.head.sex !== '') {
+          document.querySelectorAll('input[name="applicant_gender"]').forEach(radio => radio.checked = false);
           document.querySelector(`input[name="applicant_gender"][value="${data.head.sex}"]`).checked = true;
         }
 
@@ -756,10 +797,23 @@
         document.getElementById("nextBtn").innerText =
           step === totalSteps ? "Submit" : "Next";
         progressBar.style.width = (step / totalSteps) * 100 + "%";
+        // Adjust navigation alignment
+        const navControls = document.getElementById("navControls");
+        if (step === 1) {
+          navControls.classList.remove('justify-between');
+          navControls.classList.add('justify-end');
+        } else {
+          navControls.classList.remove('justify-end');
+          navControls.classList.add('justify-between');
+        }
+        if (step === 2) {
+          validateStep2();
+        }
         if (step === 3) {
           // Resize signature canvas when Step 3 is shown
           const c = document.getElementById("signatureClient");
           if (c) resizeCanvasForSignature(c);
+          validateStep3();
         }
         if (step === totalSteps) {
           populateReview();
@@ -779,6 +833,26 @@
         if (currentStep < 1) currentStep = 1;
         if (currentStep > totalSteps) currentStep = totalSteps;
         showStep(currentStep);
+      }
+
+      function handleNext() {
+        if (currentStep === totalSteps) {
+          submitForm();
+        } else {
+          // Perform validation for the current step
+          if (currentStep === 1) {
+            validateStep1();
+          } else if (currentStep === 2) {
+            validateStep2();
+          } else if (currentStep === 3) {
+            validateStep3();
+          }
+          // Check if the Next button is enabled after validation
+          const nextBtn = document.getElementById('nextBtn');
+          if (!nextBtn.disabled) {
+            nextPrev(1);
+          }
+        }
       }
 
       // Calculate age from birthdate
@@ -858,7 +932,13 @@
         attachBirthdateListener(row.querySelector('.fm-birth'));
         // Attach listener to new income input
         row.querySelector('.fm-income').addEventListener('input', calculateTotalFamilyIncome);
+        // Attach validation listeners to new row fields
+        row.querySelectorAll('.fm-name, .fm-relation, .fm-birth, .fm-age, .fm-sex, .fm-civil, .fm-educ, .fm-occ, .fm-remarks, .fm-income').forEach(el => {
+          el.addEventListener('input', validateStep2);
+          el.addEventListener('change', validateStep2);
+        });
         table.appendChild(row);
+        validateStep2();
       }
       function deleteRow(btn) {
         const table = document
@@ -867,6 +947,7 @@
         if (table.rows.length > 1) {
           btn.closest("tr").remove();
           calculateTotalFamilyIncome();
+          validateStep2();
         } else alert("At least one family member row is required.");
       }
 
@@ -900,8 +981,8 @@
           sex: document.querySelector('input[name="applicant_gender"]:checked')?.value || "",
           address: getVal("head_address"),
           zone: getVal("head_zone"),
-          barangay: getVal("head_barangay"),
-          dob: getVal("head_dob"),
+          barangay: getVal("applicant_brgy"),
+          dob: getVal("applicant_bdate"),
           pob: getVal("head_pob"),
           educ: getVal("head_educ"),
           occ: getVal("head_occ"),
@@ -965,8 +1046,15 @@
       // Populate review area
       function populateReview() {
         const d = collectData();
-        document.getElementById("rv_serial").innerText =
-          d.head.serial || "AUTO_GENERATED";
+        let serial = d.head.serial;
+        if (!serial) {
+          serial = generateSerialNumber();
+          document.getElementById('serial_number').value = serial;
+          d.head.serial = serial;
+          saveFormData(); // Save the generated serial
+        }
+        document.getElementById("rv_serial").innerText = serial;
+        document.getElementById("printSerial").innerText = serial;
         document.getElementById("rv_head_name").innerText = [
           d.head.fname,
           d.head.mname,
@@ -989,7 +1077,7 @@
               <td><strong>Location:</strong> ${d.location || "-"}</td>
             </tr>
             <tr>
-              <td><strong>Date of Birth:</strong> ${d.head.dob || "-"}</td>
+              <td><strong>Date of Birth:</strong> ${formatDate(d.head.dob) || "-"}</td>
               <td><strong>Place of Birth:</strong> ${d.head.pob || "-"}</td>
             </tr>
             <tr>
@@ -1012,9 +1100,9 @@
           d.house.electric || "-";
         // Display rent amounts under ownership if rented
         document.getElementById("rv_house_rent_display").innerHTML =
-          d.house.house === 'Rented' ? `<strong>House Rent:</strong> ₱${d.house.house_rent || '-'}` : '';
+          d.house.house === 'Rented' ? `<strong>House Monthly Rent:</strong> ₱${d.house.house_rent || '-'}` : '';
         document.getElementById("rv_lot_rent_display").innerHTML =
-          d.house.lot === 'Rented' ? `<strong>Lot Rent:</strong> ₱${d.house.lot_rent || '-'}` : '';
+          d.house.lot === 'Rented' ? `<strong>Lot Monthly Rent:</strong> ₱${d.house.lot_rent || '-'}` : '';
 
         // family table build
         const tbody = document.querySelector("#rv_family_table tbody");
@@ -1022,16 +1110,16 @@
         d.family.forEach((f) => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
-          <td class="border px-2 py-1 text-left">${escapeHtml(f.name)}</td>
-          <td class="border px-2 py-1 text-left">${escapeHtml(f.relation)}</td>
-          <td class="border px-2 py-1 text-left">${formatDate(f.birth)}</td>
-          <td class="border px-2 py-1 text-left">${escapeHtml(f.age)}</td>
-          <td class="border px-2 py-1 text-left">${escapeHtml(f.sex)}</td>
-          <td class="border px-2 py-1 text-left">${escapeHtml(f.civil)}</td>
-          <td class="border px-2 py-1 text-left">${escapeHtml(f.educ)}</td>
-          <td class="border px-2 py-1 text-left">${escapeHtml(f.occ)}</td>
-          <td class="border px-2 py-1 text-left">₱${escapeHtml(f.income)}</td>
-          <td class="border px-2 py-1 text-left">${escapeHtml(f.remarks)}</td>
+          <td class="border px-2 py-1 text-center">${escapeHtml(f.name)}</td>
+          <td class="border px-2 py-1 text-center">${escapeHtml(f.relation)}</td>
+          <td class="border px-2 py-1 text-center">${formatDate(f.birth)}</td>
+          <td class="border px-2 py-1 text-center">${escapeHtml(f.age)}</td>
+          <td class="border px-2 py-1 text-center">${escapeHtml(f.sex)}</td>
+          <td class="border px-2 py-1 text-center">${escapeHtml(f.civil)}</td>
+          <td class="border px-2 py-1 text-center">${escapeHtml(f.educ)}</td>
+          <td class="border px-2 py-1 text-center">${escapeHtml(f.occ)}</td>
+          <td class="border px-2 py-1 text-center">₱${escapeHtml(f.income)}</td>
+          <td class="border px-2 py-1 text-center">${escapeHtml(f.remarks)}</td>
         `;
           tbody.appendChild(tr);
         });
@@ -1074,14 +1162,128 @@
       }
 
       // Submit form function
-      function submitForm() {
+      async function submitForm() {
+        // Show confirmation dialog
+        const result = await Swal.fire({
+          title: 'Are you sure?',
+          text: 'Are you sure you want to submit the family intake sheet?',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, submit it!',
+          cancelButtonText: 'Cancel'
+        });
+
+        if (!result.isConfirmed) {
+          return; // User cancelled
+        }
+
         const data = collectData();
-        // For demonstration, alert the data. In a real application, send to server.
-        alert("Form submitted successfully!\n\nData:\n" + JSON.stringify(data, null, 2));
-        // Example: fetch('/submit', { method: 'POST', body: JSON.stringify(data), headers: {'Content-Type': 'application/json'} });
+        // Add application_personnel_id from URL
+        data.application_personnel_id = window.location.pathname.split('/').pop();
+        // Add token from URL query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        data.token = urlParams.get('token');
+        try {
+          const response = await fetch('/submit-intake-sheet', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify(data)
+          });
+          const result = await response.json();
+          if (response.ok) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Success!',
+              text: result.message || 'Family intake sheet submitted successfully!',
+              confirmButtonText: 'OK'
+            }).then(() => {
+              clearFormData();
+              // Optionally redirect
+              window.location.href = '/'; // or wherever appropriate
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Submission Failed',
+              text: result.message || 'Error submitting form. Please try again.',
+              confirmButtonText: 'OK'
+            });
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An unexpected error occurred. Please try again.',
+            confirmButtonText: 'OK'
+          });
+        }
       }
 
 
+
+      // Validate Step 1 fields and disable Next button if required fields are empty
+      function validateStep1() {
+        const requiredFields = [
+          'head_4ps',
+          'head_address',
+          'head_zone',
+          'head_pob',
+          'head_educ',
+          'head_occ',
+          'head_religion'
+        ];
+        const nextBtn = document.getElementById('nextBtn');
+        let allFilled = true;
+        requiredFields.forEach(id => {
+          const el = document.getElementById(id);
+          if (!el || !el.value.trim()) {
+            allFilled = false;
+          }
+        });
+        nextBtn.disabled = !allFilled;
+        nextBtn.style.opacity = allFilled ? '1' : '0.5';
+      }
+
+      // Validate Step 2: Disable Next if any row has empty name
+      function validateStep2() {
+        const nextBtn = document.getElementById('nextBtn');
+        let canProceed = true;
+        document.querySelectorAll('#familyTable tbody tr').forEach(tr => {
+          const name = tr.querySelector('.fm-name')?.value.trim() || '';
+          if (!name) {
+            canProceed = false;
+          }
+        });
+        nextBtn.disabled = !canProceed;
+        nextBtn.style.opacity = canProceed ? '1' : '0.5';
+      }
+
+      // Validate Step 3: Disable Next if house ownership is not selected or rent amounts are missing when rented
+      function validateStep3() {
+        const nextBtn = document.getElementById('nextBtn');
+        const houseSelect = document.getElementById('house_house');
+        const lotSelect = document.getElementById('house_lot');
+        let isFilled = houseSelect && houseSelect.value.trim() !== '' && lotSelect && lotSelect.value.trim() !== '';
+
+        // Check if rent amounts are provided when rented
+        if (houseSelect.value === 'Rented') {
+          const houseRent = document.getElementById('house_rent').value.trim();
+          if (!houseRent) isFilled = false;
+        }
+        if (lotSelect.value === 'Rented') {
+          const lotRent = document.getElementById('lot_rent').value.trim();
+          if (!lotRent) isFilled = false;
+        }
+
+        nextBtn.disabled = !isFilled;
+        nextBtn.style.opacity = isFilled ? '1' : '0.5';
+      }
 
       // Setup on load
       window.addEventListener("load", () => {
@@ -1121,6 +1323,44 @@
         if (signaturePads.client) {
           signaturePads.client.addEventListener('endStroke', saveFormData);
         }
+
+        // Attach validation listeners to Step 1 required fields
+        const step1Fields = [
+          'head_4ps',
+          'head_address',
+          'head_zone',
+          'head_pob',
+          'head_educ',
+          'head_occ',
+          'head_religion'
+        ];
+        step1Fields.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.addEventListener('input', validateStep1);
+            el.addEventListener('change', validateStep1);
+          }
+        });
+
+        // Attach validation listeners to Step 2 family member fields
+        function attachStep2Listeners() {
+          document.querySelectorAll('#familyTable .fm-name, #familyTable .fm-relation, #familyTable .fm-birth, #familyTable .fm-age, #familyTable .fm-sex, #familyTable .fm-civil, #familyTable .fm-educ, #familyTable .fm-occ, #familyTable .fm-remarks, #familyTable .fm-income').forEach(el => {
+            el.addEventListener('input', validateStep2);
+            el.addEventListener('change', validateStep2);
+          });
+        }
+        attachStep2Listeners();
+
+        // Attach validation listeners to Step 3 fields
+        document.getElementById('house_house').addEventListener('change', validateStep3);
+        document.getElementById('house_lot').addEventListener('change', validateStep3);
+        document.getElementById('house_rent').addEventListener('input', validateStep3);
+        document.getElementById('house_rent').addEventListener('change', validateStep3);
+        document.getElementById('lot_rent').addEventListener('input', validateStep3);
+        document.getElementById('lot_rent').addEventListener('change', validateStep3);
+
+        // Initial validation
+        validateStep1();
       });
 
       // make canvases responsive

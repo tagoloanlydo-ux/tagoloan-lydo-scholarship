@@ -265,14 +265,14 @@
                 <div class="input-group">
                   <label for="application_letter">Application Letter</label>
                     @if($application->application_letter) <a href="{{ asset('storage/' . $application->application_letter) }}" target="_blank">View existing</a> @endif
-                    <input type="file" id="application_letter" name="application_letter" accept="application/pdf" @if(in_array('application_letter', $issues ?? [])) required @endif class="input-file"/>
+                    <input type="file" id="application_letter" name="application_letter" accept="application/pdf" @if(in_array('application_letter', $issues ?? [])) required @endif class="input-file @if(in_array('application_letter', $issues ?? [])) border-red-500 @endif"/>
                     <small class="error-message"></small>
                 </div>
 
                 <div class="input-group">
                   <label for="grade_slip">Grade Slip</label>
                   @if($application->grade_slip) <a href="{{ asset('storage/' . $application->grade_slip) }}" target="_blank">View existing</a> @endif
-                  <input type="file"id="grade_slip"name="grade_slip" accept="application/pdf" @if(in_array('grade_slip', $issues ?? [])) required @endif class="input-file"/>
+                  <input type="file"id="grade_slip"name="grade_slip" accept="application/pdf" @if(in_array('grade_slip', $issues ?? [])) required @endif class="input-file @if(in_array('grade_slip', $issues ?? [])) border-red-500 @endif"/>
                   <small class="error-message"></small>
                 </div>
               </div>
@@ -281,14 +281,14 @@
                   <div class="input-group">
                     <label for="certificate_of_registration">Certificate of Registration</label>
                     @if($application->cert_of_reg) <a href="{{ asset('storage/' . $application->cert_of_reg) }}" target="_blank">View existing</a> @endif
-                    <input type="file" id="certificate_of_registration" name="certificate_of_registration" accept="application/pdf"  @if(in_array('cert_of_reg', $issues ?? [])) required @endif class="input-file"/>
+                    <input type="file" id="certificate_of_registration" name="certificate_of_registration" accept="application/pdf"  @if(in_array('cert_of_reg', $issues ?? [])) required @endif class="input-file @if(in_array('cert_of_reg', $issues ?? [])) border-red-500 @endif"/>
                     <small class="error-message"></small>
                   </div>
 
                   <div class="input-group">
                     <label for="barangay_indigency">Barangay Indigency</label>
                     @if($application->brgy_indigency) <a href="{{ asset('storage/' . $application->brgy_indigency) }}" target="_blank">View existing</a> @endif
-                    <input type="file" id="barangay_indigency" name="barangay_indigency" accept="application/pdf" @if(in_array('brgy_indigency', $issues ?? [])) required @endif class="input-file"/>
+                    <input type="file" id="barangay_indigency" name="barangay_indigency" accept="application/pdf" @if(in_array('brgy_indigency', $issues ?? [])) required @endif class="input-file @if(in_array('brgy_indigency', $issues ?? [])) border-red-500 @endif"/>
                     <small class="error-message"></small>
                   </div>
                 </div>
@@ -297,7 +297,7 @@
                     <div class="input-group">
                       <label for="student_id">Student ID</label>
                       @if($application->student_id) <a href="{{ asset('storage/' . $application->student_id) }}" target="_blank">View existing Student ID</a> @endif
-                      <input type="file" id="student_id" name="student_id" accept="application/pdf" @if(in_array('student_id', $issues ?? [])) required @endif class="input-file"/>
+                      <input type="file" id="student_id" name="student_id" accept="application/pdf" @if(in_array('student_id', $issues ?? [])) required @endif class="input-file @if(in_array('student_id', $issues ?? [])) border-red-500 @endif"/>
                       <small class="error-message"></small>
                     </div>
                   </div>
