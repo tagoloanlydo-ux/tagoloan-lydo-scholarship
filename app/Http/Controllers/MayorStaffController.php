@@ -281,10 +281,10 @@ $percentageReviewed = $totalApplications > 0
             $query->where("a.applicant_brgy", $request->barangay);
         }
 
-       
+
         $query->where("ap.initial_screening", "Pending");
 
-        $tableApplicants = $query->get();
+        $tableApplicants = $query->paginate(15);
 
 
         $listApplicants = DB::table("tbl_applicant as a")
@@ -503,22 +503,31 @@ $percentageReviewed = $totalApplications > 0
             return response()->json(['success' => false, 'message' => 'Application not found.']);
         }
 
-        // Update the initial_screening
+        // Update the initial_screening and generate intake sheet token
+        $token = \Illuminate\Support\Str::random(64);
         DB::table('tbl_application_personnel')
             ->where('application_personnel_id', $id)
-            ->update(['initial_screening' => 'Approved', 'updated_at' => now()]);
+            ->update(['initial_screening' => 'Approved', 'intake_sheet_token' => $token, 'updated_at' => now()]);
 
-        // Send approval email
-        $emailData = [
-            'applicant_fname' => $applicationPersonnel->applicant_fname,
-            'applicant_lname' => $applicationPersonnel->applicant_lname,
-        ];
+        // Send approval email (only if email is present)
+        if ($applicationPersonnel->applicant_email) {
+            try {
+                $emailData = [
+                    'applicant_fname' => $applicationPersonnel->applicant_fname,
+                    'applicant_lname' => $applicationPersonnel->applicant_lname,
+                    'application_personnel_id' => $id,
+                ];
 
-        Mail::send('emails.initial-screening-approval', $emailData, function ($message) use ($applicationPersonnel) {
-            $message->to($applicationPersonnel->applicant_email)
-                ->subject('Initial Screening Approval - LYDO Scholarship')
-                ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
-        });
+                Mail::send('emails.initial-screening-approval', array_merge($emailData, ['token' => $token]), function ($message) use ($applicationPersonnel) {
+                    $message->to($applicationPersonnel->applicant_email)
+                        ->subject('Initial Screening Approval - LYDO Scholarship')
+                        ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
+                });
+            } catch (\Exception $e) {
+                // Log the email failure but don't fail the approval
+                Log::error('Failed to send approval email to ' . $applicationPersonnel->applicant_email . ': ' . $e->getMessage());
+            }
+        }
 
         return response()->json(['success' => true, 'message' => 'Initial screening approved successfully.']);
     }
@@ -547,43 +556,72 @@ $percentageReviewed = $totalApplications > 0
         DB::table('tbl_application_personnel')
             ->where('application_personnel_id', $id)
             ->update([
-                'initial_screening' => 'Rejected', 
+                'initial_screening' => 'Rejected',
                 'rejection_reason' => $reason,
                 'updated_at' => now()
             ]);
 
-        // Send rejection email
-        $emailData = [
-            'applicant_fname' => $applicationPersonnel->applicant_fname,
-            'applicant_lname' => $applicationPersonnel->applicant_lname,
-            'reason' => $reason,
-        ];
+        // Send rejection email (only if email is present)
+        if ($applicationPersonnel->applicant_email) {
+            try {
+                $emailData = [
+                    'applicant_fname' => $applicationPersonnel->applicant_fname,
+                    'applicant_lname' => $applicationPersonnel->applicant_lname,
+                    'reason' => $reason,
+                ];
 
-        Mail::send('emails.initial-screening-rejection', $emailData, function ($message) use ($applicationPersonnel) {
-            $message->to($applicationPersonnel->applicant_email)
-                ->subject('Initial Screening Rejection - LYDO Scholarship')
-                ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
-        });
+                Mail::send('emails.initial-screening-rejection', $emailData, function ($message) use ($applicationPersonnel) {
+                    $message->to($applicationPersonnel->applicant_email)
+                        ->subject('Initial Screening Rejection - LYDO Scholarship')
+                        ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
+                });
+            } catch (\Exception $e) {
+                // Log the email failure but don't fail the rejection
+                Log::error('Failed to send rejection email to ' . $applicationPersonnel->applicant_email . ': ' . $e->getMessage());
+            }
+        }
 
         return response()->json(['success' => true, 'message' => 'Initial screening rejected successfully.']);
     }
-    public function getRequirements($id)
+    public function getApplicationRequirements($id)
     {
-        $application = Application::with("applicant")->findOrFail($id);
+        // Get application personnel record
+        $applicationPersonnel = DB::table('tbl_application_personnel as ap')
+            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+            ->where('ap.application_personnel_id', $id)
+            ->select(
+                'a.application_letter',
+                'a.cert_of_reg',
+                'a.grade_slip',
+                'a.brgy_indigency',
+                'a.student_id',
+                'app.applicant_fname',
+                'app.applicant_lname',
+                'app.applicant_brgy',
+                'app.applicant_school_name',
+                'app.applicant_course'
+            )
+            ->first();
+
+        if (!$applicationPersonnel) {
+            return response()->json(['error' => 'Application not found'], 404);
+        }
 
         return response()->json([
             "application" => [
-                "application_letter" => $application->application_letter,
-                "cert_of_reg" => $application->cert_of_reg,
-                "grade_slip" => $application->grade_slip,
-                "brgy_indigency" => $application->brgy_indigency,
+                "application_letter" => $applicationPersonnel->application_letter ? "/storage/" . $applicationPersonnel->application_letter : null,
+                "cert_of_reg" => $applicationPersonnel->cert_of_reg ? "/storage/" . $applicationPersonnel->cert_of_reg : null,
+                "grade_slip" => $applicationPersonnel->grade_slip ? "/storage/" . $applicationPersonnel->grade_slip : null,
+                "brgy_indigency" => $applicationPersonnel->brgy_indigency ? "/storage/" . $applicationPersonnel->brgy_indigency : null,
+                "student_id" => $applicationPersonnel->student_id ? "/storage/" . $applicationPersonnel->student_id : null,
             ],
             "applicant" => [
-                "applicant_fname" => $application->applicant->applicant_fname,
-                "applicant_lname" => $application->applicant->applicant_lname,
-                "applicant_brgy" => $application->applicant->applicant_brgy,
-                "applicant_school_name" =>
-                    $application->applicant->applicant_school_name,
+                "applicant_fname" => $applicationPersonnel->applicant_fname,
+                "applicant_lname" => $applicationPersonnel->applicant_lname,
+                "applicant_brgy" => $applicationPersonnel->applicant_brgy,
+                "applicant_school_name" => $applicationPersonnel->applicant_school_name,
+                "applicant_course" => $applicationPersonnel->applicant_course,
             ],
         ]);
     }
@@ -659,17 +697,7 @@ $percentageReviewed = $totalApplications > 0
             ->merge($newRemarks)
             ->sortByDesc("created_at");
 
-        $applications = DB::table("tbl_application")
-            ->select(
-                "application_id",
-                "applicant_id",
-                "application_letter",
-                "cert_of_reg",
-                "grade_slip",
-                "brgy_indigency",
-            )
-            ->get()
-            ->groupBy("applicant_id");
+
 
 
               $query = DB::table('tbl_application_personnel as ap')
@@ -709,7 +737,7 @@ $percentageReviewed = $totalApplications > 0
     $barangays = DB::table('tbl_applicant')->distinct()->pluck('applicant_brgy');
 
 
-        $listApplications = DB::table('tbl_application_personnel as ap')
+    $listApplications = DB::table('tbl_application_personnel as ap')
         ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
         ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
         ->join('tbl_lydopers as lydo', 'ap.lydopers_id', '=', 'lydo.lydopers_id')
@@ -726,7 +754,7 @@ $percentageReviewed = $totalApplications > 0
         )
         ->whereIn('ap.status', ['Approved', 'Rejected'])
         ->where('lydo.lydopers_role', 'lydo_staff')
-        ->paginate(15, ['*'], 'list');
+        ->get();
 
     $barangays = DB::table('tbl_applicant')->distinct()->pluck('applicant_brgy');
 
@@ -1990,8 +2018,168 @@ public function updateStatus(Request $request, $id)
                 'other_income' => $request->house['other_income'] ?? null,
                 'house_house' => $request->house['house'] ?? null,
                 'house_lot' => $request->house['lot'] ?? null,
+                'house_house_value' => $request->house['house_value'] ?? null,
+                'house_lot_value' => $request->house['lot_value'] ?? null,
+                'house_house_rent' => $request->house['house_rent'] ?? null,
+                'house_lot_rent' => $request->house['lot_rent'] ?? null,
                 'house_water' => $request->house['water'] ?? null,
                 'house_electric' => $request->house['electric'] ?? null,
+                'house_remarks' => $request->house['remarks'] ?? null,
+                'family_members' => json_encode($request->family),
+                'signature_client' => $request->signatures['client'] ?? null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Family intake sheet submitted successfully!',
+                'intakesheet_id' => $intakeSheet->id
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error submitting family intake sheet: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to submit intake sheet. Please try again.'], 500);
+        }
+    }
+
+    public function showIntakeSheet(Request $request, $application_personnel_id)
+    {
+        // Verify the application_personnel_id exists and is approved
+        $applicationPersonnel = DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $application_personnel_id)
+            ->where('initial_screening', 'Approved')
+            ->first();
+
+        if (!$applicationPersonnel) {
+            abort(404, 'Intake sheet not found or not approved.');
+        }
+
+        // Verify the token
+        $token = $request->query('token');
+        if (!$token || $token !== $applicationPersonnel->intake_sheet_token) {
+            abort(403, 'Invalid or missing token.');
+        }
+
+        // Fetch applicant data
+        $applicant = DB::table('tbl_application_personnel as ap')
+            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+            ->where('ap.application_personnel_id', $application_personnel_id)
+            ->select(
+                'app.applicant_fname',
+                'app.applicant_mname',
+                'app.applicant_lname',
+                'app.applicant_suffix',
+                'app.applicant_gender',
+                'app.applicant_bdate',
+                'app.applicant_brgy'
+            )
+            ->first();
+
+        if (!$applicant) {
+            abort(404, 'Applicant data not found.');
+        }
+
+        return view('Applicants.intakesheet', compact('application_personnel_id', 'applicant'));
+    }
+
+    public function submitIntakeSheetPublic(Request $request)
+    {
+        $request->validate([
+            'application_personnel_id' => 'required|integer|exists:tbl_application_personnel,application_personnel_id',
+            'token' => 'required|string',
+            'head' => 'required|array',
+            'head.fname' => 'required|string|max:255',
+            'head.lname' => 'required|string|max:255',
+            'head.sex' => 'required|in:Male,Female',
+            'head.address' => 'required|string|max:500',
+            'head.zone' => 'nullable|string|max:255',
+            'head.barangay' => 'nullable|string|max:255',
+            'head.dob' => 'nullable|date',
+            'head.pob' => 'nullable|string|max:255',
+            'head.educ' => 'nullable|string|max:255',
+            'head.occ' => 'nullable|string|max:255',
+            'head.religion' => 'nullable|string|max:255',
+            'head["_4ps"]' => 'nullable|string|max:255',
+            'head.ipno' => 'nullable|string|max:255',
+            'head.serial' => 'nullable|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'family' => 'required|array',
+            'family.*.name' => 'required|string|max:255',
+            'family.*.relation' => 'required|string|max:255',
+            'family.*.birth' => 'nullable|date',
+            'family.*.age' => 'nullable|integer|min:0',
+            'family.*.sex' => 'required|in:Male,Female',
+            'family.*.civil' => 'nullable|string|max:255',
+            'family.*.educ' => 'nullable|string|max:255',
+            'family.*.occ' => 'nullable|string|max:255',
+            'family.*.income' => 'nullable|numeric|min:0',
+            'family.*.remarks' => 'nullable|string|max:255',
+            'house' => 'required|array',
+            'house.total_income' => 'nullable|numeric|min:0',
+            'house.net_income' => 'nullable|numeric|min:0',
+            'house.other_income' => 'nullable|numeric|min:0',
+            'house.house' => 'nullable|string|max:255',
+            'house.lot' => 'nullable|string|max:255',
+            'house.house_value' => 'nullable|numeric|min:0',
+            'house.lot_value' => 'nullable|numeric|min:0',
+            'house.house_rent' => 'nullable|numeric|min:0',
+            'house.lot_rent' => 'nullable|numeric|min:0',
+            'house.water' => 'nullable|numeric|min:0',
+            'house.electric' => 'nullable|numeric|min:0',
+            'signatures' => 'nullable|array',
+            'signatures.client' => 'nullable|string',
+        ]);
+
+        try {
+            // Verify the token
+            $applicationPersonnel = DB::table('tbl_application_personnel')
+                ->where('application_personnel_id', $request->application_personnel_id)
+                ->where('intake_sheet_token', $request->token)
+                ->first();
+
+            if (!$applicationPersonnel) {
+                return response()->json(['success' => false, 'message' => 'Invalid token or application not found.'], 403);
+            }
+
+            // Check if intake sheet already exists for this application
+            $existingSheet = \App\Models\FamilyIntakeSheet::where('application_personnel_id', $request->application_personnel_id)->first();
+            if ($existingSheet) {
+                return response()->json(['success' => false, 'message' => 'Family intake sheet already exists for this application.'], 422);
+            }
+
+            // Verify the application is approved
+            if ($applicationPersonnel->initial_screening !== 'Approved') {
+                return response()->json(['success' => false, 'message' => 'Application not approved for intake sheet submission.'], 403);
+            }
+
+            // Create the intake sheet (no lydo_personnel_id for public submission)
+            $intakeSheet = \App\Models\FamilyIntakeSheet::create([
+                'application_personnel_id' => $request->application_personnel_id,
+                'lydo_personnel_id' => null, // Public submission
+                'head_4ps' => $request->head['_4ps'] ?? null,
+                'head_ipno' => $request->head['ipno'] ?? null,
+                'head_address' => $request->head['address'] ?? null,
+                'head_zone' => $request->head['zone'] ?? null,
+                'head_barangay' => $request->head['barangay'] ?? null,
+                'head_dob' => $request->head['dob'] ?? null,
+                'head_pob' => $request->head['pob'] ?? null,
+                'head_educ' => $request->head['educ'] ?? null,
+                'head_occ' => $request->head['occ'] ?? null,
+                'head_religion' => $request->head['religion'] ?? null,
+                'serial_number' => $request->head['serial'] ?? null,
+                'location' => $request->location ?? null,
+                'house_total_income' => $request->house['total_income'] ?? null,
+                'house_net_income' => $request->house['net_income'] ?? null,
+                'other_income' => $request->house['other_income'] ?? null,
+                'house_house' => $request->house['house'] ?? null,
+                'house_lot' => $request->house['lot'] ?? null,
+                'house_house_value' => $request->house['house_value'] ?? null,
+                'house_lot_value' => $request->house['lot_value'] ?? null,
+                'house_house_rent' => $request->house['house_rent'] ?? null,
+                'house_lot_rent' => $request->house['lot_rent'] ?? null,
+                'house_water' => $request->house['water'] ?? null,
+                'house_electric' => $request->house['electric'] ?? null,
+                'house_remarks' => $request->house['remarks'] ?? null,
                 'family_members' => json_encode($request->family),
                 'signature_client' => $request->signatures['client'] ?? null,
             ]);
