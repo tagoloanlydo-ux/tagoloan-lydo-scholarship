@@ -43,7 +43,7 @@ use App\Http\Controllers\API\AnnouncementController as ApiAnnouncementController
     Route::post('/applications/{applicationId}/upload-document', [ApiApplicationController::class, 'uploadDocument']);
 
     // ----------------------- PROTECTED ROUTES (Require Authentication) -----------------------
-    Route::middleware('auth:api')->group(function () {
+    Route::middleware('api.auth')->group(function () {
 
         // ----------------------- AUTH -----------------------
         Route::post('/auth/logout', [ApiAuthController::class, 'logout']);
@@ -78,6 +78,7 @@ use App\Http\Controllers\API\AnnouncementController as ApiAnnouncementController
 
         // ----------------------- STAFF ROUTES -----------------------
         Route::middleware('App\Http\Middleware\ApiRoleMiddleware:lydo_staff')->prefix('staff')->group(function () {
+            Route::get('/', [ApiAdminController::class, 'index']);
             Route::get('/dashboard', [ApiAdminController::class, 'dashboard']);
             Route::get('/applicants', [ApiAdminController::class, 'applicants']);
             Route::put('/applications/{applicationId}/status', [ApiAdminController::class, 'updateApplicationStatus']);
@@ -103,6 +104,7 @@ use App\Http\Controllers\API\AnnouncementController as ApiAnnouncementController
 
         // ----------------------- REPORTS -----------------------
         Route::prefix('reports')->group(function () {
+            Route::get('/', [ApiReportController::class, 'index']);
             Route::get('/statistics', [ApiReportController::class, 'statistics']);
             Route::get('/filter-options', [ApiReportController::class, 'filterOptions']);
             Route::get('/applicants/export', [ApiReportController::class, 'exportApplicants']);
