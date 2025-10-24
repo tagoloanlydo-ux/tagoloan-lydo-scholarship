@@ -654,6 +654,23 @@ private function moveFileToRenewals($file)
             abort(404, 'Application not found.');
         }
 
+        // Get application personnel record
+        $applicationPersonnel = \DB::table('tbl_application_personnel')
+            ->where('application_id', $application->application_id)
+            ->first();
+
+        if (!$applicationPersonnel) {
+            abort(404, 'Application personnel record not found.');
+        }
+
+        // Verify token if provided
+        $token = request()->query('token');
+        if ($token) {
+            if (!$applicationPersonnel->update_token || $token !== $applicationPersonnel->update_token) {
+                abort(403, 'Invalid or expired update token.');
+            }
+        }
+
         // Handle issues query param
         $issues = [];
         if (request()->has('issues')) {
@@ -661,7 +678,7 @@ private function moveFileToRenewals($file)
             $issues = array_map('trim', $issues);
         }
 
-        return view('scholar.update_applicaiton', compact('applicant', 'application', 'issues'));
+        return view('scholar.update_application', compact('applicant', 'application', 'issues'));
     }
 
 public function updateApplication(Request $request, $applicant_id)

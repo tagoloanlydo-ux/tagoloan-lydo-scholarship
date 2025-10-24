@@ -17,6 +17,7 @@ class ApplicationPersonnel extends Model
 
     protected $fillable = [
         'application_id', 'lydopers_id',
-        'initial_screening', 'remarks', 'status'
+        'initial_screening', 'remarks', 'status',
+        'reviewer_comment', 'is_bad'
     ];
 }

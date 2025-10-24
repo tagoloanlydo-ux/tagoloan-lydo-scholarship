@@ -46,6 +46,11 @@
 
           <form id="applicationForm" method="POST" action="{{ route('scholar.updateApplication', $applicant->applicant_id) }}" enctype="multipart/form-data">
           @csrf
+          @if(isset($issues) && is_array($issues))
+            @foreach($issues as $issue)
+              <input type="hidden" name="issues[]" value="{{ $issue }}">
+            @endforeach
+          @endif
             <!-- Name Fields -->
             <div class="input-row">
               <div class="input-group">

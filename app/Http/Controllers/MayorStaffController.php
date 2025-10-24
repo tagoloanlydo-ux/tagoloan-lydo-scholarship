@@ -16,6 +16,156 @@ use App\Http\Controllers\SmsController;
 class MayorStaffController extends Controller
 {
     /**
+     * Submit a comment for a document and prepare email message if needed.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function submitComment(Request $request, $id)
+    {
+        try {
+            // Validate request
+            $validated = $request->validate([
+                'comment' => 'required|string|max:1000',
+                'is_bad' => 'required|boolean',
+                'document_type' => 'required|string|in:application_letter,cert_of_reg,grade_slip,brgy_indigency,student_id'
+            ]);
+
+            // Get applicant details
+            $applicantDetails = DB::table('tbl_application_personnel as ap')
+                ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+                ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+                ->where('ap.application_personnel_id', $id)
+                ->select('app.applicant_id', 'app.applicant_email', 'app.applicant_fname', 'app.applicant_lname')
+                ->first();
+
+            // Store the comment in tbl_document_comments
+            $commentId = DB::table('tbl_document_comments')->insertGetId([
+                'application_personnel_id' => $id,
+                'document_type' => $validated['document_type'],
+                'comment' => $validated['comment'],
+                'is_bad' => $validated['is_bad'],
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            // If it's a bad document, store email message for this comment
+            if ($validated['is_bad']) {
+                $documentNames = [
+                    'application_letter' => 'Application Letter',
+                    'cert_of_reg' => 'Certificate of Registration',
+                    'grade_slip' => 'Grade Slip',
+                    'brgy_indigency' => 'Barangay Indigency',
+                    'student_id' => 'Student ID'
+                ];
+
+                $emailMessage = "Dear {$applicantDetails->applicant_fname},\n\n";
+                $emailMessage .= "We have reviewed your {$documentNames[$validated['document_type']]} and found the following issue:\n";
+                $emailMessage .= $validated['comment'] . "\n\n";
+                $emailMessage .= "Please resubmit this document with the necessary corrections.\n";
+                $emailMessage .= "You can update your application here: " . url("/scholar/update-application/{$applicantDetails->applicant_id}") . "\n\n";
+                $emailMessage .= "Best regards,\nLYDO Scholarship Team";
+
+                // Store email message for this comment
+                DB::table('tbl_document_email_messages')->insert([
+                    'document_comment_id' => $commentId,
+                    'application_personnel_id' => $id,
+                    'document_type' => $validated['document_type'],
+                    'email_message' => $emailMessage,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                // Update document status
+                $columnMap = [
+                    'application_letter' => 'application_letter_status',
+                    'cert_of_reg' => 'cert_of_reg_status',
+                    'grade_slip' => 'grade_slip_status',
+                    'brgy_indigency' => 'brgy_indigency_status',
+                    'student_id' => 'student_id_status'
+                ];
+
+                if (isset($columnMap[$validated['document_type']])) {
+                    DB::table('tbl_application_personnel')
+                        ->where('application_personnel_id', $id)
+                        ->update([
+                            $columnMap[$validated['document_type']] => 'bad',
+                            'updated_at' => now()
+                        ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Comment submitted successfully.',
+                'email_prepared' => $validated['is_bad']
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error submitting comment: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to submit comment.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get stored email messages for bad documents.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEmailMessages($id)
+    {
+        try {
+            $messages = DB::table('tbl_document_email_messages')
+                ->where('application_personnel_id', $id)
+                ->select('document_type', 'email_message')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'messages' => $messages
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error getting email messages: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve email messages.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get document comments for a specific application personnel.
+     *
+     * @param  int  $id Application personnel ID
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getDocumentComments($id)
+    {
+        try {
+            $comments = DB::table('tbl_document_comments')
+                ->where('application_personnel_id', $id)
+                ->select('document_type', 'comment', 'is_bad', 'created_at')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'comments' => $comments
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error getting document comments: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve document comments.'
+            ], 500);
+        }
+    }
+    /**
      * Display the mayor staff dashboard with statistics and notifications.
      *
      * @return \Illuminate\View\View
@@ -1357,7 +1507,7 @@ $applications = $query->get();
             'subject' => 'required|string|max:255',
             'message' => 'required|string',
             'application_issues' => 'nullable|array',
-            'application_issues.*' => 'in:application_letter,cert_of_reg,grade_slip,brgy_indigency',
+            'application_issues.*' => 'in:application_letter,cert_of_reg,grade_slip,brgy_indigency,student_id',
         ]);
 
         try {
@@ -1366,7 +1516,7 @@ $applications = $query->get();
                 ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
                 ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
                 ->where('ap.application_personnel_id', $request->application_personnel_id)
-                ->select('app.applicant_fname', 'app.applicant_lname', 'app.applicant_email')
+                ->select('app.applicant_fname', 'app.applicant_lname', 'app.applicant_email', 'app.applicant_id')
                 ->first();
 
             if (!$applicant) {
@@ -1379,7 +1529,22 @@ $applications = $query->get();
             // Build the email message with application issues if provided
             $emailMessage = $request->message;
 
+            $updateLink = null;
             if ($request->has('application_issues') && is_array($request->application_issues) && !empty($request->application_issues)) {
+                // Generate update token
+                $updateToken = \Illuminate\Support\Str::random(64);
+
+                // Save update token to database
+                DB::table('tbl_application_personnel')
+                    ->where('application_personnel_id', $request->application_personnel_id)
+                    ->update(['update_token' => $updateToken, 'updated_at' => now()]);
+
+                // Create signed update link
+                $updateLink = \Illuminate\Support\Facades\URL::signedRoute('scholar.showUpdateApplication', [
+                    'applicant_id' => $applicant->applicant_id,
+                    'token' => $updateToken
+                ]);
+
                 $issues = [];
                 foreach ($request->application_issues as $issue) {
                     switch ($issue) {
@@ -1402,9 +1567,12 @@ $applications = $query->get();
                 }
 
                 if (!empty($issues)) {
-                    $emailMessage .= "\n\nThe following documents have issues and need to be resubmitted:\n" . implode("\n", array_map(function($issue) {
-                        return "- " . $issue;
-                    }, $issues));
+                    $issuesList = [];
+                    foreach ($issues as $issue) {
+                        $issuesList[] = "- " . $issue;
+                    }
+                    $emailMessage .= "\n\nThe following documents have issues and need to be resubmitted:\n" . implode("\n", $issuesList);
+                    $emailMessage .= "\n\nPlease update your application using this link: " . $updateLink;
                 }
             }
 
