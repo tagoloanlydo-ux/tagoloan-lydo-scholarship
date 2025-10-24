@@ -233,9 +233,7 @@
                     @endforelse
                 </tbody>
             </table>
-            <div class="mt-4">
-                {{ $tableApplicants->appends(request()->except('page'))->links() }}
-            </div>
+
         </div>
 
             <!-- ✅ List View (Approved and Rejected applications) -->
@@ -344,10 +342,12 @@
                 <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                     <i class="fas fa-folder-open text-blue-600"></i>
                     Application Requirements</h2>
-            <button onclick="closeApplicationModal()" class="p-2 rounded-full hover:bg-gray-100 transition">
-                <i class="fas fa-times text-gray-500 text-lg"></i>
-            </button>
-        </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="closeApplicationModal()" class="p-2 rounded-full hover:bg-gray-100 transition">
+                        <i class="fas fa-times text-gray-500 text-lg"></i>
+                    </button>
+                </div>
+            </div>
         <!-- Body -->
         <div id="applicationContent" class="p-6 space-y-4">
         <!-- Dynamic Content via JS -->
@@ -630,9 +630,37 @@
 
     </script>
     <script>
-        function closeApplicationModal() {
-            document.getElementById('applicationModal').classList.add('hidden');
-        }
+    function closeApplicationModal() {
+        document.getElementById('applicationModal').classList.add('hidden');
+    }
+
+    function printApplicationModal() {
+        const modalContent = document.getElementById('applicationContent');
+        const printWindow = window.open('', '_blank');
+        const printContent = `
+            <html>
+            <head>
+                <title>Application Requirements - Lydo Scholarship</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    .academic-info { margin-bottom: 20px; }
+                    .documents-section { margin-top: 20px; }
+                    .doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+                    .doc-item { padding: 10px; border: 1px solid #ddd; text-align: center; }
+                    h4 { color: #333; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
+                    .info-box { background: #f8f9fa; padding: 10px; border-left: 4px solid #007bff; margin: 10px 0; }
+                </style>
+            </head>
+            <body>
+                <h2>Application Requirements</h2>
+                ${modalContent.innerHTML}
+            </body>
+            </html>
+        `;
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        printWindow.print();
+    }
 
         function approveApplication() {
             const applicationId = window.currentApplicationId;
