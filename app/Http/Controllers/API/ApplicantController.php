@@ -33,7 +33,11 @@ class ApplicantController extends Controller
 
         $applicants = $query->paginate(15);
 
-        return $this->paginatedResponse($applicants, 'Applicants retrieved successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Applicants retrieved successfully',
+            'data' => $applicants
+        ]);
     }
 
     public function store(Request $request)
@@ -43,9 +47,9 @@ class ApplicantController extends Controller
             'applicant_mname' => 'nullable|string|max:50',
             'applicant_lname' => 'required|string|max:50',
             'applicant_suffix' => 'nullable|string|max:10',
-            'applicant_gender' => 'required|string|max:10',
+            'applicant_gender' => 'required|string|max:10|in:male,female,other,Male,Female,Other',
             'applicant_bdate' => 'required|date',
-            'applicant_civil_status' => 'required|string|max:20',
+            'applicant_civil_status' => 'required|string|max:20|in:single,married,widowed,divorced,Single,Married,Widowed,Divorced',
             'applicant_brgy' => 'required|string|max:100',
             'applicant_email' => 'required|email|max:100|unique:tbl_applicant',
             'applicant_contact_number' => 'required|string|max:20',
@@ -56,13 +60,30 @@ class ApplicantController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->validationErrorResponse($validator);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         try {
             DB::beginTransaction();
 
-            $applicant = Applicant::create($request->all());
+            // Normalize data before creating applicant
+            $applicantData = $request->all();
+            
+            // Normalize gender to lowercase
+            if (isset($applicantData['applicant_gender'])) {
+                $applicantData['applicant_gender'] = strtolower($applicantData['applicant_gender']);
+            }
+            
+            // Normalize civil status to lowercase
+            if (isset($applicantData['applicant_civil_status'])) {
+                $applicantData['applicant_civil_status'] = strtolower($applicantData['applicant_civil_status']);
+            }
+
+            $applicant = Applicant::create($applicantData);
 
             // Create application record
             $application = DB::table('tbl_application')->insertGetId([
@@ -83,11 +104,18 @@ class ApplicantController extends Controller
 
             DB::commit();
 
-            return $this->successResponse($applicant, 'Applicant created successfully', 201);
+            return response()->json([
+                'success' => true,
+                'message' => 'Applicant created successfully',
+                'data' => $applicant
+            ], 201);
 
         } catch (\Exception $e) {
             DB::rollback();
-            return $this->errorResponse('Failed to create applicant: ' . $e->getMessage(), 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create applicant: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -96,10 +124,17 @@ class ApplicantController extends Controller
         $applicant = Applicant::find($id);
 
         if (!$applicant) {
-            return $this->errorResponse('Applicant not found', 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Applicant not found'
+            ], 404);
         }
 
-        return $this->successResponse($applicant, 'Applicant retrieved successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Applicant retrieved successfully',
+            'data' => $applicant
+        ]);
     }
 
     public function update(Request $request, $id)
@@ -107,7 +142,10 @@ class ApplicantController extends Controller
         $applicant = Applicant::find($id);
 
         if (!$applicant) {
-            return $this->errorResponse('Applicant not found', 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Applicant not found'
+            ], 404);
         }
 
         $validator = Validator::make($request->all(), [
@@ -115,9 +153,9 @@ class ApplicantController extends Controller
             'applicant_mname' => 'nullable|string|max:50',
             'applicant_lname' => 'required|string|max:50',
             'applicant_suffix' => 'nullable|string|max:10',
-            'applicant_gender' => 'required|string|max:10',
+            'applicant_gender' => 'required|string|max:10|in:male,female,other,Male,Female,Other',
             'applicant_bdate' => 'required|date',
-            'applicant_civil_status' => 'required|string|max:20',
+            'applicant_civil_status' => 'required|string|max:20|in:single,married,widowed,divorced,Single,Married,Widowed,Divorced',
             'applicant_brgy' => 'required|string|max:100',
             'applicant_email' => 'required|email|max:100|unique:tbl_applicant,applicant_email,' . $id . ',applicant_id',
             'applicant_contact_number' => 'required|string|max:20',
@@ -128,15 +166,40 @@ class ApplicantController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->validationErrorResponse($validator);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         try {
-            $applicant->update($request->all());
-            return $this->successResponse($applicant, 'Applicant updated successfully');
+            // Normalize data before updating
+            $applicantData = $request->all();
+            
+            // Normalize gender to lowercase
+            if (isset($applicantData['applicant_gender'])) {
+                $applicantData['applicant_gender'] = strtolower($applicantData['applicant_gender']);
+            }
+            
+            // Normalize civil status to lowercase
+            if (isset($applicantData['applicant_civil_status'])) {
+                $applicantData['applicant_civil_status'] = strtolower($applicantData['applicant_civil_status']);
+            }
+
+            $applicant->update($applicantData);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Applicant updated successfully',
+                'data' => $applicant
+            ]);
 
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update applicant: ' . $e->getMessage(), 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update applicant: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -145,7 +208,10 @@ class ApplicantController extends Controller
         $applicant = Applicant::find($id);
 
         if (!$applicant) {
-            return $this->errorResponse('Applicant not found', 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Applicant not found'
+            ], 404);
         }
 
         try {
@@ -173,11 +239,17 @@ class ApplicantController extends Controller
 
             DB::commit();
 
-            return $this->successResponse(null, 'Applicant deleted successfully');
+            return response()->json([
+                'success' => true,
+                'message' => 'Applicant deleted successfully'
+            ]);
 
         } catch (\Exception $e) {
             DB::rollback();
-            return $this->errorResponse('Failed to delete applicant: ' . $e->getMessage(), 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete applicant: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

@@ -34,9 +34,9 @@ class ApplicationController extends Controller
                 'applicant_mname' => 'nullable|string|max:50',
                 'applicant_lname' => 'required|string|max:50',
                 'applicant_suffix' => 'nullable|string|max:10',
-                'applicant_gender' => 'required|string|max:10',
+                'applicant_gender' => 'required|string|max:10|in:male,female,other,Male,Female,Other',
                 'applicant_bdate' => 'required|date',
-                'applicant_civil_status' => 'required|string|max:20',
+                'applicant_civil_status' => 'required|string|max:20|in:single,married,widowed,divorced,Single,Married,Widowed,Divorced',
                 'applicant_brgy' => 'required|string|max:100',
                 'applicant_email' => 'required|email|max:100|unique:tbl_applicant',
                 'applicant_contact_number' => 'required|string|max:20',
@@ -62,8 +62,21 @@ class ApplicationController extends Controller
                 // Use existing applicant
                 $applicantId = $request->applicant_id;
             } else {
+                // Normalize data before creating applicant
+                $applicantData = $request->all();
+                
+                // Normalize gender to lowercase
+                if (isset($applicantData['applicant_gender'])) {
+                    $applicantData['applicant_gender'] = strtolower($applicantData['applicant_gender']);
+                }
+                
+                // Normalize civil status to lowercase
+                if (isset($applicantData['applicant_civil_status'])) {
+                    $applicantData['applicant_civil_status'] = strtolower($applicantData['applicant_civil_status']);
+                }
+                
                 // Create new applicant
-                $applicant = Applicant::create($request->all());
+                $applicant = Applicant::create($applicantData);
                 $applicantId = $applicant->applicant_id;
             }
 
