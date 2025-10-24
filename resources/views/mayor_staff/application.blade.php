@@ -502,31 +502,48 @@
                             Click one of the documents to view the application
                         </p>
     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <a href="${foundApp.application_letter}" target="_blank"
-        class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-blue-50 transition-all duration-200 hover:shadow-md">
+        <button data-url="${foundApp.application_letter}" data-type="application_letter" onclick="loadDocument(this); trackClick(0);"
+        class="doc-button flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-blue-50 transition-all duration-200 hover:shadow-md">
             <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
             <span class="text-sm font-medium text-gray-700 text-center">Application Letter</span>
-        </a>
-        <a href="${foundApp.cert_of_reg}" target="_blank"
-        class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-indigo-50 transition-all duration-200 hover:shadow-md">
+        </button>
+        <button data-url="${foundApp.cert_of_reg}" data-type="cert_of_reg" onclick="loadDocument(this); trackClick(1);"
+        class="doc-button flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-indigo-50 transition-all duration-200 hover:shadow-md">
             <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
             <span class="text-sm font-medium text-gray-700 text-center">Certificate of Reg.</span>
-        </a>
-        <a href="${foundApp.grade_slip}" target="_blank"
-        class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-green-50 transition-all duration-200 hover:shadow-md">
+        </button>
+        <button data-url="${foundApp.grade_slip}" data-type="grade_slip" onclick="loadDocument(this); trackClick(2);"
+        class="doc-button flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-green-50 transition-all duration-200 hover:shadow-md">
             <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
             <span class="text-sm font-medium text-gray-700 text-center">Grade Slip</span>
-        </a>
-        <a href="${foundApp.brgy_indigency}" target="_blank"
-        class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-purple-50 transition-all duration-200 hover:shadow-md">
+        </button>
+        <button data-url="${foundApp.brgy_indigency}" data-type="brgy_indigency" onclick="loadDocument(this); trackClick(3);"
+        class="doc-button flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-purple-50 transition-all duration-200 hover:shadow-md">
             <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
             <span class="text-sm font-medium text-gray-700 text-center">Barangay Indigency</span>
-        </a>
-        <a href="${foundApp.student_id}" target="_blank"
-        class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-orange-50 transition-all duration-200 hover:shadow-md">
+        </button>
+        <button data-url="${foundApp.student_id}" data-type="student_id" onclick="loadDocument(this); trackClick(4);"
+        class="doc-button flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-orange-50 transition-all duration-200 hover:shadow-md">
             <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
             <span class="text-sm font-medium text-gray-700 text-center">Student ID</span>
-        </a>
+        </button>
+    </div>
+
+    <!-- Document Preview Section -->
+    <div id="documentPreview" class="mt-6 hidden">
+        <h5 class="text-gray-800 font-semibold mb-2">Document Preview</h5>
+        <iframe id="previewIframe" src="" width="100%" height="600px" style="border:1px solid #ccc;"></iframe>
+    </div>
+
+    <!-- Reviewer Comment Section -->
+    <div id="commentSection" class="mt-6 hidden">
+        <label for="reviewerComment" class="block text-gray-700 font-medium mb-2">Reviewer Comment</label>
+        <textarea id="reviewerComment" rows="4" class="w-full border rounded px-3 py-2" placeholder="Enter your comment..."></textarea>
+        <div class="mt-2 flex items-center">
+            <input type="checkbox" id="markAsBad" class="mr-2">
+            <label for="markAsBad" class="text-gray-700">Mark as Bad</label>
+        </div>
+        <button onclick="submitComment()" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Submit Comment</button>
     </div>
 
                 </div>
@@ -1131,6 +1148,81 @@
         }
         });
     });
+    </script>
+
+    <script>
+        // Document preview and comment functions
+        function loadDocument(button) {
+            const url = button.getAttribute('data-url');
+            const iframe = document.getElementById('previewIframe');
+            const previewSection = document.getElementById('documentPreview');
+            const commentSection = document.getElementById('commentSection');
+
+            iframe.src = url;
+            previewSection.classList.remove('hidden');
+            commentSection.classList.remove('hidden');
+        }
+
+        function trackClick(index) {
+            // Optional: Track which document was clicked for analytics
+            console.log('Document clicked:', index);
+        }
+
+        function submitComment() {
+            const comment = document.getElementById('reviewerComment').value.trim();
+            const isBad = document.getElementById('markAsBad').checked;
+            const currentAppId = window.currentApplicationId;
+
+            // Auto-detect keywords for bad documents
+            const badKeywords = ['incomplete', 'blurry', 'unclear', 'missing', 'illegible', 'poor quality'];
+            const hasBadKeywords = badKeywords.some(keyword => comment.toLowerCase().includes(keyword));
+
+            if (isBad || hasBadKeywords) {
+                // Find the clicked document button and mark it red
+                const clickedButton = document.querySelector('.doc-button.clicked');
+                if (clickedButton) {
+                    clickedButton.classList.add('bg-red-100', 'border-red-300');
+                    clickedButton.classList.remove('bg-gray-50', 'hover:bg-blue-50', 'hover:bg-indigo-50', 'hover:bg-green-50', 'hover:bg-purple-50', 'hover:bg-orange-50');
+                }
+            }
+
+            // Send comment to server (you may need to implement backend endpoint)
+            fetch(`/mayor_staff/application/${currentAppId}/comment`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                },
+                body: JSON.stringify({
+                    comment: comment,
+                    is_bad: isBad,
+                    application_personnel_id: currentAppId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Success', 'Comment submitted successfully.', 'success');
+                    document.getElementById('reviewerComment').value = '';
+                    document.getElementById('markAsBad').checked = false;
+                } else {
+                    Swal.fire('Error', 'Failed to submit comment.', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Failed to submit comment.', 'error');
+            });
+        }
+
+        // Track which document button was clicked
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.doc-button')) {
+                // Remove 'clicked' class from all buttons
+                document.querySelectorAll('.doc-button').forEach(btn => btn.classList.remove('clicked'));
+                // Add 'clicked' class to the clicked button
+                e.target.closest('.doc-button').classList.add('clicked');
+            }
+        });
     </script>
 
     <script>

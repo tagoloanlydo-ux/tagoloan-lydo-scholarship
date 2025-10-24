@@ -1,4 +1,6 @@
 <?php
+
+// Routes for the LYDO Scholarship Application
 use App\Http\Controllers\MayorStaffController;
 use App\Http\Controllers\LydoAdminController;
 use App\Http\Controllers\LydoStaffController;

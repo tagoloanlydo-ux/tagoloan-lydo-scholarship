@@ -15,6 +15,11 @@ use App\Http\Controllers\SmsController;
 
 class MayorStaffController extends Controller
 {
+    /**
+     * Display the mayor staff dashboard with statistics and notifications.
+     *
+     * @return \Illuminate\View\View
+     */
     public function index()
     {
         $newApplications = DB::table("tbl_application as app")
@@ -228,7 +233,12 @@ $percentageReviewed = $totalApplications > 0
         ));
     }
 
-
+    /**
+     * Display the application management page for mayor staff.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
+     */
     public function application(Request $request)
     {
         $query = DB::table("tbl_applicant as a")
@@ -462,6 +472,14 @@ $percentageReviewed = $totalApplications > 0
             ),
         );
     }
+
+    /**
+     * Update the initial screening remarks for an application.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id Application personnel ID
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function updateInitialScreening(Request $request, $id)
     {
         $request->validate([
@@ -479,6 +497,12 @@ $percentageReviewed = $totalApplications > 0
         return response()->json(['success' => true, 'message' => 'Initial screening remarks updated successfully.']);
     }
 
+    /**
+     * Delete an application.
+     *
+     * @param int $id Application personnel ID
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function deleteApplication($id)
     {
         // Delete the application personnel record
@@ -491,6 +515,12 @@ $percentageReviewed = $totalApplications > 0
             ->with("success", "Application deleted successfully.");
     }
 
+    /**
+     * Approve an application and send approval email with intake sheet token.
+     *
+     * @param int $id Application personnel ID
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function approveApplication($id)
     {
         // Get the application_id and applicant email from application_personnel and applicant
@@ -534,6 +564,13 @@ $percentageReviewed = $totalApplications > 0
         return response()->json(['success' => true, 'message' => 'Initial screening approved successfully.']);
     }
 
+    /**
+     * Reject an application with a reason and send rejection email.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id Application personnel ID
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function rejectApplication(Request $request, $id)
     {
         $request->validate([
@@ -585,6 +622,13 @@ $percentageReviewed = $totalApplications > 0
 
         return response()->json(['success' => true, 'message' => 'Initial screening rejected successfully.']);
     }
+
+    /**
+     * Get application requirements for a specific application.
+     *
+     * @param int $id Application personnel ID
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getApplicationRequirements($id)
     {
         // Get application personnel record
@@ -628,6 +672,12 @@ $percentageReviewed = $totalApplications > 0
         ]);
     }
 
+    /**
+     * Display the status management page for mayor staff.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\View\View
+     */
     public function status(Request $request)
     {
            $newApplications = DB::table("tbl_application as app")
@@ -751,8 +801,14 @@ $applications = $query->get();
     return view('mayor_staff.status', compact('applications', 'barangays', 'notifications', 'applications','newApplications', 'newRemarks', 'listApplications', 'showBadge'  ));
 }
 
-// ✅ Update status
-public function updateStatus(Request $request, $id)
+    /**
+     * Update the status of an application (Approved/Rejected).
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id Application personnel ID
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
+    public function updateStatus(Request $request, $id)
 {
     // Validate request
     $request->validate([
@@ -851,6 +907,12 @@ public function updateStatus(Request $request, $id)
 
     return back()->with('success', 'Status updated successfully!');
 }
+
+    /**
+     * Display the settings page for mayor staff.
+     *
+     * @return \Illuminate\View\View
+     */
     public function settings()
     {
                    $newApplications = DB::table("tbl_application as app")
@@ -927,7 +989,12 @@ public function updateStatus(Request $request, $id)
         return view('mayor_staff.settings', compact('notifications', 'newApplications', 'newRemarks', 'showBadge') );
     }
 
-    
+    /**
+     * Display the reports page with various statistics and charts.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\View\View
+     */
     public function report(Request $request)
     {
         $newApplications = DB::table("tbl_application as app")
@@ -1170,9 +1237,15 @@ public function updateStatus(Request $request, $id)
             'barangays',
             'listApplications',
             'statusApplications'
-        )); 
+        ));
     }
 
+    /**
+     * Generate and print a report based on filters.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\View\View
+     */
     public function printReport(Request $request)
     {
         $type = $request->query('type', 'all');
@@ -1221,6 +1294,12 @@ public function updateStatus(Request $request, $id)
         return view('mayor_staff.print-report', compact('applications', 'type', 'barangay', 'academicYear', 'screeningStatus', 'statusFilter'));
     }
 
+    /**
+     * Generate and print a status report based on filters.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\View\View
+     */
     public function printStatusReport(Request $request)
     {
         $type = $request->query('type', 'all');
@@ -1264,6 +1343,12 @@ public function updateStatus(Request $request, $id)
         return view('mayor_staff.print-status-report', compact('applications', 'type', 'barangay', 'academicYear', 'screeningStatus'));
     }
 
+    /**
+     * Send an email to an applicant with optional application issues.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
     public function sendEmail(Request $request)
     {
         $request->validate([
@@ -1349,6 +1434,13 @@ public function updateStatus(Request $request, $id)
         }
     }
 
+    /**
+     * Update personal information for a mayor staff member.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id Lydopers ID
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function updatePersonalInfo(Request $request, $id)
     {
         $request->validate([
@@ -1377,6 +1469,12 @@ public function updateStatus(Request $request, $id)
         return redirect()->back()->with('success', 'Personal information updated successfully.');
     }
 
+    /**
+     * Update the password for the logged-in mayor staff member.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function updatePassword(Request $request)
     {
         $request->validate([
@@ -1399,6 +1497,12 @@ public function updateStatus(Request $request, $id)
         return redirect()->back()->with('success', 'Password updated successfully.');
     }
 
+    /**
+     * Mark notifications as viewed for the logged-in mayor staff member.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function markNotificationsViewed(Request $request)
     {
         session(['notifications_viewed' => true]);
