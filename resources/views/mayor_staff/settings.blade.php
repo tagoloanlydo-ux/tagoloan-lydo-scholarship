@@ -87,7 +87,7 @@
                 <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
                     <ul class="side-menu top space-y-4">
                       <li>
-                        <a href="/mayor_staff/dashboard" class="sidebar-item flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                        <a href="/mayor_staff/dashboard" class=" flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
                           <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
                           <span class="ml-4 hidden md:block text-lg">Dashboard</span>
                         </a>
@@ -121,7 +121,7 @@
                     </ul>
                     <ul class="side-menu space-y-1">
                       <li>
-                        <a href="/mayor_staff/settings" class="sidebar-item flex items-center p-3 rounded-lg text-violet-600 bg-violet-50">
+                        <a href="/mayor_staff/settings" class="w-ful flex items-center p-3 rounded-lg text-white bg-violet-600 hover:bg-violet-700">
                           <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl"></i>
                           <span class="ml-4 hidden md:block text-base">Settings</span>
                         </a>
