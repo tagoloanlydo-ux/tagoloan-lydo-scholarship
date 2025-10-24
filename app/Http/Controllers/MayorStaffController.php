@@ -1831,6 +1831,104 @@ $applications = $query->get();
         ]);
     }
 
+    public function getApplicationSearchResults(Request $request)
+    {
+        $query = DB::table("tbl_applicant as a")
+            ->join(
+                "tbl_application as app",
+                "a.applicant_id",
+                "=",
+                "app.applicant_id",
+            )
+            ->join(
+                "tbl_application_personnel as ap",
+                "app.application_id",
+                "=",
+                "ap.application_id",
+            )
+            ->select(
+                "a.*",
+                "app.application_id",
+                "ap.application_personnel_id",
+                "ap.status",
+                "ap.initial_screening",
+                "ap.remarks",
+                "a.applicant_email",
+            )
+            ->where(
+                "a.applicant_acad_year",
+                "=",
+                now()->format("Y") .
+                    "-" .
+                    now()
+                        ->addYear()
+                        ->format("Y"),
+            )
+            ->where("ap.initial_screening", "Pending");
+
+        if ($request->filled("search")) {
+            $query->where(function ($q) use ($request) {
+                $q->where(
+                    "a.applicant_fname",
+                    "like",
+                    "%" . $request->search . "%",
+                )->orWhere(
+                    "a.applicant_lname",
+                    "like",
+                    "%" . $request->search . "%",
+                );
+            });
+        }
+
+        if ($request->filled("barangay")) {
+            $query->where("a.applicant_brgy", $request->barangay);
+        }
+
+        $tableApplicants = $query->paginate(15);
+
+        // Generate HTML for table rows
+        $html = '';
+        foreach ($tableApplicants as $index => $app) {
+            $html .= '<tr class="border-b border-gray-200 hover:bg-blue-50 transition-colors duration-200">';
+            $html .= '<td class="px-6 py-4 text-center">' . (($tableApplicants->currentPage() - 1) * $tableApplicants->perPage() + $index + 1) . '</td>';
+            $html .= '<td class="px-6 py-4 text-center font-medium">' . $app->applicant_fname . ' ' . $app->applicant_lname . '</td>';
+            $html .= '<td class="px-6 py-4 text-center">' . $app->applicant_brgy . '</td>';
+            $html .= '<td class="px-6 py-4 text-center">' . $app->applicant_gender . '</td>';
+            $html .= '<td class="px-6 py-4 text-center">' . \Carbon\Carbon::parse($app->applicant_bdate)->format('F j, Y') . '</td>';
+            $html .= '<td class="px-6 py-4 text-center">';
+            $html .= '<button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openApplicationModal(' . $app->application_personnel_id . ', \'pending\')">';
+            $html .= 'View Applications';
+            $html .= '</button>';
+            $html .= '</td>';
+            $html .= '<td class="px-6 py-4 text-center relative">';
+            $html .= '<div class="dropdown">';
+            $html .= '<button class="text-gray-600 hover:text-gray-800 focus:outline-none" onclick="toggleDropdownMenu(' . $app->application_personnel_id . ')">';
+            $html .= '<i class="fas fa-ellipsis-v"></i>';
+            $html .= '</button>';
+            $html .= '<div id="dropdown-menu-' . $app->application_personnel_id . '" class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">';
+            $html .= '<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="openEmailModal(' . $app->application_personnel_id . ', ' . $app->applicant_id . ', \'' . $app->applicant_fname . ' ' . $app->applicant_lname . '\', \'' . $app->applicant_email . '\')">';
+            $html .= '<i class="fas fa-envelope mr-2"></i>Send Email';
+            $html .= '</a>';
+            $html .= '<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="openDeleteModal(' . $app->application_personnel_id . ', \'' . $app->applicant_fname . ' ' . $app->applicant_lname . '\')">';
+            $html .= '<i class="fas fa-trash mr-2"></i>Delete Application';
+            $html .= '</a>';
+            $html .= '</div>';
+            $html .= '</div>';
+            $html .= '</td>';
+            $html .= '</tr>';
+        }
+
+        // Generate pagination HTML
+        $paginationHtml = $tableApplicants->appends($request->except('page'))->links()->toHtml();
+
+        return response()->json([
+            'html' => $html,
+            'pagination' => $paginationHtml,
+            'current_page' => $tableApplicants->currentPage(),
+            'last_page' => $tableApplicants->lastPage(),
+        ]);
+    }
+
     public function getApplicationsData(Request $request)
     {
         $type = $request->get('type', 'pending'); // 'pending' or 'reviewed'
