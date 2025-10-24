@@ -161,7 +161,7 @@
                         <!-- Filter by Barangay -->
                         <div class="flex-1">
                             <label for="barangaySelect" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                            <select id="barangaySelect" name="barangay"
+                            <select id="barangaySelect"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">All Barangays</option>
                                 @php
