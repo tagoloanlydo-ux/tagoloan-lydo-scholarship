@@ -322,11 +322,6 @@
                         </div>
                     </td>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">No approved or rejected applications found.</td>
-                </tr>
-            @endforelse
         </tbody>
     </table>
     </div>
