@@ -88,7 +88,14 @@ use App\Http\Controllers\API\AnnouncementController as ApiAnnouncementController
         Route::middleware('App\Http\Middleware\ApiRoleMiddleware:mayor_staff')->prefix('mayor-staff')->group(function () {
             Route::get('/dashboard', [ApiAdminController::class, 'dashboard']);
             Route::get('/applicants', [ApiAdminController::class, 'applicants']);
+            Route::get('/applications', [ApiAdminController::class, 'applicants']);
+            Route::get('/status', [ApiAdminController::class, 'applicants']); // For status updates
             Route::put('/applications/{applicationId}/status', [ApiAdminController::class, 'updateApplicationStatus']);
+            Route::put('/applications/{applicationId}', [ApiAdminController::class, 'updateApplicationStatus']); // For initial screening remarks
+            Route::post('/applications/{applicationId}/send-email', [ApiAdminController::class, 'sendEmail']);
+            Route::delete('/applications/{applicationId}', [ApiAdminController::class, 'deleteApplication']);
+            Route::get('/applications/test', [ApiAdminController::class, 'testEndpoint']);
+            Route::post('/applications/send-bulk-email', [ApiAdminController::class, 'sendBulkEmail']);
         });
 
         // ----------------------- NOTIFICATIONS -----------------------

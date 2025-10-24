@@ -192,14 +192,22 @@
           @method('PUT')
                     <h1 class="text-base font-semibold text-gray-800 mb-8">Update Personal Information</h1>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             <div>
               <label class="block text-base text-gray-600 mb-1">First Name</label>
               <input type="text" name="lydopers_fname" value="{{ session('lydopers')->lydopers_fname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
             </div>
+                        <div>
+              <label class="block text-base text-gray-600 mb-1">Middle Name</label>
+              <input type="text" name="lydopers_mname" value="{{ session('lydopers')->lydopers_mname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+            </div>
             <div>
               <label class="block text-base text-gray-600 mb-1">Last Name</label>
               <input type="text" name="lydopers_lname" value="{{ session('lydopers')->lydopers_lname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+            </div>
+            <div>
+              <label class="block text-base text-gray-600 mb-1">Suffix</label>
+              <input type="text" name="lydopers_suffix" value="{{ session('lydopers')->lydopers_suffix }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
             </div>
             <div class="md:col-span-2">
               <label class="block text-base text-gray-600 mb-1">Email</label>
@@ -213,9 +221,16 @@
               <label class="block text-base text-gray-600 mb-1">Phone Number</label>
               <input type="tel" name="lydopers_contact_number" value="{{ session('lydopers')->lydopers_contact_number }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
             </div>
-            <div>
-              <label class="block text-base text-gray-600 mb-1">Date of Birth</label>
-            </div>
+          <div>
+            <label class="block text-base text-gray-600 mb-1">Date of Birth</label>
+            <input
+              type="date"
+              name="lydopers_bdate"
+              value="{{ session('lydopers')->lydopers_bdate }}"
+              class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+            />
+          </div>
+
           </div>
 
           <!-- Buttons -->

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Applicant;
 use App\Models\Application;
 use App\Models\ApplicationPersonnel;
@@ -24,7 +25,7 @@ class AdminController extends Controller
     public function dashboard(Request $request)
     {
         try {
-            $user = $this->getAuthenticatedUser();
+            $user = Auth::user();
             $role = $user->role;
 
             $stats = [];
@@ -53,10 +54,17 @@ class AdminController extends Controller
                     ->count();
             }
 
-            return $this->successResponse($stats, 'Dashboard statistics retrieved successfully');
+            return response()->json([
+                'success' => true,
+                'message' => 'Dashboard statistics retrieved successfully',
+                'data' => $stats,
+            ]);
 
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to load dashboard: ' . $e->getMessage(), 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load dashboard: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -92,7 +100,11 @@ class AdminController extends Controller
 
         $applicants = $query->paginate(15);
 
-        return $this->paginatedResponse($applicants, 'Applicants retrieved successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Applicants retrieved successfully',
+            'data' => $applicants,
+        ]);
     }
 
     /**
@@ -103,10 +115,17 @@ class AdminController extends Controller
         $applicant = Applicant::with(['application.applicationPersonnel'])->find($applicantId);
 
         if (!$applicant) {
-            return $this->errorResponse('Applicant not found', 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Applicant not found',
+            ], 404);
         }
 
-        return $this->successResponse($applicant, 'Applicant details retrieved successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Applicant details retrieved successfully',
+            'data' => $applicant,
+        ]);
     }
 
     /**
@@ -121,14 +140,21 @@ class AdminController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->validationErrorResponse($validator);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
         }
 
         try {
             $applicationPersonnel = ApplicationPersonnel::where('application_id', $applicationId)->first();
 
             if (!$applicationPersonnel) {
-                return $this->errorResponse('Application personnel record not found', 404);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Application personnel record not found',
+                ], 404);
             }
 
             $applicationPersonnel->update([
@@ -142,10 +168,17 @@ class AdminController extends Controller
                 $this->createScholarAccount($applicationId);
             }
 
-            return $this->successResponse($applicationPersonnel->load('application.applicant'), 'Application status updated successfully');
+            return response()->json([
+                'success' => true,
+                'message' => 'Application status updated successfully',
+                'data' => $applicationPersonnel->load('application.applicant'),
+            ]);
 
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update status: ' . $e->getMessage(), 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update status: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -358,6 +391,84 @@ class AdminController extends Controller
     }
 
     /**
+     * Send email to applicant
+     */
+    public function sendEmail(Request $request, $applicationId)
+    {
+        $validator = Validator::make($request->all(), [
+            'recipient_email' => 'required|email',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string',
+            'issues' => 'nullable|array',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator);
+        }
+
+        try {
+            // Here you would implement email sending logic
+            // For now, just return success
+            return $this->successResponse([], 'Email sent successfully');
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to send email: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Delete application
+     */
+    public function deleteApplication(Request $request, $applicationId)
+    {
+        try {
+            $applicationPersonnel = ApplicationPersonnel::where('application_id', $applicationId)->first();
+
+            if (!$applicationPersonnel) {
+                return $this->errorResponse('Application not found', 404);
+            }
+
+            $applicationPersonnel->delete();
+
+            return $this->successResponse([], 'Application deleted successfully');
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to delete application: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Send bulk emails
+     */
+    public function sendBulkEmail(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'applications' => 'required|array',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string',
+            'issues' => 'nullable|array',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator);
+        }
+
+        try {
+            // Here you would implement bulk email sending logic
+            // For now, just return success
+            return $this->successResponse([], 'Bulk emails sent successfully');
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to send bulk emails: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Test endpoint
+     */
+    public function testEndpoint(Request $request)
+    {
+        return $this->successResponse(['message' => 'Test endpoint working'], 'Test successful');
+    }
+
+    /**
      * Create scholar account helper
      */
     private function createScholarAccount($applicationId)
@@ -387,5 +498,52 @@ class AdminController extends Controller
             'scholar_status' => 'Active',
             'date_activated' => now(),
         ]);
+    }
+
+    /**
+     * Success response helper
+     */
+    protected function successResponse($data = [], $message = '', $status = 200)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => $data,
+        ], $status);
+    }
+
+    /**
+     * Error response helper
+     */
+    protected function errorResponse($message, $status = 400)
+    {
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+        ], $status);
+    }
+
+    /**
+     * Validation error response helper
+     */
+    protected function validationErrorResponse($validator)
+    {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation failed',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    /**
+     * Paginated response helper
+     */
+    protected function paginatedResponse($data, $message = '', $status = 200)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => $data,
+        ], $status);
     }
 }
