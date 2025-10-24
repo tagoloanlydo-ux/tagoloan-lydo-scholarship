@@ -148,20 +148,20 @@
                     </h3>
                 </div>
 
-                <!-- Search and Filter Section -->
-                <div class="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-sm border">
+                <!-- Search and Filter Section (server-side) -->
+                <form method="GET" action="{{ url()->current() }}" class="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-sm border">
                     <div class="flex flex-col md:flex-row gap-4 w-full">
                         <!-- Search by Name -->
                         <div class="flex-1">
                             <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
-                            <input type="text" id="searchInput" placeholder="Enter applicant name..."
+                            <input type="text" id="searchInput" name="search" value="{{ request('search') }}" placeholder="Enter applicant name..."
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
 
                         <!-- Filter by Barangay -->
                         <div class="flex-1">
                             <label for="barangaySelect" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                            <select id="barangaySelect"
+                            <select id="barangaySelect" name="barangay"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">All Barangays</option>
                                 @php
@@ -169,19 +169,22 @@
                                     $uniqueBarangays = collect($items)->pluck('applicant_brgy')->unique()->sort();
                                 @endphp
                                 @foreach($uniqueBarangays as $barangay)
-                                    <option value="{{ $barangay }}">{{ $barangay }}</option>
+                                    <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>{{ $barangay }}</option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
 
-                    <!-- Clear Filters Button -->
-                    <div class="flex-shrink-0">
-                        <button onclick="clearFilters()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200">
-                            <i class="fas fa-times mr-2"></i>Clear Filters
+                    <!-- Actions -->
+                    <div class="flex items-center gap-2">
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">
+                            <i class="fas fa-search mr-2"></i>Search
                         </button>
+                        <a href="{{ url()->current() }}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200">
+                            <i class="fas fa-times mr-2"></i>Clear
+                        </a>
                     </div>
-                </div>
+                </form>
             <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
                 <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase text-sm">
                     <tr>
@@ -234,7 +237,7 @@
                 </tbody>
             </table>
             <div class="mt-4">
-                {{ $tableApplicants->links() }}
+                {{ $tableApplicants->appends(request()->except('page'))->links() }}
             </div>
         </div>
 
