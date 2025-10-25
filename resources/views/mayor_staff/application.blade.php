@@ -343,11 +343,11 @@
                                 </div>
                             </header>
 
-                <!-- Main Content -->
-                <div class="flex flex-1 overflow-hidden">
+                <!-- Main Container -->
+                <div class="main-container">
                     <!-- Sidebar -->
-    <div class="w-16 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
-        <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
+                    <div class="sidebar w-16 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
+                        <nav class="flex-1 p-2 md:p-4 space-y-1">
             <ul class="side-menu top space-y-4">
                 <li>
                     <a href="/mayor_staff/dashboard" class="w-ful flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
