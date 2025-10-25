@@ -140,8 +140,6 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::post('/mayor_staff/save-document-status', [MayorStaffController::class, 'saveDocumentStatus'])->name('mayor_staff.saveDocumentStatus');
     Route::post('/mayor_staff/send-document-email', [MayorStaffController::class, 'sendDocumentEmail'])->name('mayor_staff.sendDocumentEmail');
     Route::get('/mayor_staff/welcome', [MayorStaffController::class, 'welcome'])->name('MayorStaff.welcome');
-    Route::get('/mayor_staff/search-pending-applications', [MayorStaffController::class, 'searchPendingApplications'])->name('mayor_staff.searchPendingApplications');
-    Route::get('/mayor_staff/search-processed-applications', [MayorStaffController::class, 'searchProcessedApplications'])->name('mayor_staff.searchProcessedApplications');
 
 });
 
