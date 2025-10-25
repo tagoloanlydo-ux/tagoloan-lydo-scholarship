@@ -156,7 +156,6 @@ Route::middleware(['scholar.auth'])->group(function () {
     Route::get('/scholar/settings', [ScholarController::class, 'showSettings'])->name('scholar.settings');
     Route::post('/scholar/settings/update', [ScholarController::class, 'updateSettings'])->name('scholar.settings.update');
     Route::post('/scholar/logout', [ScholarController::class, 'logout'])->name('scholar.logout');
-    Route::get('/scholar/welcome', [ScholarController::class, 'welcome'])->name('scholar.welcome');
    });
 
 use App\Http\Controllers\SmsController;

@@ -285,8 +285,7 @@ $percentageReviewed = $totalApplications > 0
        
         $query->where("ap.initial_screening", "Pending");
 
-        $tableApplicants = $query->paginate(15);
-
+        $tableApplicants = ($request->filled("search") || $request->filled("barangay")) ? $query->get() : $query->paginate(15);
 
         $listApplicants = DB::table("tbl_applicant as a")
             ->join(
@@ -335,8 +334,9 @@ $percentageReviewed = $totalApplications > 0
             })
             ->when($request->filled("barangay"), function ($q) use ($request) {
                 $q->where("a.applicant_brgy", $request->barangay);
-            })
-            ->paginate(15, ['*'], 'list');
+            });
+
+        $listApplicants = ($request->filled("search") || $request->filled("barangay")) ? $listApplicants->get() : $listApplicants->paginate(15, ['*'], 'list');
 
         $barangays = DB::table("tbl_applicant")
             ->pluck("applicant_brgy")
@@ -2329,5 +2329,119 @@ public function updateStatus(Request $request, $id)
             \Log::error('Intake sheet submission error: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Failed to submit intake sheet. Please try again.'], 500);
         }
+    }
+
+    public function globalSearch(Request $request)
+    {
+        $query = $request->get('q', '');
+        $results = [];
+
+        if (strlen($query) >= 2) { // Minimum 2 characters for search
+            // Search in applicants
+            $applicants = DB::table('tbl_applicant')
+                ->select(
+                    'applicant_id',
+                    'applicant_fname',
+                    'applicant_lname',
+                    'applicant_email',
+                    'applicant_brgy',
+                    'applicant_school_name',
+                    'applicant_course',
+                    DB::raw("'applicant' as type")
+                )
+                ->where(function ($q) use ($query) {
+                    $q->where('applicant_fname', 'like', "%{$query}%")
+                      ->orWhere('applicant_lname', 'like', "%{$query}%")
+                      ->orWhere('applicant_email', 'like', "%{$query}%")
+                      ->orWhere('applicant_brgy', 'like', "%{$query}%")
+                      ->orWhere('applicant_school_name', 'like', "%{$query}%");
+                })
+                ->limit(10)
+                ->get();
+
+            // Search in scholars
+            $scholars = DB::table('tbl_scholar as s')
+                ->join('tbl_applicant as a', 's.application_id', '=', DB::raw('(SELECT application_id FROM tbl_application WHERE applicant_id = a.applicant_id LIMIT 1)'))
+                ->select(
+                    's.scholar_id',
+                    'a.applicant_fname',
+                    'a.applicant_lname',
+                    'a.applicant_email',
+                    'a.applicant_brgy',
+                    'a.applicant_school_name',
+                    DB::raw("'scholar' as type")
+                )
+                ->where(function ($q) use ($query) {
+                    $q->where('a.applicant_fname', 'like', "%{$query}%")
+                      ->orWhere('a.applicant_lname', 'like', "%{$query}%")
+                      ->orWhere('a.applicant_email', 'like', "%{$query}%")
+                      ->orWhere('a.applicant_brgy', 'like', "%{$query}%")
+                      ->orWhere('a.applicant_school_name', 'like', "%{$query}%");
+                })
+                ->limit(10)
+                ->get();
+
+            // Search in personnel (lydopers)
+            $personnel = DB::table('tbl_lydopers')
+                ->select(
+                    'lydopers_id',
+                    'lydopers_fname',
+                    'lydopers_lname',
+                    'lydopers_email',
+                    'lydopers_role',
+                    DB::raw("'personnel' as type")
+                )
+                ->where(function ($q) use ($query) {
+                    $q->where('lydopers_fname', 'like', "%{$query}%")
+                      ->orWhere('lydopers_lname', 'like', "%{$query}%")
+                      ->orWhere('lydopers_email', 'like', "%{$query}%")
+                      ->orWhere('lydopers_role', 'like', "%{$query}%");
+                })
+                ->limit(10)
+                ->get();
+
+            $results = [
+                'applicants' => $applicants,
+                'scholars' => $scholars,
+                'personnel' => $personnel
+            ];
+        }
+
+        // Get notifications for the view
+        $newApplications = DB::table("tbl_application as app")
+            ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+            ->select("app.application_id", "a.applicant_fname", "a.applicant_lname", "app.created_at")
+            ->orderBy("app.created_at", "desc")
+            ->limit(10)
+            ->get()
+            ->map(function ($item) {
+                return (object) [
+                    "type" => "application",
+                    "name" => $item->applicant_fname . " " . $item->applicant_lname,
+                    "created_at" => $item->created_at,
+                ];
+            });
+
+        $newRemarks = DB::table("tbl_application_personnel as ap")
+            ->join("tbl_application as app", "ap.application_id", "=", "app.application_id")
+            ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+            ->whereIn("ap.remarks", ["Poor", "Non Poor", "Ultra Poor", "Non Indigenous"])
+            ->select("ap.remarks", "a.applicant_fname", "a.applicant_lname", "ap.created_at")
+            ->orderBy("ap.created_at", "desc")
+            ->limit(10)
+            ->get()
+            ->map(function ($item) {
+                return (object) [
+                    "type" => "remark",
+                    "remarks" => $item->remarks,
+                    "name" => $item->applicant_fname . " " . $item->applicant_lname,
+                    "created_at" => $item->created_at,
+                ];
+            });
+
+        $notifications = $newApplications->merge($newRemarks)->sortByDesc("created_at");
+        $showBadge = !session('notifications_viewed');
+
+        return view('mayor_staff.global-search', compact('results', 'query', 'notifications', 'showBadge'));
     }
 }
