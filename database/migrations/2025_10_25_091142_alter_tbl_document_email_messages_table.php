@@ -12,13 +12,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tbl_document_email_messages', function (Blueprint $table) {
-            // Drop old foreign key and unused columns
-            $table->dropForeign(['document_comment_id']);
-            $table->dropColumn(['document_comment_id', 'document_type', 'email_message']);
+            // Check if the foreign key exists before dropping
+            if (Schema::hasColumn('tbl_document_email_messages', 'document_comment_id')) {
+                $table->dropForeign(['document_comment_id']);
+                $table->dropColumn('document_comment_id');
+            }
+            
+            // Drop columns if they exist
+            if (Schema::hasColumn('tbl_document_email_messages', 'document_type')) {
+                $table->dropColumn('document_type');
+            }
+            if (Schema::hasColumn('tbl_document_email_messages', 'email_message')) {
+                $table->dropColumn('email_message');
+            }
 
-            // Add the new columns
-            $table->text('email_content')->nullable(); // ✅ New column used in your code
-            $table->timestamp('sent_at')->nullable(); // ✅ For tracking when the email was sent
+            // Add the new columns if they don't exist
+            if (!Schema::hasColumn('tbl_document_email_messages', 'email_content')) {
+                $table->text('email_content')->nullable();
+            }
+            if (!Schema::hasColumn('tbl_document_email_messages', 'sent_at')) {
+                $table->timestamp('sent_at')->nullable();
+            }
         });
     }
 
