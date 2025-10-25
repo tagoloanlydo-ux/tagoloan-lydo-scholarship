@@ -285,7 +285,8 @@ $percentageReviewed = $totalApplications > 0
        
         $query->where("ap.initial_screening", "Pending");
 
-        $tableApplicants = ($request->filled("search") || $request->filled("barangay")) ? $query->get() : $query->paginate(15);
+        $tableApplicants = $query->paginate(15);
+
 
         $listApplicants = DB::table("tbl_applicant as a")
             ->join(
@@ -499,74 +500,36 @@ $percentageReviewed = $totalApplications > 0
 
     public function approveApplication($id)
     {
-        try {
-            DB::beginTransaction();
+        // Get the application_id and applicant email from application_personnel and applicant
+        $applicationPersonnel = DB::table('tbl_application_personnel as ap')
+            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+            ->where('ap.application_personnel_id', $id)
+            ->select('a.application_id', 'app.applicant_email', 'app.applicant_fname', 'app.applicant_lname')
+            ->first();
 
-            // Get the application_id and applicant email from application_personnel and applicant
-            $applicationPersonnel = DB::table('tbl_application_personnel as ap')
-                ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-                ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-                ->where('ap.application_personnel_id', $id)
-                ->select('a.application_id', 'app.applicant_email', 'app.applicant_fname', 'app.applicant_lname')
-                ->first();
-
-            if (!$applicationPersonnel) {
-                DB::rollBack();
-                return response()->json(['success' => false, 'message' => 'Application not found.'], 404);
-            }
-
-            // Update the initial_screening
-            $updated = DB::table('tbl_application_personnel')
-                ->where('application_personnel_id', $id)
-                ->update([
-                    'initial_screening' => 'Approved',
-                    'status' => 'Under Review', // Update the status as well
-                    'updated_at' => now()
-                ]);
-
-            if (!$updated) {
-                DB::rollBack();
-                return response()->json(['success' => false, 'message' => 'Failed to update application status.'], 500);
-            }
-
-            // Send approval email
-            try {
-                // Generate a unique token for the intake sheet
-                $token = Str::random(64);
-                
-                // Store the token in the database
-                DB::table('tbl_application_personnel')
-                    ->where('application_personnel_id', $id)
-                    ->update([
-                        'intake_sheet_token' => $token,
-                        'intake_sheet_token_expires_at' => now()->addDays(7)
-                    ]);
-
-                $emailData = [
-                    'applicant_fname' => $applicationPersonnel->applicant_fname,
-                    'applicant_lname' => $applicationPersonnel->applicant_lname,
-                    'application_personnel_id' => $id,
-                    'token' => $token
-                ];
-
-                Mail::send('emails.initial-screening-approval', $emailData, function ($message) use ($applicationPersonnel) {
-                    $message->to($applicationPersonnel->applicant_email)
-                        ->subject('Initial Screening Approval - LYDO Scholarship')
-                        ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
-                });
-            } catch (\Exception $e) {
-                \Log::error('Email sending failed: ' . $e->getMessage());
-                // Don't rollback the transaction if email fails, just log the error
-            }
-
-            DB::commit();
-            return response()->json(['success' => true, 'message' => 'Initial screening approved successfully.']);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Initial screening approval failed: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Failed to approve initial screening. Please try again.'], 500);
+        if (!$applicationPersonnel) {
+            return response()->json(['success' => false, 'message' => 'Application not found.']);
         }
+
+        // Update the initial_screening
+        DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $id)
+            ->update(['initial_screening' => 'Approved', 'updated_at' => now()]);
+
+        // Send approval email
+        $emailData = [
+            'applicant_fname' => $applicationPersonnel->applicant_fname,
+            'applicant_lname' => $applicationPersonnel->applicant_lname,
+        ];
+
+        Mail::send('emails.initial-screening-approval', $emailData, function ($message) use ($applicationPersonnel) {
+            $message->to($applicationPersonnel->applicant_email)
+                ->subject('Initial Screening Approval - LYDO Scholarship')
+                ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
+        });
+
+        return response()->json(['success' => true, 'message' => 'Initial screening approved successfully.']);
     }
 
     public function rejectApplication(Request $request, $id)
@@ -1949,6 +1912,100 @@ public function updateStatus(Request $request, $id)
         return response()->json(['message' => 'Welcome to the Mayor Staff API!']);
     }
 
+    // New method for searching pending applications (Poor/Ultra Poor)
+    public function searchPendingApplications(Request $request)
+    {
+        $query = DB::table('tbl_application_personnel as ap')
+            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+            ->join('tbl_lydopers as lydo', 'ap.lydopers_id', '=', 'lydo.lydopers_id')
+            ->select(
+                'ap.application_personnel_id',
+                'app.applicant_fname as fname',
+                'app.applicant_mname as mname',
+                'app.applicant_lname as lname',
+                'app.applicant_suffix as suffix',
+                'app.applicant_brgy as barangay',
+                'app.applicant_school_name as school',
+                'ap.remarks as remarks',
+                'ap.status as status'
+            )
+            ->where('ap.status', 'Pending')
+            ->where('lydo.lydopers_role', 'lydo_staff')
+            ->whereIn('ap.remarks', ['Poor', 'Ultra Poor']);
+
+        // Apply search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('app.applicant_fname', 'like', "%$search%")
+                  ->orWhere('app.applicant_lname', 'like', "%$search%");
+            });
+        }
+
+        // Apply barangay filter
+        if ($request->filled('barangay')) {
+            $query->where('app.applicant_brgy', $request->barangay);
+        }
+
+        $applications = $query->get();
+        $totalCount = $applications->count();
+
+        return response()->json([
+            'data' => $applications,
+            'total' => $totalCount
+        ]);
+    }
+
+    // New method for searching processed applications (Approved/Rejected)
+    public function searchProcessedApplications(Request $request)
+    {
+        $query = DB::table('tbl_application_personnel as ap')
+            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+            ->join('tbl_lydopers as lydo', 'ap.lydopers_id', '=', 'lydo.lydopers_id')
+            ->select(
+                'ap.application_personnel_id',
+                'app.applicant_fname as fname',
+                'app.applicant_mname as mname',
+                'app.applicant_lname as lname',
+                'app.applicant_suffix as suffix',
+                'app.applicant_brgy as barangay',
+                'app.applicant_school_name as school',
+                'ap.remarks as remarks',
+                'ap.status as status'
+            )
+            ->whereIn('ap.status', ['Approved', 'Rejected'])
+            ->where('lydo.lydopers_role', 'lydo_staff');
+
+        // Apply search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('app.applicant_fname', 'like', "%$search%")
+                  ->orWhere('app.applicant_lname', 'like', "%$search%");
+            });
+        }
+
+        // Apply barangay filter
+        if ($request->filled('barangay')) {
+            $query->where('app.applicant_brgy', $request->barangay);
+        }
+
+        // Apply status filter
+        if ($request->filled('status_filter')) {
+            $query->where('ap.status', $request->status_filter);
+        }
+
+        $applications = $query->get();
+        $totalCount = $applications->count();
+
+        return response()->json([
+            'data' => $applications,
+            'total' => $totalCount
+        ]);
+    }
+
     public function saveDocumentComment(Request $request)
     {
         $request->validate([
@@ -2067,7 +2124,7 @@ public function updateStatus(Request $request, $id)
         }
     }
 
-    public function sendDocumentEmail(Request $request)
+public function sendDocumentEmail(Request $request)
 {
     $request->validate([
         'application_personnel_id' => 'required|integer'
@@ -2186,6 +2243,7 @@ public function updateStatus(Request $request, $id)
         // Save email message to database
         DB::table('tbl_document_email_messages')->insert([
             'application_personnel_id' => $request->application_personnel_id,
+            'email_content' => "Document update email sent for documents: " . implode(', ', $documentNames),
             'sent_at' => now(),
             'created_at' => now(),
             'updated_at' => now()
@@ -2198,249 +2256,4 @@ public function updateStatus(Request $request, $id)
     }
 }
 
-    public function showIntakeSheet($application_personnel_id)
-    {
-        // Validate token if provided
-        $token = request('token');
-        if ($token) {
-            $applicationPersonnel = DB::table('tbl_application_personnel')
-                ->where('application_personnel_id', $application_personnel_id)
-                ->where('intake_sheet_token', $token)
-                ->where('intake_sheet_token_expires_at', '>', now())
-                ->first();
-
-            if (!$applicationPersonnel) {
-                abort(403, 'Invalid or expired token.');
-            }
-        }
-
-        // Get applicant details
-        $applicant = DB::table('tbl_application_personnel as ap')
-            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-            ->where('ap.application_personnel_id', $application_personnel_id)
-            ->select(
-                'app.applicant_id',
-                'app.applicant_fname',
-                'app.applicant_lname',
-                'app.applicant_mname',
-                'app.applicant_suffix',
-                'app.applicant_bdate',
-                'app.applicant_gender',
-                'app.applicant_brgy',
-                'app.applicant_school_name',
-                'app.applicant_course',
-                'app.applicant_year_level',
-                'app.applicant_contact_number',
-                'app.applicant_email',
-                'ap.intake_sheet_token',
-                'ap.intake_sheet_token_expires_at'
-            )
-            ->first();
-
-        if (!$applicant) {
-            abort(404, 'Applicant not found.');
-        }
-
-        // Check if intake sheet already exists
-        $existingIntakeSheet = DB::table('family_intake_sheets')
-            ->where('application_personnel_id', $application_personnel_id)
-            ->first();
-
-        if ($existingIntakeSheet) {
-            return redirect()->route('intake_sheet.submitted', ['application_personnel_id' => $application_personnel_id])
-                           ->with('info', 'You have already submitted your intake sheet.');
-        }
-
-        return view('intake_sheet.form', compact('applicant', 'application_personnel_id'));
-    }
-
-    public function submitIntakeSheetPublic(Request $request)
-    {
-        $request->validate([
-            'application_personnel_id' => 'required|integer',
-            'father_name' => 'nullable|string|max:255',
-            'father_occupation' => 'nullable|string|max:255',
-            'father_income' => 'nullable|numeric|min:0',
-            'mother_name' => 'nullable|string|max:255',
-            'mother_occupation' => 'nullable|string|max:255',
-            'mother_income' => 'nullable|numeric|min:0',
-            'guardian_name' => 'nullable|string|max:255',
-            'guardian_occupation' => 'nullable|string|max:255',
-            'guardian_income' => 'nullable|numeric|min:0',
-            'siblings_count' => 'nullable|integer|min:0',
-            'family_income' => 'nullable|numeric|min:0',
-            'house_ownership' => 'nullable|string|max:255',
-            'electricity_bill' => 'nullable|numeric|min:0',
-            'water_bill' => 'nullable|numeric|min:0',
-            'other_expenses' => 'nullable|numeric|min:0',
-            'total_family_expenses' => 'nullable|numeric|min:0',
-            'remarks' => 'nullable|string|max:1000',
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            // Check if intake sheet already exists
-            $existing = DB::table('family_intake_sheets')
-                ->where('application_personnel_id', $request->application_personnel_id)
-                ->first();
-
-            if ($existing) {
-                return response()->json(['success' => false, 'message' => 'Intake sheet already submitted.']);
-            }
-
-            // Insert intake sheet data
-            DB::table('family_intake_sheets')->insert([
-                'application_personnel_id' => $request->application_personnel_id,
-                'father_name' => $request->father_name,
-                'father_occupation' => $request->father_occupation,
-                'father_income' => $request->father_income,
-                'mother_name' => $request->mother_name,
-                'mother_occupation' => $request->mother_occupation,
-                'mother_income' => $request->mother_income,
-                'guardian_name' => $request->guardian_name,
-                'guardian_occupation' => $request->guardian_occupation,
-                'guardian_income' => $request->guardian_income,
-                'siblings_count' => $request->siblings_count,
-                'family_income' => $request->family_income,
-                'house_ownership' => $request->house_ownership,
-                'electricity_bill' => $request->electricity_bill,
-                'water_bill' => $request->water_bill,
-                'other_expenses' => $request->other_expenses,
-                'total_family_expenses' => $request->total_family_expenses,
-                'remarks' => $request->remarks,
-                'submitted_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Intake sheet submitted successfully!',
-                'redirect' => route('intake_sheet.submitted', ['application_personnel_id' => $request->application_personnel_id])
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Intake sheet submission error: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Failed to submit intake sheet. Please try again.'], 500);
-        }
-    }
-
-    public function globalSearch(Request $request)
-    {
-        $query = $request->get('q', '');
-        $results = [];
-
-        if (strlen($query) >= 2) { // Minimum 2 characters for search
-            // Search in applicants
-            $applicants = DB::table('tbl_applicant')
-                ->select(
-                    'applicant_id',
-                    'applicant_fname',
-                    'applicant_lname',
-                    'applicant_email',
-                    'applicant_brgy',
-                    'applicant_school_name',
-                    'applicant_course',
-                    DB::raw("'applicant' as type")
-                )
-                ->where(function ($q) use ($query) {
-                    $q->where('applicant_fname', 'like', "%{$query}%")
-                      ->orWhere('applicant_lname', 'like', "%{$query}%")
-                      ->orWhere('applicant_email', 'like', "%{$query}%")
-                      ->orWhere('applicant_brgy', 'like', "%{$query}%")
-                      ->orWhere('applicant_school_name', 'like', "%{$query}%");
-                })
-                ->limit(10)
-                ->get();
-
-            // Search in scholars
-            $scholars = DB::table('tbl_scholar as s')
-                ->join('tbl_applicant as a', 's.application_id', '=', DB::raw('(SELECT application_id FROM tbl_application WHERE applicant_id = a.applicant_id LIMIT 1)'))
-                ->select(
-                    's.scholar_id',
-                    'a.applicant_fname',
-                    'a.applicant_lname',
-                    'a.applicant_email',
-                    'a.applicant_brgy',
-                    'a.applicant_school_name',
-                    DB::raw("'scholar' as type")
-                )
-                ->where(function ($q) use ($query) {
-                    $q->where('a.applicant_fname', 'like', "%{$query}%")
-                      ->orWhere('a.applicant_lname', 'like', "%{$query}%")
-                      ->orWhere('a.applicant_email', 'like', "%{$query}%")
-                      ->orWhere('a.applicant_brgy', 'like', "%{$query}%")
-                      ->orWhere('a.applicant_school_name', 'like', "%{$query}%");
-                })
-                ->limit(10)
-                ->get();
-
-            // Search in personnel (lydopers)
-            $personnel = DB::table('tbl_lydopers')
-                ->select(
-                    'lydopers_id',
-                    'lydopers_fname',
-                    'lydopers_lname',
-                    'lydopers_email',
-                    'lydopers_role',
-                    DB::raw("'personnel' as type")
-                )
-                ->where(function ($q) use ($query) {
-                    $q->where('lydopers_fname', 'like', "%{$query}%")
-                      ->orWhere('lydopers_lname', 'like', "%{$query}%")
-                      ->orWhere('lydopers_email', 'like', "%{$query}%")
-                      ->orWhere('lydopers_role', 'like', "%{$query}%");
-                })
-                ->limit(10)
-                ->get();
-
-            $results = [
-                'applicants' => $applicants,
-                'scholars' => $scholars,
-                'personnel' => $personnel
-            ];
-        }
-
-        // Get notifications for the view
-        $newApplications = DB::table("tbl_application as app")
-            ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
-            ->select("app.application_id", "a.applicant_fname", "a.applicant_lname", "app.created_at")
-            ->orderBy("app.created_at", "desc")
-            ->limit(10)
-            ->get()
-            ->map(function ($item) {
-                return (object) [
-                    "type" => "application",
-                    "name" => $item->applicant_fname . " " . $item->applicant_lname,
-                    "created_at" => $item->created_at,
-                ];
-            });
-
-        $newRemarks = DB::table("tbl_application_personnel as ap")
-            ->join("tbl_application as app", "ap.application_id", "=", "app.application_id")
-            ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
-            ->whereIn("ap.remarks", ["Poor", "Non Poor", "Ultra Poor", "Non Indigenous"])
-            ->select("ap.remarks", "a.applicant_fname", "a.applicant_lname", "ap.created_at")
-            ->orderBy("ap.created_at", "desc")
-            ->limit(10)
-            ->get()
-            ->map(function ($item) {
-                return (object) [
-                    "type" => "remark",
-                    "remarks" => $item->remarks,
-                    "name" => $item->applicant_fname . " " . $item->applicant_lname,
-                    "created_at" => $item->created_at,
-                ];
-            });
-
-        $notifications = $newApplications->merge($newRemarks)->sortByDesc("created_at");
-        $showBadge = !session('notifications_viewed');
-
-        return view('mayor_staff.global-search', compact('results', 'query', 'notifications', 'showBadge'));
-    }
 }

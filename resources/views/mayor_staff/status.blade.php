@@ -150,8 +150,8 @@
                     <div class="flex justify-start items-center mb-6 gap-4">
           <!-- Tab Switch -->
             <div class="flex gap-2">
-                <div class="tab active" onclick="showTable()">Pending Review</div>
-                <div class="tab" onclick="showList()">Reviewed Applications</div>
+                <div class="tab active" onclick="showTable()">Pending Review <span id="pendingCount" class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full"></span></div>
+                <div class="tab" onclick="showList()">Reviewed Applications <span id="processedCount" class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full"></span></div>
             </div>
         </div>
 
@@ -562,15 +562,22 @@
             };
         }
 
+        // Load initial counts
+        loadCounts();
+
         // Add event listeners for table view filters (debounced on input)
         const searchInputTable = document.getElementById('searchInputTable');
         const barangaySelectTable = document.getElementById('barangaySelectTable');
 
         if (searchInputTable) {
-            searchInputTable.addEventListener('input', debounce(filterTableView, 150));
+            searchInputTable.addEventListener('input', debounce(function() {
+                performAjaxSearch('pending');
+            }, 300));
         }
         if (barangaySelectTable) {
-            barangaySelectTable.addEventListener('change', filterTableView);
+            barangaySelectTable.addEventListener('change', function() {
+                performAjaxSearch('pending');
+            });
         }
 
         // Add event listeners for list view filters (debounced on input)
@@ -578,15 +585,15 @@
         const barangaySelectList = document.getElementById('barangaySelectList');
 
         if (searchInputList) {
-            searchInputList.addEventListener('input', debounce(filterListView, 150));
+            searchInputList.addEventListener('input', debounce(function() {
+                performAjaxSearch('processed');
+            }, 300));
         }
         if (barangaySelectList) {
-            barangaySelectList.addEventListener('change', filterListView);
+            barangaySelectList.addEventListener('change', function() {
+                performAjaxSearch('processed');
+            });
         }
-
-        // Run initial filters to ensure rows reflect any pre-filled values
-        if (typeof filterTableView === 'function') filterTableView();
-        if (typeof filterListView === 'function') filterListView();
     });
 
 </script>
@@ -668,7 +675,7 @@
     // Function to filter the table view table
     function filterTableView() {
         const searchValue = document.getElementById('searchInputTable').value.toLowerCase().trim();
-        const barangayValue = document.getElementById('barangaySelectTable').value.toLowerCase().trim();
+        const barangayValue = document.getElementById('barangaySelectTable').value;
         const tableBody = document.querySelector('#tableView tbody');
         const rows = tableBody.querySelectorAll('tr');
 
@@ -678,7 +685,7 @@
 
             if (nameCell && barangayCell) {
                 const name = nameCell.textContent.toLowerCase().trim();
-                const barangay = barangayCell.textContent.toLowerCase().trim();
+                const barangay = barangayCell.textContent.trim();
 
                 // Split search value into terms and check if all are present in the name
                 const searchTerms = searchValue.split(' ').filter(term => term.length > 0);
@@ -730,6 +737,64 @@
         });
     }
 
+    // Function to load counts for pending and processed applications
+    function loadCounts() {
+        fetch('/mayor_staff/status/counts', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('pendingCount').textContent = data.pendingCount;
+                document.getElementById('processedCount').textContent = data.processedCount;
+            }
+        })
+        .catch(error => console.error('Error loading counts:', error));
+    }
+
+    // Function to perform AJAX search
+    function performAjaxSearch(type) {
+        const searchInput = type === 'pending' ? document.getElementById('searchInputTable') : document.getElementById('searchInputList');
+        const barangaySelect = type === 'pending' ? document.getElementById('barangaySelectTable') : document.getElementById('barangaySelectList');
+        const tableBody = type === 'pending' ? document.querySelector('#tableView tbody') : document.querySelector('#listView tbody');
+
+        const searchValue = searchInput.value.trim();
+        const barangayValue = barangaySelect.value;
+
+        fetch(`/mayor_staff/status/search?type=${type}&search=${encodeURIComponent(searchValue)}&barangay=${encodeURIComponent(barangayValue)}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update table body with new data
+                tableBody.innerHTML = data.html;
+                // Re-attach event listeners to new status selects
+                attachStatusChangeListeners();
+            }
+        })
+        .catch(error => console.error('Error performing search:', error));
+    }
+
+    // Function to attach status change listeners to dynamically loaded selects
+    function attachStatusChangeListeners() {
+        const statusSelects = document.querySelectorAll('select[name="status"]');
+        statusSelects.forEach(select => {
+            if (!select.hasAttribute('data-listener-attached')) {
+                select.addEventListener('change', handleStatusChange);
+                select.setAttribute('data-listener-attached', 'true');
+                select.setAttribute('data-original-value', select.value);
+            }
+        });
+    }
 
 </script>
 
