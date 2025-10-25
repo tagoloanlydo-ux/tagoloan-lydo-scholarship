@@ -285,7 +285,7 @@ $percentageReviewed = $totalApplications > 0
        
         $query->where("ap.initial_screening", "Pending");
 
-        $tableApplicants = $query->paginate(15);
+        $tableApplicants = ($request->filled("search") || $request->filled("barangay")) ? $query->get() : $query->paginate(15);
 
         $listApplicants = DB::table("tbl_applicant as a")
             ->join(
