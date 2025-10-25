@@ -372,10 +372,35 @@
             <!-- ✅ Table View (Applicants without remarks) -->
             <div id="tableView">
                 <!-- Search and Filter Section -->
-                <div class="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-sm border">
-                    <div class="flex flex-col md:flex-row gap-4 w-full">
+                <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+                    <div class="flex flex-col md:flex-row gap-4 items-end">
                         <!-- Search by Name -->
                         <div class="flex-1">
+                            <label for="searchInputTable" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
+                            <input type="text" id="searchInputTable" placeholder="Enter applicant name..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Filter by Barangay -->
+                        <div class="flex-1">
+                            <label for="barangaySelectTable" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
+                            <select id="barangaySelectTable"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">All Barangays</option>
+                                @foreach($barangays as $brgy)
+                                    <option value="{{ $brgy }}">{{ $brgy }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Clear Filters Button -->
+                        <div class="flex-shrink-0">
+                            <button onclick="clearFiltersTable()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200">
+                                <i class="fas fa-times mr-2"></i>Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 <div class="mb-4">
                     <h3 class="text-lg font-semibold text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
                         The list below shows applicants who have submitted applications
@@ -627,6 +652,13 @@
             if (listSearch) listSearch.addEventListener('input', debounce(() => filterRows('#listView tbody', 'searchInputList', 'barangaySelectList'), debounceDelay));
             if (listBrgy) listBrgy.addEventListener('change', () => filterRows('#listView tbody', 'searchInputList', 'barangaySelectList'));
         };
+
+        // Clear filters function for table view
+        function clearFiltersTable() {
+            document.getElementById('searchInputTable').value = '';
+            document.getElementById('barangaySelectTable').value = '';
+            filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
+        }
 
         function showTable() {
             document.getElementById("tableView").classList.remove("hidden");

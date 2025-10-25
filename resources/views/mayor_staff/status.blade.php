@@ -14,6 +14,13 @@
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 </head>
 <body class="bg-gray-50">
+    @php
+        // Provide safe defaults so the view doesn't error if controller omitted these
+        $applications = $applications ?? [];
+        $listApplications = $listApplications ?? [];
+        $notifications = $notifications ?? collect();
+        $showBadge = $showBadge ?? false;
+    @endphp
     <div class="dashboard-grid">
         <!-- Header -->
         <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center">
@@ -156,8 +163,8 @@
                 </h3>
             </div>
             <!-- Search and Filter Section -->
-            <div class="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-sm border">
-                <div class="flex flex-col md:flex-row gap-4 w-full">
+            <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+                <div class="flex flex-col md:flex-row gap-4 items-end">
                     <!-- Search by Name -->
                     <div class="flex-1">
                         <label for="searchInputTable" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
@@ -179,13 +186,13 @@
                             @endforeach
                         </select>
                     </div>
-                </div>
 
-                <!-- Clear Filters Button -->
-                <div class="flex-shrink-0">
-                    <button onclick="clearFiltersTable()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200">
-                        <i class="fas fa-times mr-2"></i>Clear Filters
-                    </button>
+                    <!-- Clear Filters Button -->
+                    <div class="flex-shrink-0">
+                        <button onclick="clearFiltersTable()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200">
+                            <i class="fas fa-times mr-2"></i>Clear Filters
+                        </button>
+                    </div>
                 </div>
             </div>
             <table class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
@@ -255,39 +262,9 @@
             </h3>
         </div>
         <!-- Search and Filter Section -->
-        <div class="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-sm border">
-            <div class="flex flex-col md:flex-row gap-4 w-full">
+        <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+            <div class="flex flex-col md:flex-row gap-4 items-end">
                 <!-- Search by Name -->
-                <div class="flex-1">
-                    <label for="searchInputList" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
-                    <input type="text" id="searchInputList" placeholder="Enter applicant name..."
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-
-                <!-- Filter by Barangay -->
-                <div class="flex-1">
-                    <label for="barangaySelectList" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                    <select id="barangaySelectList"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All Barangays</option>
-                        @php
-                            $itemsList = is_object($listApplications) && method_exists($listApplications, 'items') ? $listApplications->items() : $listApplications;
-                            $uniqueBarangaysList = collect($itemsList)->pluck('barangay')->unique()->sort();
-                        @endphp
-                        @foreach($uniqueBarangaysList as $barangay)
-                            <option value="{{ $barangay }}">{{ $barangay }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-            <!-- Clear Filters Button -->
-            <div class="flex-shrink-0">
-                <button onclick="clearFiltersList()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200">
-                    <i class="fas fa-times mr-2"></i>Clear Filters
-                </button>
-            </div>
-        </div>
         <table class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
             <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
                 <tr>
@@ -351,6 +328,8 @@
         document.querySelector('.tab.active').classList.remove('active');
         document.querySelectorAll('.tab')[0].classList.add('active');
         localStorage.setItem("viewMode", "table"); // save preference
+        // run filter after showing
+        if (typeof filterTableView === 'function') filterTableView();
     }
 
     function showList() {
@@ -359,6 +338,8 @@
         document.querySelector('.tab.active').classList.remove('active');
         document.querySelectorAll('.tab')[1].classList.add('active');
         localStorage.setItem("viewMode", "list"); // save preference
+        // run filter after showing
+        if (typeof filterListView === 'function') filterListView();
     }
 
     // ✅ Kapag nag-load ang page, i-apply yung last view
@@ -538,27 +519,44 @@
             });
         }
 
-        // Add event listeners for table view filters
+        // Debounce helper
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Add event listeners for table view filters (debounced on input)
         const searchInputTable = document.getElementById('searchInputTable');
         const barangaySelectTable = document.getElementById('barangaySelectTable');
 
         if (searchInputTable) {
-            searchInputTable.addEventListener('input', filterTableView);
+            searchInputTable.addEventListener('input', debounce(filterTableView, 150));
         }
         if (barangaySelectTable) {
             barangaySelectTable.addEventListener('change', filterTableView);
         }
 
-        // Add event listeners for list view filters
+        // Add event listeners for list view filters (debounced on input)
         const searchInputList = document.getElementById('searchInputList');
         const barangaySelectList = document.getElementById('barangaySelectList');
 
         if (searchInputList) {
-            searchInputList.addEventListener('input', filterListView);
+            searchInputList.addEventListener('input', debounce(filterListView, 150));
         }
         if (barangaySelectList) {
             barangaySelectList.addEventListener('change', filterListView);
         }
+
+        // Run initial filters to ensure rows reflect any pre-filled values
+        if (typeof filterTableView === 'function') filterTableView();
+        if (typeof filterListView === 'function') filterListView();
     });
 
 </script>
@@ -576,11 +574,31 @@
 
 <!-- ⚡ JS -->
 <script>
-    document.getElementById("notifBell").addEventListener("click", function () {
-        let dropdown = document.getElementById("notifDropdown");
+   document.getElementById("notifBell").addEventListener("click", function () {
+         let dropdown = document.getElementById("notifDropdown");
         dropdown.classList.toggle("hidden");
-    });
-</script>
+        // remove badge when opened
+        let notifCount = document.getElementById("notifCount");
+         if (notifCount) {
+        notifCount.remove();
+        // Mark notifications as viewed on the server
+        fetch('/mayor_staff/mark-notifications-viewed', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            }
+        }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Notifications marked as viewed');
+            }
+        }).catch(error => {
+            console.error('Error marking notifications as viewed:', error);
+        });
+        }
+        });
+        </script>
 
 <script>
     // Toggle dropdown and save state
@@ -734,6 +752,8 @@ function pollForNewApplications() {
                             `;
                             tableBody.appendChild(row);
                         });
+                        // Apply current filters to newly appended rows
+                        if (typeof filterTableView === 'function') filterTableView();
                     }
                 }
             }
@@ -798,6 +818,8 @@ function pollForStatusUpdates() {
                             `;
                             listBody.appendChild(row);
                         }
+                        // Apply current filters to newly appended rows in the processed list
+                        if (typeof filterListView === 'function') filterListView();
                     }
                 });
             }
