@@ -51,6 +51,51 @@
             color: #ef4444;
         }
 
+        /* Layout styles for fixed navbar and sidebar with scrollable content */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .main-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+            width: 250px; /* Adjust based on your sidebar width */
+        }
+
+        .content-wrapper {
+            margin-left: 250px; /* Should match sidebar width */
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+            color: #ef4444;
+        }
+
         .tooltip {
             position: relative;
             display: inline-block;
