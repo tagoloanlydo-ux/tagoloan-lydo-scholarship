@@ -675,7 +675,7 @@
     // Function to filter the table view table
     function filterTableView() {
         const searchValue = document.getElementById('searchInputTable').value.toLowerCase().trim();
-        const barangayValue = document.getElementById('barangaySelectTable').value;
+        const barangayValue = document.getElementById('barangaySelectTable').value.toLowerCase().trim();
         const tableBody = document.querySelector('#tableView tbody');
         const rows = tableBody.querySelectorAll('tr');
 
@@ -685,7 +685,7 @@
 
             if (nameCell && barangayCell) {
                 const name = nameCell.textContent.toLowerCase().trim();
-                const barangay = barangayCell.textContent.trim();
+                const barangay = barangayCell.textContent.toLowerCase().trim();
 
                 // Split search value into terms and check if all are present in the name
                 const searchTerms = searchValue.split(' ').filter(term => term.length > 0);
@@ -719,84 +719,6 @@
             const nameCell = row.querySelector('td:nth-child(2)');
             const barangayCell = row.querySelector('td:nth-child(3)');
 
-            if (nameCell && barangayCell) {
-                const name = nameCell.textContent.toLowerCase().trim();
-                const barangay = barangayCell.textContent.trim();
-
-                // Split search value into terms and check if all are present in the name
-                const searchTerms = searchValue.split(' ').filter(term => term.length > 0);
-                const nameMatch = searchTerms.length === 0 || searchTerms.every(term => name.includes(term));
-                const barangayMatch = barangayValue === '' || barangay === barangayValue;
-
-                if (nameMatch && barangayMatch) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            }
-        });
-    }
-
-    // Function to load counts for pending and processed applications
-    function loadCounts() {
-        fetch('/mayor_staff/status/counts', {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('pendingCount').textContent = data.pendingCount;
-                document.getElementById('processedCount').textContent = data.processedCount;
-            }
-        })
-        .catch(error => console.error('Error loading counts:', error));
-    }
-
-    // Function to perform AJAX search
-    function performAjaxSearch(type) {
-        const searchInput = type === 'pending' ? document.getElementById('searchInputTable') : document.getElementById('searchInputList');
-        const barangaySelect = type === 'pending' ? document.getElementById('barangaySelectTable') : document.getElementById('barangaySelectList');
-        const tableBody = type === 'pending' ? document.querySelector('#tableView tbody') : document.querySelector('#listView tbody');
-
-        const searchValue = searchInput.value.trim();
-        const barangayValue = barangaySelect.value;
-
-        fetch(`/mayor_staff/status/search?type=${type}&search=${encodeURIComponent(searchValue)}&barangay=${encodeURIComponent(barangayValue)}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Update table body with new data
-                tableBody.innerHTML = data.html;
-                // Re-attach event listeners to new status selects
-                attachStatusChangeListeners();
-            }
-        })
-        .catch(error => console.error('Error performing search:', error));
-    }
-
-    // Function to attach status change listeners to dynamically loaded selects
-    function attachStatusChangeListeners() {
-        const statusSelects = document.querySelectorAll('select[name="status"]');
-        statusSelects.forEach(select => {
-            if (!select.hasAttribute('data-listener-attached')) {
-                select.addEventListener('change', handleStatusChange);
-                select.setAttribute('data-listener-attached', 'true');
-                select.setAttribute('data-original-value', select.value);
-            }
-        });
-    }
-
-</script>
 
 <script>
 // Real-time updates for new applications and status changes
