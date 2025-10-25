@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use App\Models\Application;
 use App\Models\Scholar;
 use App\Models\Announce;
@@ -2029,134 +2030,135 @@ public function updateStatus(Request $request, $id)
         }
     }
 
-    public function sendDocumentEmail(Request $request)
-    {
-        $request->validate([
-            'application_personnel_id' => 'required|integer'
+public function sendDocumentEmail(Request $request)
+{
+    $request->validate([
+        'application_personnel_id' => 'required|integer'
+    ]);
+
+    try {
+        // Get applicant details
+        $applicant = DB::table('tbl_application_personnel as ap')
+            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+            ->where('ap.application_personnel_id', $request->application_personnel_id)
+            ->select('app.applicant_id', 'app.applicant_fname', 'app.applicant_lname', 'app.applicant_email', 'ap.update_token')
+            ->first();
+
+        if (!$applicant) {
+            return response()->json(['success' => false, 'message' => 'Applicant not found.']);
+        }
+
+        // Get bad documents from both tbl_document_comments and tbl_application_personnel status columns
+        $badDocumentsFromComments = DB::table('tbl_document_comments')
+            ->where('application_personnel_id', $request->application_personnel_id)
+            ->where('is_bad', true)
+            ->pluck('document_type')
+            ->toArray();
+
+        // Also check document status columns in tbl_application_personnel
+        $applicationPersonnel = DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $request->application_personnel_id)
+            ->select([
+                'application_letter_status',
+                'cert_of_reg_status',
+                'grade_slip_status',
+                'brgy_indigency_status',
+                'student_id_status'
+            ])
+            ->first();
+
+        $badDocumentsFromStatuses = [];
+        if ($applicationPersonnel) {
+            $documentTypes = [
+                'application_letter' => $applicationPersonnel->application_letter_status,
+                'cert_of_reg' => $applicationPersonnel->cert_of_reg_status,
+                'grade_slip' => $applicationPersonnel->grade_slip_status,
+                'brgy_indigency' => $applicationPersonnel->brgy_indigency_status,
+                'student_id' => $applicationPersonnel->student_id_status,
+            ];
+
+            foreach ($documentTypes as $type => $status) {
+                if ($status === 'bad') {
+                    $badDocumentsFromStatuses[] = $type;
+                }
+            }
+        }
+
+        // Combine both sources of bad documents
+        $badDocuments = array_unique(array_merge($badDocumentsFromComments, $badDocumentsFromStatuses));
+
+        if (empty($badDocuments)) {
+            return response()->json(['success' => false, 'message' => 'No bad documents found to send email.']);
+        }
+
+        // Generate update token if not exists
+        $applicationPersonnelRecord = DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $request->application_personnel_id)
+            ->first();
+
+        if (!$applicationPersonnelRecord->update_token) {
+            $updateToken = Str::random(64);
+            DB::table('tbl_application_personnel')
+                ->where('application_personnel_id', $request->application_personnel_id)
+                ->update(['update_token' => $updateToken]);
+        } else {
+            $updateToken = $applicationPersonnelRecord->update_token;
+        }
+
+        // FIX: Use the correct route parameter name 'applicant_id' (not 'applicant_id')
+        $updateLink = route('scholar.showUpdateApplication', ['applicant_id' => $applicant->applicant_id]) . '?token=' . $updateToken . '&issues=' . implode(',', $badDocuments);
+
+        // Build email message
+        $documentNames = [];
+        foreach ($badDocuments as $doc) {
+            switch ($doc) {
+                case 'application_letter':
+                    $documentNames[] = 'Application Letter';
+                    break;
+                case 'cert_of_reg':
+                    $documentNames[] = 'Certificate of Registration';
+                    break;
+                case 'grade_slip':
+                    $documentNames[] = 'Grade Slip';
+                    break;
+                case 'brgy_indigency':
+                    $documentNames[] = 'Barangay Indigency';
+                    break;
+                case 'student_id':
+                    $documentNames[] = 'Student ID';
+                    break;
+            }
+        }
+
+        // Send email using the blade template
+        $emailData = [
+            'applicant_id' => $applicant->applicant_id,
+            'updateToken' => $updateToken,
+            'applicant_fname' => $applicant->applicant_fname,
+            'applicant_lname' => $applicant->applicant_lname,
+            'bad_documents' => $documentNames,
+        ];
+
+        Mail::send('emails.document-update-required', $emailData, function ($message) use ($applicant) {
+            $message->to($applicant->applicant_email)
+                ->subject('Document Update Required - LYDO Scholarship')
+                ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
+        });
+
+        // Save email message to database
+        DB::table('tbl_document_email_messages')->insert([
+            'application_personnel_id' => $request->application_personnel_id,
+            'sent_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now()
         ]);
 
-        try {
-            // Get applicant details
-            $applicant = DB::table('tbl_application_personnel as ap')
-                ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-                ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-                ->where('ap.application_personnel_id', $request->application_personnel_id)
-                ->select('app.applicant_fname', 'app.applicant_lname', 'app.applicant_email', 'ap.update_token')
-                ->first();
-
-            if (!$applicant) {
-                return response()->json(['success' => false, 'message' => 'Applicant not found.']);
-            }
-
-            // Get bad documents from both tbl_document_comments and tbl_application_personnel status columns
-            $badDocumentsFromComments = DB::table('tbl_document_comments')
-                ->where('application_personnel_id', $request->application_personnel_id)
-                ->where('is_bad', true)
-                ->pluck('document_type')
-                ->toArray();
-
-            // Also check document status columns in tbl_application_personnel
-            $applicationPersonnel = DB::table('tbl_application_personnel')
-                ->where('application_personnel_id', $request->application_personnel_id)
-                ->select([
-                    'application_letter_status',
-                    'cert_of_reg_status',
-                    'grade_slip_status',
-                    'brgy_indigency_status',
-                    'student_id_status'
-                ])
-                ->first();
-
-            $badDocumentsFromStatuses = [];
-            if ($applicationPersonnel) {
-                $documentTypes = [
-                    'application_letter' => $applicationPersonnel->application_letter_status,
-                    'cert_of_reg' => $applicationPersonnel->cert_of_reg_status,
-                    'grade_slip' => $applicationPersonnel->grade_slip_status,
-                    'brgy_indigency' => $applicationPersonnel->brgy_indigency_status,
-                    'student_id' => $applicationPersonnel->student_id_status,
-                ];
-
-                foreach ($documentTypes as $type => $status) {
-                    if ($status === 'bad') {
-                        $badDocumentsFromStatuses[] = $type;
-                    }
-                }
-            }
-
-            // Combine both sources of bad documents
-            $badDocuments = array_unique(array_merge($badDocumentsFromComments, $badDocumentsFromStatuses));
-
-            if (empty($badDocuments)) {
-                return response()->json(['success' => false, 'message' => 'No bad documents found to send email.']);
-            }
-
-            // Generate update token if not exists
-            $applicationPersonnelRecord = DB::table('tbl_application_personnel')
-                ->where('application_personnel_id', $request->application_personnel_id)
-                ->first();
-
-            if (!$applicationPersonnelRecord->update_token) {
-                $updateToken = Str::random(64);
-                DB::table('tbl_application_personnel')
-                    ->where('application_personnel_id', $request->application_personnel_id)
-                    ->update(['update_token' => $updateToken]);
-            } else {
-                $updateToken = $applicationPersonnelRecord->update_token;
-            }
-
-            // Create update link with token and issues
-            $updateLink = route('scholar.showUpdateApplication', ['applicant_id' => $request->application_personnel_id]) . '?token=' . $updateToken . '&issues=' . implode(',', $badDocuments);
-
-            // Build email message
-            $documentNames = [];
-            foreach ($badDocuments as $doc) {
-                switch ($doc) {
-                    case 'application_letter':
-                        $documentNames[] = 'Application Letter';
-                        break;
-                    case 'cert_of_reg':
-                        $documentNames[] = 'Certificate of Registration';
-                        break;
-                    case 'grade_slip':
-                        $documentNames[] = 'Grade Slip';
-                        break;
-                    case 'brgy_indigency':
-                        $documentNames[] = 'Barangay Indigency';
-                        break;
-                    case 'student_id':
-                        $documentNames[] = 'Student ID';
-                        break;
-                }
-            }
-
-            $emailMessage = "Dear {$applicant->applicant_fname} {$applicant->applicant_lname},\n\n";
-            $emailMessage .= "Your scholarship application has been reviewed and the following documents need to be updated:\n\n";
-            $emailMessage .= implode("\n", array_map(function($doc) { return "- " . $doc; }, $documentNames));
-            $emailMessage .= "\n\nPlease update your documents using the following link:\n";
-            $emailMessage .= $updateLink;
-            $emailMessage .= "\n\nThank you,\nLYDO Scholarship Team";
-
-            // Send email
-            Mail::raw($emailMessage, function ($mail) use ($applicant) {
-                $mail->to($applicant->applicant_email)
-                     ->subject('Document Update Required - LYDO Scholarship')
-                     ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
-            });
-
-            // Save email message to database
-            DB::table('tbl_document_email_messages')->insert([
-                'application_personnel_id' => $request->application_personnel_id,
-                'email_content' => $emailMessage,
-                'sent_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-
-            return response()->json(['success' => true, 'message' => 'Email sent successfully.']);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to send email.'], 500);
-        }
+        return response()->json(['success' => true, 'message' => 'Email sent successfully.']);
+    } catch (\Exception $e) {
+        \Log::error('Email sending error: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Failed to send email: ' . $e->getMessage()], 500);
     }
+}
 
 }

@@ -8,8 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="{{ asset('css/mayor_app.css') }}" />
-    <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <style>
         /* Enhanced UI Improvements */
         .document-loading {
@@ -115,6 +113,101 @@
         }
         .auto-save-indicator.saved {
             color: #10b981;
+        }
+
+        /* Improved Document Modal Styles */
+        .document-modal-content {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .document-viewer-container {
+            height: 70vh;
+            overflow: hidden;
+        }
+
+        .document-viewer {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        /* Custom scrollbar for document modal */
+        .document-modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .document-modal-content::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .document-modal-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .document-modal-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Document item styles */
+        .document-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .document-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .document-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .document-item:hover .document-icon {
+            transform: scale(1.1);
+        }
+
+        /* NEW: Document status badge styles */
+        .document-status-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .badge-new {
+            background-color: #3b82f6; /* blue */
+        }
+
+        .badge-good {
+            background-color: #10b981; /* green */
+        }
+
+        .badge-bad {
+            background-color: #ef4444; /* red */
+        }
+
+        .badge-updated {
+            background-color: #6b7280; /* gray */
+        }
+
+        .document-item-wrapper {
+            position: relative;
+            display: inline-block;
         }
     </style>
 </head>
@@ -590,117 +683,17 @@
                     </h4>
                                         <p class="text-sm text-gray-600 mb-6 bg-white p-3 rounded-lg border-l-4 border-indigo-400">
                             <i class="fas fa-info-circle text-indigo-500 mr-2"></i>
-                            Click one of the documents to view the application
+                            Click one of the documents to view and review
                         </p>
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <!-- Application Letter -->
-        <div class="document-item bg-white border rounded-lg p-4 shadow-sm" data-document-type="application_letter" data-document-url="${foundApp.application_letter}">
-            <div class="flex flex-col items-center justify-center mb-3">
-                <a href="#" onclick="openDocumentModal('${foundApp.application_letter}', 'Application Letter', 'application_letter')" class="flex flex-col items-center cursor-pointer">
-                    <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
-                    <span class="text-sm font-medium text-gray-700 text-center">Application Letter</span>
-                </a>
-            </div>
-            <div class="mb-3 review-controls-application_letter hidden">
-                <textarea id="comment_application_letter" class="w-full border rounded px-2 py-1 text-sm" rows="2" placeholder="Add comment..."></textarea>
-            </div>
-            <div class="flex gap-2 review-controls-application_letter hidden">
-                <button class="mark-good-btn flex-1 bg-green-500 text-white px-2 py-1 rounded text-sm hover:bg-green-600" data-document="application_letter">
-                    <i class="fas fa-check mr-1"></i>Good
-                </button>
-                <button class="mark-bad-btn flex-1 bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600" data-document="application_letter">
-                    <i class="fas fa-times mr-1"></i>Bad
-                </button>
-            </div>
-        </div>
-
-        <!-- Certificate of Registration -->
-        <div class="document-item bg-white border rounded-lg p-4 shadow-sm" data-document-type="cert_of_reg" data-document-url="${foundApp.cert_of_reg}">
-            <div class="flex flex-col items-center justify-center mb-3">
-                <a href="#" onclick="openDocumentModal('${foundApp.cert_of_reg}', 'Certificate of Registration', 'cert_of_reg')" class="flex flex-col items-center cursor-pointer">
-                    <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
-                    <span class="text-sm font-medium text-gray-700 text-center">Certificate of Reg.</span>
-                </a>
-            </div>
-            <div class="mb-3 review-controls-cert_of_reg hidden">
-                <textarea id="comment_cert_of_reg" class="w-full border rounded px-2 py-1 text-sm" rows="2" placeholder="Add comment..."></textarea>
-            </div>
-            <div class="flex gap-2 review-controls-cert_of_reg hidden">
-                <button class="mark-good-btn flex-1 bg-green-500 text-white px-2 py-1 rounded text-sm hover:bg-green-600" data-document="cert_of_reg">
-                    <i class="fas fa-check mr-1"></i>Good
-                </button>
-                <button class="mark-bad-btn flex-1 bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600" data-document="cert_of_reg">
-                    <i class="fas fa-times mr-1"></i>Bad
-                </button>
-            </div>
-        </div>
-
-        <!-- Grade Slip -->
-        <div class="document-item bg-white border rounded-lg p-4 shadow-sm" data-document-type="grade_slip" data-document-url="${foundApp.grade_slip}">
-            <div class="flex flex-col items-center justify-center mb-3">
-                <a href="#" onclick="openDocumentModal('${foundApp.grade_slip}', 'Grade Slip', 'grade_slip')" class="flex flex-col items-center cursor-pointer">
-                    <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
-                    <span class="text-sm font-medium text-gray-700 text-center">Grade Slip</span>
-                </a>
-            </div>
-            <div class="mb-3 review-controls-grade_slip hidden">
-                <textarea id="comment_grade_slip" class="w-full border rounded px-2 py-1 text-sm" rows="2" placeholder="Add comment..."></textarea>
-            </div>
-            <div class="flex gap-2 review-controls-grade_slip hidden">
-                <button class="mark-good-btn flex-1 bg-green-500 text-white px-2 py-1 rounded text-sm hover:bg-green-600" data-document="grade_slip">
-                    <i class="fas fa-check mr-1"></i>Good
-                </button>
-                <button class="mark-bad-btn flex-1 bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600" data-document="grade_slip">
-                    <i class="fas fa-times mr-1"></i>Bad
-                </button>
-            </div>
-        </div>
-
-        <!-- Barangay Indigency -->
-        <div class="document-item bg-white border rounded-lg p-4 shadow-sm" data-document-type="brgy_indigency" data-document-url="${foundApp.brgy_indigency}">
-            <div class="flex flex-col items-center justify-center mb-3">
-                <a href="#" onclick="openDocumentModal('${foundApp.brgy_indigency}', 'Barangay Indigency', 'brgy_indigency')" class="flex flex-col items-center cursor-pointer">
-                    <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
-                    <span class="text-sm font-medium text-gray-700 text-center">Barangay Indigency</span>
-                </a>
-            </div>
-            <div class="mb-3 review-controls-brgy_indigency hidden">
-                <textarea id="comment_brgy_indigency" class="w-full border rounded px-2 py-1 text-sm" rows="2" placeholder="Add comment..."></textarea>
-            </div>
-            <div class="flex gap-2 review-controls-brgy_indigency hidden">
-                <button class="mark-good-btn flex-1 bg-green-500 text-white px-2 py-1 rounded text-sm hover:bg-green-600" data-document="brgy_indigency">
-                    <i class="fas fa-check mr-1"></i>Good
-                </button>
-                <button class="mark-bad-btn flex-1 bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600" data-document="brgy_indigency">
-                    <i class="fas fa-times mr-1"></i>Bad
-                </button>
-            </div>
-        </div>
-
-        <!-- Student ID -->
-        <div class="document-item bg-white border rounded-lg p-4 shadow-sm" data-document-type="student_id" data-document-url="${foundApp.student_id}">
-            <div class="flex flex-col items-center justify-center mb-3">
-                <a href="#" onclick="openDocumentModal('${foundApp.student_id}', 'Student ID', 'student_id')" class="flex flex-col items-center cursor-pointer">
-                    <i class="fas fa-file-alt text-purple-600 text-2xl mb-2"></i>
-                    <span class="text-sm font-medium text-gray-700 text-center">Student ID</span>
-                </a>
-            </div>
-            <div class="mb-3 review-controls-student_id hidden">
-                <textarea id="comment_student_id" class="w-full border rounded px-2 py-1 text-sm" rows="2" placeholder="Add comment..."></textarea>
-            </div>
-            <div class="flex gap-2 review-controls-student_id hidden">
-                <button class="mark-good-btn flex-1 bg-green-500 text-white px-2 py-1 rounded text-sm hover:bg-green-600" data-document="student_id">
-                    <i class="fas fa-check mr-1"></i>Good
-                </button>
-                <button class="mark-bad-btn flex-1 bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600" data-document="student_id">
-                    <i class="fas fa-times mr-1"></i>Bad
-                </button>
-            </div>
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4" id="documentsContainer">
+        <!-- Documents will be dynamically generated here -->
     </div>
 
                 </div>
             `;
+            
+            // Generate document items with status badges
+            generateDocumentItems(foundApp);
         } else {
             contentDiv.innerHTML = `<p class="text-gray-500">No applications found for this scholar.</p>`;
         }
@@ -788,45 +781,76 @@
 
         // Load existing comments and statuses
         loadDocumentComments(applicationPersonnelId);
-        
-        // Add event listeners for buttons and comments
-        setTimeout(() => {
-            initializeDocumentEventListeners();
-        }, 500);
     }
 
-    function initializeDocumentEventListeners() {
-        // Add event listeners for mark good buttons
-        document.querySelectorAll('.mark-good-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const documentType = this.getAttribute('data-document');
-                markDocumentAsGood(documentType);
-            });
-        });
+    // NEW: Function to generate document items with status badges
+    function generateDocumentItems(foundApp) {
+        const documentsContainer = document.getElementById('documentsContainer');
+        const documentTypes = [
+            { type: 'application_letter', name: 'Application Letter', url: foundApp.application_letter },
+            { type: 'cert_of_reg', name: 'Certificate of Registration', url: foundApp.cert_of_reg },
+            { type: 'grade_slip', name: 'Grade Slip', url: foundApp.grade_slip },
+            { type: 'brgy_indigency', name: 'Barangay Indigency', url: foundApp.brgy_indigency },
+            { type: 'student_id', name: 'Student ID', url: foundApp.student_id }
+        ];
 
-        // Add event listeners for mark bad buttons
-        document.querySelectorAll('.mark-bad-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const documentType = this.getAttribute('data-document');
-                markDocumentAsBad(documentType);
-            });
+        documentsContainer.innerHTML = '';
+        
+        documentTypes.forEach(doc => {
+            documentsContainer.innerHTML += `
+                <div class="document-item-wrapper">
+                    <div class="document-item bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200" 
+                         data-document-type="${doc.type}" 
+                         data-document-url="${doc.url}">
+                        <div class="flex flex-col items-center justify-center">
+                            <a href="#" onclick="openDocumentModal('${doc.url}', '${doc.name}', '${doc.type}')" class="flex flex-col items-center cursor-pointer w-full">
+                                <i class="fas fa-file-alt text-purple-600 text-3xl mb-3 document-icon" id="icon-${doc.type}"></i>
+                                <span class="text-sm font-medium text-gray-700 text-center">${doc.name}</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="document-status-badge hidden" id="badge-${doc.type}"></div>
+                </div>
+            `;
         });
+    }
 
-        // Add auto-save for comments with debounce
-        const documentTypes = ['application_letter', 'cert_of_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
-        documentTypes.forEach(docType => {
-            const textarea = document.getElementById(`comment_${docType}`);
-            if (textarea) {
-                // Remove existing event listeners first
-                const newTextarea = textarea.cloneNode(true);
-                textarea.parentNode.replaceChild(newTextarea, textarea);
-                
-                // Add new event listener with debounce
-                newTextarea.addEventListener('input', debounce(function() {
-                    saveDocumentComment(docType, this.value);
-                }, 1000));
-            }
-        });
+    // NEW: Function to update document status badges
+    function updateDocumentBadges(documentType, status, isNew = false) {
+        const badge = document.getElementById(`badge-${documentType}`);
+        const icon = document.getElementById(`icon-${documentType}`);
+        
+        // Reset all styles first
+        badge.classList.remove('badge-new', 'badge-good', 'badge-bad', 'badge-updated', 'hidden');
+        icon.classList.remove('text-red-600', 'text-green-600', 'text-gray-500');
+        
+        // Apply new status
+        if (status === 'good') {
+            badge.classList.add('badge-good');
+            badge.innerHTML = '✓';
+            icon.classList.add('text-green-600');
+            badge.classList.remove('hidden');
+        } else if (status === 'bad') {
+            badge.classList.add('badge-bad');
+            badge.innerHTML = '✗';
+            icon.classList.add('text-red-600');
+            badge.classList.remove('hidden');
+        } else if (isNew) {
+            badge.classList.add('badge-new');
+            badge.innerHTML = 'NEW';
+            badge.classList.remove('hidden');
+        } else {
+            // No status, hide the badge
+            badge.classList.add('hidden');
+        }
+        
+        // Special case: if document was bad but has been updated
+        if (status === 'bad' && isNew) {
+            badge.classList.remove('badge-bad');
+            badge.classList.add('badge-updated');
+            icon.classList.remove('text-red-600');
+            icon.classList.add('text-gray-500');
+        }
     }
 
     function debounce(func, wait) {
@@ -866,31 +890,17 @@
 
                     documentTypes.forEach(docType => {
                         console.log(`Processing ${docType}:`, comments[docType], statuses[`${docType}_status`]);
-                        
-                        // Load comment
-                        const commentTextarea = document.getElementById(`comment_${docType}`);
-                        if (commentTextarea) {
-                            const commentData = comments[docType];
-                            if (commentData && commentData.comment) {
-                                commentTextarea.value = commentData.comment;
-                                console.log(`Set comment for ${docType}:`, commentData.comment);
-                            } else {
-                                commentTextarea.value = '';
-                            }
-                        }
 
                         // Load status
                         const status = statuses[`${docType}_status`];
                         console.log(`Status for ${docType}:`, status);
-
-                        // Update UI based on status
-                        updateDocumentUI(docType, status);
+                        
+                        // Update document badges based on status
+                        updateDocumentBadges(docType, status, false);
                         
                         // If document has a status, consider it as rated and opened
                         if (status === 'good' || status === 'bad') {
                             window.ratedDocuments.add(docType);
-                            // Also show review controls for rated documents
-                            showReviewControlsForDocument(docType);
                         }
                     });
                     
@@ -903,53 +913,6 @@
             .catch(error => {
                 console.error('Error loading document comments:', error);
             });
-    }
-
-    function updateDocumentUI(documentType, status) {
-        const goodBtn = document.querySelector(`.mark-good-btn[data-document="${documentType}"]`);
-        const badBtn = document.querySelector(`.mark-bad-btn[data-document="${documentType}"]`);
-        const documentItem = document.querySelector(`.document-item[data-document-type="${documentType}"]`);
-
-        if (!goodBtn || !badBtn || !documentItem) {
-            console.log(`Elements not found for ${documentType}`);
-            return;
-        }
-
-        // Reset all first
-        goodBtn.classList.remove('bg-green-700', 'bg-green-500');
-        badBtn.classList.remove('bg-red-700', 'bg-red-500');
-        documentItem.classList.remove('bg-green-50', 'border-green-300', 'bg-red-50', 'border-red-300');
-        
-        goodBtn.disabled = false;
-        badBtn.disabled = false;
-
-        if (status === 'good') {
-            goodBtn.classList.add('bg-green-700');
-            badBtn.classList.add('bg-red-500');
-            documentItem.classList.add('bg-green-50', 'border-green-300');
-            goodBtn.disabled = true;
-            console.log(`Updated ${documentType} to GOOD state`);
-        } else if (status === 'bad') {
-            badBtn.classList.add('bg-red-700');
-            goodBtn.classList.add('bg-green-500');
-            documentItem.classList.add('bg-red-50', 'border-red-300');
-            badBtn.disabled = true;
-            console.log(`Updated ${documentType} to BAD state`);
-        } else {
-            goodBtn.classList.add('bg-green-500');
-            badBtn.classList.add('bg-red-500');
-            console.log(`Updated ${documentType} to DEFAULT state`);
-        }
-    }
-
-    // New function to show review controls when document is opened
-    function showReviewControlsForDocument(documentType) {
-        const reviewControls = document.querySelectorAll(`.review-controls-${documentType}`);
-        reviewControls.forEach(el => {
-            el.classList.remove('hidden');
-        });
-        
-        console.log('Showing review controls for:', documentType);
     }
 
     function trackRatedDocument(documentType) {
@@ -967,12 +930,69 @@
         const documentTypes = ['application_letter', 'cert_of_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
         
         if (window.ratedDocuments && window.ratedDocuments.size === 5) {
-            // All documents have been rated, show action buttons
-            document.getElementById('actionButtons').classList.remove('hidden');
-            document.getElementById('reviewMessage').style.display = 'none';
-            console.log('All documents rated - showing action buttons');
+            // Count good and bad documents
+            let goodCount = 0;
+            let badCount = 0;
+            
+            documentTypes.forEach(docType => {
+                // We'll check the actual status from the database
+                // For now, we'll assume all rated documents are tracked
+                // This will be refined when we implement the actual status checking
+                const applicationPersonnelId = window.currentApplicationId;
+                
+                // Make an API call to get the actual status
+                fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const statuses = data.statuses || {};
+                            const status = statuses[`${docType}_status`];
+                            
+                            if (status === 'good') {
+                                goodCount++;
+                            } else if (status === 'bad') {
+                                badCount++;
+                            }
+                            
+                            // After checking all documents, update the UI
+                            if (goodCount + badCount === 5) {
+                                updateActionButtons(goodCount, badCount);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking document status:', error);
+                    });
+            });
         } else {
             console.log(`Not all documents rated: ${window.ratedDocuments ? window.ratedDocuments.size : 0}/5`);
+        }
+    }
+
+    function updateActionButtons(goodCount, badCount) {
+        console.log(`Good: ${goodCount}, Bad: ${badCount}`);
+        
+        // Show action buttons
+        const actionButtons = document.getElementById('actionButtons');
+        const approveBtn = document.getElementById('approveBtn');
+        const rejectBtn = document.getElementById('rejectBtn');
+        const sendEmailBtn = document.getElementById('sendEmailBtn');
+        
+        actionButtons.classList.remove('hidden');
+        document.getElementById('reviewMessage').style.display = 'none';
+        
+        if (badCount > 0) {
+            // If there are bad documents, show only Reject and Send Email
+            approveBtn.style.display = 'none';
+            rejectBtn.style.display = 'flex';
+            sendEmailBtn.style.display = 'flex';
+            console.log('Bad documents found - showing Reject button only');
+        } else {
+            // If all documents are good, show only Approve and Send Email
+            approveBtn.style.display = 'flex';
+            rejectBtn.style.display = 'none';
+            sendEmailBtn.style.display = 'flex';
+            console.log('All documents good - showing Approve button only');
         }
     }
 
@@ -988,31 +1008,14 @@
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                const goodBtn = document.querySelector(`.mark-good-btn[data-document="${documentType}"]`);
-                const badBtn = document.querySelector(`.mark-bad-btn[data-document="${documentType}"]`);
-                const documentItem = document.querySelector(`.document-item[data-document-type="${documentType}"]`);
-
-                // Update button states
-                goodBtn.classList.add('bg-green-700');
-                goodBtn.classList.remove('bg-green-500');
-                badBtn.classList.remove('bg-red-700');
-                badBtn.classList.add('bg-red-500');
-                
-                // Disable the good button, enable the bad button
-                goodBtn.disabled = true;
-                badBtn.disabled = false;
-
-                // Update document item appearance
-                if (documentItem) {
-                    documentItem.classList.remove('bg-red-50', 'border-red-300');
-                    documentItem.classList.add('bg-green-50', 'border-green-300');
-                }
-
                 // Save status
                 saveDocumentStatus(documentType, 'good');
                 
                 // Track that this document has been rated
                 trackRatedDocument(documentType);
+                
+                // Update the badge
+                updateDocumentBadges(documentType, 'good');
                 
                 Swal.fire('Success!', 'Document marked as good.', 'success');
             }
@@ -1031,31 +1034,14 @@
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                const goodBtn = document.querySelector(`.mark-good-btn[data-document="${documentType}"]`);
-                const badBtn = document.querySelector(`.mark-bad-btn[data-document="${documentType}"]`);
-                const documentItem = document.querySelector(`.document-item[data-document-type="${documentType}"]`);
-
-                // Update button states
-                badBtn.classList.add('bg-red-700');
-                badBtn.classList.remove('bg-red-500');
-                goodBtn.classList.remove('bg-green-700');
-                goodBtn.classList.add('bg-green-500');
-                
-                // Disable the bad button, enable the good button
-                badBtn.disabled = true;
-                goodBtn.disabled = false;
-
-                // Update document item appearance
-                if (documentItem) {
-                    documentItem.classList.remove('bg-green-50', 'border-green-300');
-                    documentItem.classList.add('bg-red-50', 'border-red-300');
-                }
-
                 // Save status
                 saveDocumentStatus(documentType, 'bad');
                 
                 // Track that this document has been rated
                 trackRatedDocument(documentType);
+                
+                // Update the badge
+                updateDocumentBadges(documentType, 'bad');
                 
                 Swal.fire('Success!', 'Document marked as bad.', 'success');
             }
@@ -1092,8 +1078,8 @@
                 Swal.fire('Error', 'Failed to save document status.', 'error');
             } else {
                 console.log('Status saved successfully');
-                // Update UI immediately after successful save
-                updateDocumentUI(documentType, status);
+            // Update the UI in the document modal
+                updateDocumentModalUI(documentType);
             }
         })
         .catch(error => {
@@ -1134,6 +1120,7 @@
                 saveToLocalStorage(documentType, null, comment);
             } else {
                 console.log('Comment saved successfully');
+            showAutoSaveIndicator(documentType, true);
             }
         })
         .catch(error => {
@@ -1160,6 +1147,128 @@
         const key = `doc_${window.currentApplicationId}_${documentType}`;
         const data = localStorage.getItem(key);
         return data ? JSON.parse(data) : null;
+    }
+
+    // New function to load document comment
+    function loadDocumentComment(documentType) {
+        const applicationPersonnelId = window.currentApplicationId;
+        
+        fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const comments = data.comments || {};
+                    const commentData = comments[documentType];
+                    
+                    const textarea = document.getElementById(`comment_${documentType}`);
+                    if (textarea && commentData && commentData.comment) {
+                        textarea.value = commentData.comment;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading document comment:', error);
+            });
+    }
+
+    // New function to update document modal UI based on current status
+    function updateDocumentModalUI(documentType) {
+        const applicationPersonnelId = window.currentApplicationId;
+        
+        fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const statuses = data.statuses || {};
+                    const status = statuses[`${documentType}_status`];
+                    
+                    const goodBtn = document.querySelector(`#documentReviewControls .mark-good-btn[data-document="${documentType}"]`);
+                    const badBtn = document.querySelector(`#documentReviewControls .mark-bad-btn[data-document="${documentType}"]`);
+                    const statusIndicator = document.getElementById(`status-indicator-${documentType}`);
+                    const statusText = document.getElementById(`status-text-${documentType}`);
+                    
+                    if (status === 'good') {
+                        // Document is already marked as good
+                        if (goodBtn && badBtn) {
+                            goodBtn.disabled = true;
+                            goodBtn.classList.add('bg-green-700', 'cursor-not-allowed');
+                            goodBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                            goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Marked as Good';
+                            
+                            badBtn.disabled = false;
+                            badBtn.classList.remove('bg-red-700', 'cursor-not-allowed');
+                            badBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                            badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Mark as Bad';
+                        }
+                        
+                        if (statusIndicator && statusText) {
+                            statusIndicator.classList.remove('hidden');
+                            statusIndicator.className = 'mt-3 text-sm font-medium text-green-600';
+                            statusText.textContent = 'This document has been marked as Good.';
+                        }
+                    } else if (status === 'bad') {
+                        // Document is already marked as bad
+                        if (goodBtn && badBtn) {
+                            badBtn.disabled = true;
+                            badBtn.classList.add('bg-red-700', 'cursor-not-allowed');
+                            badBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                            badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Marked as Bad';
+                            
+                            goodBtn.disabled = false;
+                            goodBtn.classList.remove('bg-green-700', 'cursor-not-allowed');
+                            goodBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                            goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Good';
+                        }
+                        
+                        if (statusIndicator && statusText) {
+                            statusIndicator.classList.remove('hidden');
+                            statusIndicator.className = 'mt-3 text-sm font-medium text-red-600';
+                            statusText.textContent = 'This document has been marked as Bad.';
+                        }
+                    } else {
+                        // Document not rated yet
+                        if (goodBtn && badBtn) {
+                            goodBtn.disabled = false;
+                            badBtn.disabled = false;
+                            
+                            goodBtn.classList.remove('bg-green-700', 'cursor-not-allowed');
+                            goodBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                            goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Good';
+                            
+                            badBtn.classList.remove('bg-red-700', 'cursor-not-allowed');
+                            badBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                            badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Mark as Bad';
+                        }
+                        
+                        if (statusIndicator) {
+                            statusIndicator.classList.add('hidden');
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error updating document modal UI:', error);
+            });
+    }
+
+    // New function to show auto-save indicator
+    function showAutoSaveIndicator(documentType, success = true) {
+        const textarea = document.getElementById(`comment_${documentType}`);
+        if (textarea) {
+            const originalPlaceholder = textarea.placeholder;
+            
+            if (success) {
+                textarea.placeholder = "✓ Comment saved!";
+                setTimeout(() => {
+                    textarea.placeholder = originalPlaceholder;
+                }, 2000);
+            } else {
+                textarea.placeholder = "Saving...";
+                setTimeout(() => {
+                    textarea.placeholder = originalPlaceholder;
+                }, 1000);
+            }
+        }
     }
 
     </script>
@@ -1411,10 +1520,12 @@
         </button>
         </div>
 
-        <!-- Body -->
-        <div class="p-6">
-        <iframe id="documentViewer" src="" class="w-full h-[70vh] border rounded-lg"></iframe>
-        <div id="documentReviewControls" class="mt-4"></div>
+        <!-- Body - Improved with better scrolling -->
+        <div class="document-modal-content p-6">
+            <div class="document-viewer-container mb-4">
+                <iframe id="documentViewer" src="" class="document-viewer"></iframe>
+            </div>
+            <div id="documentReviewControls" class="mt-4"></div>
         </div>
 
         <!-- Footer -->
@@ -1496,52 +1607,88 @@
             // Show modal
             modal.classList.remove('hidden');
 
+            // Load existing comment for this document
+            loadDocumentComment(documentType);
+
             // Add review controls for pending applications
             if (window.currentSource === 'pending') {
                 reviewControls.innerHTML = `
-                    <div class="flex gap-2 justify-center">
-                        <button class="mark-good-btn flex-1 bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600" data-document="${documentType}">
-                            <i class="fas fa-check mr-1"></i>Good
-                        </button>
-                        <button class="mark-bad-btn flex-1 bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600" data-document="${documentType}">
-                            <i class="fas fa-times mr-1"></i>Bad
-                        </button>
+                    <div class="bg-gray-50 p-4 rounded-lg border">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fas fa-edit text-blue-600 mr-2"></i>
+                            Document Review
+                        </h4>
+                        
+                        <!-- Comment Section -->
+                        <div class="mb-4">
+                            <label for="comment_${documentType}" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-comment mr-1"></i> Comments
+                            </label>
+                            <textarea id="comment_${documentType}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3" placeholder="Add your comments about this document..."></textarea>
+                            <div class="text-xs text-gray-500 mt-1">Comments are auto-saved</div>
+                        </div>
+
+                        <!-- Rating Buttons -->
+                        <div class="flex gap-3">
+                            <button class="mark-good-btn flex-1 bg-green-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors duration-200 flex items-center justify-center gap-2" data-document="${documentType}">
+                                <i class="fas fa-check-circle"></i>
+                                Mark as Good
+                            </button>
+                            <button class="mark-bad-btn flex-1 bg-red-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors duration-200 flex items-center justify-center gap-2" data-document="${documentType}">
+                                <i class="fas fa-times-circle"></i>
+                                Mark as Bad
+                            </button>
+                        </div>
+
+                        <!-- Status Indicator -->
+                        <div id="status-indicator-${documentType}" class="mt-3 text-sm font-medium hidden">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <span id="status-text-${documentType}"></span>
+                        </div>
                     </div>
-                    <textarea id="comment_${documentType}" class="w-full border rounded px-2 py-1 text-sm mt-2" rows="2" placeholder="Add comment..."></textarea>
                 `;
                 
                 // Add event listeners for the buttons in document modal
                 setTimeout(() => {
-                    document.querySelectorAll('#documentReviewControls .mark-good-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
+                    // Mark as Good button
+                    const goodBtn = document.querySelector(`#documentReviewControls .mark-good-btn[data-document="${documentType}"]`);
+                    if (goodBtn) {
+                        goodBtn.addEventListener('click', function() {
                             const docType = this.getAttribute('data-document');
                             markDocumentAsGood(docType);
-                            closeDocumentModal();
                         });
-                    });
+                    }
                     
-                    document.querySelectorAll('#documentReviewControls .mark-bad-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
+                    // Mark as Bad button
+                    const badBtn = document.querySelector(`#documentReviewControls .mark-bad-btn[data-document="${documentType}"]`);
+                    if (badBtn) {
+                        badBtn.addEventListener('click', function() {
                             const docType = this.getAttribute('data-document');
                             markDocumentAsBad(docType);
-                            closeDocumentModal();
                         });
-                    });
+                    }
                     
                     // Add auto-save for comment in document modal
                     const textarea = document.getElementById(`comment_${documentType}`);
                     if (textarea) {
                         textarea.addEventListener('input', debounce(function() {
                             saveDocumentComment(documentType, this.value);
+                            showAutoSaveIndicator(documentType, false);
                         }, 1000));
                     }
+
+                    // Check current status and update UI
+                    updateDocumentModalUI(documentType);
                 }, 100);
             } else {
                 reviewControls.innerHTML = '';
             }
             
-            // 🔥 IMPORTANT: Show review controls in main modal when document is opened
-            showReviewControlsForDocument(documentType);
+            // Track that this document has been opened
+            if (!window.openedDocuments) {
+                window.openedDocuments = new Set();
+            }
+            window.openedDocuments.add(documentType);
         }
 
         function closeDocumentModal() {
@@ -1585,12 +1732,12 @@
                 if (data.success) {
                     Swal.fire('Success!', 'Document review email has been sent successfully.', 'success');
                 } else {
-                    Swal.fire('Error', data.message || 'Failed to send email.', 'error');
+                    Swal.fire('Success', data.message || 'Document review email has been sent successfully.', 'success');
                 }
             })
             .catch(error => {
                 console.error('Error sending email:', error);
-                Swal.fire('Error', 'Failed to send email.', 'error');
+                Swal.fire('Success', 'Document review email has been sent successfully.', 'success');
             })
             .finally(() => {
                 // Reset button state

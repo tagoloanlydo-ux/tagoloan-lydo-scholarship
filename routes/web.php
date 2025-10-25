@@ -26,8 +26,8 @@ Route::get('/scholar/forgot-password', [ScholarController::class, 'showForgotPas
  Route::get('/scholar/announcements', [ScholarController::class, 'announcements'])->name('scholar.announcements');
 Route::post('/scholar/forgot-password', [ScholarController::class, 'sendResetLink'])->name('scholar.password.email');
 Route::post('/scholar/verify-otp', [ScholarController::class, 'verifyOtp'])->name('scholar.password.verifyOtp');
-Route::get('/scholar/update-application/{applicant_id}', [ScholarController::class, 'showUpdateApplication'])->name('scholar.showUpdateApplication');
-Route::post('/scholar/update-application/{applicant_id}', [ScholarController::class, 'updateApplication'])->name('scholar.updateApplication');
+Route::get('/scholar/applicationupdate/{applicant_id}', [ScholarController::class, 'showUpdateApplication'])->name('scholar.showUpdateApplication');
+Route::post('/scholar/applicationupdate/{applicant_id}', [ScholarController::class, 'updateApplication'])->name('scholar.updateApplication');
 Route::post('/scholar/resend-otp', [ScholarController::class, 'resendOtp'])->name('scholar.password.resendOtp');
 Route::get('/scholar/reset-password/{token}', [ScholarController::class, 'showResetForm'])->name('scholar.password.reset');
 Route::post('/scholar/reset-password', [ScholarController::class, 'resetPassword'])->name('scholar.password.update');
@@ -155,6 +155,7 @@ Route::middleware(['scholar.auth'])->group(function () {
     Route::get('/scholar/dashboard', [ScholarController::class, 'dashboard'])->name('scholar.dashboard');
     Route::get('/scholar/settings', [ScholarController::class, 'showSettings'])->name('scholar.settings');
     Route::post('/scholar/settings/update', [ScholarController::class, 'updateSettings'])->name('scholar.settings.update');
+    Route::post('/scholar/logout', [ScholarController::class, 'logout'])->name('scholar.logout');
    });
 
 use App\Http\Controllers\SmsController;

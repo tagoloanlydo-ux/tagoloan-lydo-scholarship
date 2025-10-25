@@ -646,45 +646,47 @@ private function moveFileToRenewals($file)
         return redirect()->route('scholar.login')->with('success', 'Your password has been reset successfully!');
     }
 
-    public function showUpdateApplication($applicant_id)
-    {
-        $applicant = Applicant::findOrFail($applicant_id);
-        $application = Application::where('applicant_id', $applicant_id)->first();
-        if (!$application) {
-            abort(404, 'Application not found.');
-        }
-
-        // Get application personnel record
-        $applicationPersonnel = \DB::table('tbl_application_personnel')
-            ->where('application_id', $application->application_id)
-            ->first();
-
-        if (!$applicationPersonnel) {
-            abort(404, 'Application personnel record not found.');
-        }
-
-        // Verify token if provided
-        $token = request()->query('token');
-        if ($token) {
-            if (!$applicationPersonnel->update_token || $token !== $applicationPersonnel->update_token) {
-                abort(403, 'Invalid or expired update token.');
-            }
-        }
-
-        // Handle issues query param
-        $issues = [];
-        if (request()->has('issues')) {
-            $issues = explode(',', request()->query('issues'));
-            $issues = array_map('trim', $issues);
-        }
-
-        return view('scholar.update_application', compact('applicant', 'application', 'issues'));
+public function showUpdateApplication($applicant_id)
+{
+    $applicant = Applicant::findOrFail($applicant_id);
+    $application = Application::where('applicant_id', $applicant_id)->first();
+    
+    if (!$application) {
+        abort(404, 'Application not found.');
     }
+
+    // Get application personnel record
+    $applicationPersonnel = \DB::table('tbl_application_personnel')
+        ->where('application_id', $application->application_id)
+        ->first();
+
+    if (!$applicationPersonnel) {
+        abort(404, 'Application personnel record not found.');
+    }
+
+    // Verify token if provided
+    $token = request()->query('token');
+    if ($token) {
+        if (!$applicationPersonnel->update_token || $token !== $applicationPersonnel->update_token) {
+            abort(403, 'Invalid or expired update token.');
+        }
+    }
+
+    // Handle issues query param
+    $issues = [];
+    if (request()->has('issues')) {
+        $issues = explode(',', request()->query('issues'));
+        $issues = array_map('trim', $issues);
+    }
+
+    return view('scholar.applicationupdate', compact('applicant', 'application', 'issues'));
+}
 
 public function updateApplication(Request $request, $applicant_id)
 {
     $applicant = Applicant::findOrFail($applicant_id);
     $application = Application::where('applicant_id', $applicant_id)->first();
+    
     if (!$application) {
         abort(404, 'Application not found.');
     }
@@ -766,11 +768,25 @@ public function updateApplication(Request $request, $applicant_id)
 
     $application->save();
 
+    // Clear the update token after successful update
+    \DB::table('tbl_application_personnel')
+        ->where('application_id', $application->application_id)
+        ->update(['update_token' => null]);
+
     // Broadcast applicant update
     broadcast(new ApplicantUpdated($applicant))->toOthers();
 
     return redirect()->route('scholar.dashboard')->with('success', 'Application updated successfully!');
 }
+
+    public function logout(Request $request)
+    {
+        // Clear the scholar session
+        $request->session()->forget('scholar');
+
+        // Redirect to login page with success message
+        return redirect()->route('scholar.login')->with('success', 'You have been logged out successfully.');
+    }
 
 /**
  * Move uploaded files into storage/documents/
