@@ -14,6 +14,13 @@
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 </head>
 <body class="bg-gray-50">
+    @php
+        // Provide safe defaults so the view doesn't error if controller omitted these
+        $applications = $applications ?? [];
+        $listApplications = $listApplications ?? [];
+        $notifications = $notifications ?? collect();
+        $showBadge = $showBadge ?? false;
+    @endphp
     <div class="dashboard-grid">
         <!-- Header -->
         <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center">
