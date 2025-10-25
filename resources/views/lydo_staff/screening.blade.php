@@ -162,12 +162,7 @@
                             <!-- Search & Filter for Table View -->
                             <div class="flex gap-2 mt-4">
                                 <input type="text" id="searchInput_table" placeholder="Search name..." class="border rounded px-3 py-2 w-64">
-                                <select id="barangaySelect_table" class="border rounded px-3 py-2">
-                                    <option value="">All Barangays</option>
-                                    @foreach($barangays as $brgy)
-                                        <option value="{{ $brgy }}">{{ $brgy }}</option>
-                                    @endforeach
-                                </select>
+                                <input type="text" id="barangaySelect_table" placeholder="Search barangay..." class="border rounded px-3 py-2 w-64">
                             </div>
                         </div>
                         <table id="screeningTable" class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
@@ -368,12 +363,7 @@
                             <!-- Search & Filter for List View -->
                             <div class="flex gap-2 mt-4">
                                 <input type="text" id="searchInput_list" placeholder="Search name..." class="border rounded px-3 py-2 w-64">
-                                <select id="barangaySelect_list" class="border rounded px-3 py-2">
-                                    <option value="">All Barangays</option>
-                                    @foreach($barangays as $brgy)
-                                        <option value="{{ $brgy }}">{{ $brgy }}</option>
-                                    @endforeach
-                                </select>
+                                <input type="text" id="barangaySelect_list" placeholder="Search barangay..." class="border rounded px-3 py-2 w-64">
                             </div>
                         </div>
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
@@ -744,7 +734,7 @@ function filterTable() {
             const barangayText = barangayCell.textContent.toLowerCase();
 
             const matchesSearch = nameText.includes(searchValue);
-            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
+            const matchesBarangay = barangayValue === '' || barangayText.includes(barangayValue);
 
             if (matchesSearch && matchesBarangay) {
                 row.style.display = '';

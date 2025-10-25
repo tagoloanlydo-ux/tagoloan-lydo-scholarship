@@ -209,6 +209,35 @@
             position: relative;
             display: inline-block;
         }
+
+        /* Tab button styles */
+        .tab {
+            padding: 10px 20px;
+            background-color: #f3f4f6;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab:hover {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        .tab.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        }
+
+        .tab.active:hover {
+            background-color: #2563eb;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -331,35 +360,47 @@
                     <div class="flex justify-between items-center mb-6">
                         <h5 class="text-3xl font-bold text-gray-800">Review Applicants Application</h5>
                 </div>
-                    <!-- 🔎 Search & Filter + View Switch -->
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                        <!-- Search & Filter -->
-            <form id="filterForm" method="GET" action="{{ route('MayorStaff.application') }}" class="flex gap-2 mb-4">
-                {{-- Search --}}
-                <input type="text" id="searchInput" name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Search name..."
-                    class="border rounded px-3 py-2 w-64">
-
-                {{-- Barangay dropdown --}}
-                <select id="barangaySelect" name="barangay" class="border rounded px-3 py-2">
-                    <option value="">All Barangays</option>
-                    @foreach($barangays as $brgy)
-                        <option value="{{ $brgy }}" {{ request('barangay') == $brgy ? 'selected' : '' }}>
-                            {{ $brgy }}
-                        </option>
-                    @endforeach
-                </select>
-            </form>
-                        <!-- Tab Switch -->
-            <div class="flex gap-2">
-                <div class="tab active" onclick="showTable()">Pending Review</div>
-                 <div class="tab" onclick="showList()">Reviewed Applications</div>
-                </div>
-             </div>
+                    <!-- 🔎 View Switch -->
+                    <div class="flex justify-start items-center mb-6 gap-4">
+                                    <!-- Tab Switch -->
+                        <div class="flex gap-2">
+                            <div class="tab active" onclick="showTable()">Pending Review</div>
+                             <div class="tab" onclick="showList()">Reviewed Applications</div>
+                            </div>
+                         </div>
 
             <!-- ✅ Table View (Applicants without remarks) -->
             <div id="tableView">
+                <!-- Search and Filter Section -->
+                <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+                    <div class="flex flex-col md:flex-row gap-4 items-end">
+                        <!-- Search by Name -->
+                        <div class="flex-1">
+                            <label for="searchInputTable" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
+                            <input type="text" id="searchInputTable" placeholder="Enter applicant name..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Filter by Barangay -->
+                        <div class="flex-1">
+                            <label for="barangaySelectTable" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
+                            <select id="barangaySelectTable"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">All Barangays</option>
+                                @foreach($barangays as $brgy)
+                                    <option value="{{ $brgy }}">{{ $brgy }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Clear Filters Button -->
+                        <div class="flex-shrink-0">
+                            <button onclick="clearFiltersTable()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200">
+                                <i class="fas fa-times mr-2"></i>Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 <div class="mb-4">
                     <h3 class="text-lg font-semibold text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
                         The list below shows applicants who have submitted applications
@@ -421,6 +462,19 @@
 
             <!-- ✅ List View (Approved and Rejected applications) -->
     <div id="listView" class="hidden overflow-x-auto">
+        <!-- Filter controls specific to List View -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <div class="flex items-center gap-2 w-full md:w-1/2">
+                <input id="searchInputList" type="text" placeholder="Search by name..." class="w-full md:w-2/3 border rounded px-3 py-2" />
+                <select id="barangaySelectList" class="border rounded px-3 py-2">
+                    <option value="">All Barangays</option>
+                    @foreach($barangays as $brgy)
+                        <option value="{{ $brgy }}">{{ $brgy }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="text-sm text-gray-500">Showing reviewed (approved/rejected) applications</div>
+        </div>
         <div class="mb-4">
             <h3 class="text-lg font-semibold text-gray-700 bg-green-50 p-3 rounded-lg border border-green-200">
             The list below shows applicants who have approved and rejected screening
@@ -548,39 +602,62 @@
 
 
     <script>
-        // Filter table on input change
-        document.getElementById('searchInput').addEventListener('input', function() {
-            filterTable();
-        });
+        // Filtering: separate inputs for Table and List views
+        function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
+            try {
+                const searchEl = document.getElementById(searchInputId);
+                const barangayEl = document.getElementById(barangaySelectId);
+                const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
+                const barangayValue = barangayEl ? barangayEl.value : '';
 
-        document.getElementById('barangaySelect').addEventListener('change', function() {
-            filterTable();
-        });
+                const tableBody = document.querySelector(tableBodySelector);
+                if (!tableBody) return;
 
-        function filterTable() {
-            const searchValue = document.getElementById('searchInput').value.toLowerCase();
-            const barangayValue = document.getElementById('barangaySelect').value;
-            const tableBody = document.querySelector('#tableView tbody');
-            const rows = tableBody.querySelectorAll('tr');
+                const rows = tableBody.querySelectorAll('tr');
 
-            rows.forEach(row => {
-                const nameCell = row.cells[1]; // Name column
-                const barangayCell = row.cells[2]; // Barangay column
+                rows.forEach(row => {
+                    const nameCell = row.cells[1]; // Name column
+                    const barangayCell = row.cells[2]; // Barangay column
 
-                if (nameCell && barangayCell) {
-                    const nameText = nameCell.textContent.toLowerCase();
-                    const barangayText = barangayCell.textContent;
+                    if (nameCell && barangayCell) {
+                        const nameText = nameCell.textContent.toLowerCase();
+                        const barangayText = barangayCell.textContent.trim();
 
-                    const matchesSearch = nameText.includes(searchValue);
-                    const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
+                        const matchesSearch = searchValue === '' || nameText.includes(searchValue);
+                        const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
 
-                    if (matchesSearch && matchesBarangay) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
+                        if (matchesSearch && matchesBarangay) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
                     }
-                }
-            });
+                });
+            } catch (e) {
+                console.error('filterRows error', e);
+            }
+        }
+
+        // Attach listeners (safe: only add if elements exist)
+        const attachFilterListeners = () => {
+            const debounceDelay = 150;
+
+            const tableSearch = document.getElementById('searchInputTable');
+            const tableBrgy = document.getElementById('barangaySelectTable');
+            if (tableSearch) tableSearch.addEventListener('input', debounce(() => filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable'), debounceDelay));
+            if (tableBrgy) tableBrgy.addEventListener('change', () => filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable'));
+
+            const listSearch = document.getElementById('searchInputList');
+            const listBrgy = document.getElementById('barangaySelectList');
+            if (listSearch) listSearch.addEventListener('input', debounce(() => filterRows('#listView tbody', 'searchInputList', 'barangaySelectList'), debounceDelay));
+            if (listBrgy) listBrgy.addEventListener('change', () => filterRows('#listView tbody', 'searchInputList', 'barangaySelectList'));
+        };
+
+        // Clear filters function for table view
+        function clearFiltersTable() {
+            document.getElementById('searchInputTable').value = '';
+            document.getElementById('barangaySelectTable').value = '';
+            filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
         }
 
         function showTable() {
@@ -589,6 +666,8 @@
             document.querySelector('.tab.active').classList.remove('active');
             document.querySelectorAll('.tab')[0].classList.add('active');
             localStorage.setItem("viewMode", "table"); // save preference
+            // Run filter for table view after showing
+            filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
         }
 
         function showList() {
@@ -597,6 +676,8 @@
             document.querySelector('.tab.active').classList.remove('active');
             document.querySelectorAll('.tab')[1].classList.add('active');
             localStorage.setItem("viewMode", "list"); // save preference
+            // Run filter for list view after showing
+            filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
         }
 
         // ✅ Kapag nag-load ang page, i-apply yung last view
@@ -607,6 +688,10 @@
             } else {
                 showTable();
             }
+            // Attach filter listeners for both views and run initial filters
+            attachFilterListeners();
+            filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
+            filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
         });
 
         // ✅ Application Modal Functions
