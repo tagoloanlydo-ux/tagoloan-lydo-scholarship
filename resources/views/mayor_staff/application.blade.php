@@ -400,7 +400,16 @@
                 </form>
             </div>
         </div>
-            <div class="flex-1 main-content-area p-4 md:p-5 text-[16px]">
+            <!-- Content Wrapper -->
+            <div class="content-wrapper">
+                <!-- Navbar stays at top -->
+                <div class="navbar bg-white shadow-md">
+                    <!-- Your existing navbar content -->
+                </div>
+                
+                <!-- Main content area - scrollable -->
+                <div class="main-content">
+                    <div class="p-4 md:p-5 text-[16px]">
                 <div class="p-4 bg-gray-50 min-h-screen rounded-lg shadow">
                     <div class="flex justify-between items-center mb-6">
                         <h5 class="text-3xl font-bold text-gray-800">Review Applicants Application</h5>
@@ -2004,8 +2013,11 @@
                         }
                     });
                 });
+                    </div> <!-- Close main-content -->
+                </div> <!-- Close content-wrapper -->
+            </div> <!-- Close main-container -->
             </script>
- <script src="{{ asset('js/logout.js') }}"></script>
+            <script src="{{ asset('js/logout.js') }}"></script>
 
 
 
