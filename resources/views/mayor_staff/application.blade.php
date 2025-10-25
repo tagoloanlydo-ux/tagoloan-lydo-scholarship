@@ -520,6 +520,9 @@
         const applications = @json($applications);
 
     function openApplicationModal(applicationPersonnelId, source = 'pending') {
+        // Store the current source globally
+        window.currentSource = source;
+        
         const contentDiv = document.getElementById('applicationContent');
         contentDiv.innerHTML = '';
 
@@ -598,10 +601,10 @@
                     <span class="text-sm font-medium text-gray-700 text-center">Application Letter</span>
                 </a>
             </div>
-            <div class="mb-3 hidden review-controls-application_letter">
+            <div class="mb-3 review-controls-application_letter hidden">
                 <textarea id="comment_application_letter" class="w-full border rounded px-2 py-1 text-sm" rows="2" placeholder="Add comment..."></textarea>
             </div>
-            <div class="flex gap-2 hidden review-controls-application_letter">
+            <div class="flex gap-2 review-controls-application_letter hidden">
                 <button class="mark-good-btn flex-1 bg-green-500 text-white px-2 py-1 rounded text-sm hover:bg-green-600" data-document="application_letter">
                     <i class="fas fa-check mr-1"></i>Good
                 </button>
@@ -619,10 +622,10 @@
                     <span class="text-sm font-medium text-gray-700 text-center">Certificate of Reg.</span>
                 </a>
             </div>
-            <div class="mb-3 hidden review-controls-cert_of_reg">
+            <div class="mb-3 review-controls-cert_of_reg hidden">
                 <textarea id="comment_cert_of_reg" class="w-full border rounded px-2 py-1 text-sm" rows="2" placeholder="Add comment..."></textarea>
             </div>
-            <div class="flex gap-2 hidden review-controls-cert_of_reg">
+            <div class="flex gap-2 review-controls-cert_of_reg hidden">
                 <button class="mark-good-btn flex-1 bg-green-500 text-white px-2 py-1 rounded text-sm hover:bg-green-600" data-document="cert_of_reg">
                     <i class="fas fa-check mr-1"></i>Good
                 </button>
@@ -640,10 +643,10 @@
                     <span class="text-sm font-medium text-gray-700 text-center">Grade Slip</span>
                 </a>
             </div>
-            <div class="mb-3 hidden review-controls-grade_slip">
+            <div class="mb-3 review-controls-grade_slip hidden">
                 <textarea id="comment_grade_slip" class="w-full border rounded px-2 py-1 text-sm" rows="2" placeholder="Add comment..."></textarea>
             </div>
-            <div class="flex gap-2 hidden review-controls-grade_slip">
+            <div class="flex gap-2 review-controls-grade_slip hidden">
                 <button class="mark-good-btn flex-1 bg-green-500 text-white px-2 py-1 rounded text-sm hover:bg-green-600" data-document="grade_slip">
                     <i class="fas fa-check mr-1"></i>Good
                 </button>
@@ -661,10 +664,10 @@
                     <span class="text-sm font-medium text-gray-700 text-center">Barangay Indigency</span>
                 </a>
             </div>
-            <div class="mb-3 hidden review-controls-brgy_indigency">
+            <div class="mb-3 review-controls-brgy_indigency hidden">
                 <textarea id="comment_brgy_indigency" class="w-full border rounded px-2 py-1 text-sm" rows="2" placeholder="Add comment..."></textarea>
             </div>
-            <div class="flex gap-2 hidden review-controls-brgy_indigency">
+            <div class="flex gap-2 review-controls-brgy_indigency hidden">
                 <button class="mark-good-btn flex-1 bg-green-500 text-white px-2 py-1 rounded text-sm hover:bg-green-600" data-document="brgy_indigency">
                     <i class="fas fa-check mr-1"></i>Good
                 </button>
@@ -682,10 +685,10 @@
                     <span class="text-sm font-medium text-gray-700 text-center">Student ID</span>
                 </a>
             </div>
-            <div class="mb-3 hidden review-controls-student_id">
+            <div class="mb-3 review-controls-student_id hidden">
                 <textarea id="comment_student_id" class="w-full border rounded px-2 py-1 text-sm" rows="2" placeholder="Add comment..."></textarea>
             </div>
-            <div class="flex gap-2 hidden review-controls-student_id">
+            <div class="flex gap-2 review-controls-student_id hidden">
                 <button class="mark-good-btn flex-1 bg-green-500 text-white px-2 py-1 rounded text-sm hover:bg-green-600" data-document="student_id">
                     <i class="fas fa-check mr-1"></i>Good
                 </button>
@@ -763,31 +766,6 @@
                     <i class="fas fa-info-circle mr-2"></i>Please review all 5 documents before making a decision.
                 </div>
             `;
-
-            // Track document clicks
-            let clickedDocuments = new Set();
-
-            // Add click listeners to document links
-            setTimeout(() => {
-                const documentTypes = ['application_letter', 'cert_of_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
-                const documentLinks = contentDiv.querySelectorAll('a[onclick*="openDocumentModal"]');
-                documentLinks.forEach((link, index) => {
-                    link.addEventListener('click', function() {
-                        clickedDocuments.add(index);
-
-                        // Show review controls for this document
-                        const docType = documentTypes[index];
-                        const controls = document.querySelectorAll(`.review-controls-${docType}`);
-                        controls.forEach(el => el.classList.remove('hidden'));
-
-                        // Check if all 5 documents are clicked
-                        if (clickedDocuments.size === 5) {
-                            document.getElementById('actionButtons').classList.remove('hidden');
-                            document.getElementById('reviewMessage').style.display = 'none';
-                        }
-                    });
-                });
-            }, 100);
         } else {
             footerDiv.innerHTML = `
                 <button id="sendEmailBtn" onclick="sendDocumentEmail()"
@@ -810,59 +788,378 @@
 
         // Load existing comments and statuses
         loadDocumentComments(applicationPersonnelId);
+        
+        // Add event listeners for buttons and comments
+        setTimeout(() => {
+            initializeDocumentEventListeners();
+        }, 500);
+    }
+
+    function initializeDocumentEventListeners() {
+        // Add event listeners for mark good buttons
+        document.querySelectorAll('.mark-good-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const documentType = this.getAttribute('data-document');
+                markDocumentAsGood(documentType);
+            });
+        });
+
+        // Add event listeners for mark bad buttons
+        document.querySelectorAll('.mark-bad-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const documentType = this.getAttribute('data-document');
+                markDocumentAsBad(documentType);
+            });
+        });
+
+        // Add auto-save for comments with debounce
+        const documentTypes = ['application_letter', 'cert_of_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
+        documentTypes.forEach(docType => {
+            const textarea = document.getElementById(`comment_${docType}`);
+            if (textarea) {
+                // Remove existing event listeners first
+                const newTextarea = textarea.cloneNode(true);
+                textarea.parentNode.replaceChild(newTextarea, textarea);
+                
+                // Add new event listener with debounce
+                newTextarea.addEventListener('input', debounce(function() {
+                    saveDocumentComment(docType, this.value);
+                }, 1000));
+            }
+        });
+    }
+
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
     }
 
     function loadDocumentComments(applicationPersonnelId) {
+        console.log('Loading comments for application:', applicationPersonnelId);
+        
         fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('API Response:', data);
                 if (data.success) {
-                    const comments = data.comments;
-                    const statuses = data.statuses;
+                    const comments = data.comments || {};
+                    const statuses = data.statuses || {};
+
+                    console.log('Comments:', comments);
+                    console.log('Statuses:', statuses);
 
                     // Document types to check
                     const documentTypes = ['application_letter', 'cert_of_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
 
+                    // Initialize rated documents tracking
+                    window.ratedDocuments = new Set();
+
                     documentTypes.forEach(docType => {
+                        console.log(`Processing ${docType}:`, comments[docType], statuses[`${docType}_status`]);
+                        
                         // Load comment
                         const commentTextarea = document.getElementById(`comment_${docType}`);
-                        if (commentTextarea && comments[docType]) {
-                            commentTextarea.value = comments[docType].comment;
+                        if (commentTextarea) {
+                            const commentData = comments[docType];
+                            if (commentData && commentData.comment) {
+                                commentTextarea.value = commentData.comment;
+                                console.log(`Set comment for ${docType}:`, commentData.comment);
+                            } else {
+                                commentTextarea.value = '';
+                            }
                         }
 
                         // Load status
-                        const statusColumn = `${docType}_status`;
-                        const status = statuses[statusColumn];
+                        const status = statuses[`${docType}_status`];
+                        console.log(`Status for ${docType}:`, status);
 
-                        // Update button states
-                        const goodBtn = document.querySelector(`.mark-good-btn[data-document="${docType}"]`);
-                        const badBtn = document.querySelector(`.mark-bad-btn[data-document="${docType}"]`);
-
-                        if (goodBtn && badBtn) {
-                            if (status === 'good') {
-                                goodBtn.classList.add('bg-green-700');
-                                goodBtn.classList.remove('bg-green-500');
-                                badBtn.classList.remove('bg-red-700');
-                                badBtn.classList.add('bg-red-500');
-                            } else if (status === 'bad') {
-                                badBtn.classList.add('bg-red-700');
-                                badBtn.classList.remove('bg-red-500');
-                                goodBtn.classList.remove('bg-green-700');
-                                goodBtn.classList.add('bg-green-500');
-                            } else {
-                                // Reset to default
-                                goodBtn.classList.remove('bg-green-700');
-                                goodBtn.classList.add('bg-green-500');
-                                badBtn.classList.remove('bg-red-700');
-                                badBtn.classList.add('bg-red-500');
-                            }
+                        // Update UI based on status
+                        updateDocumentUI(docType, status);
+                        
+                        // If document has a status, consider it as rated and opened
+                        if (status === 'good' || status === 'bad') {
+                            window.ratedDocuments.add(docType);
+                            // Also show review controls for rated documents
+                            showReviewControlsForDocument(docType);
                         }
                     });
+                    
+                    // Check if all documents are already rated
+                    checkAllDocumentsRated();
+                } else {
+                    console.error('API returned error:', data.message);
                 }
             })
             .catch(error => {
                 console.error('Error loading document comments:', error);
             });
+    }
+
+    function updateDocumentUI(documentType, status) {
+        const goodBtn = document.querySelector(`.mark-good-btn[data-document="${documentType}"]`);
+        const badBtn = document.querySelector(`.mark-bad-btn[data-document="${documentType}"]`);
+        const documentItem = document.querySelector(`.document-item[data-document-type="${documentType}"]`);
+
+        if (!goodBtn || !badBtn || !documentItem) {
+            console.log(`Elements not found for ${documentType}`);
+            return;
+        }
+
+        // Reset all first
+        goodBtn.classList.remove('bg-green-700', 'bg-green-500');
+        badBtn.classList.remove('bg-red-700', 'bg-red-500');
+        documentItem.classList.remove('bg-green-50', 'border-green-300', 'bg-red-50', 'border-red-300');
+        
+        goodBtn.disabled = false;
+        badBtn.disabled = false;
+
+        if (status === 'good') {
+            goodBtn.classList.add('bg-green-700');
+            badBtn.classList.add('bg-red-500');
+            documentItem.classList.add('bg-green-50', 'border-green-300');
+            goodBtn.disabled = true;
+            console.log(`Updated ${documentType} to GOOD state`);
+        } else if (status === 'bad') {
+            badBtn.classList.add('bg-red-700');
+            goodBtn.classList.add('bg-green-500');
+            documentItem.classList.add('bg-red-50', 'border-red-300');
+            badBtn.disabled = true;
+            console.log(`Updated ${documentType} to BAD state`);
+        } else {
+            goodBtn.classList.add('bg-green-500');
+            badBtn.classList.add('bg-red-500');
+            console.log(`Updated ${documentType} to DEFAULT state`);
+        }
+    }
+
+    // New function to show review controls when document is opened
+    function showReviewControlsForDocument(documentType) {
+        const reviewControls = document.querySelectorAll(`.review-controls-${documentType}`);
+        reviewControls.forEach(el => {
+            el.classList.remove('hidden');
+        });
+        
+        console.log('Showing review controls for:', documentType);
+    }
+
+    function trackRatedDocument(documentType) {
+        if (!window.ratedDocuments) {
+            window.ratedDocuments = new Set();
+        }
+        window.ratedDocuments.add(documentType);
+        console.log('Rated documents:', window.ratedDocuments);
+        
+        // Check if all 5 documents have been rated
+        checkAllDocumentsRated();
+    }
+
+    function checkAllDocumentsRated() {
+        const documentTypes = ['application_letter', 'cert_of_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
+        
+        if (window.ratedDocuments && window.ratedDocuments.size === 5) {
+            // All documents have been rated, show action buttons
+            document.getElementById('actionButtons').classList.remove('hidden');
+            document.getElementById('reviewMessage').style.display = 'none';
+            console.log('All documents rated - showing action buttons');
+        } else {
+            console.log(`Not all documents rated: ${window.ratedDocuments ? window.ratedDocuments.size : 0}/5`);
+        }
+    }
+
+    function markDocumentAsGood(documentType) {
+        Swal.fire({
+            title: 'Mark as Good?',
+            text: 'Are you sure you want to mark this document as good?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Mark as Good',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const goodBtn = document.querySelector(`.mark-good-btn[data-document="${documentType}"]`);
+                const badBtn = document.querySelector(`.mark-bad-btn[data-document="${documentType}"]`);
+                const documentItem = document.querySelector(`.document-item[data-document-type="${documentType}"]`);
+
+                // Update button states
+                goodBtn.classList.add('bg-green-700');
+                goodBtn.classList.remove('bg-green-500');
+                badBtn.classList.remove('bg-red-700');
+                badBtn.classList.add('bg-red-500');
+                
+                // Disable the good button, enable the bad button
+                goodBtn.disabled = true;
+                badBtn.disabled = false;
+
+                // Update document item appearance
+                if (documentItem) {
+                    documentItem.classList.remove('bg-red-50', 'border-red-300');
+                    documentItem.classList.add('bg-green-50', 'border-green-300');
+                }
+
+                // Save status
+                saveDocumentStatus(documentType, 'good');
+                
+                // Track that this document has been rated
+                trackRatedDocument(documentType);
+                
+                Swal.fire('Success!', 'Document marked as good.', 'success');
+            }
+        });
+    }
+
+    function markDocumentAsBad(documentType) {
+        Swal.fire({
+            title: 'Mark as Bad?',
+            text: 'Are you sure you want to mark this document as bad?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Mark as Bad',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const goodBtn = document.querySelector(`.mark-good-btn[data-document="${documentType}"]`);
+                const badBtn = document.querySelector(`.mark-bad-btn[data-document="${documentType}"]`);
+                const documentItem = document.querySelector(`.document-item[data-document-type="${documentType}"]`);
+
+                // Update button states
+                badBtn.classList.add('bg-red-700');
+                badBtn.classList.remove('bg-red-500');
+                goodBtn.classList.remove('bg-green-700');
+                goodBtn.classList.add('bg-green-500');
+                
+                // Disable the bad button, enable the good button
+                badBtn.disabled = true;
+                goodBtn.disabled = false;
+
+                // Update document item appearance
+                if (documentItem) {
+                    documentItem.classList.remove('bg-green-50', 'border-green-300');
+                    documentItem.classList.add('bg-red-50', 'border-red-300');
+                }
+
+                // Save status
+                saveDocumentStatus(documentType, 'bad');
+                
+                // Track that this document has been rated
+                trackRatedDocument(documentType);
+                
+                Swal.fire('Success!', 'Document marked as bad.', 'success');
+            }
+        });
+    }
+
+    function saveDocumentStatus(documentType, status) {
+        const applicationPersonnelId = window.currentApplicationId;
+        
+        console.log('Saving status:', { applicationPersonnelId, documentType, status });
+
+        fetch('/mayor_staff/save-document-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            },
+            body: JSON.stringify({
+                application_personnel_id: applicationPersonnelId,
+                document_type: documentType,
+                status: status
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Save status response:', data);
+            if (!data.success) {
+                console.error('Failed to save status:', data.message);
+                Swal.fire('Error', 'Failed to save document status.', 'error');
+            } else {
+                console.log('Status saved successfully');
+                // Update UI immediately after successful save
+                updateDocumentUI(documentType, status);
+            }
+        })
+        .catch(error => {
+            console.error('Error saving status:', error);
+            Swal.fire('Error', 'Failed to save document status.', 'error');
+        });
+    }
+
+    function saveDocumentComment(documentType, comment) {
+        const applicationPersonnelId = window.currentApplicationId;
+
+        console.log('Saving comment:', { applicationPersonnelId, documentType, comment });
+
+        fetch('/mayor_staff/save-document-comment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            },
+            body: JSON.stringify({
+                application_personnel_id: applicationPersonnelId,
+                document_type: documentType,
+                comment: comment
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Save comment response:', data);
+            if (!data.success) {
+                console.error('Failed to save comment:', data.message);
+                Swal.fire('Error', 'Failed to save comment.', 'error');
+                // Fallback to local storage
+                saveToLocalStorage(documentType, null, comment);
+            } else {
+                console.log('Comment saved successfully');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving comment:', error);
+            Swal.fire('Error', 'Failed to save comment.', 'error');
+            // Fallback to local storage
+            saveToLocalStorage(documentType, null, comment);
+        });
+    }
+
+    // Local storage fallback functions
+    function saveToLocalStorage(documentType, status, comment) {
+        const key = `doc_${window.currentApplicationId}_${documentType}`;
+        const existingData = loadFromLocalStorage(documentType) || {};
+        localStorage.setItem(key, JSON.stringify({
+            status: status || existingData.status,
+            comment: comment || existingData.comment,
+            timestamp: new Date().getTime()
+        }));
+        console.log('Saved to local storage:', key);
+    }
+
+    function loadFromLocalStorage(documentType) {
+        const key = `doc_${window.currentApplicationId}_${documentType}`;
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
     }
 
     </script>
@@ -1212,9 +1509,39 @@
                     </div>
                     <textarea id="comment_${documentType}" class="w-full border rounded px-2 py-1 text-sm mt-2" rows="2" placeholder="Add comment..."></textarea>
                 `;
+                
+                // Add event listeners for the buttons in document modal
+                setTimeout(() => {
+                    document.querySelectorAll('#documentReviewControls .mark-good-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const docType = this.getAttribute('data-document');
+                            markDocumentAsGood(docType);
+                            closeDocumentModal();
+                        });
+                    });
+                    
+                    document.querySelectorAll('#documentReviewControls .mark-bad-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const docType = this.getAttribute('data-document');
+                            markDocumentAsBad(docType);
+                            closeDocumentModal();
+                        });
+                    });
+                    
+                    // Add auto-save for comment in document modal
+                    const textarea = document.getElementById(`comment_${documentType}`);
+                    if (textarea) {
+                        textarea.addEventListener('input', debounce(function() {
+                            saveDocumentComment(documentType, this.value);
+                        }, 1000));
+                    }
+                }, 100);
             } else {
                 reviewControls.innerHTML = '';
             }
+            
+            // 🔥 IMPORTANT: Show review controls in main modal when document is opened
+            showReviewControlsForDocument(documentType);
         }
 
         function closeDocumentModal() {
@@ -1231,155 +1558,6 @@
 
     <!-- Document Review Functions -->
     <script>
-        // Add event listeners for document review buttons
-        document.addEventListener('DOMContentLoaded', function() {
-            // Mark as Good buttons
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('mark-good-btn')) {
-                    const documentType = e.target.getAttribute('data-document');
-                    markDocumentAsGood(documentType);
-                }
-            });
-
-            // Mark as Bad buttons
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('mark-bad-btn')) {
-                    const documentType = e.target.getAttribute('data-document');
-                    markDocumentAsBad(documentType);
-                }
-            });
-
-            // Save comments on blur
-            document.addEventListener('blur', function(e) {
-                if (e.target.id && e.target.id.startsWith('comment_')) {
-                    const documentType = e.target.id.replace('comment_', '');
-                    saveDocumentComment(documentType, e.target.value);
-                }
-            });
-        });
-
-        function markDocumentAsGood(documentType) {
-            Swal.fire({
-                title: 'Mark as Good?',
-                text: 'Are you sure you want to mark this document as good?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, Mark as Good',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const applicationPersonnelId = window.currentApplicationId;
-                    const goodBtn = document.querySelector(`.mark-good-btn[data-document="${documentType}"]`);
-                    const badBtn = document.querySelector(`.mark-bad-btn[data-document="${documentType}"]`);
-                    const documentItem = document.querySelector(`.document-item[data-document-type="${documentType}"]`);
-
-                    // Update button states
-                    goodBtn.classList.add('bg-green-700');
-                    goodBtn.classList.remove('bg-green-500');
-                    badBtn.classList.remove('bg-red-700');
-                    badBtn.classList.add('bg-red-500');
-
-                    // Update document item appearance
-                    if (documentItem) {
-                        documentItem.classList.remove('bg-red-50', 'border-red-300');
-                        documentItem.classList.add('bg-green-50', 'border-green-300');
-                    }
-
-                    // Save status
-                    saveDocumentStatus(documentType, 'good');
-                }
-            });
-        }
-
-        function markDocumentAsBad(documentType) {
-            Swal.fire({
-                title: 'Mark as Bad?',
-                text: 'Are you sure you want to mark this document as bad?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, Mark as Bad',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const applicationPersonnelId = window.currentApplicationId;
-                    const goodBtn = document.querySelector(`.mark-good-btn[data-document="${documentType}"]`);
-                    const badBtn = document.querySelector(`.mark-bad-btn[data-document="${documentType}"]`);
-                    const documentItem = document.querySelector(`.document-item[data-document-type="${documentType}"]`);
-
-                    // Update button states
-                    badBtn.classList.add('bg-red-700');
-                    badBtn.classList.remove('bg-red-500');
-                    goodBtn.classList.remove('bg-green-700');
-                    goodBtn.classList.add('bg-green-500');
-
-                    // Update document item appearance
-                    if (documentItem) {
-                        documentItem.classList.remove('bg-green-50', 'border-green-300');
-                        documentItem.classList.add('bg-red-50', 'border-red-300');
-                    }
-
-                    // Save status
-                    saveDocumentStatus(documentType, 'bad');
-                }
-            });
-        }
-
-        function saveDocumentComment(documentType, comment) {
-            const applicationPersonnelId = window.currentApplicationId;
-
-            fetch('/mayor_staff/save-document-comment', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                },
-                body: JSON.stringify({
-                    application_personnel_id: applicationPersonnelId,
-                    document_type: documentType,
-                    comment: comment
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    console.error('Failed to save comment:', data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error saving comment:', error);
-            });
-        }
-
-        function saveDocumentStatus(documentType, status) {
-            const applicationPersonnelId = window.currentApplicationId;
-
-            fetch('/mayor_staff/save-document-status', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                },
-                body: JSON.stringify({
-                    application_personnel_id: applicationPersonnelId,
-                    document_type: documentType,
-                    status: status
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    console.error('Failed to save status:', data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error saving status:', error);
-            });
-        }
-
         function sendDocumentEmail() {
             const applicationPersonnelId = window.currentApplicationId;
 
