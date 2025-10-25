@@ -285,7 +285,7 @@ $percentageReviewed = $totalApplications > 0
        
         $query->where("ap.initial_screening", "Pending");
 
-        $tableApplicants = ($request->filled("search") || $request->filled("barangay")) ? $query->get() : $query->paginate(15);
+        $tableApplicants = $query->paginate(15);
 
         $listApplicants = DB::table("tbl_applicant as a")
             ->join(
@@ -334,9 +334,8 @@ $percentageReviewed = $totalApplications > 0
             })
             ->when($request->filled("barangay"), function ($q) use ($request) {
                 $q->where("a.applicant_brgy", $request->barangay);
-            });
-
-        $listApplicants = ($request->filled("search") || $request->filled("barangay")) ? $listApplicants->get() : $listApplicants->paginate(15, ['*'], 'list');
+            })
+            ->paginate(15, ['*'], 'list');
 
         $barangays = DB::table("tbl_applicant")
             ->pluck("applicant_brgy")
