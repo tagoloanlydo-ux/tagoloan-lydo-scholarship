@@ -774,7 +774,7 @@ public function updateApplication(Request $request, $applicant_id)
         ->update(['update_token' => null]);
 
     // Broadcast applicant update
-    broadcast(new ApplicantUpdated($applicant))->toOthers();
+    broadcast(new ApplicantUpdated('applicant_updated', $applicant->applicant_id))->toOthers();
 
     return redirect()->route('scholar.dashboard')->with('success', 'Application updated successfully!');
 }
@@ -786,6 +786,12 @@ public function updateApplication(Request $request, $applicant_id)
 
         // Redirect to login page with success message
         return redirect()->route('scholar.login')->with('success', 'You have been logged out successfully.');
+    }
+
+    public function welcome(Request $request)
+    {
+        \Log::info("Request received: " . $request->method() . " " . $request->path());
+        return response()->json(['message' => 'Welcome to the Scholar API!']);
     }
 
 /**

@@ -500,36 +500,74 @@ $percentageReviewed = $totalApplications > 0
 
     public function approveApplication($id)
     {
-        // Get the application_id and applicant email from application_personnel and applicant
-        $applicationPersonnel = DB::table('tbl_application_personnel as ap')
-            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-            ->where('ap.application_personnel_id', $id)
-            ->select('a.application_id', 'app.applicant_email', 'app.applicant_fname', 'app.applicant_lname')
-            ->first();
+        try {
+            DB::beginTransaction();
 
-        if (!$applicationPersonnel) {
-            return response()->json(['success' => false, 'message' => 'Application not found.']);
+            // Get the application_id and applicant email from application_personnel and applicant
+            $applicationPersonnel = DB::table('tbl_application_personnel as ap')
+                ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+                ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+                ->where('ap.application_personnel_id', $id)
+                ->select('a.application_id', 'app.applicant_email', 'app.applicant_fname', 'app.applicant_lname')
+                ->first();
+
+            if (!$applicationPersonnel) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Application not found.'], 404);
+            }
+
+            // Update the initial_screening
+            $updated = DB::table('tbl_application_personnel')
+                ->where('application_personnel_id', $id)
+                ->update([
+                    'initial_screening' => 'Approved',
+                    'status' => 'Under Review', // Update the status as well
+                    'updated_at' => now()
+                ]);
+
+            if (!$updated) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Failed to update application status.'], 500);
+            }
+
+            // Send approval email
+            try {
+                // Generate a unique token for the intake sheet
+                $token = Str::random(64);
+                
+                // Store the token in the database
+                DB::table('tbl_application_personnel')
+                    ->where('application_personnel_id', $id)
+                    ->update([
+                        'intake_sheet_token' => $token,
+                        'intake_sheet_token_expires_at' => now()->addDays(7)
+                    ]);
+
+                $emailData = [
+                    'applicant_fname' => $applicationPersonnel->applicant_fname,
+                    'applicant_lname' => $applicationPersonnel->applicant_lname,
+                    'application_personnel_id' => $id,
+                    'token' => $token
+                ];
+
+                Mail::send('emails.initial-screening-approval', $emailData, function ($message) use ($applicationPersonnel) {
+                    $message->to($applicationPersonnel->applicant_email)
+                        ->subject('Initial Screening Approval - LYDO Scholarship')
+                        ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
+                });
+            } catch (\Exception $e) {
+                \Log::error('Email sending failed: ' . $e->getMessage());
+                // Don't rollback the transaction if email fails, just log the error
+            }
+
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Initial screening approved successfully.']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Initial screening approval failed: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to approve initial screening. Please try again.'], 500);
         }
-
-        // Update the initial_screening
-        DB::table('tbl_application_personnel')
-            ->where('application_personnel_id', $id)
-            ->update(['initial_screening' => 'Approved', 'updated_at' => now()]);
-
-        // Send approval email
-        $emailData = [
-            'applicant_fname' => $applicationPersonnel->applicant_fname,
-            'applicant_lname' => $applicationPersonnel->applicant_lname,
-        ];
-
-        Mail::send('emails.initial-screening-approval', $emailData, function ($message) use ($applicationPersonnel) {
-            $message->to($applicationPersonnel->applicant_email)
-                ->subject('Initial Screening Approval - LYDO Scholarship')
-                ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
-        });
-
-        return response()->json(['success' => true, 'message' => 'Initial screening approved successfully.']);
     }
 
     public function rejectApplication(Request $request, $id)
@@ -2030,7 +2068,7 @@ public function updateStatus(Request $request, $id)
         }
     }
 
-public function sendDocumentEmail(Request $request)
+    public function sendDocumentEmail(Request $request)
 {
     $request->validate([
         'application_personnel_id' => 'required|integer'
@@ -2161,4 +2199,135 @@ public function sendDocumentEmail(Request $request)
     }
 }
 
+    public function showIntakeSheet($application_personnel_id)
+    {
+        // Validate token if provided
+        $token = request('token');
+        if ($token) {
+            $applicationPersonnel = DB::table('tbl_application_personnel')
+                ->where('application_personnel_id', $application_personnel_id)
+                ->where('intake_sheet_token', $token)
+                ->where('intake_sheet_token_expires_at', '>', now())
+                ->first();
+
+            if (!$applicationPersonnel) {
+                abort(403, 'Invalid or expired token.');
+            }
+        }
+
+        // Get applicant details
+        $applicant = DB::table('tbl_application_personnel as ap')
+            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+            ->where('ap.application_personnel_id', $application_personnel_id)
+            ->select(
+                'app.applicant_id',
+                'app.applicant_fname',
+                'app.applicant_lname',
+                'app.applicant_mname',
+                'app.applicant_suffix',
+                'app.applicant_bdate',
+                'app.applicant_gender',
+                'app.applicant_brgy',
+                'app.applicant_school_name',
+                'app.applicant_course',
+                'app.applicant_year_level',
+                'app.applicant_contact_number',
+                'app.applicant_email',
+                'ap.intake_sheet_token',
+                'ap.intake_sheet_token_expires_at'
+            )
+            ->first();
+
+        if (!$applicant) {
+            abort(404, 'Applicant not found.');
+        }
+
+        // Check if intake sheet already exists
+        $existingIntakeSheet = DB::table('family_intake_sheets')
+            ->where('application_personnel_id', $application_personnel_id)
+            ->first();
+
+        if ($existingIntakeSheet) {
+            return redirect()->route('intake_sheet.submitted', ['application_personnel_id' => $application_personnel_id])
+                           ->with('info', 'You have already submitted your intake sheet.');
+        }
+
+        return view('intake_sheet.form', compact('applicant', 'application_personnel_id'));
+    }
+
+    public function submitIntakeSheetPublic(Request $request)
+    {
+        $request->validate([
+            'application_personnel_id' => 'required|integer',
+            'father_name' => 'nullable|string|max:255',
+            'father_occupation' => 'nullable|string|max:255',
+            'father_income' => 'nullable|numeric|min:0',
+            'mother_name' => 'nullable|string|max:255',
+            'mother_occupation' => 'nullable|string|max:255',
+            'mother_income' => 'nullable|numeric|min:0',
+            'guardian_name' => 'nullable|string|max:255',
+            'guardian_occupation' => 'nullable|string|max:255',
+            'guardian_income' => 'nullable|numeric|min:0',
+            'siblings_count' => 'nullable|integer|min:0',
+            'family_income' => 'nullable|numeric|min:0',
+            'house_ownership' => 'nullable|string|max:255',
+            'electricity_bill' => 'nullable|numeric|min:0',
+            'water_bill' => 'nullable|numeric|min:0',
+            'other_expenses' => 'nullable|numeric|min:0',
+            'total_family_expenses' => 'nullable|numeric|min:0',
+            'remarks' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Check if intake sheet already exists
+            $existing = DB::table('family_intake_sheets')
+                ->where('application_personnel_id', $request->application_personnel_id)
+                ->first();
+
+            if ($existing) {
+                return response()->json(['success' => false, 'message' => 'Intake sheet already submitted.']);
+            }
+
+            // Insert intake sheet data
+            DB::table('family_intake_sheets')->insert([
+                'application_personnel_id' => $request->application_personnel_id,
+                'father_name' => $request->father_name,
+                'father_occupation' => $request->father_occupation,
+                'father_income' => $request->father_income,
+                'mother_name' => $request->mother_name,
+                'mother_occupation' => $request->mother_occupation,
+                'mother_income' => $request->mother_income,
+                'guardian_name' => $request->guardian_name,
+                'guardian_occupation' => $request->guardian_occupation,
+                'guardian_income' => $request->guardian_income,
+                'siblings_count' => $request->siblings_count,
+                'family_income' => $request->family_income,
+                'house_ownership' => $request->house_ownership,
+                'electricity_bill' => $request->electricity_bill,
+                'water_bill' => $request->water_bill,
+                'other_expenses' => $request->other_expenses,
+                'total_family_expenses' => $request->total_family_expenses,
+                'remarks' => $request->remarks,
+                'submitted_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Intake sheet submitted successfully!',
+                'redirect' => route('intake_sheet.submitted', ['application_personnel_id' => $request->application_personnel_id])
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Intake sheet submission error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to submit intake sheet. Please try again.'], 500);
+        }
+    }
 }
