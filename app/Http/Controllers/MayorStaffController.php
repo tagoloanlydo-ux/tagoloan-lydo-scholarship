@@ -1924,7 +1924,8 @@ public function updateStatus(Request $request, $id)
 
     public function searchApplications(Request $request)
     {
-        $query = DB::table("tbl_applicant as a")
+        // Base query for all applicants in current academic year
+        $baseQuery = DB::table("tbl_applicant as a")
             ->join(
                 "tbl_application as app",
                 "a.applicant_id",
@@ -1956,8 +1957,9 @@ public function updateStatus(Request $request, $id)
                         ->format("Y"),
             );
 
+        // Apply global search filters
         if ($request->filled("search")) {
-            $query->where(function ($q) use ($request) {
+            $baseQuery->where(function ($q) use ($request) {
                 $q->where(
                     "a.applicant_fname",
                     "like",
@@ -1971,62 +1973,18 @@ public function updateStatus(Request $request, $id)
         }
 
         if ($request->filled("barangay")) {
-            $query->where("a.applicant_brgy", $request->barangay);
+            $baseQuery->where("a.applicant_brgy", $request->barangay);
         }
 
-        $query->where("ap.initial_screening", "Pending");
+        // Clone the base query for pending applications
+        $tableApplicantsQuery = clone $baseQuery;
+        $tableApplicantsQuery->where("ap.initial_screening", "Pending");
+        $tableApplicants = $tableApplicantsQuery->paginate(15);
 
-        $tableApplicants = $query->paginate(15);
-
-        $listApplicants = DB::table("tbl_applicant as a")
-            ->join(
-                "tbl_application as app",
-                "a.applicant_id",
-                "=",
-                "app.applicant_id",
-            )
-            ->join(
-                "tbl_application_personnel as ap",
-                "app.application_id",
-                "=",
-                "ap.application_id",
-            )
-            ->select(
-                "a.*",
-                "app.application_id",
-                "ap.application_personnel_id",
-                "ap.status",
-                "ap.initial_screening",
-                "ap.remarks",
-                "a.applicant_email",
-            )
-            ->where(
-                "a.applicant_acad_year",
-                "=",
-                now()->format("Y") .
-                    "-" .
-                    now()
-                        ->addYear()
-                        ->format("Y"),
-            )
-            ->whereIn("ap.initial_screening", ["Approved", "Rejected"])
-            ->when($request->filled("search"), function ($q) use ($request) {
-                $q->where(function ($q) use ($request) {
-                    $q->where(
-                        "a.applicant_fname",
-                        "like",
-                        "%" . $request->search . "%",
-                    )->orWhere(
-                        "a.applicant_lname",
-                        "like",
-                        "%" . $request->search . "%",
-                    );
-                });
-            })
-            ->when($request->filled("barangay"), function ($q) use ($request) {
-                $q->where("a.applicant_brgy", $request->barangay);
-            })
-            ->paginate(15, ['*'], 'list');
+        // Clone the base query for processed applications
+        $listApplicantsQuery = clone $baseQuery;
+        $listApplicantsQuery->whereIn("ap.initial_screening", ["Approved", "Rejected"]);
+        $listApplicants = $listApplicantsQuery->paginate(15, ['*'], 'list');
 
         $applications = DB::table("tbl_application as app")
             ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
