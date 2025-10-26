@@ -329,6 +329,15 @@
             border-color: #007bff;
         }
 
+        /* Pagination info styling */
+        .pagination .pagination-info {
+            display: block;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
         @media (max-width: 768px) {
             .pagination li {
                 margin: 2px;
@@ -339,6 +348,12 @@
             }
             .pagination {
                 justify-content: center;
+            }
+            /* Keep pagination info visible on mobile for dynamic count display */
+            .pagination .pagination-info {
+                display: block;
+                font-size: 0.75rem;
+                margin-bottom: 0.25rem;
             }
         }
     </style>
