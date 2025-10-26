@@ -297,6 +297,50 @@
                 left: 256px; /* sidebar width on medium+ screens */
             }
         }
+
+        /* Responsive Pagination Styles */
+        .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .pagination li {
+            margin: 0 2px;
+        }
+
+        .pagination a, .pagination span {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            color: #007bff;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .pagination a:hover {
+            background-color: #e9ecef;
+        }
+
+        .pagination .active span {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        @media (max-width: 768px) {
+            .pagination li {
+                margin: 2px;
+            }
+            .pagination a, .pagination span {
+                padding: 6px 8px;
+                font-size: 14px;
+            }
+            .pagination {
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
