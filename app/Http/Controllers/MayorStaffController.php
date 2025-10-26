@@ -1922,6 +1922,173 @@ public function updateStatus(Request $request, $id)
         return response()->json(['message' => 'Welcome to the Mayor Staff API!']);
     }
 
+    public function searchApplications(Request $request)
+    {
+        $query = DB::table("tbl_applicant as a")
+            ->join(
+                "tbl_application as app",
+                "a.applicant_id",
+                "=",
+                "app.applicant_id",
+            )
+            ->join(
+                "tbl_application_personnel as ap",
+                "app.application_id",
+                "=",
+                "ap.application_id",
+            )
+            ->select(
+                "a.*",
+                "app.application_id",
+                "ap.application_personnel_id",
+                "ap.status",
+                "ap.initial_screening",
+                "ap.remarks",
+                "a.applicant_email",
+            )
+            ->where(
+                "a.applicant_acad_year",
+                "=",
+                now()->format("Y") .
+                    "-" .
+                    now()
+                        ->addYear()
+                        ->format("Y"),
+            );
+
+        if ($request->filled("search")) {
+            $query->where(function ($q) use ($request) {
+                $q->where(
+                    "a.applicant_fname",
+                    "like",
+                    "%" . $request->search . "%",
+                )->orWhere(
+                    "a.applicant_lname",
+                    "like",
+                    "%" . $request->search . "%",
+                );
+            });
+        }
+
+        if ($request->filled("barangay")) {
+            $query->where("a.applicant_brgy", $request->barangay);
+        }
+
+        $query->where("ap.initial_screening", "Pending");
+
+        $tableApplicants = $query->paginate(15);
+
+        $listApplicants = DB::table("tbl_applicant as a")
+            ->join(
+                "tbl_application as app",
+                "a.applicant_id",
+                "=",
+                "app.applicant_id",
+            )
+            ->join(
+                "tbl_application_personnel as ap",
+                "app.application_id",
+                "=",
+                "ap.application_id",
+            )
+            ->select(
+                "a.*",
+                "app.application_id",
+                "ap.application_personnel_id",
+                "ap.status",
+                "ap.initial_screening",
+                "ap.remarks",
+                "a.applicant_email",
+            )
+            ->where(
+                "a.applicant_acad_year",
+                "=",
+                now()->format("Y") .
+                    "-" .
+                    now()
+                        ->addYear()
+                        ->format("Y"),
+            )
+            ->whereIn("ap.initial_screening", ["Approved", "Rejected"])
+            ->when($request->filled("search"), function ($q) use ($request) {
+                $q->where(function ($q) use ($request) {
+                    $q->where(
+                        "a.applicant_fname",
+                        "like",
+                        "%" . $request->search . "%",
+                    )->orWhere(
+                        "a.applicant_lname",
+                        "like",
+                        "%" . $request->search . "%",
+                    );
+                });
+            })
+            ->when($request->filled("barangay"), function ($q) use ($request) {
+                $q->where("a.applicant_brgy", $request->barangay);
+            })
+            ->paginate(15, ['*'], 'list');
+
+        $applications = DB::table("tbl_application as app")
+            ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
+            ->join("tbl_applicant as a", "app.applicant_id", "=", "a.applicant_id")
+            ->select(
+                "app.application_id",
+                "app.applicant_id",
+                "ap.application_personnel_id",
+                "app.application_letter",
+                "app.cert_of_reg",
+                "app.grade_slip",
+                "app.brgy_indigency",
+                "app.student_id",
+                "a.applicant_school_name",
+                "a.applicant_acad_year",
+                "a.applicant_year_level",
+                "a.applicant_course",
+            )
+            ->get()
+            ->map(function ($app) {
+                return [
+                    "application_id" => $app->application_id,
+                    "applicant_id" => $app->applicant_id,
+                    "application_personnel_id" => $app->application_personnel_id,
+                    "application_letter" => $app->application_letter ? "/storage/" . $app->application_letter : null,
+                    "cert_of_reg" => $app->cert_of_reg ? "/storage/" . $app->cert_of_reg : null,
+                    "grade_slip" => $app->grade_slip ? "/storage/" . $app->grade_slip : null,
+                    "brgy_indigency" => $app->brgy_indigency ? "/storage/" . $app->brgy_indigency : null,
+                    "student_id" => $app->student_id ? "/storage/" . $app->student_id : null,
+                    "school_name" => $app->applicant_school_name,
+                    "academic_year" => $app->applicant_acad_year,
+                    "year_level" => $app->applicant_year_level,
+                    "course" => $app->applicant_course,
+                ];
+            })
+            ->groupBy("applicant_id");
+
+        return response()->json([
+            'tableApplicants' => $tableApplicants->items(),
+            'listApplicants' => $listApplicants->items(),
+            'applications' => $applications,
+            'tablePagination' => [
+                'current_page' => $tableApplicants->currentPage(),
+                'last_page' => $tableApplicants->lastPage(),
+                'per_page' => $tableApplicants->perPage(),
+                'total' => $tableApplicants->total(),
+                'links' => $tableApplicants->links()->toHtml(),
+            ],
+            'listPagination' => [
+                'current_page' => $listApplicants->currentPage(),
+                'last_page' => $listApplicants->lastPage(),
+                'per_page' => $listApplicants->perPage(),
+                'total' => $listApplicants->total(),
+                'links' => $listApplicants->links()->toHtml(),
+            ],
+            'showing' => [
+                'table' => 'Showing ' . (($tableApplicants->currentPage() - 1) * $tableApplicants->perPage() + 1) . ' to ' . min($tableApplicants->currentPage() * $tableApplicants->perPage(), $tableApplicants->total()) . ' of ' . $tableApplicants->total() . ' results',
+                'list' => 'Showing ' . (($listApplicants->currentPage() - 1) * $listApplicants->perPage() + 1) . ' to ' . min($listApplicants->currentPage() * $listApplicants->perPage(), $listApplicants->total()) . ' of ' . $listApplicants->total() . ' results',
+            ]
+        ]);
+    }
+
     public function saveDocumentComment(Request $request)
     {
         $request->validate([
