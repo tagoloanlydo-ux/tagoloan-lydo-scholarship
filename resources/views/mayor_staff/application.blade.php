@@ -251,70 +251,114 @@
         .tab.active:hover {
             background-color: #2563eb;
         }
+
+        /* Fixed Layout Styles */
+        body {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .sidebar-fixed {
+            position: fixed;
+            top: 80px; /* header height + padding */
+            left: 0;
+            bottom: 0;
+            width: 64px; /* w-16 */
+            overflow-y: auto;
+            z-index: 999;
+        }
+
+        @media (min-width: 768px) {
+            .sidebar-fixed {
+                width: 256px; /* md:w-64 */
+            }
+        }
+
+        .main-content-fixed {
+            position: fixed;
+            top: 80px; /* header height + padding */
+            left: 64px; /* sidebar width on small screens */
+            right: 0;
+            bottom: 0;
+            overflow-y: auto;
+            padding: 1rem 1.25rem; /* p-4 md:p-5 */
+        }
+
+        @media (min-width: 768px) {
+            .main-content-fixed {
+                left: 256px; /* sidebar width on medium+ screens */
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
 
-    <div class="dashboard-grid">
-            <!-- Header -->
-                <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
-                    <div class="flex items-center">
-                        <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
-                            <h1 class="text-2xl font-bold text-white ml-4">Lydo Scholarship</h1>
-                    </div>
-                                <div class="flex items-center space-x-4">
-                                    <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
-                                                                        
-                                    <div class="relative">
-                                        <!-- 🔔 Bell Icon -->
-                                        <button id="notifBell" class="relative focus:outline-none">
-                                            <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-                                            @if($showBadge && $notifications->count() > 0)
-                                                <span id="notifCount"
-                                                    class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                                                    {{ $notifications->count() }}
-                                                </span>
-                                            @endif
-                                        </button>
+    <!-- Header -->
+    <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
+        <div class="flex items-center">
+            <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
+                <h1 class="text-2xl font-bold text-white ml-4">Lydo Scholarship</h1>
+        </div>
 
-                                        <!-- 🔽 Dropdown -->
-                                        <div id="notifDropdown"
-                                            class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                            <div class="p-3 border-b font-semibold text-violet-600">Notifications</div>
-                                            <ul class="max-h-60 overflow-y-auto">
-                                                @forelse($notifications as $notif)
-                                                    <li class="px-4 py-2 hover:bg-gray-50 text-base border-b">
-                                                        {{-- New Application --}}
-                                                        @if($notif->type === 'application')
-                                                            <p class="text-blue-600 font-medium">
-                                                                📝 {{ $notif->name }} submitted a new application
-                                                            </p>
-                                                        {{-- New Remark --}}
-                                                        @elseif($notif->type === 'remark')
-                                                            <p class="text-purple-600 font-medium">
-                                                                💬 New remark for {{ $notif->name }}:
-                                                                <b>{{ $notif->remarks }}</b>
-                                                            </p>
-                                                        @endif
+        <div class="flex items-center space-x-4">
+            <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
 
-                                                        {{-- Time ago --}}
-                                                        <p class="text-xs text-gray-500">
-                                                            {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
-                                                        </p>
-                                                    </li>
-                                                @empty
-                                                    <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
-                                                @endforelse
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </header>
+            <div class="relative">
+                <!-- 🔔 Bell Icon -->
+                <button id="notifBell" class="relative focus:outline-none">
+                    <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
+                    @if($showBadge && $notifications->count() > 0)
+                        <span id="notifCount"
+                            class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
+                            {{ $notifications->count() }}
+                        </span>
+                    @endif
+                </button>
 
-                <!-- Main Content -->
-                <div class="flex flex-1 overflow-hidden">
-                    <!-- Sidebar -->
-    <div class="w-16 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
+                <!-- 🔽 Dropdown -->
+                <div id="notifDropdown"
+                    class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                    <div class="p-3 border-b font-semibold text-violet-600">Notifications</div>
+                    <ul class="max-h-60 overflow-y-auto">
+                        @forelse($notifications as $notif)
+                            <li class="px-4 py-2 hover:bg-gray-50 text-base border-b">
+                                {{-- New Application --}}
+                                @if($notif->type === 'application')
+                                    <p class="text-blue-600 font-medium">
+                                        📝 {{ $notif->name }} submitted a new application
+                                    </p>
+                                {{-- New Remark --}}
+                                @elseif($notif->type === 'remark')
+                                    <p class="text-purple-600 font-medium">
+                                        💬 New remark for {{ $notif->name }}:
+                                        <b>{{ $notif->remarks }}</b>
+                                    </p>
+                                @endif
+
+                                {{-- Time ago --}}
+                                <p class="text-xs text-gray-500">
+                                    {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
+                                </p>
+                            </li>
+                        @empty
+                            <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <div class="sidebar-fixed bg-white shadow-md flex flex-col transition-all duration-300">
         <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
             <ul class="side-menu top space-y-4">
                 <li>
@@ -355,12 +399,12 @@
                                 <span class="ml-4 hidden md:block text-base">Settings</span>
                             </a>
                         </li>
-                    </ul>                
-                    
+                    </ul>
+
         </nav>
             <div class="p-2 md:p-4 border-t">
                 <form method="POST" action="{{ route('logout') }}" id="logoutForm">
-                    @csrf 
+                    @csrf
                         <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
                             <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
                             <span class="hidden md:block text-red-600">Logout</span>
@@ -368,7 +412,9 @@
                 </form>
             </div>
         </div>
-            <div class="flex-1 main-content-area p-4 md:p-5 text-[16px]">
+
+    <!-- Main Content -->
+    <div class="main-content-fixed text-[16px]">
                 <div class="p-4 bg-gray-50 min-h-screen rounded-lg shadow">
                     <div class="flex justify-between items-center mb-6">
                         <h5 class="text-3xl font-bold text-gray-800">Review Applicants Application</h5>
@@ -444,14 +490,18 @@
                                 <button
                                     class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
                                     onclick="openApplicationModal({{ $app->application_personnel_id }}, 'pending')">
-                                    View Applications
+                                    Review Applications
                                 </button>
                             </td>
 
                             <td class="px-6 py-4 text-center">
-                                <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openDeleteModal({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}', false)">
-                                    <i class="fas fa-trash mr-2"></i>Delete
-                                </button>
+                                <form method="POST" action="/mayor_staff/application/{{ $app->application_personnel_id }}" style="display: inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" onclick="confirmDeletePending(this)" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm">
+                                        <i class="fas fa-trash mr-2"></i>Delete
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     @empty
@@ -531,20 +581,13 @@
                         <button type="button"
                             class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
                             onclick="openApplicationModal({{ $app->application_personnel_id }}, 'reviewed')">
-                            View Requirements
+                            Review Requirements
                         </button>
                     </td>
-                    <td class="px-6 py-4 text-center relative">
-                        <div class="dropdown">
-                            <button class="text-gray-600 hover:text-gray-800 focus:outline-none" onclick="toggleDropdownMenu({{ $app->application_personnel_id }})">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <div id="dropdown-menu-{{ $app->application_personnel_id }}" class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                                <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50" onclick="openDeleteModal({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}')">
-                                    <i class="fas fa-trash mr-2"></i>Delete
-                                </a>
-                            </div>
-                        </div>
+                    <td class="px-6 py-4 text-center">
+                        <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openDeleteModal({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}', true)">
+                            <i class="fas fa-trash mr-2"></i>Delete
+                        </button>
                     </td>
                 </tr>
             @empty
@@ -1735,11 +1778,50 @@
             }
         }
 
-        function openDeleteModal(applicationPersonnelId, applicantName) {
-            document.getElementById('deleteApplicantName').textContent = applicantName;
-            const deleteForm = document.getElementById('deleteForm');
-            deleteForm.action = `/mayor_staff/application/${applicationPersonnelId}`;
-            document.getElementById('deleteModal').classList.remove('hidden');
+        function openDeleteModal(applicationPersonnelId, applicantName, isReviewedApplication = false) {
+            if (isReviewedApplication) {
+                Swal.fire({
+                    title: 'Reset Initial Screening?',
+                    text: 'Are you sure you want to delete approved or rejected initial screening? This will reset the status to pending.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, Reset',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Update the initial screening status to pending
+                        fetch(`/mayor_staff/application/${applicationPersonnelId}/update-initial-screening`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                            },
+                            body: JSON.stringify({ status: 'Initial Screening' })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Reset!', 'Initial screening has been reset to pending.', 'success')
+                                    .then(() => {
+                                        location.reload();
+                                    });
+                            } else {
+                                Swal.fire('Error', 'Failed to reset initial screening.', 'error');
+                            }
+                        })
+                        .catch(() => {
+                            Swal.fire('Error', 'Failed to reset initial screening.', 'error');
+                        });
+                    }
+                });
+            } else {
+                document.getElementById('deleteApplicantName').textContent = applicantName;
+                const deleteForm = document.getElementById('deleteForm');
+                deleteForm.action = `/mayor_staff/application/${applicationPersonnelId}`;
+                document.getElementById('deleteModal').classList.remove('hidden');
+            }
         }
 
         function closeDeleteModal() {
@@ -1887,6 +1969,25 @@
 
             // Hide modal
             modal.classList.add('hidden');
+        }
+
+        function confirmDeletePending(button) {
+            const form = button.closest('form');
+
+            Swal.fire({
+                title: 'Delete Application?',
+                text: 'Are you sure you want to delete this pending application? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Delete',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
         }
 
         // Document Review Functions
