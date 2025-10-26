@@ -9,7 +9,20 @@ class MayorApplicationController extends Controller
 {
     public function index(Request $request)
     {
-        $applications = ApplicationPersonnel::with(['applicant'])->paginate(15);
+        // Build query and apply search filters BEFORE pagination so the
+        // search is performed across all records in the database.
+        $query = ApplicationPersonnel::with(['applicant']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('applicant', function ($q) use ($search) {
+                $q->where('applicant_fname', 'like', "%{$search}%")
+                  ->orWhere('applicant_lname', 'like', "%{$search}%");
+            });
+        }
+
+        $applications = $query->paginate(15)->appends($request->query());
+
         return response()->json($applications);
     }
 
