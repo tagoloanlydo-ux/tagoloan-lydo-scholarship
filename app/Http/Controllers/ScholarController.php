@@ -768,6 +768,30 @@ public function updateApplication(Request $request, $applicant_id)
 
     $application->save();
 
+    // Update document statuses to 'updated' for updated files
+    $applicationPersonnel = \DB::table('tbl_application_personnel')
+        ->where('application_id', $application->application_id)
+        ->first();
+
+    if ($applicationPersonnel) {
+        $statusColumns = [
+            'application_letter' => 'application_letter_status',
+            'cert_of_reg' => 'cert_of_reg_status',
+            'grade_slip' => 'grade_slip_status',
+            'brgy_indigency' => 'brgy_indigency_status',
+            'student_id' => 'student_id_status',
+        ];
+
+        foreach ($fileFields as $inputName => $dbField) {
+            if ($request->hasFile($inputName) && isset($statusColumns[$dbField])) {
+                // Update status to 'updated'
+                \DB::table('tbl_application_personnel')
+                    ->where('application_personnel_id', $applicationPersonnel->application_personnel_id)
+                    ->update([$statusColumns[$dbField] => 'updated']);
+            }
+        }
+    }
+
     // Clear the update token after successful update
     \DB::table('tbl_application_personnel')
         ->where('application_id', $application->application_id)
@@ -776,7 +800,7 @@ public function updateApplication(Request $request, $applicant_id)
     // Broadcast applicant update
     broadcast(new ApplicantUpdated('applicant_updated', $applicant->applicant_id))->toOthers();
 
-    return redirect()->route('scholar.dashboard')->with('success', 'Application updated successfully!');
+    return redirect()->route('scholar.login')->with('success', 'Application updated successfully!');
 }
 
     public function logout(Request $request)

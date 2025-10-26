@@ -6,10 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\Application;
 use App\Models\Scholar;
 use App\Models\Announce;
+use App\Models\FamilyIntakeSheet;
 use App\Http\Controllers\SmsController;
 
 class MayorStaffController extends Controller
@@ -517,10 +519,18 @@ $percentageReviewed = $totalApplications > 0
             ->where('application_personnel_id', $id)
             ->update(['initial_screening' => 'Approved', 'updated_at' => now()]);
 
+        // Generate intake sheet token
+        $token = Str::random(64);
+        DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $id)
+            ->update(['intake_sheet_token' => $token]);
+
         // Send approval email
         $emailData = [
             'applicant_fname' => $applicationPersonnel->applicant_fname,
             'applicant_lname' => $applicationPersonnel->applicant_lname,
+            'application_personnel_id' => $id,
+            'token' => $token,
         ];
 
         Mail::send('emails.initial-screening-approval', $emailData, function ($message) use ($applicationPersonnel) {
@@ -2030,20 +2040,20 @@ public function updateStatus(Request $request, $id)
         }
     }
 
-public function sendDocumentEmail(Request $request)
-{
-    $request->validate([
-        'application_personnel_id' => 'required|integer'
-    ]);
+    public function sendDocumentEmail(Request $request)
+    {
+        $request->validate([
+            'application_personnel_id' => 'required|integer'
+        ]);
 
-    try {
-        // Get applicant details
-        $applicant = DB::table('tbl_application_personnel as ap')
-            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-            ->where('ap.application_personnel_id', $request->application_personnel_id)
-            ->select('app.applicant_id', 'app.applicant_fname', 'app.applicant_lname', 'app.applicant_email', 'ap.update_token')
-            ->first();
+        try {
+            // Get applicant details
+            $applicant = DB::table('tbl_application_personnel as ap')
+                ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+                ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+                ->where('ap.application_personnel_id', $request->application_personnel_id)
+                ->select('app.applicant_id', 'app.applicant_fname', 'app.applicant_lname', 'app.applicant_email', 'ap.update_token')
+                ->first();
 
         if (!$applicant) {
             return response()->json(['success' => false, 'message' => 'Applicant not found.']);
@@ -2161,5 +2171,129 @@ public function sendDocumentEmail(Request $request)
         return response()->json(['success' => false, 'message' => 'Failed to send email: ' . $e->getMessage()], 500);
     }
 }
+
+    public function showIntakeSheet($application_personnel_id, Request $request)
+    {
+        // Verify token
+        $token = $request->query('token');
+        if (!$token) {
+            abort(403, 'Access denied. Token required.');
+        }
+
+        // Get application personnel record
+        $applicationPersonnel = DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $application_personnel_id)
+            ->where('intake_sheet_token', $token)
+            ->first();
+
+        if (!$applicationPersonnel) {
+            abort(403, 'Invalid token or application not found.');
+        }
+
+        // Get applicant data
+        $applicant = DB::table('tbl_applicant as a')
+            ->join('tbl_application as app', 'a.applicant_id', '=', 'app.applicant_id')
+            ->join('tbl_application_personnel as ap', 'app.application_id', '=', 'ap.application_id')
+            ->where('ap.application_personnel_id', $application_personnel_id)
+            ->select('a.*')
+            ->first();
+
+        if (!$applicant) {
+            abort(404, 'Applicant not found.');
+        }
+
+        return view('intake_sheet.form', compact('applicant'));
+    }
+
+    public function submitIntakeSheetPublic(Request $request)
+    {
+        $request->validate([
+            'application_personnel_id' => 'required|integer',
+            'token' => 'required|string',
+            'head' => 'required|array',
+            'family' => 'required|array',
+            'house' => 'required|array',
+            'signatures' => 'array',
+        ]);
+
+        // Verify token
+        $applicationPersonnel = DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $request->application_personnel_id)
+            ->where('intake_sheet_token', $request->token)
+            ->first();
+
+        if (!$applicationPersonnel) {
+            return response()->json(['success' => false, 'message' => 'Invalid token or application not found.']);
+        }
+
+        // Check if intake sheet already submitted
+        $existingSheet = FamilyIntakeSheet::where('application_personnel_id', $request->application_personnel_id)->first();
+        if ($existingSheet) {
+            return response()->json(['success' => false, 'message' => 'Intake sheet already submitted.']);
+        }
+
+        // Handle signature storage
+        $signaturePaths = [];
+        if (isset($request->signatures) && is_array($request->signatures)) {
+            foreach ($request->signatures as $key => $signatureData) {
+                if ($signatureData && strpos($signatureData, 'data:image') === 0) {
+                    // Decode base64 image
+                    $imageData = explode(',', $signatureData);
+                    $image = base64_decode($imageData[1]);
+
+                    // Generate filename
+                    $filename = 'signature_' . $request->application_personnel_id . '_' . $key . '_' . time() . '.png';
+
+                    // Store in storage/signatures folder
+                    Storage::put('signatures/' . $filename, $image);
+
+                    $signaturePaths[$key] = 'signatures/' . $filename;
+                }
+            }
+        }
+
+        // Prepare data for insertion
+        $data = [
+            'application_personnel_id' => $request->application_personnel_id,
+            'head_4ps' => $request->head['_4ps'] ?? null,
+            'head_ipno' => $request->head['ipno'] ?? null,
+            'head_address' => $request->head['address'] ?? null,
+            'head_zone' => $request->head['zone'] ?? null,
+            'head_barangay' => $request->head['barangay'] ?? null,
+            'head_pob' => $request->head['pob'] ?? null,
+            'head_dob' => $request->head['dob'] ?? null,
+            'head_educ' => $request->head['educ'] ?? null,
+            'head_occ' => $request->head['occ'] ?? null,
+            'head_religion' => $request->head['religion'] ?? null,
+            'serial_number' => $request->head['serial'] ?? null,
+            'location' => $request->location ?? null,
+            'house_total_income' => $request->house['total_income'] ?? null,
+            'house_net_income' => $request->house['net_income'] ?? null,
+            'other_income' => $request->house['other_income'] ?? null,
+            'house_house' => $request->house['house'] ?? null,
+            'house_house_value' => $request->house['house_value'] ?? null,
+            'house_lot' => $request->house['lot'] ?? null,
+            'house_lot_value' => $request->house['lot_value'] ?? null,
+            'house_house_rent' => $request->house['house_rent'] ?? null,
+            'house_lot_rent' => $request->house['lot_rent'] ?? null,
+            'house_water' => $request->house['water'] ?? null,
+            'house_electric' => $request->house['electric'] ?? null,
+            'family_members' => json_encode($request->family),
+            'signature_client' => $signaturePaths['client'] ?? null,
+            'signature_worker' => $signaturePaths['worker'] ?? null,
+            'signature_officer' => $signaturePaths['officer'] ?? null,
+            'date_entry' => now(),
+        ];
+
+        // Create the intake sheet
+        FamilyIntakeSheet::create($data);
+
+        // Optionally update application_personnel to mark as submitted
+        DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $request->application_personnel_id)
+            ->update(['intake_sheet_submitted' => true, 'updated_at' => now()]);
+
+        return response()->json(['success' => true, 'message' => 'Family intake sheet submitted successfully.']);
+    }
 
 }

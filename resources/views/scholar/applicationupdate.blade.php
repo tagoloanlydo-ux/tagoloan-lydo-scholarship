@@ -693,6 +693,12 @@
       <form id="applicationForm" method="POST" action="{{ route('scholar.updateApplication', ['applicant_id' => $applicant->applicant_id]) }}" enctype="multipart/form-data">
         @csrf
 
+        <!-- Hidden inputs for issues and token -->
+        <input type="hidden" name="issues" value="{{ implode(',', $issues) }}">
+        @if(request()->has('token'))
+          <input type="hidden" name="token" value="{{ request()->query('token') }}">
+        @endif
+
         <!-- Application Requirements - Only show bad documents -->
         @php
           $documentMapping = [
