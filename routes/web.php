@@ -86,9 +86,9 @@ Route::put('/lydo_admin/announcement/{id}', [LydoAdminController::class, 'update
 Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/dashboard', [LydoStaffController::class, 'index'])->name('LydoStaff.dashboard');
     Route::get('/lydo_staff/screening', [LydoStaffController::class, 'screening'])->name('LydoStaff.screening');
-    Route::put('/remarks/{id}', [LydoStaffController::class, 'updateRemarks'])->name('updateRemarks');
-    Route::put('/remarksUpdate/{id}', [LydoStaffController::class, 'remarksUpdate'])->name('remarks.update');
-    Route::post('/update-remarks', [LydoStaffController::class, 'updateApplicantsRemarks'])->name('updateApplicantsRemarks');
+    Route::post('/lydo_staff/update-remarks/{id}', [LydoStaffController::class, 'updateRemarks'])->name('updateApplicantsRemarks');
+    Route::post('/lydo_staff/update-intake-sheet/{id}', [LydoStaffController::class, 'updateIntakeSheet'])->name('updateIntakeSheet');
+
     Route::get('/lydo_staff/renewal', [LydoStaffController::class, 'renewal'])->name('LydoStaff.renewal');
     Route::post('/lydo_staff/renewal/update/{scholarId}', [LydoStaffController::class, 'updateStatus']);
     Route::get('/renewals/{id}/requirements', [RenewalController::class, 'getRequirements']);
@@ -108,6 +108,7 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/latest-disbursements', [LydoStaffController::class, 'getLatestDisbursements'])->name('LydoStaff.getLatestDisbursements');
     Route::get('/lydo_staff/sse-applicants', [LydoStaffController::class, 'sse'])->name('LydoStaff.sse');
     Route::get('/lydo_staff/reports', [LydoStaffController::class, 'reports'])->name('LydoStaff.reports');
+    Route::get('/lydo_staff/intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'showIntakeSheet'])->name('lydo_staff.intake_sheet.show');
 
 });
 
@@ -139,6 +140,7 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::post('/mayor_staff/save-document-comment', [MayorStaffController::class, 'saveDocumentComment'])->name('mayor_staff.saveDocumentComment');
     Route::post('/mayor_staff/save-document-status', [MayorStaffController::class, 'saveDocumentStatus'])->name('mayor_staff.saveDocumentStatus');
     Route::post('/mayor_staff/send-document-email', [MayorStaffController::class, 'sendDocumentEmail'])->name('mayor_staff.sendDocumentEmail');
+    Route::post('/save-remarks', [MayorStaffController::class, 'saveRemarks'])->name('saveRemarks');
     Route::get('/mayor_staff/welcome', [MayorStaffController::class, 'welcome'])->name('MayorStaff.welcome');
 
 });

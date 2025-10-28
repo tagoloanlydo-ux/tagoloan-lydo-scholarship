@@ -356,6 +356,20 @@
                 margin-bottom: 0.25rem;
             }
         }
+
+        /* FIX: Modal z-index fix to appear above sidebar and navbar */
+        #applicationModal,
+        #deleteModal,
+        #rejectionModal,
+        #editInitialScreeningModal,
+        #documentModal {
+            z-index: 1100 !important; /* Higher than navbar (1000) and sidebar (999) */
+        }
+
+        /* Ensure modal backdrop covers everything */
+        .fixed.inset-0 {
+            z-index: 1099 !important; /* Just below the modal but above everything else */
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -1524,7 +1538,7 @@
                     Swal.fire('Error', 'Failed to save comment.', 'error');
                 } else {
                     console.log('Comment saved successfully');
-                showAutoSaveIndicator(documentType, true);
+                    showAutoSaveIndicator(documentType, true);
                 }
             })
             .catch(error => {

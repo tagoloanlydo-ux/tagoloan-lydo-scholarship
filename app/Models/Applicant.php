@@ -17,7 +17,7 @@ class Applicant extends Model
 
     protected $fillable = [
         'applicant_fname', 'applicant_mname', 'applicant_lname', 'applicant_suffix',
-        'applicant_gender', 'applicant_bdate', 'applicant_civil_status', 'applicant_brgy',
+        'applicant_gender', 'applicant_bdate', 'applicant_civil_status', 'applicant_pob', 'applicant_brgy',
         'applicant_email', 'applicant_contact_number', 'applicant_school_name',
         'applicant_year_level', 'applicant_course', 'applicant_acad_year'
     ];
