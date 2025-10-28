@@ -17,7 +17,23 @@ class Application extends Model
     
 
     protected $fillable = [
-        'applicant_id', 'application_letter', 'cert_of_reg',
-        'grade_slip', 'brgy_indigency', 'student_id', 'date_submitted'
+        'applicant_id', 'date_submitted', 'application_letter', 'cert_of_reg',
+        'grade_slip', 'brgy_indigency', 'student_id'
+    ];
+
+    protected $attributes = [
+        'application_letter' => null,
+        'cert_of_reg' => null,
+        'grade_slip' => null,
+        'brgy_indigency' => null,
+        'student_id' => null,
+    ];
+
+    protected $casts = [
+        'application_letter' => 'string',
+        'cert_of_reg' => 'string',
+        'grade_slip' => 'string',
+        'brgy_indigency' => 'string',
+        'student_id' => 'string',
     ];
 }
