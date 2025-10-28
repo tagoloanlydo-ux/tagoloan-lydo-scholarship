@@ -370,6 +370,19 @@
         .fixed.inset-0 {
             z-index: 1099 !important; /* Just below the modal but above everything else */
         }
+
+        /* FIX: SweetAlert z-index to appear above modals */
+        .swal2-container {
+            z-index: 1200 !important; /* Higher than modals (1100) */
+        }
+
+        .swal2-popup {
+            z-index: 1201 !important;
+        }
+
+        .swal2-backdrop-show {
+            z-index: 1199 !important; /* Just below the SweetAlert but above modals */
+        }
     </style>
 </head>
 <body class="bg-gray-50">

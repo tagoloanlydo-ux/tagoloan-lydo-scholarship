@@ -358,7 +358,6 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">School</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Remarks</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -2058,6 +2057,103 @@
                 // Add active class to the selected tab button
                 document.getElementById('view-tab-' + tabName).classList.add('active', 'text-violet-600', 'border-b-2', 'border-violet-600');
                 document.getElementById('view-tab-' + tabName).classList.remove('text-gray-500');
+            }
+
+            // Function to print the intake sheet
+            function printIntakeSheet() {
+                const modal = document.getElementById('viewIntakeSheetModal');
+                const printWindow = window.open('', '_blank');
+                const printContent = modal.innerHTML;
+
+                printWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>Family Intake Sheet</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; margin: 20px; }
+                                .intake-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                                .intake-section { margin-bottom: 20px; border: 1px solid #e5e7eb; padding: 15px; border-radius: 5px; }
+                                .intake-section-title { font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
+                                .intake-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                                .intake-table th, .intake-table td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+                                .intake-table th { background-color: #f9fafb; font-weight: 600; }
+                                .flex { display: flex; }
+                                .gap-4 > * + * { margin-left: 1rem; }
+                                .flex-1 { flex: 1; }
+                                .mb-4 { margin-bottom: 1rem; }
+                                .text-sm { font-size: 0.875rem; }
+                                .font-medium { font-weight: 500; }
+                                .text-gray-700 { color: #374151; }
+                                .hidden { display: none !important; }
+                                .border { border: 1px solid #e5e7eb; }
+                                .rounded-lg { border-radius: 0.5rem; }
+                                .p-2 { padding: 0.5rem; }
+                                .bg-gray-50 { background-color: #f9fafb; }
+                                .view-field { background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; padding: 0.5rem !important; border-radius: 0.5rem; }
+                                .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+                                .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+                                .border-b { border-bottom: 1px solid #e5e7eb; }
+                                .border-gray-300 { border-color: #d1d5db; }
+                                .text-center { text-align: center; }
+                                .text-xl { font-size: 1.25rem; }
+                                .font-semibold { font-weight: 600; }
+                                .mb-3 { margin-bottom: 0.75rem; }
+                                .overflow-x-auto { overflow-x: auto; }
+                                .min-w-full { min-width: 100%; }
+                                .text-left { text-align: left; }
+                                .w-full { width: 100%; }
+                                .mt-1 { margin-top: 0.25rem; }
+                                .block { display: block; }
+                                .label { display: block; font-weight: 500; color: #374151; margin-bottom: 0.25rem; }
+                                .flex-1 { flex: 1; }
+                                .gap-4 { gap: 1rem; }
+                                .justify-between { justify-content: space-between; }
+                                .items-center { align-items: center; }
+                                .mb-6 { margin-bottom: 1.5rem; }
+                                .border-b-2 { border-bottom-width: 2px; }
+                                .border-violet-600 { border-color: #7c3aed; }
+                                .text-violet-600 { color: #7c3aed; }
+                                .font-medium { font-weight: 500; }
+                                .px-4 { padding-left: 1rem; padding-right: 1rem; }
+                                .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+                                .border-b { border-bottom: 1px solid #e5e7eb; }
+                                .text-gray-500 { color: #6b7280; }
+                                .hover\:text-violet-600:hover { color: #7c3aed; }
+                                .border-b-2 { border-bottom-width: 2px; }
+                                .border-violet-600 { border-color: #7c3aed; }
+                                .text-violet-600 { color: #7c3aed; }
+                                .text-gray-500 { color: #6b7280; }
+                                .active { background-color: #7c3aed; color: white; border-color: #7c3aed; }
+                                .tab-button { cursor: pointer; padding: 10px 20px; border-radius: 8px; transition: all 0.3s ease; background-color: white; color: #6b7280; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; justify-content: center; }
+                                .tab-button.active { background-color: #7c3aed; color: white; border-color: #7c3aed; }
+                                .tab-button:hover:not(.active) { background-color: #f3f4f6; }
+                                .tab-content { display: block; }
+                                .tab-content.hidden { display: none; }
+                                .view-tab-content { display: block; }
+                                .view-tab-content.hidden { display: none; }
+                                .view-tab-button { cursor: pointer; padding: 10px 20px; border-radius: 8px; transition: all 0.3s ease; background-color: white; color: #6b7280; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; justify-content: center; }
+                                .view-tab-button.active { background-color: #7c3aed; color: white; border-color: #7c3aed; }
+                                .view-tab-button:hover:not(.active) { background-color: #f3f4f6; }
+                                @media print {
+                                    body { margin: 0; }
+                                    .no-print { display: none !important; }
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="intake-header">
+                                <img src="{{ asset('images/LYDO.png') }}" alt="LYDO Logo" style="height: 40px; width: auto; margin-right: 10px;">
+                                <h1 style="display: inline; font-size: 24px; font-weight: bold;">Family Intake Sheet</h1>
+                            </div>
+                            ${printContent.replace(/class="hidden"/g, 'style="display: none;"').replace(/class="view-tab-content hidden"/g, 'style="display: none;"').replace(/class="tab-content hidden"/g, 'style="display: none;"')}
+                        </body>
+                    </html>
+                `);
+
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
             }
         </script>
 
