@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('tbl_application', function (Blueprint $table) {
     $table->id('application_id');
     $table->unsignedBigInteger('applicant_id');
-    $table->text('application_letter')->nullable();
-    $table->text('cert_of_reg')->nullable();
-    $table->text('grade_slip')->nullable();
-    $table->text('brgy_indigency')->nullable();
-    $table->text('student_id')->nullable();
+    $table->text('application_letter');
+    $table->text('cert_of_reg');
+    $table->text('grade_slip');
+    $table->text('brgy_indigency');
+    $table->text('student_id');
     $table->date('date_submitted');
     $table->timestamps();
 

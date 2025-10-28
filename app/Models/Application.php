@@ -22,11 +22,11 @@ class Application extends Model
     ];
 
     protected $attributes = [
-        'application_letter' => null,
-        'cert_of_reg' => null,
-        'grade_slip' => null,
-        'brgy_indigency' => null,
-        'student_id' => null,
+        'application_letter' => '',
+        'cert_of_reg' => '',
+        'grade_slip' => '',
+        'brgy_indigency' => '',
+        'student_id' => '',
     ];
 
     protected $casts = [

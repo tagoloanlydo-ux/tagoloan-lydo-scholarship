@@ -80,15 +80,15 @@ class ApplicationController extends Controller
                 $applicantId = $applicant->applicant_id;
             }
 
-            // Create application record using the Application model with all fields
+            // Create application record using the Application model with all required fields
             $applicationData = [
                 'applicant_id' => $applicantId,
                 'date_submitted' => now(),
-                'application_letter' => $request->application_letter ?? null,
-                'cert_of_reg' => $request->cert_of_reg ?? null,
-                'grade_slip' => $request->grade_slip ?? null,
-                'brgy_indigency' => $request->brgy_indigency ?? null,
-                'student_id' => $request->student_id ?? null,
+                'application_letter' => $request->application_letter ?? '',
+                'cert_of_reg' => $request->cert_of_reg ?? '',
+                'grade_slip' => $request->grade_slip ?? '',
+                'brgy_indigency' => $request->brgy_indigency ?? '',
+                'student_id' => $request->student_id ?? '',
             ];
 
             $application = Application::create($applicationData);
