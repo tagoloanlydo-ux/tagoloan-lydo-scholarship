@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 use App\Models\Application;
 use App\Models\Applicant;
+use App\Models\ApplicationPersonnel;
 
 class ApplicationController extends Controller
 {
@@ -44,6 +46,11 @@ class ApplicationController extends Controller
                 'applicant_year_level' => 'required|string|max:20',
                 'applicant_course' => 'required|string|max:100',
                 'applicant_acad_year' => 'required|string|max:20',
+                'application_letter' => 'required|string',
+                'cert_of_reg' => 'required|string',
+                'grade_slip' => 'required|string',
+                'brgy_indigency' => 'required|string',
+                'student_id' => 'required|string',
             ]);
         }
 
@@ -83,7 +90,7 @@ class ApplicationController extends Controller
             // Create application record using the Application model with all required fields
             $applicationData = [
                 'applicant_id' => $applicantId,
-                'date_submitted' => now(),
+                'date_submitted' => $request->date_submitted ? Carbon::parse($request->date_submitted) : now(),
                 'application_letter' => $request->application_letter ?? '',
                 'cert_of_reg' => $request->cert_of_reg ?? '',
                 'grade_slip' => $request->grade_slip ?? '',
@@ -94,13 +101,12 @@ class ApplicationController extends Controller
             $application = Application::create($applicationData);
             $applicationId = $application->application_id;
 
-            // Create application personnel record
-            DB::table('tbl_application_personnel')->insert([
-                'application_id' => $application,
+            // Create application personnel record using the model
+            ApplicationPersonnel::create([
+                'application_id' => $application->application_id,
+                'lydopers_id' => $request->lydopers_id ?? 0, // Use provided value or default to 0
                 'status' => 'Pending',
                 'initial_screening' => 'Pending',
-                'created_at' => now(),
-                'updated_at' => now(),
             ]);
 
             DB::commit();

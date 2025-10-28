@@ -2323,4 +2323,4 @@ setInterval(pollForUpdates, 10000);
 </script>
 
 </body>
-</html>
+</html>u

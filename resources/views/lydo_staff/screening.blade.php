@@ -381,9 +381,9 @@
                     <!-- ✅ Applicants -->
                     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                         <div class="flex gap-2">
-<div onclick="showTable()" class="tab active" id="tab-screening">
-    <i class="fas fa-table mr-1"></i> Pending Remarks
-</div>
+                            <div onclick="showTable()" class="tab active" id="tab-screening">
+                                <i class="fas fa-table mr-1"></i> Pending Remarks
+                            </div>
                             <div onclick="showList()" class="tab" id="tab-reviewed">
                                 <i class="fas fa-list mr-1"></i> Reviewed Applicants
                             </div>
@@ -414,6 +414,8 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Course</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">School</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Remarks</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Intake Sheet</th>
                                 </tr>
                             </thead>
@@ -425,6 +427,12 @@
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_brgy }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_course }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_school_name }}</td>
+                                    <td class="px-4 border border-gray-200 py-2 text-center">
+                                        <span class="px-2 py-1 text-sm rounded-lg bg-green-100 text-green-800">Approved</span>
+                                    </td>
+                                    <td class="px-4 border border-gray-200 py-2 text-center">
+                                        <span class="px-2 py-1 text-sm rounded-lg bg-yellow-100 text-yellow-800">Waiting na Remarks</span>
+                                    </td>
                                     <td class="px-4 py-2 border border-gray-200 text-center">
                                         <button
                                             title="Assign Remarks"
@@ -443,18 +451,11 @@
                                             onclick="openEditRemarksModal(this)">
                                             <i class="fas fa-plus mr-1"></i> Intake Sheet
                                         </button>
-                                        <button
-                                            title="View Intake Sheet"
-                                            class="px-3 py-1 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg shadow ml-2"
-                                            data-id="{{ $app->application_personnel_id }}"
-                                            onclick="openReviewModal(this)">
-                                            <i class="fas fa-eye mr-1"></i> View
-                                        </button>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="text-center py-4 border border-gray-200 text-gray-500">No applicants pending remarks.</td>
+                                    <td colspan="8" class="text-center py-4 border border-gray-200 text-gray-500">No applicants pending remarks.</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -930,9 +931,9 @@
                     </button>
                     <button
                         type="button"
-                        onclick="closeReviewModal()"
-                        class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600"
-                    >
+
+        <script>
+            // Tab switching functionality for main view
                         Close
                     </button>
                 </div>
@@ -940,36 +941,38 @@
         </div>
 
         <!-- Signature Modal -->
-        <div id="signatureModal" class="modal">
-            <div class="modal-content" style="max-width: 600px;">
-                <div class="modal-header">
-                    <h2>Sign Here</h2>
-                    <button class="modal-close" onclick="closeSignatureModal()">&times;</button>
+        <div id="signatureModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold" id="signatureModalTitle">Signature</h2>
+                    <button class="text-gray-500 hover:text-gray-700" onclick="closeSignatureModal()">&times;</button>
                 </div>
-                <div>
-                    <canvas id="signatureCanvas" width="500" height="200" style="border: 1px solid #ccc;"></canvas>
+                <div class="border-2 border-gray-300 rounded-lg p-4 mb-4">
+                    <canvas id="signatureCanvas" width="400" height="200" class="border border-gray-200 rounded"></canvas>
                 </div>
-                <div class="modal-actions">
-                    <button onclick="clearSignature()">Clear</button>
-                    <button id="saveSignatureBtn" onclick="saveSignature()">Save Signature</button>
-                    <button onclick="closeSignatureModal()">Cancel</button>
+                <div class="flex justify-between">
+                    <button type="button" onclick="clearSignature()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">Clear</button>
+                    <div>
+                        <button type="button" onclick="closeSignatureModal()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 mr-2">Cancel</button>
+                        <button type="button" onclick="saveSignature()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Signature</button>
+                    </div>
                 </div>
             </div>
         </div>
+            function showTable() {
+                document.getElementById('tableView').classList.remove('hidden');
+                document.getElementById('listView').classList.add('hidden');
+                document.getElementById('tab-screening').classList.add('active');
+                document.getElementById('tab-reviewed').classList.remove('active');
+                filterTable(); // Apply current filters to the active view
+            }
 
-        <script>
-            // localStorage key
-            const STORAGE_KEY = 'familyIntakeFormData';
-
-            // Load form data from localStorage
-            function loadFormData() {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    return JSON.parse(saved);
-                } else {
-                    alert("No form data found. Please complete the form first.");
-                    return null;
-                }
+            function showList() {
+                document.getElementById('tableView').classList.add('hidden');
+                document.getElementById('listView').classList.remove('hidden');
+                document.getElementById('tab-screening').classList.remove('active');
+                document.getElementById('tab-reviewed').classList.add('active');
+                filterList(); // Apply current filters to the active view
             }
 
             // Open review modal
@@ -1059,19 +1062,19 @@
                                             }
                                             return Array.isArray(familyMembers) ? familyMembers.map(f => `
                                                 <tr>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.name)}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.relationship)}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.name || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.relationship || '')}</td>
                                                     <td class="border px-2 py-1 text-left">${formatDate(f.birthdate)}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.age)}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.sex)}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.civil_status)}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.education)}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.occupation)}</td>
-                                                    <td class="border px-2 py-1 text-left">₱${escapeHtml(f.monthly_income)}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.remarks)}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.age || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.sex || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.civil_status || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.education || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.occupation || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">₱${escapeHtml(f.monthly_income || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.remarks || '')}</td>
                                                 </tr>
-                                            `).join('') : ''
-                                        }
+                                            `).join('') : '';
+                                        })()}
                                     </tbody>
                                 </table>
 
@@ -1098,24 +1101,33 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            ${d.rv_service_records && Array.isArray(JSON.parse(d.rv_service_records)) ? 
-                                                JSON.parse(d.rv_service_records).map(record => `
-                                                    <tr>
-                                                        <td class="border px-2 py-1 text-center">${formatDate(record.date)}</td>
-                                                        <td class="border px-2 py-1 text-left">${escapeHtml(record.problem_need)}</td>
-                                                        <td class="border px-2 py-1 text-left">${escapeHtml(record.action_assistance)}</td>
-                                                        <td class="border px-2 py-1 text-left">${escapeHtml(record.remarks)}</td>
-                                                    </tr>
-                                                `).join('') : 
-                                                Array(5).fill(`
-                                                    <tr>
-                                                        <td class="border h-8"></td>
-                                                        <td class="border"></td>
-                                                        <td class="border"></td>
-                                                        <td class="border"></td>
-                                                    </tr>
-                                                `).join('')
-                                            }
+                                            ${(() => {
+                                                let serviceRecords = d.rv_service_records;
+                                                if (typeof serviceRecords === 'string') {
+                                                    try {
+                                                        serviceRecords = JSON.parse(serviceRecords);
+                                                    } catch (e) {
+                                                        serviceRecords = [];
+                                                    }
+                                                }
+                                                return Array.isArray(serviceRecords) && serviceRecords.length > 0 ? 
+                                                    serviceRecords.map(record => `
+                                                        <tr>
+                                                            <td class="border px-2 py-1 text-center">${formatDate(record.date)}</td>
+                                                            <td class="border px-2 py-1 text-left">${escapeHtml(record.problem_need || '')}</td>
+                                                            <td class="border px-2 py-1 text-left">${escapeHtml(record.action_assistance || '')}</td>
+                                                            <td class="border px-2 py-1 text-left">${escapeHtml(record.remarks || '')}</td>
+                                                        </tr>
+                                                    `).join('') : 
+                                                    Array(5).fill(`
+                                                        <tr>
+                                                            <td class="border h-8"></td>
+                                                            <td class="border"></td>
+                                                            <td class="border"></td>
+                                                            <td class="border"></td>
+                                                        </tr>
+                                                    `).join('');
+                                            })()}
                                         </tbody>
                                     </table>
                                 </div>
@@ -1201,23 +1213,6 @@
                 }
             });
 
-            // Tab switching functionality for main view
-            function showTable() {
-                document.getElementById('tableView').classList.remove('hidden');
-                document.getElementById('listView').classList.add('hidden');
-                document.getElementById('tab-screening').classList.add('active');
-                document.getElementById('tab-reviewed').classList.remove('active');
-                filterTable(); // Apply current filters to the active view
-            }
-
-            function showList() {
-                document.getElementById('tableView').classList.add('hidden');
-                document.getElementById('listView').classList.remove('hidden');
-                document.getElementById('tab-screening').classList.remove('active');
-                document.getElementById('tab-reviewed').classList.add('active');
-                filterList(); // Apply current filters to the active view
-            }
-
             // Tab switching functionality for modal
             function showTab(tabName) {
                 // Hide all tab contents
@@ -1279,366 +1274,6 @@
                 document.getElementById('listBarangayFilter').addEventListener('change', filterList);
             });
 
-            function openEditRemarksModal(button) {
-                let id = button.getAttribute("data-id");
-                let fname = button.getAttribute("data-fname");
-                let mname = button.getAttribute("data-mname");
-                let lname = button.getAttribute("data-lname");
-                let suffix = button.getAttribute("data-suffix");
-                let gender = button.getAttribute("data-gender");
-
-                document.getElementById("remarks_id").value = id;
-                document.getElementById("modal_mode").value = "edit";
-
-                // Populate applicant name fields from button data
-                document.getElementById("applicant_fname").value = fname || '';
-                document.getElementById("applicant_mname").value = mname || '';
-                document.getElementById("applicant_lname").value = lname || '';
-                document.getElementById("applicant_suffix").value = suffix || '';
-                document.getElementById("applicant_gender").value = gender || '';
-
-                let form = document.getElementById('updateRemarksForm');
-                form.action = "/lydo_staff/update-intake-sheet/" + id;
-
-                // Fetch existing intake sheet data and populate the form
-                fetch(`/lydo_staff/intake-sheet/${id}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data) {
-                            // Populate Head of Family fields
-                            document.getElementById("head_4ps").value = data.head_4ps || '';
-                            document.getElementById("head_ipno").value = data.head_ipno || '';
-                            document.getElementById("head_address").value = data.head_address || '';
-                            document.getElementById("head_zone").value = data.head_zone || '';
-                            document.getElementById("head_barangay").value = data.head_barangay || '';
-                            document.getElementById("head_pob").value = data.head_pob || '';
-                            document.getElementById("head_dob").value = data.head_dob || '';
-                            document.getElementById("applicant_gender").value = data.head_gender || '';
-                            document.getElementById("head_educ").value = data.head_educ || '';
-                            document.getElementById("head_occ").value = data.head_occ || '';
-                            document.getElementById("head_religion").value = data.head_religion || '';
-                            document.getElementById("serial_number").value = data.serial_number || '';
-
-                            // Populate Household Info fields
-                            document.getElementById("house_total_income").value = data.house_total_income || '';
-                            document.getElementById("house_net_income").value = data.house_net_income || '';
-                            document.getElementById("other_income").value = data.other_income || '';
-                            document.getElementById("house_house").value = data.house_house || '';
-                            document.getElementById("house_house_value").value = data.house_house_value || '';
-                            document.getElementById("house_lot").value = data.house_lot || '';
-                            document.getElementById("house_lot_value").value = data.house_lot_value || '';
-                            document.getElementById("house_house_rent").value = data.house_house_rent || '';
-                            document.getElementById("house_lot_rent").value = data.house_lot_rent || '';
-                            document.getElementById("house_water").value = data.house_water || '';
-                            document.getElementById("house_electric").value = data.house_electric || '';
-                            document.getElementById("house_remarks").value = data.house_remarks || '';
-
-                            // Populate JSON fields
-                            document.getElementById("family_members").value = data.family_members ? JSON.stringify(data.family_members, null, 2) : '';
-                            document.getElementById("rv_service_records").value = data.rv_service_records ? JSON.stringify(data.rv_service_records, null, 2) : '';
-
-                            // Populate Family Members table
-                            if (data.family_members && Array.isArray(data.family_members)) {
-                                data.family_members.forEach(member => {
-                                    addFamilyMemberRow(member.name || '', member.relationship || '', member.birthdate || '', member.age || '', member.sex || '', member.civil_status || '', member.education || '', member.occupation || '', member.monthly_income || '', member.remarks || '');
-                                });
-                            }
-
-                            // Populate Social Service Records table
-                            if (data.rv_service_records && Array.isArray(data.rv_service_records)) {
-                                data.rv_service_records.forEach(record => {
-                                    addRvServiceRecordRow(record.date || '', record.problem_need || '', record.action_assistance || '', record.remarks || '');
-                                });
-                            }
-
-                            // Populate Remarks field
-                            document.getElementById("remarks").value = data.remarks || '';
-
-                            // Populate Health & Signatures fields
-                            document.getElementById("hc_estimated_cost").value = data.hc_estimated_cost || '';
-                            document.getElementById("worker_name").value = data.worker_name || '';
-                            document.getElementById("officer_name").value = data.officer_name || '';
-                            document.getElementById("date_entry").value = data.date_entry || '';
-                            document.getElementById("signature_client").value = data.signature_client || '';
-                            document.getElementById("signature_worker").value = data.signature_worker || '';
-                            document.getElementById("signature_officer").value = data.signature_officer || '';
-
-                            // Toggle rent inputs based on populated values
-                            toggleRentInputs();
-                            // Recalculate family totals and net income after populating rows/fields
-                            if (typeof updateFamilyMembersJSON === 'function') {
-                                updateFamilyMembersJSON();
-                            }
-                        }
-                    })
-                    .catch(err => console.error('Error fetching intake sheet data:', err));
-
-                document.getElementById("editRemarksModal").classList.remove("hidden");
-                setModalMode("edit");
-            }
-
-            function setModalMode(mode) {
-                const modalMode = document.getElementById("modal_mode").value;
-                const submitBtn = document.querySelector('#editRemarksModal button[type="submit"]');
-                const allInputs = document.querySelectorAll('#editRemarksModal input, #editRemarksModal select, #editRemarksModal textarea');
-                const addButtons = document.querySelectorAll('#editRemarksModal button:not([type="submit"]):not(.tab-button)');
-
-                if (modalMode === "view") {
-                    // Make all inputs readonly
-                    allInputs.forEach(input => {
-                        input.setAttribute('readonly', true);
-                        input.setAttribute('disabled', true);
-                    });
-                    // Hide add buttons
-                    addButtons.forEach(btn => btn.style.display = 'none');
-                    // Change submit button to Close
-                    if (submitBtn) {
-                        submitBtn.textContent = 'Close';
-                        submitBtn.onclick = () => closeEditRemarksModal();
-                        submitBtn.type = 'button';
-                    }
-                } else {
-                    // Edit mode: remove readonly/disabled
-                    allInputs.forEach(input => {
-                        input.removeAttribute('readonly');
-                        input.removeAttribute('disabled');
-                    });
-                    // Show add buttons
-                    addButtons.forEach(btn => btn.style.display = '');
-                    // Reset submit button
-                    if (submitBtn) {
-                        submitBtn.textContent = 'Submit';
-                        submitBtn.type = 'submit';
-                        submitBtn.onclick = null;
-                    }
-                }
-            }
-
-            function closeEditRemarksModal() {
-                document.getElementById("editRemarksModal").classList.add("hidden");
-                // Clear form fields when closing
-                document.getElementById('updateRemarksForm').reset();
-                // Clear family members table
-                document.getElementById('family_members_tbody').innerHTML = '';
-                // Clear social service records table
-                document.getElementById('rv_service_records_tbody').innerHTML = '';
-            }
-
-            function addFamilyMemberRow(name = '', relation = '', birthdate = '', age = '', sex = '', civil_status = '', education = '', occupation = '', monthly_income = '', remarks = '') {
-                const tbody = document.getElementById('family_members_tbody');
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="border px-2 py-1">
-                        <input type="text" class="w-full border-none outline-none" placeholder="Name" value="${name}">
-                    </td>
-                    <td class="border px-2 py-1">
-                        <select class="w-full border-none outline-none">
-                            <option value="">Select Relation</option>
-                            <option value="Father" ${relation === 'Father' ? 'selected' : ''}>Father</option>
-                            <option value="Mother" ${relation === 'Mother' ? 'selected' : ''}>Mother</option>
-                            <option value="Son" ${relation === 'Son' ? 'selected' : ''}>Son</option>
-                            <option value="Daughter" ${relation === 'Daughter' ? 'selected' : ''}>Daughter</option>
-                            <option value="Brother" ${relation === 'Brother' ? 'selected' : ''}>Brother</option>
-                            <option value="Sister" ${relation === 'Sister' ? 'selected' : ''}>Sister</option>
-                            <option value="Grandfather" ${relation === 'Grandfather' ? 'selected' : ''}>Grandfather</option>
-                            <option value="Grandmother" ${relation === 'Grandmother' ? 'selected' : ''}>Grandmother</option>
-                            <option value="Uncle" ${relation === 'Uncle' ? 'selected' : ''}>Uncle</option>
-                            <option value="Aunt" ${relation === 'Aunt' ? 'selected' : ''}>Aunt</option>
-                            <option value="Other" ${relation === 'Other' ? 'selected' : ''}>Other</option>
-                        </select>
-                    </td>
-                    <td class="border px-2 py-1">
-                        <input type="date" class="w-full border-none outline-none birthdate-input" value="${birthdate}">
-                    </td>
-                    <td class="border px-2 py-1">
-                        <input type="number" class="w-full border-none outline-none age-input" placeholder="Age" value="${age}" readonly>
-                    </td>
-                    <td class="border px-2 py-1">
-                        <select class="w-full border-none outline-none">
-                            <option value="">Select</option>
-                            <option value="Male" ${sex === 'Male' ? 'selected' : ''}>Male</option>
-                            <option value="Female" ${sex === 'Female' ? 'selected' : ''}>Female</option>
-                        </select>
-                    </td>
-                    <td class="border px-2 py-1">
-                        <select class="w-full border-none outline-none">
-                            <option value="">Select</option>
-                            <option value="Single" ${civil_status === 'Single' ? 'selected' : ''}>Single</option>
-                            <option value="Married" ${civil_status === 'Married' ? 'selected' : ''}>Married</option>
-                            <option value="Widowed" ${civil_status === 'Widowed' ? 'selected' : ''}>Widowed</option>
-                            <option value="Separated" ${civil_status === 'Separated' ? 'selected' : ''}>Separated</option>
-                        </select>
-                    </td>
-                    <td class="border px-2 py-1">
-                        <select class="w-full border-none outline-none">
-                            <option value="">Select Education</option>
-                            <option value="Elementary" ${education === 'Elementary' ? 'selected' : ''}>Elementary</option>
-                            <option value="High School" ${education === 'High School' ? 'selected' : ''}>High School</option>
-                            <option value="Vocational" ${education === 'Vocational' ? 'selected' : ''}>Vocational</option>
-                            <option value="College" ${education === 'College' ? 'selected' : ''}>College</option>
-                            <option value="Post Graduate" ${education === 'Post Graduate' ? 'selected' : ''}>Post Graduate</option>
-                        </select>
-                    </td>
-                    <td class="border px-2 py-1">
-                        <select class="w-full border-none outline-none">
-                            <option value="">Select Occupation</option>
-                            <option value="Farmer" ${occupation === 'Farmer' ? 'selected' : ''}>Farmer</option>
-                            <option value="Teacher" ${occupation === 'Teacher' ? 'selected' : ''}>Teacher</option>
-                            <option value="Driver" ${occupation === 'Driver' ? 'selected' : ''}>Driver</option>
-                            <option value="Business Owner" ${occupation === 'Business Owner' ? 'selected' : ''}>Business Owner</option>
-                            <option value="Employee" ${occupation === 'Employee' ? 'selected' : ''}>Employee</option>
-                            <option value="Unemployed" ${occupation === 'Unemployed' ? 'selected' : ''}>Unemployed</option>
-                            <option value="Student" ${occupation === 'Student' ? 'selected' : ''}>Student</option>
-                            <option value="Other" ${occupation === 'Other' ? 'selected' : ''}>Other</option>
-                        </select>
-                    </td>
-                    <td class="border px-2 py-1">
-                        <input type="number" step="0.01" class="w-full border-none outline-none" placeholder="₱ Monthly Income" value="${monthly_income}">
-                    </td>
-                    <td class="border px-2 py-1">
-                        <select class="w-full border-none outline-none fm-remarks">
-                            <option value="">Select</option>
-                            <option value="CIC" ${remarks === 'CIC' ? 'selected' : ''}>CIC</option>
-                            <option value="OSY" ${remarks === 'OSY' ? 'selected' : ''}>OSY</option>
-                            <option value="SP" ${remarks === 'SP' ? 'selected' : ''}>SP</option>
-                            <option value="PWD" ${remarks === 'PWD' ? 'selected' : ''}>PWD</option>
-                            <option value="SC" ${remarks === 'SC' ? 'selected' : ''}>SC</option>
-                            <option value="None" ${remarks === 'None' ? 'selected' : ''}>None</option>
-                            <option value="Lactating Mother" ${remarks === 'Lactating Mother' ? 'selected' : ''}>Lactating Mother</option>
-                            <option value="Pregnant Mother" ${remarks === 'Pregnant Mother' ? 'selected' : ''}>Pregnant Mother</option>
-                        </select>
-                    </td>
-                    <td class="border px-2 py-1 text-center">
-                        <button type="button" onclick="removeFamilyMemberRow(this)" class="text-red-500 hover:text-red-700">Remove</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-
-                // Add event listener for birthdate to calculate age
-                const birthdateInput = row.querySelector('.birthdate-input');
-                const ageInput = row.querySelector('.age-input');
-                birthdateInput.addEventListener('change', function() {
-                    calculateAge(this, ageInput);
-                });
-
-                // Add listener for monthly income input to update totals
-                try {
-                    const cells = row.querySelectorAll('td');
-                    const monthlyInput = cells[8].querySelector('input');
-                    if (monthlyInput) {
-                        monthlyInput.addEventListener('input', function() {
-                            updateFamilyMembersJSON();
-                        });
-                    }
-                } catch (e) {
-                    // ignore if structure differs
-                }
-
-                updateFamilyMembersJSON();
-            }
-
-            function removeFamilyMemberRow(button) {
-                button.closest('tr').remove();
-                updateFamilyMembersJSON();
-            }
-
-            function calculateAge(birthdateInput, ageInput) {
-                const birthdateValue = birthdateInput.value;
-                if (!birthdateValue) {
-                    ageInput.value = '';
-                    return;
-                }
-                const birthdate = new Date(birthdateValue);
-                const today = new Date();
-                let age = today.getFullYear() - birthdate.getFullYear();
-                const monthDiff = today.getMonth() - birthdate.getMonth();
-                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthdate.getDate())) {
-                    age--;
-                }
-                ageInput.value = age;
-            }
-
-            function updateFamilyMembersJSON() {
-                const rows = document.querySelectorAll('#family_members_tbody tr');
-                const members = [];
-                let sumMonthly = 0;
-                rows.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    const name = cells[0].querySelector('input').value.trim();
-                    const relationship = cells[1].querySelector('select').value.trim();
-                    const birthdate = cells[2].querySelector('input').value.trim();
-                    const age = cells[3].querySelector('input').value.trim();
-                    const sex = cells[4].querySelector('select').value.trim();
-                    const civil_status = cells[5].querySelector('select').value.trim();
-                    const education = cells[6].querySelector('select').value.trim();
-                    const occupation = cells[7].querySelector('select').value.trim();
-                    const monthly_income = cells[8].querySelector('input').value.trim();
-                    const remarks = cells[9].querySelector('select').value.trim();
-                    if (name || relationship || age) {
-                        members.push({ name, relationship, birthdate, age, sex, civil_status, education, occupation, monthly_income, remarks });
-                        // accumulate monthly income (treat empty or invalid as 0)
-                        const num = parseFloat(monthly_income) || 0;
-                        sumMonthly += num;
-                    }
-                });
-                document.getElementById('family_members').value = JSON.stringify(members);
-                // include Other Income in total
-                const otherIncomeEl = document.getElementById('other_income');
-                const otherIncome = otherIncomeEl ? (parseFloat(otherIncomeEl.value) || 0) : 0;
-                const total = sumMonthly + otherIncome;
-                const totalEl = document.getElementById('house_total_income');
-                if (totalEl) {
-                    totalEl.value = total.toFixed(2);
-                    // trigger input event so Net Income recalculates (calculateNetIncome is attached to this event)
-                    totalEl.dispatchEvent(new Event('input', { bubbles: true }));
-                }
-            }
-
-            function addRvServiceRecordRow(date = '', problem_need = '', action_assistance = '', remarks = '') {
-                const tbody = document.getElementById('rv_service_records_tbody');
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="border border-gray-300 px-2 py-1">
-                        <input type="date" class="w-full border-none outline-none" value="${date}">
-                    </td>
-                    <td class="border border-gray-300 px-2 py-1">
-                        <input type="text" class="w-full border-none outline-none" placeholder="Problem/Need" value="${problem_need}">
-                    </td>
-                    <td class="border border-gray-300 px-2 py-1">
-                        <input type="text" class="w-full border-none outline-none" placeholder="Action/Assistance Given" value="${action_assistance}">
-                    </td>
-                    <td class="border border-gray-300 px-2 py-1">
-                        <input type="text" class="w-full border-none outline-none" placeholder="Remarks" value="${remarks}">
-                    </td>
-                    <td class="border border-gray-300 px-2 py-1 text-center">
-                        <button type="button" onclick="removeRvServiceRecordRow(this)" class="text-red-500 hover:text-red-700">Remove</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-                updateRvServiceRecordsJSON();
-            }
-
-            function removeRvServiceRecordRow(button) {
-                button.closest('tr').remove();
-                updateRvServiceRecordsJSON();
-            }
-
-            function updateRvServiceRecordsJSON() {
-                const rows = document.querySelectorAll('#rv_service_records_tbody tr');
-                const records = [];
-                rows.forEach(row => {
-                    const inputs = row.querySelectorAll('input');
-                    const date = inputs[0].value.trim();
-                    const problem_need = inputs[1].value.trim();
-                    const action_assistance = inputs[2].value.trim();
-                    const remarks = inputs[3].value.trim();
-                    if (date || problem_need || action_assistance || remarks) {
-                        records.push({ date, problem_need, action_assistance, remarks });
-                    }
-                });
-                document.getElementById('rv_service_records').value = JSON.stringify(records);
-            }
-
             // Function to filter the table view based on name and barangay
             function filterTable() {
                 const nameSearchValue = document.getElementById('nameSearch').value.toLowerCase().trim();
@@ -1683,43 +1318,372 @@
                 });
             }
 
-            // Toggle rent inputs based on house and lot selections
-            function toggleRentInputs() {
-                const houseSelect = document.getElementById('house_house');
-                const lotSelect = document.getElementById('house_lot');
-                const houseValueGroup = document.getElementById('house_value_group');
-                const lotValueGroup = document.getElementById('lot_value_group');
-                const lotRentGroup = document.getElementById('lot_rent_group');
+            // Open edit remarks modal
+            function openEditRemarksModal(button) {
+                const id = button.getAttribute("data-id");
+                const remarks = button.getAttribute("data-remarks");
+                const name = button.getAttribute("data-name");
+                const fname = button.getAttribute("data-fname");
+                const mname = button.getAttribute("data-mname");
+                const lname = button.getAttribute("data-lname");
+                const suffix = button.getAttribute("data-suffix");
+                const bdate = button.getAttribute("data-bdate");
+                const brgy = button.getAttribute("data-brgy");
+                const gender = button.getAttribute("data-gender");
+                const pob = button.getAttribute("data-pob");
 
-                if (houseSelect) {
-                    houseSelect.addEventListener('change', function() {
-                        if (this.value === 'Owned') {
-                            houseValueGroup.style.display = 'block';
-                        } else {
-                            houseValueGroup.style.display = 'none';
+                // Set form values
+                document.getElementById("remarks_id").value = id;
+                document.getElementById("applicant_fname").value = fname;
+                document.getElementById("applicant_mname").value = mname;
+                document.getElementById("applicant_lname").value = lname;
+                document.getElementById("applicant_suffix").value = suffix;
+                document.getElementById("head_dob").value = bdate;
+                document.getElementById("head_barangay").value = brgy;
+                document.getElementById("applicant_gender").value = gender;
+                document.getElementById("head_pob").value = pob;
+
+                // Generate serial number
+                const serialNumber = "LYDO-" + id + "-" + new Date().getFullYear();
+                document.getElementById("serial_number").value = serialNumber;
+
+                // Set location (assuming barangay as location)
+                document.getElementById("location").value = brgy;
+
+                // Reset modal to first tab
+                showTab('family');
+
+                // Clear tables
+                document.getElementById("family_members_tbody").innerHTML = "";
+                document.getElementById("rv_service_records_tbody").innerHTML = "";
+
+                // Fetch existing intake sheet data and populate form
+                fetch(`/lydo_staff/intake-sheet/${id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data) {
+                            populateEditModal(data);
                         }
-                    });
+                    })
+                    .catch(err => console.error('Error fetching intake sheet data:', err));
+
+                // Show modal
+                document.getElementById("editRemarksModal").classList.remove("hidden");
+            }
+
+            // Populate edit modal with existing data
+            function populateEditModal(d) {
+                // Populate head of family fields
+                document.getElementById("head_4ps").value = d.head_4ps || "";
+                document.getElementById("head_ipno").value = d.head_ipno || "";
+                document.getElementById("head_address").value = d.head_address || "";
+                document.getElementById("head_zone").value = d.head_zone || "";
+                document.getElementById("head_dob").value = d.head_dob || "";
+                document.getElementById("head_pob").value = d.head_pob || "";
+                document.getElementById("head_educ").value = d.head_educ || "";
+                document.getElementById("head_occ").value = d.head_occ || "";
+                document.getElementById("head_religion").value = d.head_religion || "";
+                document.getElementById("serial_number").value = d.serial_number || "";
+                document.getElementById("location").value = d.location || "";
+
+                // Populate household info
+                document.getElementById("other_income").value = d.other_income || "";
+                document.getElementById("house_total_income").value = d.house_total_income || "";
+                document.getElementById("house_net_income").value = d.house_net_income || "";
+                document.getElementById("house_house").value = d.house_house || "";
+                document.getElementById("house_house_value").value = d.house_house_value || "";
+                document.getElementById("house_lot").value = d.house_lot || "";
+                document.getElementById("house_lot_value").value = d.house_lot_value || "";
+                document.getElementById("house_lot_rent").value = d.house_lot_rent || "";
+                document.getElementById("house_water").value = d.house_water || "";
+                document.getElementById("house_electric").value = d.house_electric || "";
+                document.getElementById("remarks").value = d.remarks || "";
+
+                // Populate family members
+                if (d.family_members) {
+                    let familyMembers = d.family_members;
+                    if (typeof familyMembers === 'string') {
+                        try {
+                            familyMembers = JSON.parse(familyMembers);
+                        } catch (e) {
+                            familyMembers = [];
+                        }
+                    }
+                    if (Array.isArray(familyMembers)) {
+                        familyMembers.forEach(member => {
+                            addFamilyMemberRow();
+                            const tbody = document.getElementById("family_members_tbody");
+                            const lastRow = tbody.rows[tbody.rows.length - 1];
+                            lastRow.cells[0].querySelector('input').value = member.name || '';
+                            lastRow.cells[1].querySelector('select').value = member.relationship || '';
+                            lastRow.cells[2].querySelector('input').value = member.birthdate || '';
+                            lastRow.cells[3].querySelector('input').value = member.age || '';
+                            lastRow.cells[4].querySelector('select').value = member.sex || '';
+                            lastRow.cells[5].querySelector('select').value = member.civil_status || '';
+                            lastRow.cells[6].querySelector('select').value = member.education || '';
+                            lastRow.cells[7].querySelector('select').value = member.occupation || '';
+                            lastRow.cells[8].querySelector('input').value = member.monthly_income || '';
+                            lastRow.cells[9].querySelector('select').value = member.remarks || '';
+                        });
+                    }
                 }
 
-                if (lotSelect) {
-                    lotSelect.addEventListener('change', function() {
-                        if (this.value === 'Owned') {
-                            lotValueGroup.style.display = 'block';
-                            lotRentGroup.style.display = 'none';
-                        } else if (this.value === 'Rent') {
-                            lotValueGroup.style.display = 'none';
-                            lotRentGroup.style.display = 'block';
-                        } else {
-                            lotValueGroup.style.display = 'none';
-                            lotRentGroup.style.display = 'none';
+                // Populate RV service records
+                if (d.rv_service_records) {
+                    let serviceRecords = d.rv_service_records;
+                    if (typeof serviceRecords === 'string') {
+                        try {
+                            serviceRecords = JSON.parse(serviceRecords);
+                        } catch (e) {
+                            serviceRecords = [];
                         }
-                    });
+                    }
+                    if (Array.isArray(serviceRecords)) {
+                        serviceRecords.forEach(record => {
+                            addRvServiceRecordRow();
+                            const tbody = document.getElementById("rv_service_records_tbody");
+                            const lastRow = tbody.rows[tbody.rows.length - 1];
+                            lastRow.cells[0].querySelector('input').value = record.date || '';
+                            lastRow.cells[1].querySelector('textarea').value = record.problem_need || '';
+                            lastRow.cells[2].querySelector('textarea').value = record.action_assistance || '';
+                            lastRow.cells[3].querySelector('textarea').value = record.remarks || '';
+                        });
+                    }
+                }
+
+                // Populate health & signatures
+                document.getElementById("worker_name").value = d.worker_name || "";
+                document.getElementById("officer_name").value = d.officer_name || "";
+                document.getElementById("date_entry").value = d.date_entry || "";
+                document.getElementById("signature_client").value = d.signature_client || "";
+                document.getElementById("signature_worker").value = d.signature_worker || "";
+                document.getElementById("signature_officer").value = d.signature_officer || "";
+            }
+
+            // Close edit remarks modal
+            function closeEditRemarksModal() {
+                document.getElementById("editRemarksModal").classList.add("hidden");
+            }
+
+            // Add family member row
+            function addFamilyMemberRow() {
+                const tbody = document.getElementById("family_members_tbody");
+                const rowCount = tbody.rows.length + 1;
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td class="border px-2 py-1"><input type="text" name="family_name[]" class="w-full border rounded px-2 py-1" placeholder="Name"></td>
+                    <td class="border px-2 py-1">
+                        <select name="family_relationship[]" class="w-full border rounded px-2 py-1">
+                            <option value="">Select</option>
+                            <option value="Father">Father</option>
+                            <option value="Mother">Mother</option>
+                            <option value="Brother">Brother</option>
+                            <option value="Sister">Sister</option>
+                            <option value="Spouse">Spouse</option>
+                            <option value="Child">Child</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </td>
+                    <td class="border px-2 py-1"><input type="date" name="family_birthdate[]" class="w-full border rounded px-2 py-1"></td>
+                    <td class="border px-2 py-1"><input type="number" name="family_age[]" class="w-full border rounded px-2 py-1" readonly></td>
+                    <td class="border px-2 py-1">
+                        <select name="family_sex[]" class="w-full border rounded px-2 py-1">
+                            <option value="">Select</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </td>
+                    <td class="border px-2 py-1">
+                        <select name="family_civil_status[]" class="w-full border rounded px-2 py-1">
+                            <option value="">Select</option>
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Widowed">Widowed</option>
+                            <option value="Divorced">Divorced</option>
+                        </select>
+                    </td>
+                    <td class="border px-2 py-1">
+                        <select name="family_education[]" class="w-full border rounded px-2 py-1">
+                            <option value="">Select</option>
+                            <option value="Elementary">Elementary</option>
+                            <option value="High School">High School</option>
+                            <option value="Vocational">Vocational</option>
+                            <option value="College">College</option>
+                            <option value="Post Graduate">Post Graduate</option>
+                        </select>
+                    </td>
+                    <td class="border px-2 py-1">
+                        <select name="family_occupation[]" class="w-full border rounded px-2 py-1">
+                            <option value="">Select</option>
+                            <option value="Farmer">Farmer</option>
+                            <option value="Teacher">Teacher</option>
+                            <option value="Driver">Driver</option>
+                            <option value="Business Owner">Business Owner</option>
+                            <option value="Employee">Employee</option>
+                            <option value="Unemployed">Unemployed</option>
+                            <option value="Student">Student</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </td>
+                    <td class="border px-2 py-1"><input type="number" step="0.01" name="family_income[]" class="w-full border rounded px-2 py-1"></td>
+                    <td class="border px-2 py-1">
+                        <select name="family_remarks[]" class="w-full border rounded px-2 py-1">
+                            <option value="">Select</option>
+                            <option value="Out of School Youth (OSY)">Out of School Youth (OSY)</option>
+                            <option value="Solo Parent (SP)">Solo Parent (SP)</option>
+                            <option value="Person with Disability (PWD)">Person with Disability (PWD)</option>
+                            <option value="Senior Citizen (SC)">Senior Citizen (SC)</option>
+                            <option value="Lactating Mother">Lactating Mother</option>
+                            <option value="Pregnant Mother">Pregnant Mother</option>
+                        </select>
+                    </td>
+                    <td class="border px-2 py-1 text-center">
+                        <button type="button" onclick="removeFamilyMemberRow(this)" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Remove</button>
+                    </td>
+                `;
+
+                // Add event listener for birthdate to calculate age
+                const birthdateInput = row.querySelector('input[name="family_birthdate[]"]');
+                const ageInput = row.querySelector('input[name="family_age[]"]');
+                birthdateInput.addEventListener('change', function() {
+                    const birthdate = new Date(this.value);
+                    const today = new Date();
+                    let age = today.getFullYear() - birthdate.getFullYear();
+                    const monthDiff = today.getMonth() - birthdate.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthdate.getDate())) {
+                        age--;
+                    }
+                    ageInput.value = age;
+                });
+            }
+
+            // Remove family member row
+            function removeFamilyMemberRow(button) {
+                button.closest('tr').remove();
+            }
+
+            // Add RV service record row
+            function addRvServiceRecordRow() {
+                const tbody = document.getElementById("rv_service_records_tbody");
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td class="border px-2 py-1"><input type="date" name="rv_date[]" class="w-full border rounded px-2 py-1"></td>
+                    <td class="border px-2 py-1"><textarea name="rv_problem_need[]" class="w-full border rounded px-2 py-1" rows="2"></textarea></td>
+                    <td class="border px-2 py-1"><textarea name="rv_action_assistance[]" class="w-full border rounded px-2 py-1" rows="2"></textarea></td>
+                    <td class="border px-2 py-1"><textarea name="rv_remarks[]" class="w-full border rounded px-2 py-1" rows="2"></textarea></td>
+                    <td class="border px-2 py-1 text-center">
+                        <button type="button" onclick="removeRvServiceRecordRow(this)" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Remove</button>
+                    </td>
+                `;
+            }
+
+            // Remove RV service record row
+            function removeRvServiceRecordRow(button) {
+                button.closest('tr').remove();
+            }
+
+            let signaturePad;
+            let currentSignatureType;
+
+            // Open signature modal
+            function openSignatureModal(type) {
+                currentSignatureType = type;
+                document.getElementById('signatureModalTitle').textContent = 'Signature for ' + type.charAt(0).toUpperCase() + type.slice(1);
+                document.getElementById('signatureModal').classList.remove('hidden');
+
+                const canvas = document.getElementById('signatureCanvas');
+                signaturePad = new SignaturePad(canvas);
+            }
+
+            // Close signature modal
+            function closeSignatureModal() {
+                document.getElementById('signatureModal').classList.add('hidden');
+                if (signaturePad) {
+                    signaturePad.clear();
                 }
             }
 
-            // Initialize toggleRentInputs on page load
+            // Clear signature
+            function clearSignature() {
+                if (signaturePad) {
+                    signaturePad.clear();
+                }
+            }
+
+            // Save signature
+            function saveSignature() {
+                if (signaturePad && !signaturePad.isEmpty()) {
+                    const dataURL = signaturePad.toDataURL();
+                    document.getElementById('signature_' + currentSignatureType).value = dataURL;
+                    closeSignatureModal();
+                } else {
+                    alert('Please provide a signature before saving.');
+                }
+            }
+            // Open signature modal
+            function openSignatureModal(type) {
+                // For now, just show an alert. You can implement signature pad later
+                alert('Signature modal for ' + type + ' will be implemented');
+            }
+
+            // Calculate total income
+            function calculateTotalIncome() {
+                const familyIncomes = document.querySelectorAll('input[name="family_income[]"]');
+                let total = 0;
+                familyIncomes.forEach(input => {
+                    const value = parseFloat(input.value) || 0;
+                    total += value;
+                });
+                document.getElementById("house_total_income").value = total.toFixed(2);
+                calculateNetIncome();
+            }
+
+            // Calculate net income
+            function calculateNetIncome() {
+                const totalIncome = parseFloat(document.getElementById("house_total_income").value) || 0;
+                const otherIncome = parseFloat(document.getElementById("other_income").value) || 0;
+                const water = parseFloat(document.getElementById("house_water").value) || 0;
+                const electric = parseFloat(document.getElementById("house_electric").value) || 0;
+                const houseRent = parseFloat(document.getElementById("house_house_value").value) || 0;
+                const lotRent = parseFloat(document.getElementById("house_lot_rent").value) || 0;
+
+                const netIncome = totalIncome + otherIncome - water - electric - houseRent - lotRent;
+                document.getElementById("house_net_income").value = netIncome.toFixed(2);
+            }
+
+            // Add event listeners for income calculations
             document.addEventListener('DOMContentLoaded', function() {
-                toggleRentInputs();
+                // Add listeners for income inputs
+                document.querySelectorAll('input[name="family_income[]"], #other_income, #house_water, #house_electric, #house_house_value, #house_lot_rent').forEach(input => {
+                    input.addEventListener('input', calculateTotalIncome);
+                });
+
+                // Add listeners for house/lot ownership changes
+                document.getElementById('house_house').addEventListener('change', function() {
+                    const valueGroup = document.getElementById('house_value_group');
+                    if (this.value === 'Rent') {
+                        valueGroup.style.display = 'block';
+                    } else {
+                        valueGroup.style.display = 'none';
+                        document.getElementById('house_house_value').value = '';
+                    }
+                    calculateNetIncome();
+                });
+
+                document.getElementById('house_lot').addEventListener('change', function() {
+                    const valueGroup = document.getElementById('lot_value_group');
+                    const rentGroup = document.getElementById('lot_rent_group');
+                    if (this.value === 'Rent') {
+                        rentGroup.style.display = 'block';
+                        valueGroup.style.display = 'none';
+                    } else {
+                        rentGroup.style.display = 'none';
+                        valueGroup.style.display = 'none';
+                        document.getElementById('house_lot_value').value = '';
+                        document.getElementById('house_lot_rent').value = '';
+                    }
+                    calculateNetIncome();
+                });
             });
         </script>
 
