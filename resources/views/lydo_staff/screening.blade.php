@@ -122,6 +122,131 @@
             margin-top: 2.5rem;
             text-align: center;
         }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 2% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 1200px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        .modal-close:hover {
+            color: #374151;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Clean printable box style */
+        .print-box {
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: #fff;
+        }
+        .thin-border {
+            border: 1px solid #e5e7eb;
+        }
+
+        /* Layout for review (full screen) */
+        .review-columns {
+            display: grid;
+            grid-template-columns: 1fr; /* full width for responsive design */
+            gap: 16px;
+        }
+
+        /* Print rules */
+        @page {
+            size: landscape;
+            margin: 4mm;
+        }
+        @media print {
+            body {
+                background: white !important;
+                color: #000;
+                font-size: 10px;
+            }
+            .no-print {
+                display: none !important;
+            }
+            /* Ensure review area spans the full printable page */
+            .max-w-6xl {
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+            #reviewArea {
+                page-break-inside: avoid;
+                padding: 0.125rem !important;
+            }
+            .review-columns {
+                font-size: 9px;
+                gap: 4px;
+            }
+            .thin-border {
+                margin-bottom: 0.125rem;
+                padding: 0.125rem;
+            }
+            table {
+                font-size: 8px;
+            }
+            .text-sm {
+                font-size: 8px !important;
+            }
+            .text-xs {
+                font-size: 7px !important;
+            }
+            h2 {
+                font-size: 12px !important;
+            }
+            h4 {
+                font-size: 10px !important;
+            }
+        }
+
+        /* Responsive review columns */
+        @media (max-width: 768px) {
+            .review-columns {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -256,9 +381,9 @@
                     <!-- ✅ Applicants -->
                     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                         <div class="flex gap-2">
-                            <div onclick="showTable()" class="tab active" id="tab-screening">
-                                <i class="fas fa-table mr-1"></i> Assign Intake Sheet
-                            </div>
+<div onclick="showTable()" class="tab active" id="tab-screening">
+    <i class="fas fa-table mr-1"></i> Pending Remarks
+</div>
                             <div onclick="showList()" class="tab" id="tab-reviewed">
                                 <i class="fas fa-list mr-1"></i> Reviewed Applicants
                             </div>
@@ -318,6 +443,13 @@
                                             onclick="openEditRemarksModal(this)">
                                             <i class="fas fa-plus mr-1"></i> Intake Sheet
                                         </button>
+                                        <button
+                                            title="View Intake Sheet"
+                                            class="px-3 py-1 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg shadow ml-2"
+                                            data-id="{{ $app->application_personnel_id }}"
+                                            onclick="openReviewModal(this)">
+                                            <i class="fas fa-eye mr-1"></i> View
+                                        </button>
                                     </td>
                                 </tr>
                                 @empty
@@ -358,6 +490,7 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">School</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Remarks</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -391,7 +524,7 @@
                                             title="View Intake Sheet"
                                             class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow"
                                             data-id="{{ $app->application_personnel_id }}"
-                                            onclick="openViewIntakeSheetModal(this)">
+                                            onclick="openReviewModal(this)">
                                             <i class="fas fa-eye mr-1"></i> View
                                         </button>
                                     </td>
@@ -775,353 +908,131 @@
             </div>
         </div>
 
-        <!-- View Intake Sheet Modal for Reviewed Applicants -->
-        <div id="viewIntakeSheetModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto">
-            <div class="bg-white w-full max-w-6xl rounded-2xl shadow-2xl p-6 max-h-screen overflow-y-auto">
-                <div class="flex items-center justify-between text-xl font-semibold mb-4">
-                    <div class="flex items-center">
-                        <img src="{{ asset('images/LYDO.png') }}" alt="LYDO Logo" class="h-8 w-auto mr-2">
-                        Family Intake Sheet - View Mode
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="printIntakeSheet()" class="text-gray-500 hover:text-gray-700 text-xl" title="Print Intake Sheet">
-                            <i class="fas fa-print"></i>
-                        </button>
-                        <button onclick="closeViewIntakeSheetModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-                    </div>
+        <!-- Review Modal for Reviewed Applicants -->
+        <div id="reviewModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="text-xl font-bold">Review Family Intake Sheet</h2>
+                    <button class="modal-close" onclick="closeReviewModal()">&times;</button>
                 </div>
 
-                <!-- Tab Navigation -->
-                <div class="flex border-b border-gray-200 mb-6">
-                    <button type="button" id="view-tab-family" class="view-tab-button active px-4 py-2 text-sm font-medium text-violet-600 border-b-2 border-violet-600" onclick="showViewTab('family')">Family Details</button>
-                    <button type="button" id="view-tab-family-members" class="view-tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600" onclick="showViewTab('family-members')">Family Members</button>
-                    <button type="button" id="view-tab-additional" class="view-tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600" onclick="showViewTab('additional')">Additional Info</button>
-                    <button type="button" id="view-tab-social-service" class="view-tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600" onclick="showViewTab('social-service')">Social Service Records</button>
-                    <button type="button" id="view-tab-health" class="view-tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600" onclick="showViewTab('health')">Health & Signatures</button>
+                <div id="modalReviewContent">
+                    <!-- Content will be populated here -->
                 </div>
 
-                <div id="view-tab-family-content" class="view-tab-content">
-                    <!-- Head of Family Section -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-medium text-gray-800 mb-3">Head of Family</h3>
-                        <!-- Row 1: 4Ps and IP No. -->
-                        <div class="flex gap-4 mb-4">
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">4Ps</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-head_4ps"></div>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">IP No.</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-head_ipno"></div>
-                            </div>
-                        </div>
-                        <!-- Row 2: Applicant Name Fields -->
-                        <div class="flex gap-4 mb-4">
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">First Name</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-applicant_fname"></div>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Middle Name</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-applicant_mname"></div>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Last Name</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-applicant_lname"></div>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Suffix</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-applicant_suffix"></div>
-                            </div>
-                        </div>
-                        <!-- Row 3: Address, Zone, Barangay -->
-                        <div class="flex gap-4 mb-4">
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Address</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-head_address"></div>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Zone</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-head_zone"></div>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Barangay</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-head_barangay"></div>
-                            </div>
-                        </div>
-                        <!-- Row 4: Date of Birth, Place of Birth, Gender -->
-                        <div class="flex gap-4 mb-4">
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-head_dob"></div>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Place of Birth</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-head_pob"></div>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Gender</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-applicant_gender"></div>
-                            </div>
-                        </div>
-                        <!-- Row 5: Education, Occupation, Religion -->
-                        <div class="flex gap-4 mb-4">
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Education</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-head_educ"></div>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Occupation</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-head_occ"></div>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Religion</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-head_religion"></div>
-                            </div>
-                        </div>
-                        <!-- Row 6: Serial Number, Location -->
-                        <div class="flex gap-4 mb-4">
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Serial Number</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-serial_number"></div>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Location</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-location"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Navigation Buttons -->
-                    <div class="flex justify-end mt-4">
-                        <button type="button" onclick="showViewTab('family-members')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Next</button>
-                    </div>
-                </div>
-
-                <!-- Family Members Tab -->
-                <div id="view-tab-family-members-content" class="view-tab-content hidden">
-                    <!-- Family Members Section -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-medium text-gray-800 mb-3">Family Members</h3>
-                        <div class="overflow-x-auto">
-                            <table id="view_family_members_table" class="min-w-full text-sm thin-border">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="border px-2 py-1">Name</th>
-                                        <th class="border px-2 py-1">Relation</th>
-                                        <th class="border px-2 py-1">Birthdate</th>
-                                        <th class="border px-2 py-1">Age</th>
-                                        <th class="border px-2 py-1">Sex</th>
-                                        <th class="border px-2 py-1">Civil Status</th>
-                                        <th class="border px-2 py-1">Educational Attainment</th>
-                                        <th class="border px-2 py-1">Occupation</th>
-                                        <th class="border px-2 py-1">Monthly Income</th>
-                                        <th class="border px-2 py-1">Remarks</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="view_family_members_tbody">
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Navigation Buttons -->
-                    <div class="flex justify-between mt-4">
-                        <button type="button" onclick="showViewTab('family')" class="px-4 py-2 bg-gray-500 text-white rounded-lg">Previous</button>
-                        <button type="button" onclick="showViewTab('additional')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Next</button>
-                    </div>
-                </div>
-
-                <!-- Additional Info Tab -->
-                <div id="view-tab-additional-content" class="view-tab-content hidden">
-                    <!-- Household Info Section -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-medium text-gray-800 mb-3">Household Information</h3>
-                        <!-- Row 1: Other Income and Total Income -->
-                        <div class="flex gap-4 mb-4">
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Other Income</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-other_income"></div>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Total Income</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-house_total_income"></div>
-                            </div>
-                        </div>
-                        <!-- Row 2: House, Lot, Water, Electric -->
-                        <div class="flex gap-4 mb-4">
-            <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700">House</label>
-                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-house_house"></div>
-                <div id="view-house_value_group" style="display: none;" class="mt-2">
-                    <label class="block text-sm font-medium text-gray-700">House Value</label>
-                    <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-house_house_value"></div>
+                <div class="modal-actions">
+                    <button
+                        type="button"
+                        onclick="window.print()"
+                        class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
+                    >
+                        Print
+                    </button>
+                    <button
+                        type="button"
+                        onclick="closeReviewModal()"
+                        class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600"
+                    >
+                        Close
+                    </button>
                 </div>
             </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Lot</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-house_lot"></div>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700">Water</label>
-                                <div class="mt-1 block w-full border rounded-lg p-2 bg-gray-50 view-field" id="view-house_water"></div>
-                            </div>
-                            <div class="flex-1">
+        </div>
 
-                <!-- Tab Navigation -->
-                <div class="flex border-b border-gray-200 mb-6">
-                    <button type="button" id="tab-family" class="tab-button active px-4 py-2 text-sm font-medium text-violet-600 border-b-2 border-violet-600" onclick="showTab('family')">Family Details</button>
-                    <button type="button" id="tab-family-members" class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600" onclick="showTab('family-members')">Family Members</button>
-                    <button type="button" id="tab-additional" class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600" onclick="showTab('additional')">Additional Info</button>
-                    <button type="button" id="tab-social-service" class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600" onclick="showTab('social-service')">Social Service Records</button>
-                    <button type="button" id="tab-health" class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600" onclick="showTab('health')">Health & Signatures</button>
+        <!-- Signature Modal -->
+        <div id="signatureModal" class="modal">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2>Sign Here</h2>
+                    <button class="modal-close" onclick="closeSignatureModal()">&times;</button>
                 </div>
+                <div>
+                    <canvas id="signatureCanvas" width="500" height="200" style="border: 1px solid #ccc;"></canvas>
+                </div>
+                <div class="modal-actions">
+                    <button onclick="clearSignature()">Clear</button>
+                    <button id="saveSignatureBtn" onclick="saveSignature()">Save Signature</button>
+                    <button onclick="closeSignatureModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
 
-                <form id="updateRemarksForm" method="POST">
-                    @csrf
-                    <input type="hidden" name="id" id="remarks_id">
-                    <input type="hidden" id="modal_mode" value="edit">
+        <script>
+            // localStorage key
+            const STORAGE_KEY = 'familyIntakeFormData';
 
-                    <!-- Family Details Tab -->
-                    <div id="tab-family-content" class="tab-content">
-                        <!-- Head of Family Section -->
-                        <div class="mb-6">
-                            <h3 class="text-lg font-medium text-gray-800 mb-3">Head of Family</h3>
-                            <!-- Row 1: 4Ps and IP No. -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">4Ps</label>
-                                    <select name="head_4ps" id="head_4ps" class="mt-1 block w-full border rounded-lg p-2">
-                                        <option value="">Select</option>
-                                        <option value="Yes">Yes</option>
-                                        <option value="No">No</option>
-                                    </select>
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">IP No.</label>
-                                    <input type="text" name="head_ipno" id="head_ipno" class="mt-1 block w-full border rounded-lg p-2" placeholder="Optional">
-                                </div>
-                            </div>
-                            <!-- Row 2: Applicant Name Fields -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">First Name</label>
-                                    <input type="text" name="applicant_fname" id="applicant_fname" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Middle Name</label>
-                                    <input type="text" name="applicant_mname" id="applicant_mname" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Last Name</label>
-                                    <input type="text" name="applicant_lname" id="applicant_lname" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Suffix</label>
-                                    <input type="text" name="applicant_suffix" id="applicant_suffix" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                            </div>
-                            <!-- Row 3: Address, Zone, Barangay -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Address</label>
-                                    <input type="text" name="head_address" id="head_address" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Zone</label>
-                                    <input type="text" name="head_zone" id="head_zone" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Barangay</label>
-                                    <input type="text" name="head_barangay" id="head_barangay" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                            </div>
-                            <!-- Row 4: Date of Birth, Place of Birth, Gender -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
-                                    <input type="date" name="head_dob" id="head_dob" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Place of Birth</label>
-                                    <input type="text" name="head_pob" id="head_pob" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Gender</label>
-                                    <select name="applicant_gender" id="applicant_gender" class="mt-1 block w-full border rounded-lg p-2">
-                                        <option value="">Select Gender</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <!-- Row 5: Education, Occupation, Religion -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Education</label>
-                                    <select name="head_educ" id="head_educ" class="mt-1 block w-full border rounded-lg p-2">
-                                        <option value="">Select Education</option>
-                                        <option value="Elementary">Elementary</option>
-                                        <option value="High School">High School</option>
-                                        <option value="Vocational">Vocational</option>
-                                        <option value="College">College</option>
-                                        <option value="Post Graduate">Post Graduate</option>
-                                    </select>
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Occupation</label>
-                                    <select name="head_occ" id="head_occ" class="mt-1 block w-full border rounded-lg p-2">
-                                        <option value="">Select Occupation</option>
-                                        <option value="Farmer">Farmer</option>
-                                        <option value="Teacher">Teacher</option>
-                                        <option value="Driver">Driver</option>
-                                        <option value="Business Owner">Business Owner</option>
-                                        <option value="Employee">Employee</option>
-                                        <option value="Unemployed">Unemployed</option>
-                                        <option value="Student">Student</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Religion</label>
-                                    <select name="head_religion" id="head_religion" class="mt-1 block w-full border rounded-lg p-2">
-                                        <option value="">Select Religion</option>
-                                        <option value="Catholic">Catholic</option>
-                                        <option value="Protestant">Protestant</option>
-                                        <option value="Islam">Islam</option>
-                                        <option value="Buddhist">Buddhist</option>
-                                        <option value="Atheist">Atheist</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <!-- Row 6: Serial Number, Location -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Serial Number</label>
-                                    <input type="text" name="serial_number" id="serial_number" class="mt-1 block w-full border rounded-lg p-2 bg-gray-100" readonly>
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Location</label>
-                                    <input type="text" name="location" id="location" class="mt-1 block w-full border rounded-lg p-2 bg-gray-100" readonly>
-                                </div>
-                            </div>
-                        </div>
+            // Load form data from localStorage
+            function loadFormData() {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    return JSON.parse(saved);
+                } else {
+                    alert("No form data found. Please complete the form first.");
+                    return null;
+                }
+            }
 
-                        <!-- Navigation Buttons -->
-                        <div class="flex justify-end mt-4">
-                            <button type="button" onclick="showTab('family-members')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Next</button>
-                        </div>
-                    </div>
+            // Open review modal
+            function openReviewModal(button) {
+                const id = button.getAttribute("data-id");
+                
+                // Fetch intake sheet data
+                fetch(`/lydo_staff/intake-sheet/${id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data) {
+                            populateReviewModal(data);
+                            document.getElementById('reviewModal').style.display = 'block';
+                        }
+                    })
+                    .catch(err => console.error('Error fetching intake sheet data:', err));
+            }
 
-                    <!-- Family Members Tab -->
-                    <div id="tab-family-members-content" class="tab-content hidden">
-                        <!-- Family Members Section -->
-                        <div class="mb-6">
-                            <h3 class="text-lg font-medium text-gray-800 mb-3">Family Members</h3>
-                            <p class="text-sm text-gray-600 mb-3">Please fill up all required fields in the family members table. Remarks should be selected based on the categories listed below.</p>
-                            <div class="overflow-x-auto">
-                                <table id="family_members_table" class="min-w-full text-sm thin-border">
+            // Close review modal
+            function closeReviewModal() {
+                document.getElementById('reviewModal').style.display = 'none';
+            }
+
+            // Populate review modal with data
+            function populateReviewModal(d) {
+                const modalContent = document.getElementById('modalReviewContent');
+                
+                // Create the review content for the modal
+                modalContent.innerHTML = `
+                    <div class="review-columns">
+                        <div class="space-y-4">
+                            <div class="print-box p-4">
+                                <p><strong>Serial No.:</strong> ${d.serial_number || "AUTO_GENERATED"}</p>
+                                <p><strong>Name:</strong> ${[d.applicant_fname, d.applicant_mname, d.applicant_lname, d.applicant_suffix]
+                                    .filter(Boolean)
+                                    .join(" ")}</p>
+                                <table class="min-w-full text-sm">
+                                    <tr>
+                                        <td><strong>Sex:</strong> ${d.head_gender || "-"}</td>
+                                        <td><strong>4Ps:</strong> ${d.head_4ps || "-"}</td>
+                                        <td><strong>IP No.:</strong> ${d.head_ipno || "-"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Address:</strong> ${d.head_address || "-"}</td>
+                                        <td><strong>Zone:</strong> ${d.head_zone || "-"}</td>
+                                        <td><strong>Barangay:</strong> ${d.head_barangay || "-"}</td>
+                                        <td><strong>Location:</strong> ${d.location || "-"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Date of Birth:</strong> ${d.head_dob || "-"}</td>
+                                        <td><strong>Place of Birth:</strong> ${d.head_pob || "-"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Educational Attainment:</strong> ${d.head_educ || "-"}</td>
+                                        <td><strong>Occupation:</strong> ${d.head_occ || "-"}</td>
+                                        <td><strong>Religion:</strong> ${d.head_religion || "-"}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <div class="print-box p-4">
+                                <h4 class="font-semibold">Family Members</h4>
+                                <table class="min-w-full text-sm thin-border">
                                     <thead class="bg-gray-100">
                                         <tr>
                                             <th class="border px-2 py-1">Name</th>
@@ -1132,199 +1043,164 @@
                                             <th class="border px-2 py-1">Civil Status</th>
                                             <th class="border px-2 py-1">Educational Attainment</th>
                                             <th class="border px-2 py-1">Occupation</th>
-                                            <th class="border px-2 py-1">Monthly Income</th>
+                                            <th class="border px-2 py-1">Income</th>
                                             <th class="border px-2 py-1">Remarks</th>
-                                            <th class="border px-2 py-1">Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="family_members_tbody">
+                                    <tbody>
+                                        ${(() => {
+                                            let familyMembers = d.family_members;
+                                            if (typeof familyMembers === 'string') {
+                                                try {
+                                                    familyMembers = JSON.parse(familyMembers);
+                                                } catch (e) {
+                                                    familyMembers = [];
+                                                }
+                                            }
+                                            return Array.isArray(familyMembers) ? familyMembers.map(f => `
+                                                <tr>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.name)}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.relationship)}</td>
+                                                    <td class="border px-2 py-1 text-left">${formatDate(f.birthdate)}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.age)}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.sex)}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.civil_status)}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.education)}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.occupation)}</td>
+                                                    <td class="border px-2 py-1 text-left">₱${escapeHtml(f.monthly_income)}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.remarks)}</td>
+                                                </tr>
+                                            `).join('') : ''
+                                        }
                                     </tbody>
                                 </table>
-                            </div>
-                            <button type="button" onclick="addFamilyMemberRow()" class="bg-purple-600 text-white px-4 py-2 rounded">+ Add Member</button>
-                            <textarea name="family_members" id="family_members" class="hidden"></textarea>
-                            <div class="mt-4">
-                                <h4 class="font-semibold mb-3 text-gray-800">Remarks Categories:</h4>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="text-sm text-black border border-gray-300 rounded p-2 hover:text-violet-600">Out of School Youth (OSY)</div>
-                                    <div class="text-sm text-black border border-gray-300 rounded p-2 hover:text-violet-600">Solo Parent (SP)</div>
-                                    <div class="text-sm text-black border border-gray-300 rounded p-2 hover:text-violet-600">Person with Disability (PWD)</div>
-                                    <div class="text-sm text-black border border-gray-300 rounded p-2 hover:text-violet-600">Senior Citizen (SC)</div>
-                                    <div class="text-sm text-black border border-gray-300 rounded p-2 hover:text-violet-600">Lactating Mother</div>
-                                    <div class="text-sm text-black border border-gray-300 rounded p-2 hover:text-violet-600">Pregnant Mother</div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Navigation Buttons -->
-                        <div class="flex justify-between mt-4">
-                            <button type="button" onclick="showTab('family')" class="px-4 py-2 bg-gray-500 text-white rounded-lg">Previous</button>
-                            <button type="button" onclick="showTab('additional')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Next</button>
-                        </div>
-                    </div>
-
-                    <!-- Additional Info Tab -->
-                    <div id="tab-additional-content" class="tab-content hidden">
-                        <!-- Household Info Section -->
-                        <div class="mb-6">
-                            <h3 class="text-lg font-medium text-gray-800 mb-3">Household Information</h3>
-                            <!-- Row 1: Other Income and Total Income -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Other Income</label>
-                                    <input type="number" step="0.01" name="other_income" id="other_income" class="mt-1 block w-full border rounded-lg p-2">
+                                <!-- SOCIAL SERVICE RECORD -->
+                                <div class="thin-border p-2 mb-3 mt-4">
+                                    <h4 class="font-semibold mb-2">SOCIAL SERVICE RECORD</h4>
+                                    <table class="min-w-full border text-sm">
+                                        <thead class="bg-gray-100">
+                                            <tr>
+                                                <th class="border px-2 py-1 w-20 text-center">DATE</th>
+                                                <th class="border px-2 py-1 text-center">
+                                                    PROBLEM PRESENTED<br /><span
+                                                        class="text-xs text-gray-500"
+                                                        >(to be filled by support staff)</span
+                                                    >
+                                                </th>
+                                                <th class="border px-2 py-1 text-center">
+                                                    ASSISTANCE PROVIDED<br /><span
+                                                        class="text-xs text-gray-500"
+                                                        >(to be filled by program implementer)</span
+                                                    >
+                                                </th>
+                                                <th class="border px-2 py-1 text-center">REMARKS</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${d.rv_service_records && Array.isArray(JSON.parse(d.rv_service_records)) ? 
+                                                JSON.parse(d.rv_service_records).map(record => `
+                                                    <tr>
+                                                        <td class="border px-2 py-1 text-center">${formatDate(record.date)}</td>
+                                                        <td class="border px-2 py-1 text-left">${escapeHtml(record.problem_need)}</td>
+                                                        <td class="border px-2 py-1 text-left">${escapeHtml(record.action_assistance)}</td>
+                                                        <td class="border px-2 py-1 text-left">${escapeHtml(record.remarks)}</td>
+                                                    </tr>
+                                                `).join('') : 
+                                                Array(5).fill(`
+                                                    <tr>
+                                                        <td class="border h-8"></td>
+                                                        <td class="border"></td>
+                                                        <td class="border"></td>
+                                                        <td class="border"></td>
+                                                    </tr>
+                                                `).join('')
+                                            }
+                                        </tbody>
+                                    </table>
                                 </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Total Income</label>
-                                    <input type="number" step="0.01" name="house_total_income" id="house_total_income" class="mt-1 block w-full border rounded-lg p-2 bg-gray-100" readonly>
+
+                                <!-- HEALTH CONDITION & CODES -->
+                                <div class="thin-border p-2">
+                                    <h4 class="font-semibold mb-2">
+                                        HEALTH CONDITION &amp; CODES
+                                    </h4>
+                                    <p><strong>Health Condition:</strong></p>
+                                    <p class="ml-2">
+                                        A. DEAD • B. INJURED • C. MISSING • D. With Illness
+                                    </p>
                                 </div>
                             </div>
-                            <!-- Row 2: House, Lot, Water, Electric -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">House</label>
-                                    <select name="house_house" id="house_house" class="mt-1 block w-full border rounded-lg p-2">
-                                        <option value="">Select</option>
-                                        <option value="Owned">Owned</option>
-                                        <option value="Rent">Rent</option>
-                                    </select>
-                                    <div id="house_value_group" style="display: none;" class="mt-2">
-                                        <label class="block text-sm font-medium text-gray-700">House Value</label>
-                                        <input type="number" step="0.01" name="house_house_value" id="house_house_value" class="mt-1 block w-full border rounded-lg p-2">
-                                    </div>
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Lot</label>
-                                    <select name="house_lot" id="house_lot" class="mt-1 block w-full border rounded-lg p-2">
-                                        <option value="">Select</option>
-                                        <option value="Owned">Owned</option>
-                                        <option value="Rent">Rent</option>
-                                    </select>
-                                    <div id="lot_value_group" style="display: none;" class="mt-2">
-                                        <label class="block text-sm font-medium text-gray-700">Lot Value</label>
-                                        <input type="number" step="0.01" name="house_lot_value" id="house_lot_value" class="mt-1 block w-full border rounded-lg p-2">
-                                    </div>
-                                    <div id="lot_rent_group" style="display: none;" class="mt-2">
-                                        <label class="block text-sm font-medium text-gray-700">Lot Rent</label>
-                                        <input type="number" step="0.01" name="house_lot_rent" id="house_lot_rent" class="mt-1 block w-full border rounded-lg p-2">
-                                    </div>
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Water</label>
-                                    <input type="number" step="0.01" name="house_water" id="house_water" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Electric</label>
-                                    <input type="number" step="0.01" name="house_electric" id="house_electric" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                            </div>
-                            <!-- Row 3: Net Income and Remarks -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Net Income</label>
-                                    <input type="number" step="0.01" name="house_net_income" id="house_net_income" class="mt-1 block w-full border rounded-lg p-2" readonly>
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Remarks</label>
-                                    <select name="remarks" id="remarks" class="mt-1 block w-full border rounded-lg p-2" required>
-                                        <option value="">Select Remarks</option>
-                                        <option value="Poor">Poor</option>
-                                        <option value="Non Poor">Non Poor</option>
-                                        <option value="Ultra Poor">Ultra Poor</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Navigation Buttons -->
-                        <div class="flex justify-between mt-4">
-                            <button type="button" onclick="showTab('family-members')" class="px-4 py-2 bg-gray-500 text-white rounded-lg">Previous</button>
-                            <button type="button" onclick="showTab('social-service')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Next</button>
-                        </div>
-                    </div>
-
-                    <!-- Social Service Records Tab -->
-                    <div id="tab-social-service-content" class="tab-content hidden">
-                        <!-- Social Service Records Section -->
-                        <div class="mb-6">
-                            <h3 class="text-lg font-medium text-gray-800 mb-3">Social Service Records</h3>
-                            <table id="rv_service_records_table" class="data-table w-full border border-gray-300 mt-1">
-                                <thead class="bg-gray-100">
+                            
+                            <div class="print-box p-4">
+                                <h4 class="font-semibold">Household Information</h4>
+                                <table class="min-w-full text-sm">
                                     <tr>
-                                        <th class="border border-gray-300 px-2 py-1 text-left">Date</th>
-                                        <th class="border border-gray-300 px-2 py-1 text-left">Problem/Need</th>
-                                        <th class="border border-gray-300 px-2 py-1 text-left">Action/Assistance Given</th>
-                                        <th class="border border-gray-300 px-2 py-1 text-left">Remarks</th>
-                                        <th class="border border-gray-300 px-2 py-1 text-center">Action</th>
+                                        <td><strong>Other Source of Income:</strong> ₱${d.other_income || "-"}</td>
+                                        <td><strong>Total Family Income:</strong> ₱${d.house_total_income || "-"}</td>
+                                        <td><strong>Total Family Net Income:</strong> ₱${d.house_net_income || "-"}</td>
                                     </tr>
-                                </thead>
-                                <tbody id="rv_service_records_tbody">
-                                </tbody>
-                            </table>
-                            <button type="button" onclick="addRvServiceRecordRow()" class="mt-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Add Record</button>
-                            <textarea name="rv_service_records" id="rv_service_records" class="hidden"></textarea>
-                        </div>
-
-                        <!-- Navigation Buttons -->
-                        <div class="flex justify-between mt-4">
-                            <button type="button" onclick="showTab('additional')" class="px-4 py-2 bg-gray-500 text-white rounded-lg">Previous</button>
-                            <button type="button" onclick="showTab('health')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Next</button>
+                                    <tr>
+                                        <td><strong>House (Owned/Rented):</strong> ${d.house_house || "-"}<br>
+                                            ${d.house_house === 'Rented' ? `<strong>House Rent:</strong> ₱${d.house_house_rent || '-'}` : ''}
+                                        </td>
+                                        <td><strong>Lot (Owned/Rented):</strong> ${d.house_lot || "-"}<br>
+                                            ${d.house_lot === 'Rented' ? `<strong>Lot Rent:</strong> ₱${d.house_lot_rent || '-'}` : ''}
+                                        </td>
+                                        <td><strong>Water:</strong> ₱${d.house_water || "-"}</td>
+                                        <td><strong>Electricity Source:</strong> ₱${d.house_electric || "-"}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <div class="print-box p-4">
+                                <h4 class="font-semibold">Signatures</h4>
+                                <div>
+                                    <p><strong>Family Head:</strong></p>
+                                    <div>
+                                        ${d.signature_client ? 
+                                            `<img src="${d.signature_client}" style="max-width: 100%; height: 80px;" />` : 
+                                            '<p class="text-xs text-gray-500">No signature</p>'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                `;
+            }
 
-                    <!-- Health & Signatures Tab -->
-                    <div id="tab-health-content" class="tab-content hidden">
-                        <!-- Health & Signatures Section -->
-                        <div class="mb-6">
-                            <h3 class="text-lg font-medium text-gray-800 mb-3">Health & Signatures</h3>
-                            <!-- Worker Name and Officer Name in one line -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Worker Name</label>
-                                    <input type="text" name="worker_name" id="worker_name" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Officer Name</label>
-                                    <input type="text" name="officer_name" id="officer_name" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                            </div>
-                            <!-- Date Entry and Signature Client -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Date Entry</label>
-                                    <input type="date" name="date_entry" id="date_entry" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Signature Client</label>
-                                    <input type="text" name="signature_client" id="signature_client" class="mt-1 block w-full border rounded-lg p-2" readonly>
-                                </div>
-                            </div>
-                            <!-- Signature Worker and Signature Officer with modals -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Signature Worker</label>
-                                    <button type="button" onclick="openSignatureModal('worker')" class="mt-1 block w-full border rounded-lg p-2 bg-gray-100 text-left hover:bg-gray-200">Click to Sign</button>
-                                    <input type="hidden" name="signature_worker" id="signature_worker">
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Signature Officer</label>
-                                    <button type="button" onclick="openSignatureModal('officer')" class="mt-1 block w-full border rounded-lg p-2 bg-gray-100 text-left hover:bg-gray-200">Click to Sign</button>
-                                    <input type="hidden" name="signature_officer" id="signature_officer">
-                                </div>
-                            </div>
-                        </div>
+            function formatDate(dateString) {
+                if (!dateString) return "-";
+                const date = new Date(dateString);
+                if (isNaN(date)) return dateString;
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                return date.toLocaleDateString('en-US', options);
+            }
 
-                        <!-- Navigation Buttons -->
-                        <div class="flex justify-between mt-4">
-                            <button type="button" onclick="showTab('social-service')" class="px-4 py-2 bg-gray-500 text-white rounded-lg">Previous</button>
-                            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Submit</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
+            function escapeHtml(s) {
+                if (!s) return "";
+                return s.replace(
+                    /[&<>"']/g,
+                    (m) =>
+                        ({
+                            "&": "&amp;",
+                            "<": "&lt;",
+                            ">": "&gt;",
+                            '"': "&quot;",
+                            "'": "&#39;",
+                        }[m])
+                );
+            }
 
-        <script>
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('reviewModal');
+                if (event.target === modal) {
+                    closeReviewModal();
+                }
+            });
+
             // Tab switching functionality for main view
             function showTable() {
                 document.getElementById('tableView').classList.remove('hidden');
@@ -1499,101 +1375,6 @@
 
                 document.getElementById("editRemarksModal").classList.remove("hidden");
                 setModalMode("edit");
-            }
-
-            function openPreviewModal(button) {
-                let id = button.getAttribute("data-id");
-                let fname = button.getAttribute("data-fname");
-                let mname = button.getAttribute("data-mname");
-                let lname = button.getAttribute("data-lname");
-                let suffix = button.getAttribute("data-suffix");
-                let gender = button.getAttribute("data-gender");
-
-                document.getElementById("remarks_id").value = id;
-                document.getElementById("modal_mode").value = "view";
-
-                // Populate applicant name fields from button data
-                document.getElementById("applicant_fname").value = fname || '';
-                document.getElementById("applicant_mname").value = mname || '';
-                document.getElementById("applicant_lname").value = lname || '';
-                document.getElementById("applicant_suffix").value = suffix || '';
-                document.getElementById("applicant_gender").value = gender || '';
-
-                // Fetch existing intake sheet data and populate the form
-                fetch(`/lydo_staff/intake-sheet/${id}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data) {
-                            // Populate Head of Family fields
-                            document.getElementById("head_4ps").value = data.head_4ps || '';
-                            document.getElementById("head_ipno").value = data.head_ipno || '';
-                            document.getElementById("head_address").value = data.head_address || '';
-                            document.getElementById("head_zone").value = data.head_zone || '';
-                            document.getElementById("head_barangay").value = data.head_barangay || '';
-                            document.getElementById("head_pob").value = data.head_pob || '';
-                            document.getElementById("head_dob").value = data.head_dob || '';
-                            document.getElementById("applicant_gender").value = data.head_gender || '';
-                            document.getElementById("head_educ").value = data.head_educ || '';
-                            document.getElementById("head_occ").value = data.head_occ || '';
-                            document.getElementById("head_religion").value = data.head_religion || '';
-                            document.getElementById("serial_number").value = data.serial_number || '';
-
-                            // Populate Household Info fields
-                            document.getElementById("house_total_income").value = data.house_total_income || '';
-                            document.getElementById("house_net_income").value = data.house_net_income || '';
-                            document.getElementById("other_income").value = data.other_income || '';
-                            document.getElementById("house_house").value = data.house_house || '';
-                            document.getElementById("house_house_value").value = data.house_house_value || '';
-                            document.getElementById("house_lot").value = data.house_lot || '';
-                            document.getElementById("house_lot_value").value = data.house_lot_value || '';
-                            document.getElementById("house_house_rent").value = data.house_house_rent || '';
-                            document.getElementById("house_lot_rent").value = data.house_lot_rent || '';
-                            document.getElementById("house_water").value = data.house_water || '';
-                            document.getElementById("house_electric").value = data.house_electric || '';
-                            document.getElementById("house_remarks").value = data.house_remarks || '';
-
-                            // Populate JSON fields
-                            document.getElementById("family_members").value = data.family_members ? JSON.stringify(data.family_members, null, 2) : '';
-                            document.getElementById("rv_service_records").value = data.rv_service_records ? JSON.stringify(data.rv_service_records, null, 2) : '';
-
-                            // Populate Family Members table
-                            if (data.family_members && Array.isArray(data.family_members)) {
-                                data.family_members.forEach(member => {
-                                    addFamilyMemberRow(member.name || '', member.relationship || '', member.birthdate || '', member.age || '', member.sex || '', member.civil_status || '', member.education || '', member.occupation || '', member.monthly_income || '', member.remarks || '');
-                                });
-                            }
-
-                            // Populate Social Service Records table
-                            if (data.rv_service_records && Array.isArray(data.rv_service_records)) {
-                                data.rv_service_records.forEach(record => {
-                                    addRvServiceRecordRow(record.date || '', record.problem_need || '', record.action_assistance || '', record.remarks || '');
-                                });
-                            }
-
-                            // Populate Remarks field
-                            document.getElementById("remarks").value = data.remarks || '';
-
-                            // Populate Health & Signatures fields
-                            document.getElementById("hc_estimated_cost").value = data.hc_estimated_cost || '';
-                            document.getElementById("worker_name").value = data.worker_name || '';
-                            document.getElementById("officer_name").value = data.officer_name || '';
-                            document.getElementById("date_entry").value = data.date_entry || '';
-                            document.getElementById("signature_client").value = data.signature_client || '';
-                            document.getElementById("signature_worker").value = data.signature_worker || '';
-                            document.getElementById("signature_officer").value = data.signature_officer || '';
-
-                            // Toggle rent inputs based on populated values
-                            toggleRentInputs();
-                            // Recalculate family totals and net income after populating rows/fields
-                            if (typeof updateFamilyMembersJSON === 'function') {
-                                updateFamilyMembersJSON();
-                            }
-                        }
-                    })
-                    .catch(err => console.error('Error fetching intake sheet data:', err));
-
-                document.getElementById("editRemarksModal").classList.remove("hidden");
-                setModalMode("view");
             }
 
             function setModalMode(mode) {
@@ -1940,221 +1721,6 @@
             document.addEventListener('DOMContentLoaded', function() {
                 toggleRentInputs();
             });
-
-            // Function to open the view intake sheet modal
-            function openViewIntakeSheetModal(button) {
-                const id = button.getAttribute("data-id");
-
-                // Fetch intake sheet data
-                fetch(`/lydo_staff/intake-sheet/${id}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data) {
-                            // Populate Head of Family fields
-                            document.getElementById("view-head_4ps").textContent = data.head_4ps || '';
-                            document.getElementById("view-head_ipno").textContent = data.head_ipno || '';
-                            document.getElementById("view-applicant_fname").textContent = data.applicant_fname || '';
-                            document.getElementById("view-applicant_mname").textContent = data.applicant_mname || '';
-                            document.getElementById("view-applicant_lname").textContent = data.applicant_lname || '';
-                            document.getElementById("view-applicant_suffix").textContent = data.applicant_suffix || '';
-                            document.getElementById("view-head_address").textContent = data.head_address || '';
-                            document.getElementById("view-head_zone").textContent = data.head_zone || '';
-                            document.getElementById("view-head_barangay").textContent = data.head_barangay || '';
-                            document.getElementById("view-head_pob").textContent = data.head_pob || '';
-                            document.getElementById("view-head_dob").textContent = data.head_dob || '';
-                            document.getElementById("view-applicant_gender").textContent = data.head_gender || '';
-                            document.getElementById("view-head_educ").textContent = data.head_educ || '';
-                            document.getElementById("view-head_occ").textContent = data.head_occ || '';
-                            document.getElementById("view-head_religion").textContent = data.head_religion || '';
-                            document.getElementById("view-serial_number").textContent = data.serial_number || '';
-                            document.getElementById("view-location").textContent = data.location || '';
-
-                            // Populate Household Info fields
-                            document.getElementById("view-house_total_income").textContent = data.house_total_income || '';
-                            document.getElementById("view-house_net_income").textContent = data.house_net_income || '';
-                            document.getElementById("view-other_income").textContent = data.other_income || '';
-                            document.getElementById("view-house_house").textContent = data.house_house || '';
-                            document.getElementById("view-house_lot").textContent = data.house_lot || '';
-                            document.getElementById("view-house_water").textContent = data.house_water || '';
-                            document.getElementById("view-house_electric").textContent = data.house_electric || '';
-                            document.getElementById("view-remarks").textContent = data.remarks || '';
-
-                            // Populate Family Members table
-                            const familyTbody = document.getElementById('view_family_members_tbody');
-                            familyTbody.innerHTML = '';
-                            if (data.family_members && Array.isArray(data.family_members)) {
-                                data.family_members.forEach(member => {
-                                    const row = document.createElement('tr');
-                                    row.innerHTML = `
-                                        <td class="border px-2 py-1">${member.name || ''}</td>
-                                        <td class="border px-2 py-1">${member.relationship || ''}</td>
-                                        <td class="border px-2 py-1">${member.birthdate || ''}</td>
-                                        <td class="border px-2 py-1">${member.age || ''}</td>
-                                        <td class="border px-2 py-1">${member.sex || ''}</td>
-                                        <td class="border px-2 py-1">${member.civil_status || ''}</td>
-                                        <td class="border px-2 py-1">${member.education || ''}</td>
-                                        <td class="border px-2 py-1">${member.occupation || ''}</td>
-                                        <td class="border px-2 py-1">${member.monthly_income || ''}</td>
-                                        <td class="border px-2 py-1">${member.remarks || ''}</td>
-                                    `;
-                                    familyTbody.appendChild(row);
-                                });
-                            }
-
-                            // Populate Social Service Records table
-                            const serviceTbody = document.getElementById('view_rv_service_records_tbody');
-                            serviceTbody.innerHTML = '';
-                            if (data.rv_service_records && Array.isArray(data.rv_service_records)) {
-                                data.rv_service_records.forEach(record => {
-                                    const row = document.createElement('tr');
-                                    row.innerHTML = `
-                                        <td class="border border-gray-300 px-2 py-1">${record.date || ''}</td>
-                                        <td class="border border-gray-300 px-2 py-1">${record.problem_need || ''}</td>
-                                        <td class="border border-gray-300 px-2 py-1">${record.action_assistance || ''}</td>
-                                        <td class="border border-gray-300 px-2 py-1">${record.remarks || ''}</td>
-                                    `;
-                                    serviceTbody.appendChild(row);
-                                });
-                            }
-
-                            // Populate Health & Signatures fields
-                            document.getElementById("view-worker_name").textContent = data.worker_name || '';
-                            document.getElementById("view-officer_name").textContent = data.officer_name || '';
-                            document.getElementById("view-date_entry").textContent = data.date_entry || '';
-                            document.getElementById("view-signature_client").textContent = data.signature_client || '';
-                            document.getElementById("view-signature_worker").textContent = data.signature_worker || '';
-                            document.getElementById("view-signature_officer").textContent = data.signature_officer || '';
-                        }
-                    })
-                    .catch(err => console.error('Error fetching intake sheet data:', err));
-
-                document.getElementById("viewIntakeSheetModal").classList.remove("hidden");
-            }
-
-            // Function to close the view intake sheet modal
-            function closeViewIntakeSheetModal() {
-                document.getElementById("viewIntakeSheetModal").classList.add("hidden");
-            }
-
-            // Tab switching functionality for view modal
-            function showViewTab(tabName) {
-                // Hide all tab contents
-                const tabContents = document.querySelectorAll('.view-tab-content');
-                tabContents.forEach(content => content.classList.add('hidden'));
-
-                // Remove active class from all tab buttons
-                const tabButtons = document.querySelectorAll('.view-tab-button');
-                tabButtons.forEach(button => {
-                    button.classList.remove('active');
-                    button.classList.remove('text-violet-600');
-                    button.classList.add('text-gray-500');
-                    button.classList.remove('border-b-2', 'border-violet-600');
-                });
-
-                // Show the selected tab content
-                document.getElementById('view-tab-' + tabName + '-content').classList.remove('hidden');
-
-                // Add active class to the selected tab button
-                document.getElementById('view-tab-' + tabName).classList.add('active', 'text-violet-600', 'border-b-2', 'border-violet-600');
-                document.getElementById('view-tab-' + tabName).classList.remove('text-gray-500');
-            }
-
-            // Function to print the intake sheet
-            function printIntakeSheet() {
-                const modal = document.getElementById('viewIntakeSheetModal');
-                const printWindow = window.open('', '_blank');
-                const printContent = modal.innerHTML;
-
-                printWindow.document.write(`
-                    <html>
-                        <head>
-                            <title>Family Intake Sheet</title>
-                            <style>
-                                body { font-family: Arial, sans-serif; margin: 20px; }
-                                .intake-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-                                .intake-section { margin-bottom: 20px; border: 1px solid #e5e7eb; padding: 15px; border-radius: 5px; }
-                                .intake-section-title { font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
-                                .intake-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                                .intake-table th, .intake-table td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
-                                .intake-table th { background-color: #f9fafb; font-weight: 600; }
-                                .flex { display: flex; }
-                                .gap-4 > * + * { margin-left: 1rem; }
-                                .flex-1 { flex: 1; }
-                                .mb-4 { margin-bottom: 1rem; }
-                                .text-sm { font-size: 0.875rem; }
-                                .font-medium { font-weight: 500; }
-                                .text-gray-700 { color: #374151; }
-                                .hidden { display: none !important; }
-                                .border { border: 1px solid #e5e7eb; }
-                                .rounded-lg { border-radius: 0.5rem; }
-                                .p-2 { padding: 0.5rem; }
-                                .bg-gray-50 { background-color: #f9fafb; }
-                                .view-field { background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; padding: 0.5rem !important; border-radius: 0.5rem; }
-                                .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
-                                .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
-                                .border-b { border-bottom: 1px solid #e5e7eb; }
-                                .border-gray-300 { border-color: #d1d5db; }
-                                .text-center { text-align: center; }
-                                .text-xl { font-size: 1.25rem; }
-                                .font-semibold { font-weight: 600; }
-                                .mb-3 { margin-bottom: 0.75rem; }
-                                .overflow-x-auto { overflow-x: auto; }
-                                .min-w-full { min-width: 100%; }
-                                .text-left { text-align: left; }
-                                .w-full { width: 100%; }
-                                .mt-1 { margin-top: 0.25rem; }
-                                .block { display: block; }
-                                .label { display: block; font-weight: 500; color: #374151; margin-bottom: 0.25rem; }
-                                .flex-1 { flex: 1; }
-                                .gap-4 { gap: 1rem; }
-                                .justify-between { justify-content: space-between; }
-                                .items-center { align-items: center; }
-                                .mb-6 { margin-bottom: 1.5rem; }
-                                .border-b-2 { border-bottom-width: 2px; }
-                                .border-violet-600 { border-color: #7c3aed; }
-                                .text-violet-600 { color: #7c3aed; }
-                                .font-medium { font-weight: 500; }
-                                .px-4 { padding-left: 1rem; padding-right: 1rem; }
-                                .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-                                .border-b { border-bottom: 1px solid #e5e7eb; }
-                                .text-gray-500 { color: #6b7280; }
-                                .hover\:text-violet-600:hover { color: #7c3aed; }
-                                .border-b-2 { border-bottom-width: 2px; }
-                                .border-violet-600 { border-color: #7c3aed; }
-                                .text-violet-600 { color: #7c3aed; }
-                                .text-gray-500 { color: #6b7280; }
-                                .active { background-color: #7c3aed; color: white; border-color: #7c3aed; }
-                                .tab-button { cursor: pointer; padding: 10px 20px; border-radius: 8px; transition: all 0.3s ease; background-color: white; color: #6b7280; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; justify-content: center; }
-                                .tab-button.active { background-color: #7c3aed; color: white; border-color: #7c3aed; }
-                                .tab-button:hover:not(.active) { background-color: #f3f4f6; }
-                                .tab-content { display: block; }
-                                .tab-content.hidden { display: none; }
-                                .view-tab-content { display: block; }
-                                .view-tab-content.hidden { display: none; }
-                                .view-tab-button { cursor: pointer; padding: 10px 20px; border-radius: 8px; transition: all 0.3s ease; background-color: white; color: #6b7280; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; justify-content: center; }
-                                .view-tab-button.active { background-color: #7c3aed; color: white; border-color: #7c3aed; }
-                                .view-tab-button:hover:not(.active) { background-color: #f3f4f6; }
-                                @media print {
-                                    body { margin: 0; }
-                                    .no-print { display: none !important; }
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <div class="intake-header">
-                                <img src="{{ asset('images/LYDO.png') }}" alt="LYDO Logo" style="height: 40px; width: auto; margin-right: 10px;">
-                                <h1 style="display: inline; font-size: 24px; font-weight: bold;">Family Intake Sheet</h1>
-                            </div>
-                            ${printContent.replace(/class="hidden"/g, 'style="display: none;"').replace(/class="view-tab-content hidden"/g, 'style="display: none;"').replace(/class="tab-content hidden"/g, 'style="display: none;"')}
-                        </body>
-                    </html>
-                `);
-
-                printWindow.document.close();
-                printWindow.focus();
-                printWindow.print();
-                printWindow.close();
-            }
         </script>
 
         @if(session('success'))
