@@ -18,7 +18,7 @@ use App\Http\Controllers\MayorStaffController;
 // API Controllers
 use App\Http\Controllers\API\AuthController as ApiAuthController;
 use App\Http\Controllers\API\ScholarController as ApiScholarController;
-use App\Http\Controllers\API\ApplicationController as ApiApplicationController;
+use App\Http\Controllers\API\ApplicationController;
 use App\Http\Controllers\API\AdminController as ApiAdminController;
 use App\Http\Controllers\API\NotificationController as ApiNotificationController;
 use App\Http\Controllers\API\ReportController as ApiReportController;
@@ -37,10 +37,7 @@ use App\Http\Controllers\API\AnnouncementController as ApiAnnouncementController
     Route::post('/auth/reset-password', [ApiAuthController::class, 'resetPassword']);
 
     // Public application submission
-    Route::post('/applications/submit', [ApiApplicationController::class, 'submit']);
-    Route::get('/applications/status/{applicantId}', [ApiApplicationController::class, 'status']);
-    Route::get('/applications/{applicationId}/requirements', [ApiApplicationController::class, 'requirements']);
-    Route::post('/applications/{applicationId}/upload-document', [ApiApplicationController::class, 'uploadDocument']);
+   Route::apiResource('/applicants', ApplicationController::class);
 
     // ----------------------- PROTECTED ROUTES (Require Authentication) -----------------------
     Route::middleware('api.auth')->group(function () {
@@ -69,7 +66,7 @@ use App\Http\Controllers\API\AnnouncementController as ApiAnnouncementController
             Route::get('/scholars', [ApiAdminController::class, 'scholars']);
             Route::put('/scholars/{scholarId}/status', [ApiAdminController::class, 'updateScholarStatus']);
             Route::get('/renewals', [ApiAdminController::class, 'renewals']);
-            Route::put('/renewals/{renewalId}/status', [ApiAdminController::class, 'updateRenewalStatus']);
+            Route::put('/renewals/{renewaPPlId}/status', [ApiAdminController::class, 'updateRenewalStatus']);
             Route::post('/announcements', [ApiAdminController::class, 'createAnnouncement']);
             Route::get('/disbursements', [ApiAdminController::class, 'disbursements']);
             Route::post('/disbursements', [ApiAdminController::class, 'createDisbursement']);
@@ -137,12 +134,7 @@ use App\Http\Controllers\API\AnnouncementController as ApiAnnouncementController
         Route::get('/statistics/overview', [ApiDisbursementController::class, 'statistics']);
     });
 
-        // ----------------------- APPLICANTS -----------------------
-        Route::get('/applicants', [ApiApplicantController::class, 'index']);
-        Route::post('/applicants', [ApiApplicantController::class, 'store']);
-        Route::get('/applicants/{id}', [ApiApplicantController::class, 'show']);
-        Route::put('/applicants/{id}', [ApiApplicantController::class, 'update']);
-        Route::delete('/applicants/{id}', [ApiApplicantController::class, 'destroy']);
+      
 
         // ----------------------- SCHOLARS -----------------------
         Route::get('/scholars', [ApiScholarController::class, 'index']);

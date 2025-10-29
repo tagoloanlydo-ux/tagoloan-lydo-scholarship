@@ -16,6 +16,13 @@ class FamilyIntakeSheet extends Model
         'application_personnel_id',
         'lydo_personnel_id',
 
+        // Applicant Details
+        'applicant_fname',
+        'applicant_mname',
+        'applicant_lname',
+        'applicant_suffix',
+        'applicant_gender',
+
         // Head of Family
         'head_4ps',
         'head_ipno',

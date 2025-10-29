@@ -971,14 +971,16 @@
 
       // Collect data
       function collectData() {
-        const head = {
+        const applicant = {
           fname: getVal("applicant_fname"),
           mname: getVal("applicant_mname"),
           lname: getVal("applicant_lname"),
           suffix: getVal("applicant_suffix"),
+          gender: document.querySelector('input[name="applicant_gender"]:checked')?.value || "",
+        };
+        const head = {
           _4ps: getVal("head_4ps"),
           ipno: getVal("head_ipno"),
-          sex: document.querySelector('input[name="applicant_gender"]:checked')?.value || "",
           address: getVal("head_address"),
           zone: getVal("head_zone"),
           barangay: getVal("applicant_brgy"),
@@ -987,6 +989,7 @@
           educ: getVal("head_educ"),
           occ: getVal("head_occ"),
           religion: getVal("head_religion"),
+          sex: document.querySelector('input[name="applicant_gender"]:checked')?.value || "",
           serial: getVal("serial_number"),
         };
         const location =
@@ -1030,6 +1033,7 @@
         };
 
         return {
+          applicant,
           head,
           location,
           family,

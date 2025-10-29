@@ -1134,7 +1134,7 @@
                                     .join(" ")}</p>
                                 <table class="min-w-full text-sm">
                                     <tr>
-                                        <td><strong>Sex:</strong> ${d.head_gender || "-"}</td>
+                                        <td><strong>Sex:</strong> ${d.applicant_gender || "-"}</td>
                                         <td><strong>4Ps:</strong> ${d.head_4ps || "-"}</td>
                                         <td><strong>IP No.:</strong> ${d.head_ipno || "-"}</td>
                                     </tr>
@@ -1142,10 +1142,10 @@
                                         <td><strong>Address:</strong> ${d.head_address || "-"}</td>
                                         <td><strong>Zone:</strong> ${d.head_zone || "-"}</td>
                                         <td><strong>Barangay:</strong> ${d.head_barangay || "-"}</td>
-                                     
+
                                     </tr>
                                     <tr>
-                                        <td><strong>Date of Birth:</strong> ${d.head_dob || "-"}</td>
+                                        <td><strong>Date of Birth:</strong> ${formatDate(d.head_dob) || "-"}</td>
                                         <td><strong>Place of Birth:</strong> ${d.head_pob || "-"}</td>
                                     </tr>
                                     <tr>

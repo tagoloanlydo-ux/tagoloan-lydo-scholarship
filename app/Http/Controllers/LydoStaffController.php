@@ -508,6 +508,13 @@ $listApplicants = DB::table("tbl_applicant as a")
             // Foreign keys
             'lydo_personnel_id' => 'nullable|integer',
 
+            // Applicant Details
+            'applicant_fname' => 'nullable|string|max:255',
+            'applicant_mname' => 'nullable|string|max:255',
+            'applicant_lname' => 'nullable|string|max:255',
+            'applicant_suffix' => 'nullable|string|max:255',
+            'applicant_gender' => 'nullable|string|max:255',
+
             // Head of Family
             'head_4ps' => 'nullable|string|max:255',
             'head_ipno' => 'nullable|string|max:255',
@@ -552,11 +559,12 @@ $listApplicants = DB::table("tbl_applicant as a")
         ]);
 
         $data = $request->only([
-            'lydo_personnel_id', 'head_4ps', 'head_ipno', 'head_address', 'head_zone', 'head_barangay',
+            'lydo_personnel_id', 'applicant_fname', 'applicant_mname', 'applicant_lname', 'applicant_suffix', 'applicant_gender',
+            'head_4ps', 'head_ipno', 'head_address', 'head_zone', 'head_barangay',
             'head_pob', 'head_dob', 'head_educ', 'head_occ', 'head_religion', 'serial_number', 'location',
             'house_total_income', 'house_net_income', 'other_income', 'house_house', 'house_house_value',
             'house_lot', 'house_lot_value', 'house_house_rent', 'house_lot_rent', 'house_water', 'house_electric',
-            'house_remarks', 'family_members', 'social_service_records', 'hc_estimated_cost', 'worker_name',
+            'house_remarks', 'family_members', 'social_service_records', 'rv_service_records', 'hc_estimated_cost', 'worker_name',
             'officer_name', 'date_entry', 'signature_client', 'signature_worker', 'signature_officer'
         ]);
 
