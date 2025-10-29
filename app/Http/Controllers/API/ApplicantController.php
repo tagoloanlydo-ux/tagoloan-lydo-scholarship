@@ -1,16 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\Controller;
 use App\Models\Applicant;
 use Illuminate\Http\Request;
 
 class ApplicantController extends Controller
 {
-    /**
-     * Display a listing of the applicants.
-     */
-    public function index()
+     public function index()
     {
         $applicants = Applicant::all();
 
@@ -20,11 +18,7 @@ class ApplicantController extends Controller
             'data' => $applicants
         ], 200);
     }
-
-    /**
-     * Store a newly created applicant.
-     */
-    public function store(Request $request)
+ public function store(Request $request)
     {
         $validated = $request->validate([
             'applicant_fname' => 'required|string|max:255',

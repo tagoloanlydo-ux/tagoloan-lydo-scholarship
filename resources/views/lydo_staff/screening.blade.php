@@ -1374,7 +1374,7 @@
             // Service Records Functions
             function addRvServiceRecordRow() {
                 const tbody = document.getElementById('rv_service_records_tbody');
-                
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td class="border px-2 py-1">
@@ -1387,7 +1387,13 @@
                         <input type="text" name="service_record_action[]" class="w-full border-none focus:ring-0" placeholder="Action/Assistance">
                     </td>
                     <td class="border px-2 py-1">
-                        <input type="text" name="service_record_remarks[]" class="w-full border-none focus:ring-0" placeholder="Remarks">
+                        <select name="service_record_remarks[]" class="w-full border-none focus:ring-0">
+                            <option value="">Select Remarks</option>
+                            <option value="A. DEAD">A. DEAD</option>
+                            <option value="B. INJURED">B. INJURED</option>
+                            <option value="C. MISSING">C. MISSING</option>
+                            <option value="D. With Illness">D. With Illness</option>
+                        </select>
                     </td>
                     <td class="border px-2 py-1 text-center">
                         <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-600 hover:text-red-800">
@@ -1565,18 +1571,20 @@
                         familyRows.forEach(row => {
                             const cells = row.cells;
                             familyMembers.push({
-                                name: cells[0].querySelector('input').value || '',
-                                relationship: cells[1].querySelector('select').value || '',
-                                birthdate: cells[2].querySelector('input').value || '',
-                                age: cells[3].querySelector('input').value || '',
-                                sex: cells[4].querySelector('select').value || '',
-                                civil_status: cells[5].querySelector('select').value || '',
-                                education: cells[6].querySelector('select').value || '',
-                                occupation: cells[7].querySelector('input').value || '',
-                                monthly_income: cells[8].querySelector('input').value || '',
-                                remarks: cells[9].querySelector('select').value || '',
+                                name: cells[0].querySelector('input')?.value || '',
+                                relationship: cells[1].querySelector('select')?.value || '',
+                                birthdate: cells[2].querySelector('input')?.value || '',
+                                age: cells[3].querySelector('input')?.value || '',
+                                sex: cells[4].querySelector('select')?.value || '',
+                                civil_status: cells[5].querySelector('select')?.value || '',
+                                education: cells[6].querySelector('select')?.value || '',
+                                occupation: cells[7].querySelector('input')?.value || '',
+                                monthly_income: cells[8].querySelector('input')?.value || '',
+                                remarks: cells[9].querySelector('select')?.value || '',
                             });
                         });
+
+                        // Convert to JSON string
                         document.getElementById('family_members').value = JSON.stringify(familyMembers);
 
                         // Serialize service records data
@@ -1585,29 +1593,69 @@
                         serviceRows.forEach(row => {
                             const cells = row.cells;
                             serviceRecords.push({
-                                date: cells[0].querySelector('input').value || '',
-                                problem: cells[1].querySelector('input').value || '',
-                                action: cells[2].querySelector('input').value || '',
-                                remarks: cells[3].querySelector('input').value || '',
+                                date: cells[0].querySelector('input')?.value || '',
+                                problem: cells[1].querySelector('input')?.value || '',
+                                action: cells[2].querySelector('input')?.value || '',
+                                remarks: cells[3].querySelector('input')?.value || '',
                             });
                         });
+
+                        // Convert to JSON string
                         document.getElementById('rv_service_records').value = JSON.stringify(serviceRecords);
 
                         const id = document.getElementById('remarks_id').value;
                         modalForm.action = "/lydo_staff/update-intake-sheet/" + id;
 
+                        // Show loading state
                         Swal.fire({
-                            title: 'Confirm Intake Sheet Update',
-                            text: `Are you sure you want to update the intake sheet?`,
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#d33',
-                            confirmButtonText: 'Yes, update it!'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                modalForm.submit();
+                            title: 'Saving Intake Sheet',
+                            text: 'Please wait...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
                             }
+                        });
+
+                        // Submit form via AJAX to handle errors better
+                        fetch(modalForm.action, {
+                            method: 'POST',
+                            body: new FormData(modalForm),
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.text();
+                        })
+                        .then(data => {
+                            Swal.close();
+
+                            // Check if response contains success message
+                            if (data.includes('success')) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: 'Intake sheet updated successfully!',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    closeEditRemarksModal();
+                                    location.reload(); // Reload to reflect changes
+                                });
+                            } else {
+                                throw new Error('Unexpected response');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to update intake sheet: ' + error.message,
+                                confirmButtonText: 'OK'
+                            });
                         });
                     });
                 }

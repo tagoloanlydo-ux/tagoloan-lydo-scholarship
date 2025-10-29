@@ -504,6 +504,9 @@ $listApplicants = DB::table("tbl_applicant as a")
 
     public function updateIntakeSheet(Request $request, $id)
     {
+        // Debug: Check what data is being received
+        \Log::info('Intake Sheet Update Request:', $request->all());
+
         $request->validate([
             // Foreign keys
             'lydo_personnel_id' => 'nullable|integer',
@@ -543,10 +546,10 @@ $listApplicants = DB::table("tbl_applicant as a")
             'house_electric' => 'nullable|string|max:255',
             'house_remarks' => 'nullable|string',
 
-            // JSON fields
-            'family_members' => 'nullable|json',
-            'social_service_records' => 'nullable|json',
-            'rv_service_records' => 'nullable|json',
+            // JSON fields - REMOVE JSON VALIDATION TEMPORARILY
+            'family_members' => 'nullable',
+            'social_service_records' => 'nullable',
+            'rv_service_records' => 'nullable',
 
             // Health & Signatures
             'hc_estimated_cost' => 'nullable|numeric',
@@ -556,50 +559,88 @@ $listApplicants = DB::table("tbl_applicant as a")
             'signature_client' => 'nullable|string',
             'signature_worker' => 'nullable|string',
             'signature_officer' => 'nullable|string',
+
+            // Remarks field
+            'remarks' => 'required|in:Poor,Non Poor,Ultra Poor',
         ]);
 
-        $data = $request->only([
-            'lydo_personnel_id', 'applicant_fname', 'applicant_mname', 'applicant_lname', 'applicant_suffix', 'applicant_gender',
-            'head_4ps', 'head_ipno', 'head_address', 'head_zone', 'head_barangay',
-            'head_pob', 'head_dob', 'head_educ', 'head_occ', 'head_religion', 'serial_number', 'location',
-            'house_total_income', 'house_net_income', 'other_income', 'house_house', 'house_house_value',
-            'house_lot', 'house_lot_value', 'house_house_rent', 'house_lot_rent', 'house_water', 'house_electric',
-            'house_remarks', 'family_members', 'social_service_records', 'rv_service_records', 'hc_estimated_cost', 'worker_name',
-            'officer_name', 'date_entry', 'signature_client', 'signature_worker', 'signature_officer'
-        ]);
+        try {
+            DB::beginTransaction();
 
-        // Set lydo_personnel_id to current user if not provided
-        if (!isset($data['lydo_personnel_id'])) {
-            $data['lydo_personnel_id'] = session('lydopers')->lydopers_id;
-        }
-
-        // Handle JSON fields
-        if (isset($data['family_members'])) {
-            $data['family_members'] = json_decode($data['family_members'], true);
-        }
-        if (isset($data['social_service_records'])) {
-            $data['social_service_records'] = json_decode($data['social_service_records'], true);
-        }
-        if (isset($data['rv_service_records'])) {
-            $data['rv_service_records'] = json_decode($data['rv_service_records'], true);
-        }
-
-        $intakeSheet = \App\Models\FamilyIntakeSheet::updateOrCreate(
-            ['application_personnel_id' => $id],
-            $data
-        );
-
-        // Update tbl_application_personnel with initial_screening = 'Reviewed', remarks, and status = 'waiting'
-        DB::table('tbl_application_personnel')
-            ->where('application_personnel_id', $id)
-            ->update([
-                'initial_screening' => 'Reviewed',
-                'remarks' => $request->remarks,
-                'status' => 'waiting',
-                'updated_at' => now(),
+            $data = $request->only([
+                'lydo_personnel_id', 'applicant_fname', 'applicant_mname', 'applicant_lname', 'applicant_suffix', 'applicant_gender',
+                'head_4ps', 'head_ipno', 'head_address', 'head_zone', 'head_barangay',
+                'head_pob', 'head_dob', 'head_educ', 'head_occ', 'head_religion', 'serial_number', 'location',
+                'house_total_income', 'house_net_income', 'other_income', 'house_house', 'house_house_value',
+                'house_lot', 'house_lot_value', 'house_house_rent', 'house_lot_rent', 'house_water', 'house_electric',
+                'house_remarks', 'family_members', 'social_service_records', 'rv_service_records', 'hc_estimated_cost', 'worker_name',
+                'officer_name', 'date_entry', 'signature_client', 'signature_worker', 'signature_officer'
             ]);
 
-        return back()->with('success', 'Intake sheet updated successfully!');
+            // Set lydo_personnel_id to current user if not provided
+            if (!isset($data['lydo_personnel_id'])) {
+                $data['lydo_personnel_id'] = session('lydopers')->lydopers_id;
+            }
+
+            // Handle JSON fields properly
+            if (isset($data['family_members'])) {
+                // If it's already a JSON string, decode and re-encode to ensure it's valid
+                if (is_string($data['family_members'])) {
+                    $decoded = json_decode($data['family_members'], true);
+                    $data['family_members'] = json_encode($decoded, JSON_UNESCAPED_UNICODE);
+                } else {
+                    $data['family_members'] = json_encode($data['family_members'], JSON_UNESCAPED_UNICODE);
+                }
+            }
+
+            if (isset($data['social_service_records'])) {
+                if (is_string($data['social_service_records'])) {
+                    $decoded = json_decode($data['social_service_records'], true);
+                    $data['social_service_records'] = json_encode($decoded, JSON_UNESCAPED_UNICODE);
+                } else {
+                    $data['social_service_records'] = json_encode($data['social_service_records'], JSON_UNESCAPED_UNICODE);
+                }
+            }
+
+            if (isset($data['rv_service_records'])) {
+                if (is_string($data['rv_service_records'])) {
+                    $decoded = json_decode($data['rv_service_records'], true);
+                    $data['rv_service_records'] = json_encode($decoded, JSON_UNESCAPED_UNICODE);
+                } else {
+                    $data['rv_service_records'] = json_encode($data['rv_service_records'], JSON_UNESCAPED_UNICODE);
+                }
+            }
+
+            // Debug: Check processed data
+            \Log::info('Processed Intake Sheet Data:', $data);
+
+            // Update or create intake sheet
+            $intakeSheet = \App\Models\FamilyIntakeSheet::updateOrCreate(
+                ['application_personnel_id' => $id],
+                $data
+            );
+
+            // Update tbl_application_personnel with initial_screening = 'Reviewed', remarks, and status = 'waiting'
+            DB::table('tbl_application_personnel')
+                ->where('application_personnel_id', $id)
+                ->update([
+                    'initial_screening' => 'Reviewed',
+                    'remarks' => $request->remarks,
+                    'status' => 'waiting',
+                    'updated_at' => now(),
+                ]);
+
+            DB::commit();
+
+            return back()->with('success', 'Intake sheet updated successfully!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error updating intake sheet: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+
+            return back()->with('error', 'Error updating intake sheet: ' . $e->getMessage());
+        }
     }
     public function renewal(Request $request)
     {
