@@ -8,7 +8,10 @@ use Illuminate\Http\Request;
 
 class ApplicantController extends Controller
 {
-     public function index()
+    /**
+     * Display all applicants.
+     */
+    public function index()
     {
         $applicants = Applicant::all();
 
@@ -18,13 +21,21 @@ class ApplicantController extends Controller
             'data' => $applicants
         ], 200);
     }
- public function store(Request $request)
+
+    /**
+     * Store a new applicant (matched with Flutter SQLite fields).
+     */
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'applicant_fname' => 'required|string|max:255',
+            'applicant_mname' => 'nullable|string|max:255',
             'applicant_lname' => 'required|string|max:255',
-            'applicant_gender' => 'required|string',
+            'applicant_suffix' => 'nullable|string|max:50',
+            'applicant_gender' => 'required|string|max:50',
             'applicant_bdate' => 'required|date',
+            'applicant_civil_status' => 'required|string|max:50',
+            'applicant_brgy' => 'required|string|max:255',
             'applicant_email' => 'required|email|unique:tbl_applicant,applicant_email',
             'applicant_contact_number' => 'required|string|max:20',
             'applicant_school_name' => 'required|string|max:255',
@@ -43,7 +54,7 @@ class ApplicantController extends Controller
     }
 
     /**
-     * Display the specified applicant.
+     * Display a specific applicant.
      */
     public function show($id)
     {
@@ -63,7 +74,7 @@ class ApplicantController extends Controller
     }
 
     /**
-     * Update the specified applicant.
+     * Update applicant info.
      */
     public function update(Request $request, $id)
     {
@@ -78,9 +89,13 @@ class ApplicantController extends Controller
 
         $validated = $request->validate([
             'applicant_fname' => 'sometimes|required|string|max:255',
+            'applicant_mname' => 'nullable|string|max:255',
             'applicant_lname' => 'sometimes|required|string|max:255',
-            'applicant_gender' => 'sometimes|required|string',
+            'applicant_suffix' => 'nullable|string|max:50',
+            'applicant_gender' => 'sometimes|required|string|max:50',
             'applicant_bdate' => 'sometimes|required|date',
+            'applicant_civil_status' => 'sometimes|required|string|max:50',
+            'applicant_brgy' => 'sometimes|required|string|max:255',
             'applicant_email' => 'sometimes|required|email|unique:tbl_applicant,applicant_email,' . $id . ',applicant_id',
             'applicant_contact_number' => 'sometimes|required|string|max:20',
             'applicant_school_name' => 'sometimes|required|string|max:255',
@@ -99,7 +114,7 @@ class ApplicantController extends Controller
     }
 
     /**
-     * Remove the specified applicant.
+     * Delete an applicant.
      */
     public function destroy($id)
     {
