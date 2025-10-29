@@ -569,6 +569,9 @@ $listApplicants = DB::table("tbl_applicant as a")
         if (isset($data['family_members'])) {
             $data['family_members'] = json_decode($data['family_members'], true);
         }
+        if (isset($data['social_service_records'])) {
+            $data['social_service_records'] = json_decode($data['social_service_records'], true);
+        }
         if (isset($data['rv_service_records'])) {
             $data['rv_service_records'] = json_decode($data['rv_service_records'], true);
         }

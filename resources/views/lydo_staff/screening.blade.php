@@ -247,6 +247,11 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Fix for modal display */
+        .modal-open {
+            overflow: hidden;
+        }
     </style>
 </head>
 
@@ -414,14 +419,14 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Course</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">School</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Intake Sheet</th>
+                                    <th class="px-4py-3 border border-gray-200 text-center">Intake Sheet</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($tableApplicants as $index => $app)
                                 <tr class="hover:bg-gray-50 border-b">
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
-                                    <td class="px-4 border border-gray-200 py-2 text-center">Firstname: {{ $app->applicant_fname }} Lastname: {{ $app->applicant_lname }}</td>
+                                    <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_brgy }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_course }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_school_name }}</td>
@@ -442,13 +447,6 @@
                                             data-pob="{{ $app->applicant_pob }}"
                                             onclick="openEditRemarksModal(this)">
                                             <i class="fas fa-plus mr-1"></i> Intake Sheet
-                                        </button>
-                                        <button
-                                            title="View Intake Sheet"
-                                            class="px-3 py-1 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg shadow ml-2"
-                                            data-id="{{ $app->application_personnel_id }}"
-                                            onclick="openReviewModal(this)">
-                                            <i class="fas fa-eye mr-1"></i> View
                                         </button>
                                     </td>
                                 </tr>
@@ -546,7 +544,12 @@
 
         <!-- Edit Intake Sheet Modal -->
         <div id="editRemarksModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto">
-            <div class="bg-white w-full max-w-6xl rounded-2xl shadow-2xl p-6 max-h-screen overflow-y-auto">
+            <div class="bg-white w-full max-w-6xl rounded-2xl shadow-2xl p-6 max-h-screen overflow-y-auto relative">
+                <!-- Close button -->
+                <button type="button" onclick="closeEditRemarksModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-10">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+
                 <div class="flex items-center text-xl font-semibold mb-4">
                     <img src="{{ asset('images/LYDO.png') }}" alt="LYDO Logo" class="h-8 w-auto mr-2">
                     Family Intake Sheet
@@ -685,10 +688,6 @@
                                     <label class="block text-sm font-medium text-gray-700">Serial Number</label>
                                     <input type="text" name="serial_number" id="serial_number" class="mt-1 block w-full border rounded-lg p-2 bg-gray-100" readonly>
                                 </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Location</label>
-                                    <input type="text" name="location" id="location" class="mt-1 block w-full border rounded-lg p-2 bg-gray-100" readonly>
-                                </div>
                             </div>
                         </div>
 
@@ -722,10 +721,11 @@
                                         </tr>
                                     </thead>
                                     <tbody id="family_members_tbody">
+                                        <!-- Rows will be added dynamically -->
                                     </tbody>
                                 </table>
                             </div>
-                            <button type="button" onclick="addFamilyMemberRow()" class="bg-purple-600 text-white px-4 py-2 rounded">+ Add Member</button>
+                            <button type="button" onclick="addFamilyMemberRow()" class="mt-2 bg-purple-600 text-white px-4 py-2 rounded">+ Add Member</button>
                             <textarea name="family_members" id="family_members" class="hidden"></textarea>
                             <div class="mt-4">
                                 <h4 class="font-semibold mb-3 text-gray-800">Remarks Categories:</h4>
@@ -752,70 +752,84 @@
                         <!-- Household Info Section -->
                         <div class="mb-6">
                             <h3 class="text-lg font-medium text-gray-800 mb-3">Household Information</h3>
-                            <!-- Row 1: Other Income and Total Income -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Other Income</label>
-                                    <input type="number" step="0.01" name="other_income" id="other_income" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Total Income</label>
-                                    <input type="number" step="0.01" name="house_total_income" id="house_total_income" class="mt-1 block w-full border rounded-lg p-2 bg-gray-100" readonly>
+                            
+                            <!-- Income Section -->
+                            <div class="mb-4 p-3 bg-blue-50 rounded-lg">
+                                <h4 class="font-semibold text-blue-800 mb-2">Income Calculation</h4>
+                                <!-- Row 1: Other Income and Total Income -->
+                                <div class="flex gap-4 mb-4">
+                                    <div class="flex-1">
+                                        <label class="block text-sm font-medium text-gray-700">Other Income</label>
+                                        <input type="number" step="0.01" name="other_income" id="other_income" class="mt-1 block w-full border rounded-lg p-2" placeholder="0.00">
+                                        <p class="text-xs text-gray-500 mt-1">Additional income not from family members</p>
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-sm font-medium text-gray-700">Total Income</label>
+                                        <input type="number" step="0.01" name="house_total_income" id="house_total_income" class="mt-1 block w-full border rounded-lg p-2 bg-gray-100" readonly>
+                                        <p class="text-xs text-gray-500 mt-1">Family Members Income + Other Income</p>
+                                    </div>
                                 </div>
                             </div>
-                            <!-- Row 2: House, Lot, Water, Electric -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">House</label>
-                                    <select name="house_house" id="house_house" class="mt-1 block w-full border rounded-lg p-2">
-                                        <option value="">Select</option>
-                                        <option value="Owned">Owned</option>
-                                        <option value="Rent">Rent</option>
-                                    </select>
-                                    <div id="house_value_group" style="display: none;" class="mt-2">
-                                        <label class="block text-sm font-medium text-gray-700">House Value</label>
-                                        <input type="number" step="0.01" name="house_house_value" id="house_house_value" class="mt-1 block w-full border rounded-lg p-2">
+
+                            <!-- Expenses Section -->
+                            <div class="mb-4 p-3 bg-red-50 rounded-lg">
+                                <h4 class="font-semibold text-red-800 mb-2">Expenses</h4>
+                                <!-- Row 2: House, Lot, Water, Electric -->
+                                <div class="flex gap-4 mb-4">
+                                    <div class="flex-1">
+                                        <label class="block text-sm font-medium text-gray-700">House</label>
+                                        <select name="house_house" id="house_house" class="mt-1 block w-full border rounded-lg p-2">
+                                            <option value="">Select</option>
+                                            <option value="Owned">Owned</option>
+                                            <option value="Rent">Rent</option>
+                                        </select>
+                                        <div id="house_rent_group" style="display: none;" class="mt-2">
+                                            <label class="block text-sm font-medium text-gray-700">House Rent</label>
+                                            <input type="number" step="0.01" name="house_house_rent" id="house_house_rent" class="mt-1 block w-full border rounded-lg p-2" placeholder="0.00">
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Lot</label>
-                                    <select name="house_lot" id="house_lot" class="mt-1 block w-full border rounded-lg p-2">
-                                        <option value="">Select</option>
-                                        <option value="Owned">Owned</option>
-                                        <option value="Rent">Rent</option>
-                                    </select>
-                                    <div id="lot_value_group" style="display: none;" class="mt-2">
-                                        <label class="block text-sm font-medium text-gray-700">Lot Value</label>
-                                        <input type="number" step="0.01" name="house_lot_value" id="house_lot_value" class="mt-1 block w-full border rounded-lg p-2">
+                                    <div class="flex-1">
+                                        <label class="block text-sm font-medium text-gray-700">Lot</label>
+                                        <select name="house_lot" id="house_lot" class="mt-1 block w-full border rounded-lg p-2">
+                                            <option value="">Select</option>
+                                            <option value="Owned">Owned</option>
+                                            <option value="Rent">Rent</option>
+                                        </select>
+                                        <div id="lot_rent_group" style="display: none;" class="mt-2">
+                                            <label class="block text-sm font-medium text-gray-700">Lot Rent</label>
+                                            <input type="number" step="0.01" name="house_lot_rent" id="house_lot_rent" class="mt-1 block w-full border rounded-lg p-2" placeholder="0.00">
+                                        </div>
                                     </div>
-                                    <div id="lot_rent_group" style="display: none;" class="mt-2">
-                                        <label class="block text-sm font-medium text-gray-700">Lot Rent</label>
-                                        <input type="number" step="0.01" name="house_lot_rent" id="house_lot_rent" class="mt-1 block w-full border rounded-lg p-2">
+                                    <div class="flex-1">
+                                        <label class="block text-sm font-medium text-gray-700">Water</label>
+                                        <input type="number" step="0.01" name="house_water" id="house_water" class="mt-1 block w-full border rounded-lg p-2" placeholder="0.00">
                                     </div>
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Water</label>
-                                    <input type="number" step="0.01" name="house_water" id="house_water" class="mt-1 block w-full border rounded-lg p-2">
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Electric</label>
-                                    <input type="number" step="0.01" name="house_electric" id="house_electric" class="mt-1 block w-full border rounded-lg p-2">
+                                    <div class="flex-1">
+                                        <label class="block text-sm font-medium text-gray-700">Electric</label>
+                                        <input type="number" step="0.01" name="house_electric" id="house_electric" class="mt-1 block w-full border rounded-lg p-2" placeholder="0.00">
+                                    </div>
                                 </div>
                             </div>
-                            <!-- Row 3: Net Income and Remarks -->
-                            <div class="flex gap-4 mb-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Net Income</label>
-                                    <input type="number" step="0.01" name="house_net_income" id="house_net_income" class="mt-1 block w-full border rounded-lg p-2" readonly>
-                                </div>
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700">Remarks</label>
-                                    <select name="remarks" id="remarks" class="mt-1 block w-full border rounded-lg p-2" required>
-                                        <option value="">Select Remarks</option>
-                                        <option value="Poor">Poor</option>
-                                        <option value="Non Poor">Non Poor</option>
-                                        <option value="Ultra Poor">Ultra Poor</option>
-                                    </select>
+
+                            <!-- Net Income Section -->
+                            <div class="mb-4 p-3 bg-green-50 rounded-lg">
+                                <h4 class="font-semibold text-green-800 mb-2">Net Income Calculation</h4>
+                                <!-- Row 3: Net Income and Remarks -->
+                                <div class="flex gap-4 mb-4">
+                                    <div class="flex-1">
+                                        <label class="block text-sm font-medium text-gray-700">Net Income</label>
+                                        <input type="number" step="0.01" name="house_net_income" id="house_net_income" class="mt-1 block w-full border rounded-lg p-2 bg-gray-100" readonly>
+                                        <p class="text-xs text-gray-500 mt-1">Total Income - Total Expenses</p>
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-sm font-medium text-gray-700">Remarks <span class="text-red-500">*</span></label>
+                                        <select name="remarks" id="remarks" class="mt-1 block w-full border rounded-lg p-2" required>
+                                            <option value="">Select Remarks</option>
+                                            <option value="Poor">Poor</option>
+                                            <option value="Non Poor">Non Poor</option>
+                                            <option value="Ultra Poor">Ultra Poor</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -823,7 +837,7 @@
                         <!-- Navigation Buttons -->
                         <div class="flex justify-between mt-4">
                             <button type="button" onclick="showTab('family-members')" class="px-4 py-2 bg-gray-500 text-white rounded-lg">Previous</button>
-                            <button type="button" onclick="showTab('social-service')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Next</button>
+                            <button type="button" id="additional-next-btn" onclick="showTab('social-service')" class="px-4 py-2 bg-blue-600 text-white rounded-lg" disabled>Next</button>
                         </div>
                     </div>
 
@@ -843,6 +857,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="rv_service_records_tbody">
+                                    <!-- Rows will be added dynamically -->
                                 </tbody>
                             </table>
                             <button type="button" onclick="addRvServiceRecordRow()" class="mt-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Add Record</button>
@@ -901,7 +916,10 @@
                         <!-- Navigation Buttons -->
                         <div class="flex justify-between mt-4">
                             <button type="button" onclick="showTab('social-service')" class="px-4 py-2 bg-gray-500 text-white rounded-lg">Previous</button>
-                            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Submit</button>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="printIntakeSheet()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">Print</button>
+                                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Submit</button>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -939,14 +957,52 @@
             </div>
         </div>
 
+        <!-- Signature Modal -->
+        <div id="signatureModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-800" id="signatureModalTitle">Signature</h3>
+                    <button type="button" onclick="closeSignatureModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+
+                <div class="mb-4">
+                    <div class="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
+                        <canvas id="signatureCanvas" width="400" height="200" class="border border-gray-300 rounded bg-white"></canvas>
+                    </div>
+                </div>
+
+                <div class="flex justify-between gap-3">
+                    <button type="button" onclick="clearSignature()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                        <i class="fas fa-eraser mr-2"></i>Clear
+                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="closeSignatureModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                            Cancel
+                        </button>
+                        <button type="button" onclick="saveSignature()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-save mr-2"></i>Save Signature
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script>
-            // Tab switching functionality for main view
+            // Add this function to set current date
+            function setCurrentDate() {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('date_entry').value = today;
+            }
+
+            // Main Tab switching functionality
             function showTable() {
                 document.getElementById('tableView').classList.remove('hidden');
                 document.getElementById('listView').classList.add('hidden');
                 document.getElementById('tab-screening').classList.add('active');
                 document.getElementById('tab-reviewed').classList.remove('active');
-                filterTable(); // Apply current filters to the active view
+                filterTable();
             }
 
             function showList() {
@@ -954,10 +1010,94 @@
                 document.getElementById('listView').classList.remove('hidden');
                 document.getElementById('tab-screening').classList.remove('active');
                 document.getElementById('tab-reviewed').classList.add('active');
-                filterList(); // Apply current filters to the active view
+                filterList();
             }
 
-            // Open review modal
+            // Modal Tab switching functionality
+            function showTab(tabName) {
+                // Hide all tab contents
+                const tabContents = document.querySelectorAll('.tab-content');
+                tabContents.forEach(content => content.classList.add('hidden'));
+
+                // Remove active class from all tab buttons
+                const tabButtons = document.querySelectorAll('.tab-button');
+                tabButtons.forEach(button => {
+                    button.classList.remove('active');
+                    button.classList.remove('text-violet-600');
+                    button.classList.add('text-gray-500');
+                    button.classList.remove('border-b-2', 'border-violet-600');
+                });
+
+                // Show the selected tab content
+                document.getElementById('tab-' + tabName + '-content').classList.remove('hidden');
+
+                // Add active class to the selected tab button
+                const activeTab = document.getElementById('tab-' + tabName);
+                activeTab.classList.add('active', 'text-violet-600', 'border-b-2', 'border-violet-600');
+                activeTab.classList.remove('text-gray-500');
+            }
+
+            // Open Edit Remarks Modal
+            function openEditRemarksModal(button) {
+                const id = button.getAttribute("data-id");
+                const name = button.getAttribute("data-name");
+                const fname = button.getAttribute("data-fname");
+                const mname = button.getAttribute("data-mname");
+                const lname = button.getAttribute("data-lname");
+                const suffix = button.getAttribute("data-suffix");
+                const bdate = button.getAttribute("data-bdate");
+                const brgy = button.getAttribute("data-brgy");
+                const gender = button.getAttribute("data-gender");
+                const pob = button.getAttribute("data-pob");
+
+                // Set the values in the modal form
+                document.getElementById('remarks_id').value = id;
+                document.getElementById('applicant_fname').value = fname || '';
+                document.getElementById('applicant_mname').value = mname || '';
+                document.getElementById('applicant_lname').value = lname || '';
+                document.getElementById('applicant_suffix').value = suffix || '';
+                document.getElementById('head_dob').value = bdate || '';
+                document.getElementById('head_barangay').value = brgy || '';
+                document.getElementById('applicant_gender').value = gender || '';
+                document.getElementById('head_pob').value = pob || '';
+
+                // Generate serial number and location
+                document.getElementById('serial_number').value = 'SN-' + Date.now();
+
+
+                // Set current date for Date Entry
+                setCurrentDate();
+
+                // Clear previous family members and service records
+                document.getElementById('family_members_tbody').innerHTML = '';
+                document.getElementById('rv_service_records_tbody').innerHTML = '';
+
+                // Fetch existing intake sheet data and populate form
+                fetch(`/lydo_staff/intake-sheet/${id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data) {
+                            populateEditModal(data);
+                        }
+                    })
+                    .catch(err => console.error('Error fetching intake sheet data:', err))
+                    .finally(() => {
+                        // Show the modal
+                        document.getElementById('editRemarksModal').classList.remove('hidden');
+                        document.body.classList.add('modal-open');
+
+                        // Reset to first tab
+                        showTab('family');
+                    });
+            }
+
+            // Close Edit Remarks Modal
+            function closeEditRemarksModal() {
+                document.getElementById('editRemarksModal').classList.add('hidden');
+                document.body.classList.remove('modal-open');
+            }
+
+            // Open Review Modal
             function openReviewModal(button) {
                 const id = button.getAttribute("data-id");
                 
@@ -968,21 +1108,22 @@
                         if (data) {
                             populateReviewModal(data);
                             document.getElementById('reviewModal').style.display = 'block';
+                            document.body.classList.add('modal-open');
                         }
                     })
                     .catch(err => console.error('Error fetching intake sheet data:', err));
             }
 
-            // Close review modal
+            // Close Review Modal
             function closeReviewModal() {
                 document.getElementById('reviewModal').style.display = 'none';
+                document.body.classList.remove('modal-open');
             }
 
-            // Populate review modal with data
+            // Populate Review Modal with data
             function populateReviewModal(d) {
                 const modalContent = document.getElementById('modalReviewContent');
                 
-                // Create the review content for the modal
                 modalContent.innerHTML = `
                     <div class="review-columns">
                         <div class="space-y-4">
@@ -1001,7 +1142,7 @@
                                         <td><strong>Address:</strong> ${d.head_address || "-"}</td>
                                         <td><strong>Zone:</strong> ${d.head_zone || "-"}</td>
                                         <td><strong>Barangay:</strong> ${d.head_barangay || "-"}</td>
-                                        <td><strong>Location:</strong> ${d.location || "-"}</td>
+                                     
                                     </tr>
                                     <tr>
                                         <td><strong>Date of Birth:</strong> ${d.head_dob || "-"}</td>
@@ -1059,71 +1200,6 @@
                                         })()}
                                     </tbody>
                                 </table>
-
-                                <!-- SOCIAL SERVICE RECORD -->
-                                <div class="thin-border p-2 mb-3 mt-4">
-                                    <h4 class="font-semibold mb-2">SOCIAL SERVICE RECORD</h4>
-                                    <table class="min-w-full border text-sm">
-                                        <thead class="bg-gray-100">
-                                            <tr>
-                                                <th class="border px-2 py-1 w-20 text-center">DATE</th>
-                                                <th class="border px-2 py-1 text-center">
-                                                    PROBLEM PRESENTED<br /><span
-                                                        class="text-xs text-gray-500"
-                                                        >(to be filled by support staff)</span
-                                                    >
-                                                </th>
-                                                <th class="border px-2 py-1 text-center">
-                                                    ASSISTANCE PROVIDED<br /><span
-                                                        class="text-xs text-gray-500"
-                                                        >(to be filled by program implementer)</span
-                                                    >
-                                                </th>
-                                                <th class="border px-2 py-1 text-center">REMARKS</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${(() => {
-                                                let serviceRecords = d.rv_service_records;
-                                                if (typeof serviceRecords === 'string') {
-                                                    try {
-                                                        serviceRecords = JSON.parse(serviceRecords);
-                                                    } catch (e) {
-                                                        serviceRecords = [];
-                                                    }
-                                                }
-                                                return Array.isArray(serviceRecords) && serviceRecords.length > 0 ? 
-                                                    serviceRecords.map(record => `
-                                                        <tr>
-                                                            <td class="border px-2 py-1 text-center">${formatDate(record.date)}</td>
-                                                            <td class="border px-2 py-1 text-left">${escapeHtml(record.problem_need || '')}</td>
-                                                            <td class="border px-2 py-1 text-left">${escapeHtml(record.action_assistance || '')}</td>
-                                                            <td class="border px-2 py-1 text-left">${escapeHtml(record.remarks || '')}</td>
-                                                        </tr>
-                                                    `).join('') : 
-                                                    Array(5).fill(`
-                                                        <tr>
-                                                            <td class="border h-8"></td>
-                                                            <td class="border"></td>
-                                                            <td class="border"></td>
-                                                            <td class="border"></td>
-                                                        </tr>
-                                                    `).join('');
-                                            })()}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <!-- HEALTH CONDITION & CODES -->
-                                <div class="thin-border p-2">
-                                    <h4 class="font-semibold mb-2">
-                                        HEALTH CONDITION &amp; CODES
-                                    </h4>
-                                    <p><strong>Health Condition:</strong></p>
-                                    <p class="ml-2">
-                                        A. DEAD • B. INJURED • C. MISSING • D. With Illness
-                                    </p>
-                                </div>
                             </div>
                             
                             <div class="print-box p-4">
@@ -1135,15 +1211,45 @@
                                         <td><strong>Total Family Net Income:</strong> ₱${d.house_net_income || "-"}</td>
                                     </tr>
                                     <tr>
-                                        <td><strong>House (Owned/Rented):</strong> ${d.house_house || "-"}<br>
-                                            ${d.house_house === 'Rented' ? `<strong>House Rent:</strong> ₱${d.house_house_rent || '-'}` : ''}
-                                        </td>
-                                        <td><strong>Lot (Owned/Rented):</strong> ${d.house_lot || "-"}<br>
-                                            ${d.house_lot === 'Rented' ? `<strong>Lot Rent:</strong> ₱${d.house_lot_rent || '-'}` : ''}
-                                        </td>
+                                        <td><strong>House (Owned/Rented):</strong> ${d.house_house || "-"}</td>
+                                        <td><strong>Lot (Owned/Rented):</strong> ${d.house_lot || "-"}</td>
                                         <td><strong>Water:</strong> ₱${d.house_water || "-"}</td>
                                         <td><strong>Electricity Source:</strong> ₱${d.house_electric || "-"}</td>
                                     </tr>
+                                </table>
+                            </div>
+
+                            <div class="print-box p-4">
+                                <h4 class="font-semibold">Social Service Records</h4>
+                                <table class="min-w-full text-sm thin-border">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="border px-2 py-1">Date</th>
+                                            <th class="border px-2 py-1">Problem/Need</th>
+                                            <th class="border px-2 py-1">Action/Assistance Given</th>
+                                            <th class="border px-2 py-1">Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${(() => {
+                                            let serviceRecords = d.rv_service_records;
+                                            if (typeof serviceRecords === 'string') {
+                                                try {
+                                                    serviceRecords = JSON.parse(serviceRecords);
+                                                } catch (e) {
+                                                    serviceRecords = [];
+                                                }
+                                            }
+                                            return Array.isArray(serviceRecords) && serviceRecords.length > 0 ? serviceRecords.map(r => `
+                                                <tr>
+                                                    <td class="border px-2 py-1 text-left">${formatDate(r.date)}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(r.problem || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(r.action || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(r.remarks || '')}</td>
+                                                </tr>
+                                            `).join('') : '<tr><td colspan="4" class="border px-2 py-1 text-center text-gray-500">No social service records found</td></tr>';
+                                        })()}
+                                    </tbody>
                                 </table>
                             </div>
                             
@@ -1164,6 +1270,7 @@
                 `;
             }
 
+            // Utility functions
             function formatDate(dateString) {
                 if (!dateString) return "-";
                 const date = new Date(dateString);
@@ -1187,38 +1294,260 @@
                 );
             }
 
-            // Close modal when clicking outside
-            window.addEventListener('click', function(event) {
-                const modal = document.getElementById('reviewModal');
-                if (event.target === modal) {
-                    closeReviewModal();
-                }
-            });
-
-            // Tab switching functionality for modal
-            function showTab(tabName) {
-                // Hide all tab contents
-                const tabContents = document.querySelectorAll('.tab-content');
-                tabContents.forEach(content => content.classList.add('hidden'));
-
-                // Remove active class from all tab buttons
-                const tabButtons = document.querySelectorAll('.tab-button');
-                tabButtons.forEach(button => {
-                    button.classList.remove('active');
-                    button.classList.remove('text-violet-600');
-                    button.classList.add('text-gray-500');
-                    button.classList.remove('border-b-2', 'border-violet-600');
-                });
-
-                // Show the selected tab content
-                document.getElementById('tab-' + tabName + '-content').classList.remove('hidden');
-
-                // Add active class to the selected tab button
-                document.getElementById('tab-' + tabName).classList.add('active', 'text-violet-600', 'border-b-2', 'border-violet-600');
-                document.getElementById('tab-' + tabName).classList.remove('text-gray-500');
+            // Family Members Functions
+            function addFamilyMemberRow() {
+                const tbody = document.getElementById('family_members_tbody');
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="border px-2 py-1">
+                        <input type="text" name="family_member_name[]" class="w-full border-none focus:ring-0" placeholder="Full Name">
+                    </td>
+                    <td class="border px-2 py-1">
+                        <select name="family_member_relation[]" class="w-full border-none focus:ring-0">
+                            <option value="">Select Relation</option>
+                            <option value="Spouse">Spouse</option>
+                            <option value="Child">Child</option>
+                            <option value="Parent">Parent</option>
+                            <option value="Sibling">Sibling</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </td>
+                    <td class="border px-2 py-1">
+                        <input type="date" name="family_member_birthdate[]" class="w-full border-none focus:ring-0">
+                    </td>
+                    <td class="border px-2 py-1">
+                        <input type="number" name="family_member_age[]" class="w-full border-none focus:ring-0" placeholder="Age">
+                    </td>
+                    <td class="border px-2 py-1">
+                        <select name="family_member_sex[]" class="w-full border-none focus:ring-0">
+                            <option value="">Select Sex</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </td>
+                    <td class="border px-2 py-1">
+                        <select name="family_member_civil_status[]" class="w-full border-none focus:ring-0">
+                            <option value="">Select Status</option>
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Widowed">Widowed</option>
+                            <option value="Separated">Separated</option>
+                        </select>
+                    </td>
+                    <td class="border px-2 py-1">
+                        <select name="family_member_education[]" class="w-full border-none focus:ring-0">
+                            <option value="">Select Education</option>
+                            <option value="Elementary">Elementary</option>
+                            <option value="High School">High School</option>
+                            <option value="College">College</option>
+                            <option value="Vocational">Vocational</option>
+                            <option value="Post Graduate">Post Graduate</option>
+                        </select>
+                    </td>
+                    <td class="border px-2 py-1">
+                        <input type="text" name="family_member_occupation[]" class="w-full border-none focus:ring-0" placeholder="Occupation">
+                    </td>
+                    <td class="border px-2 py-1">
+                        <input type="number" step="0.01" name="family_member_income[]" class="w-full border-none focus:ring-0" placeholder="0.00">
+                    </td>
+                    <td class="border px-2 py-1">
+                        <select name="family_member_remarks[]" class="w-full border-none focus:ring-0">
+                            <option value="">Select Remarks</option>
+                            <option value="OSY">Out of School Youth (OSY)</option>
+                            <option value="SP">Solo Parent (SP)</option>
+                            <option value="PWD">Person with Disability (PWD)</option>
+                            <option value="SC">Senior Citizen (SC)</option>
+                            <option value="Lactating">Lactating Mother</option>
+                            <option value="Pregnant">Pregnant Mother</option>
+                        </select>
+                    </td>
+                    <td class="border px-2 py-1">
+                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
             }
 
+            // Service Records Functions
+            function addRvServiceRecordRow() {
+                const tbody = document.getElementById('rv_service_records_tbody');
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="border px-2 py-1">
+                        <input type="date" name="service_record_date[]" class="w-full border-none focus:ring-0" value="${new Date().toISOString().split('T')[0]}">
+                    </td>
+                    <td class="border px-2 py-1">
+                        <input type="text" name="service_record_problem[]" class="w-full border-none focus:ring-0" placeholder="Problem/Need">
+                    </td>
+                    <td class="border px-2 py-1">
+                        <input type="text" name="service_record_action[]" class="w-full border-none focus:ring-0" placeholder="Action/Assistance">
+                    </td>
+                    <td class="border px-2 py-1">
+                        <input type="text" name="service_record_remarks[]" class="w-full border-none focus:ring-0" placeholder="Remarks">
+                    </td>
+                    <td class="border px-2 py-1 text-center">
+                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+
+            // Filtering functions
+            function filterTable() {
+                const nameSearchValue = document.getElementById('nameSearch').value.toLowerCase().trim();
+                const barangayFilterValue = document.getElementById('barangayFilter').value.toLowerCase().trim();
+
+                const tableViewRows = document.querySelectorAll('#tableView tbody tr');
+                tableViewRows.forEach(row => {
+                    const nameCell = row.cells[1].textContent.toLowerCase();
+                    const barangayCell = row.cells[2].textContent.toLowerCase();
+
+                    const matchesName = nameCell.includes(nameSearchValue);
+                    const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
+
+                    if (matchesName && matchesBarangay) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+
+            function filterList() {
+                const nameSearchValue = document.getElementById('listNameSearch').value.toLowerCase().trim();
+                const barangayFilterValue = document.getElementById('listBarangayFilter').value.toLowerCase().trim();
+
+                const listViewRows = document.querySelectorAll('#listView tbody tr');
+                listViewRows.forEach(row => {
+                    const nameCell = row.cells[1].textContent.toLowerCase();
+                    const barangayCell = row.cells[2].textContent.toLowerCase();
+
+                    const matchesName = nameCell.includes(nameSearchValue);
+                    const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
+
+                    if (matchesName && matchesBarangay) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+
+            // Update the calculateIncomes function with proper calculation
+            function calculateIncomes() {
+                // Calculate total family income from family members
+                let totalFamilyIncome = 0;
+                const incomeInputs = document.querySelectorAll('input[name="family_member_income[]"]');
+                incomeInputs.forEach(input => {
+                    totalFamilyIncome += parseFloat(input.value) || 0;
+                });
+
+                // Add other income
+                const otherIncome = parseFloat(document.getElementById('other_income').value) || 0;
+                const houseTotalIncome = totalFamilyIncome + otherIncome;
+                
+                // Set total income
+                document.getElementById('house_total_income').value = houseTotalIncome.toFixed(2);
+
+                // Calculate expenses (house rent, lot rent, water, electric)
+                const houseRent = parseFloat(document.getElementById('house_house_rent').value) || 0;
+                const lotRent = parseFloat(document.getElementById('house_lot_rent').value) || 0;
+                const houseWater = parseFloat(document.getElementById('house_water').value) || 0;
+                const houseElectric = parseFloat(document.getElementById('house_electric').value) || 0;
+                
+                // Total expenses (house rent + lot rent + water + electric)
+                const totalExpenses = houseRent + lotRent + houseWater + houseElectric;
+                
+                // Calculate net income (total income minus total expenses)
+                const netIncome = houseTotalIncome - totalExpenses;
+                
+                document.getElementById('house_net_income').value = netIncome.toFixed(2);
+            }
+
+            // Form submission handling
             document.addEventListener('DOMContentLoaded', function() {
+                // Set current date when page loads
+                setCurrentDate();
+
+                // Add event listeners for house and lot toggles
+                const houseSelect = document.getElementById('house_house');
+                const lotSelect = document.getElementById('house_lot');
+                const houseRentGroup = document.getElementById('house_rent_group');
+                const lotRentGroup = document.getElementById('lot_rent_group');
+
+                function toggleHouseFields() {
+                    const value = houseSelect.value;
+                    if (value === 'Rent') {
+                        houseRentGroup.style.display = 'block';
+                    } else {
+                        houseRentGroup.style.display = 'none';
+                        document.getElementById('house_house_rent').value = '';
+                        calculateIncomes(); // Recalculate when field is hidden
+                    }
+                }
+
+                function toggleLotFields() {
+                    const value = lotSelect.value;
+                    if (value === 'Rent') {
+                        lotRentGroup.style.display = 'block';
+                    } else {
+                        lotRentGroup.style.display = 'none';
+                        document.getElementById('house_lot_rent').value = '';
+                        calculateIncomes(); // Recalculate when field changes
+                    }
+                }
+
+                if (houseSelect) {
+                    houseSelect.addEventListener('change', toggleHouseFields);
+                    // Initialize on page load
+                    toggleHouseFields();
+                }
+                if (lotSelect) {
+                    lotSelect.addEventListener('change', toggleLotFields);
+                    // Initialize on page load
+                    toggleLotFields();
+                }
+
+                // Add event listeners for all income and expense fields
+                document.addEventListener('input', function(e) {
+                    if (e.target.name === 'family_member_income[]' ||
+                        e.target.id === 'other_income' ||
+                        e.target.id === 'house_house_rent' ||
+                        e.target.id === 'house_lot_rent' ||
+                        e.target.id === 'house_water' ||
+                        e.target.id === 'house_electric') {
+                        calculateIncomes();
+                    }
+                });
+
+                // Enable/disable next button based on remarks selection
+                const remarksSelect = document.getElementById('remarks');
+                const additionalNextBtn = document.getElementById('additional-next-btn');
+
+                function checkRemarksSelection() {
+                    if (remarksSelect && remarksSelect.value) {
+                        additionalNextBtn.disabled = false;
+                        additionalNextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        additionalNextBtn.classList.add('hover:bg-blue-700');
+                    } else {
+                        additionalNextBtn.disabled = true;
+                        additionalNextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        additionalNextBtn.classList.remove('hover:bg-blue-700');
+                    }
+                }
+
+                if (remarksSelect) {
+                    remarksSelect.addEventListener('change', checkRemarksSelection);
+                    // Initial check
+                    checkRemarksSelection();
+                }
+
                 // Add confirmation for modal form submit
                 const modalForm = document.getElementById('updateRemarksForm');
                 if (modalForm) {
@@ -1229,6 +1558,40 @@
                             Swal.fire('Error', 'Please select a remark before updating.', 'error');
                             return;
                         }
+
+                        // Serialize family members data
+                        let familyMembers = [];
+                        const familyRows = document.querySelectorAll('#family_members_tbody tr');
+                        familyRows.forEach(row => {
+                            const cells = row.cells;
+                            familyMembers.push({
+                                name: cells[0].querySelector('input').value || '',
+                                relationship: cells[1].querySelector('select').value || '',
+                                birthdate: cells[2].querySelector('input').value || '',
+                                age: cells[3].querySelector('input').value || '',
+                                sex: cells[4].querySelector('select').value || '',
+                                civil_status: cells[5].querySelector('select').value || '',
+                                education: cells[6].querySelector('select').value || '',
+                                occupation: cells[7].querySelector('input').value || '',
+                                monthly_income: cells[8].querySelector('input').value || '',
+                                remarks: cells[9].querySelector('select').value || '',
+                            });
+                        });
+                        document.getElementById('family_members').value = JSON.stringify(familyMembers);
+
+                        // Serialize service records data
+                        let serviceRecords = [];
+                        const serviceRows = document.querySelectorAll('#rv_service_records_tbody tr');
+                        serviceRows.forEach(row => {
+                            const cells = row.cells;
+                            serviceRecords.push({
+                                date: cells[0].querySelector('input').value || '',
+                                problem: cells[1].querySelector('input').value || '',
+                                action: cells[2].querySelector('input').value || '',
+                                remarks: cells[3].querySelector('input').value || '',
+                            });
+                        });
+                        document.getElementById('rv_service_records').value = JSON.stringify(serviceRecords);
 
                         const id = document.getElementById('remarks_id').value;
                         modalForm.action = "/lydo_staff/update-intake-sheet/" + id;
@@ -1254,54 +1617,550 @@
                 document.getElementById('barangayFilter').addEventListener('change', filterTable);
                 document.getElementById('listNameSearch').addEventListener('input', filterList);
                 document.getElementById('listBarangayFilter').addEventListener('change', filterList);
+
+                // Close modals when clicking outside
+                window.addEventListener('click', function(event) {
+                    const editModal = document.getElementById('editRemarksModal');
+                    const reviewModal = document.getElementById('reviewModal');
+                    
+                    if (event.target === editModal) {
+                        closeEditRemarksModal();
+                    }
+                    if (event.target === reviewModal) {
+                        closeReviewModal();
+                    }
+                });
+
+                // Initial calculation
+                calculateIncomes();
             });
 
-            // Function to filter the table view based on name and barangay
-            function filterTable() {
-                const nameSearchValue = document.getElementById('nameSearch').value.toLowerCase().trim();
-                const barangayFilterValue = document.getElementById('barangayFilter').value.toLowerCase().trim();
+            // Populate Edit Modal with existing data
+            function populateEditModal(data) {
+                // Populate head of family details
+                document.getElementById('head_4ps').value = data.head_4ps || '';
+                document.getElementById('head_ipno').value = data.head_ipno || '';
+                document.getElementById('head_address').value = data.head_address || '';
+                document.getElementById('head_zone').value = data.head_zone || '';
+                document.getElementById('head_educ').value = data.head_educ || '';
+                document.getElementById('head_occ').value = data.head_occ || '';
+                document.getElementById('head_religion').value = data.head_religion || '';
 
-                // Filter tableView
-                const tableViewRows = document.querySelectorAll('#tableView tbody tr');
-                tableViewRows.forEach(row => {
-                    const nameCell = row.cells[1].textContent.toLowerCase();
-                    const barangayCell = row.cells[2].textContent.toLowerCase();
+                // Populate household information
+                document.getElementById('other_income').value = data.other_income || '';
+                document.getElementById('house_total_income').value = data.house_total_income || '';
+                document.getElementById('house_net_income').value = data.house_net_income || '';
+                document.getElementById('house_house').value = data.house_house || '';
+                document.getElementById('house_lot').value = data.house_lot || '';
+                document.getElementById('house_water').value = data.house_water || '';
+                document.getElementById('house_electric').value = data.house_electric || '';
 
-                    const matchesName = nameCell.includes(nameSearchValue);
-                    const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
+                // Handle conditional fields for house and lot
+                const houseSelect = document.getElementById('house_house');
+                const lotSelect = document.getElementById('house_lot');
+                
+                if (data.house_house === 'Rent') {
+                    document.getElementById('house_rent_group').style.display = 'block';
+                    document.getElementById('house_house_rent').value = data.house_house_rent || '';
+                }
+                
+                if (data.house_lot === 'Rent') {
+                    document.getElementById('lot_rent_group').style.display = 'block';
+                    document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
+                }
 
-                    if (matchesName && matchesBarangay) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
+                // Trigger change events to update UI
+                if (houseSelect) {
+                    houseSelect.dispatchEvent(new Event('change'));
+                }
+                if (lotSelect) {
+                    lotSelect.dispatchEvent(new Event('change'));
+                }
+
+                // Populate remarks
+                document.getElementById('remarks').value = data.remarks || '';
+
+                // Populate health & signatures
+                document.getElementById('worker_name').value = data.worker_name || '';
+                document.getElementById('officer_name').value = data.officer_name || '';
+                // Don't overwrite date_entry if it's already set to current date
+                if (!document.getElementById('date_entry').value) {
+                    document.getElementById('date_entry').value = data.date_entry || '';
+                }
+                document.getElementById('signature_client').value = data.signature_client || '';
+                document.getElementById('signature_worker').value = data.signature_worker || '';
+                document.getElementById('signature_officer').value = data.signature_officer || '';
+
+                // Populate family members
+                if (data.family_members) {
+                    let familyMembers = data.family_members;
+                    if (typeof familyMembers === 'string') {
+                        try {
+                            familyMembers = JSON.parse(familyMembers);
+                        } catch (e) {
+                            familyMembers = [];
+                        }
                     }
+                    if (Array.isArray(familyMembers)) {
+                        familyMembers.forEach(member => {
+                            addFamilyMemberRow();
+                            const rows = document.querySelectorAll('#family_members_tbody tr');
+                            const lastRow = rows[rows.length - 1];
+                            lastRow.cells[0].querySelector('input').value = member.name || '';
+                            lastRow.cells[1].querySelector('select').value = member.relationship || '';
+                            lastRow.cells[2].querySelector('input').value = member.birthdate || '';
+                            lastRow.cells[3].querySelector('input').value = member.age || '';
+                            lastRow.cells[4].querySelector('select').value = member.sex || '';
+                            lastRow.cells[5].querySelector('select').value = member.civil_status || '';
+                            lastRow.cells[6].querySelector('select').value = member.education || '';
+                            lastRow.cells[7].querySelector('input').value = member.occupation || '';
+                            lastRow.cells[8].querySelector('input').value = member.monthly_income || '';
+                            lastRow.cells[9].querySelector('select').value = member.remarks || '';
+                        });
+                    }
+                }
+
+                // Populate service records
+                if (data.rv_service_records) {
+                    let serviceRecords = data.rv_service_records;
+                    if (typeof serviceRecords === 'string') {
+                        try {
+                            serviceRecords = JSON.parse(serviceRecords);
+                        } catch (e) {
+                            serviceRecords = [];
+                        }
+                    }
+                    if (Array.isArray(serviceRecords)) {
+                        serviceRecords.forEach(record => {
+                            addRvServiceRecordRow();
+                            const rows = document.querySelectorAll('#rv_service_records_tbody tr');
+                            const lastRow = rows[rows.length - 1];
+                            // Only set the date if it's not already set to current date
+                            if (!lastRow.cells[0].querySelector('input').value) {
+                                lastRow.cells[0].querySelector('input').value = record.date || '';
+                            }
+                            lastRow.cells[1].querySelector('input').value = record.problem || '';
+                            lastRow.cells[2].querySelector('input').value = record.action || '';
+                            lastRow.cells[3].querySelector('input').value = record.remarks || '';
+                        });
+                    }
+                }
+
+                // Calculate incomes after populating data
+                setTimeout(calculateIncomes, 100);
+            }
+
+            // Signature modal variables
+            let signaturePad = null;
+            let currentSignatureType = '';
+
+            // Signature modal functions
+            function openSignatureModal(type) {
+                currentSignatureType = type;
+                document.getElementById('signatureModalTitle').textContent = type.charAt(0).toUpperCase() + type.slice(1) + ' Signature';
+                document.getElementById('signatureModal').classList.remove('hidden');
+                document.body.classList.add('modal-open');
+
+                // Initialize signature pad
+                const canvas = document.getElementById('signatureCanvas');
+                signaturePad = new SignaturePad(canvas, {
+                    backgroundColor: 'rgb(255, 255, 255)',
+                    penColor: 'rgb(0, 0, 0)',
+                    minWidth: 1,
+                    maxWidth: 3
+                });
+
+                // Resize canvas for proper rendering
+                resizeCanvas(canvas);
+            }
+
+            function closeSignatureModal() {
+                document.getElementById('signatureModal').classList.add('hidden');
+                document.body.classList.remove('modal-open');
+                if (signaturePad) {
+                    signaturePad.clear();
+                }
+            }
+
+            function clearSignature() {
+                if (signaturePad) {
+                    signaturePad.clear();
+                }
+            }
+
+            function saveSignature() {
+                if (!signaturePad) return;
+
+                if (signaturePad.isEmpty()) {
+                    Swal.fire({
+                        title: 'No Signature',
+                        text: 'Please provide a signature before saving.',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                const signatureData = signaturePad.toDataURL();
+                document.getElementById('signature_' + currentSignatureType).value = signatureData;
+
+                // Update button text to show signature is saved
+                const button = document.querySelector(`button[onclick="openSignatureModal('${currentSignatureType}')"]`);
+                if (button) {
+                    button.textContent = 'Signature Saved ✓';
+                    button.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+                    button.classList.add('bg-green-100', 'hover:bg-green-200', 'text-green-800');
+                }
+
+                closeSignatureModal();
+
+                Swal.fire({
+                    title: 'Signature Saved',
+                    text: 'The signature has been saved successfully.',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
                 });
             }
 
-            // Function to filter the list view based on name and barangay
-            function filterList() {
-                const nameSearchValue = document.getElementById('listNameSearch').value.toLowerCase().trim();
-                const barangayFilterValue = document.getElementById('listBarangayFilter').value.toLowerCase().trim();
-
-                // Filter listView
-                const listViewRows = document.querySelectorAll('#listView tbody tr');
-                listViewRows.forEach(row => {
-                    const nameCell = row.cells[1].textContent.toLowerCase();
-                    const barangayCell = row.cells[2].textContent.toLowerCase();
-
-                    const matchesName = nameCell.includes(nameSearchValue);
-                    const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
-
-                    if (matchesName && matchesBarangay) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
+            function resizeCanvas(canvas) {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext('2d').scale(ratio, ratio);
+                if (signaturePad) {
+                    signaturePad.clear();
+                }
             }
 
-            // Rest of your existing functions (openEditRemarksModal, addFamilyMemberRow, etc.) remain the same
-            // ... [Keep all your existing functions for the edit modal]
+            // Print Intake Sheet function
+            function printIntakeSheet() {
+                // Collect form data
+                const formData = {
+                    serial_number: document.getElementById('serial_number').value,
+                    applicant_fname: document.getElementById('applicant_fname').value,
+                    applicant_mname: document.getElementById('applicant_mname').value,
+                    applicant_lname: document.getElementById('applicant_lname').value,
+                    applicant_suffix: document.getElementById('applicant_suffix').value,
+                    head_4ps: document.getElementById('head_4ps').value,
+                    head_ipno: document.getElementById('head_ipno').value,
+                    head_address: document.getElementById('head_address').value,
+                    head_zone: document.getElementById('head_zone').value,
+                    head_barangay: document.getElementById('head_barangay').value,
+                    head_dob: document.getElementById('head_dob').value,
+                    head_pob: document.getElementById('head_pob').value,
+                    applicant_gender: document.getElementById('applicant_gender').value,
+                    head_educ: document.getElementById('head_educ').value,
+                    head_occ: document.getElementById('head_occ').value,
+                    head_religion: document.getElementById('head_religion').value,
+                    other_income: document.getElementById('other_income').value,
+                    house_total_income: document.getElementById('house_total_income').value,
+                    house_net_income: document.getElementById('house_net_income').value,
+                    house_house: document.getElementById('house_house').value,
+                    house_house_rent: document.getElementById('house_house_rent').value,
+                    house_lot: document.getElementById('house_lot').value,
+                    house_lot_rent: document.getElementById('house_lot_rent').value,
+                    house_water: document.getElementById('house_water').value,
+                    house_electric: document.getElementById('house_electric').value,
+                    remarks: document.getElementById('remarks').value,
+                    worker_name: document.getElementById('worker_name').value,
+                    officer_name: document.getElementById('officer_name').value,
+                    date_entry: document.getElementById('date_entry').value,
+                    signature_client: document.getElementById('signature_client').value,
+                    signature_worker: document.getElementById('signature_worker').value,
+                    signature_officer: document.getElementById('signature_officer').value
+                };
+
+                // Collect family members data
+                let familyMembers = [];
+                const familyRows = document.querySelectorAll('#family_members_tbody tr');
+                familyRows.forEach(row => {
+                    const cells = row.cells;
+                    familyMembers.push({
+                        name: cells[0].querySelector('input').value || '',
+                        relationship: cells[1].querySelector('select').value || '',
+                        birthdate: cells[2].querySelector('input').value || '',
+                        age: cells[3].querySelector('input').value || '',
+                        sex: cells[4].querySelector('select').value || '',
+                        civil_status: cells[5].querySelector('select').value || '',
+                        education: cells[6].querySelector('select').value || '',
+                        occupation: cells[7].querySelector('input').value || '',
+                        monthly_income: cells[8].querySelector('input').value || '',
+                        remarks: cells[9].querySelector('select').value || '',
+                    });
+                });
+
+                // Collect service records data
+                let serviceRecords = [];
+                const serviceRows = document.querySelectorAll('#rv_service_records_tbody tr');
+                serviceRows.forEach(row => {
+                    const cells = row.cells;
+                    serviceRecords.push({
+                        date: cells[0].querySelector('input').value || '',
+                        problem: cells[1].querySelector('input').value || '',
+                        action: cells[2].querySelector('input').value || '',
+                        remarks: cells[3].querySelector('input').value || '',
+                    });
+                });
+
+                // Create printable HTML
+                const printWindow = window.open('', '_blank');
+                const printContent = `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Family Intake Sheet - Print</title>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                font-size: 12px;
+                                line-height: 1.4;
+                                margin: 0;
+                                padding: 20px;
+                            }
+                            .header {
+                                text-align: center;
+                                margin-bottom: 20px;
+                                border-bottom: 2px solid #333;
+                                padding-bottom: 10px;
+                            }
+                            .header h1 {
+                                margin: 0;
+                                font-size: 18px;
+                            }
+                            .section {
+                                margin-bottom: 20px;
+                                border: 1px solid #e5e7eb;
+                                padding: 15px;
+                                border-radius: 5px;
+                            }
+                            .section h3 {
+                                margin: 0 0 10px 0;
+                                font-size: 14px;
+                                border-bottom: 1px solid #e5e7eb;
+                                padding-bottom: 5px;
+                            }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin-top: 10px;
+                            }
+                            th, td {
+                                border: 1px solid #e5e7eb;
+                                padding: 5px;
+                                text-align: left;
+                            }
+                            th {
+                                background-color: #f9fafb;
+                                font-weight: 600;
+                            }
+                            .info-table {
+                                margin-bottom: 15px;
+                            }
+                            .info-table td {
+                                padding: 3px 5px;
+                            }
+                            .signature-section {
+                                border-top: 1px solid #333;
+                                margin-top: 30px;
+                                padding-top: 20px;
+                            }
+                            .signature-line {
+                                border-top: 1px solid #333;
+                                width: 200px;
+                                margin-top: 30px;
+                                text-align: center;
+                                display: inline-block;
+                            }
+                            .remarks-grid {
+                                display: grid;
+                                grid-template-columns: repeat(2, 1fr);
+                                gap: 10px;
+                                margin-top: 10px;
+                            }
+                            .remark-item {
+                                padding: 5px;
+                                border: 1px solid #e5e7eb;
+                                border-radius: 3px;
+                                font-size: 11px;
+                            }
+                            @media print {
+                                body {
+                                    background: white !important;
+                                    color: #000;
+                                    font-size: 10px;
+                                }
+                                .no-print {
+                                    display: none !important;
+                                }
+                                @page {
+                                    size: landscape;
+                                    margin: 4mm;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h1>LYDO Scholarship</h1>
+                            <h2>Family Intake Sheet</h2>
+                        </div>
+
+                        <div class="section">
+                            <h3>Head of Family</h3>
+                            <table class="info-table">
+                                <tr>
+                                    <td><strong>Serial No.:</strong> ${formData.serial_number || "AUTO_GENERATED"}</td>
+                                    <td><strong>Name:</strong> ${[formData.applicant_fname, formData.applicant_mname, formData.applicant_lname, formData.applicant_suffix].filter(Boolean).join(" ")}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Sex:</strong> ${formData.applicant_gender || "-"}</td>
+                                    <td><strong>4Ps:</strong> ${formData.head_4ps || "-"}</td>
+                                    <td><strong>IP No.:</strong> ${formData.head_ipno || "-"}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Address:</strong> ${formData.head_address || "-"}</td>
+                                    <td><strong>Zone:</strong> ${formData.head_zone || "-"}</td>
+                                    <td><strong>Barangay:</strong> ${formData.head_barangay || "-"}</td>
+                                    
+                                </tr>
+                                <tr>
+                                    <td><strong>Date of Birth:</strong> ${formatDate(formData.head_dob) || "-"}</td>
+                                    <td><strong>Place of Birth:</strong> ${formData.head_pob || "-"}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Educational Attainment:</strong> ${formData.head_educ || "-"}</td>
+                                    <td><strong>Occupation:</strong> ${formData.head_occ || "-"}</td>
+                                    <td><strong>Religion:</strong> ${formData.head_religion || "-"}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="section">
+                            <h3>Family Members</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Relation</th>
+                                        <th>Birthdate</th>
+                                        <th>Age</th>
+                                        <th>Sex</th>
+                                        <th>Civil Status</th>
+                                        <th>Educational Attainment</th>
+                                        <th>Occupation</th>
+                                        <th>Monthly Income</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${familyMembers.map(f => `
+                                        <tr>
+                                            <td>${escapeHtml(f.name || '')}</td>
+                                            <td>${escapeHtml(f.relationship || '')}</td>
+                                            <td>${formatDate(f.birthdate) || ''}</td>
+                                            <td>${escapeHtml(f.age || '')}</td>
+                                            <td>${escapeHtml(f.sex || '')}</td>
+                                            <td>${escapeHtml(f.civil_status || '')}</td>
+                                            <td>${escapeHtml(f.education || '')}</td>
+                                            <td>${escapeHtml(f.occupation || '')}</td>
+                                            <td>₱${escapeHtml(f.monthly_income || '')}</td>
+                                            <td>${escapeHtml(f.remarks || '')}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <div class="remarks-grid">
+                                <div class="remark-item">Out of School Youth (OSY)</div>
+                                <div class="remark-item">Solo Parent (SP)</div>
+                                <div class="remark-item">Person with Disability (PWD)</div>
+                                <div class="remark-item">Senior Citizen (SC)</div>
+                                <div class="remark-item">Lactating Mother</div>
+                                <div class="remark-item">Pregnant Mother</div>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <h3>Household Information</h3>
+                            <table class="info-table">
+                                <tr>
+                                    <td><strong>Other Source of Income:</strong> ₱${formData.other_income || "-"}</td>
+                                    <td><strong>Total Family Income:</strong> ₱${formData.house_total_income || "-"}</td>
+                                    <td><strong>Total Family Net Income:</strong> ₱${formData.house_net_income || "-"}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>House (Owned/Rented):</strong> ${formData.house_house || "-"} ${formData.house_house_rent ? `(Rent: ₱${formData.house_house_rent})` : ''}</td>
+                                    <td><strong>Lot (Owned/Rented):</strong> ${formData.house_lot || "-"} ${formData.house_lot_rent ? `(Rent: ₱${formData.house_lot_rent})` : ''}</td>
+                                    <td><strong>Water:</strong> ₱${formData.house_water || "-"}</td>
+                                    <td><strong>Electricity Source:</strong> ₱${formData.house_electric || "-"}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Remarks:</strong> ${formData.remarks || "-"}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        ${serviceRecords.length > 0 ? `
+                        <div class="section">
+                            <h3>Social Service Records</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Problem/Need</th>
+                                        <th>Action/Assistance Given</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${serviceRecords.map(r => `
+                                        <tr>
+                                            <td>${formatDate(r.date) || ''}</td>
+                                            <td>${escapeHtml(r.problem || '')}</td>
+                                            <td>${escapeHtml(r.action || '')}</td>
+                                            <td>${escapeHtml(r.remarks || '')}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        ` : ''}
+
+                        <div class="section signature-section">
+                            <h3>Signatures</h3>
+                            <table class="info-table">
+                                <tr>
+                                    <td><strong>Worker Name:</strong> ${formData.worker_name || "-"}</td>
+                                    <td><strong>Officer Name:</strong> ${formData.officer_name || "-"}</td>
+                                    <td><strong>Date Entry:</strong> ${formatDate(formData.date_entry) || "-"}</td>
+                                </tr>
+                            </table>
+                            <div style="margin-top: 40px;">
+                                <div style="display: inline-block; margin-right: 100px;">
+                                    <p><strong>Family Head Signature:</strong></p>
+                                    <div class="signature-line"></div>
+                                </div>
+                                <div style="display: inline-block; margin-right: 100px;">
+                                    <p><strong>Social Worker Signature:</strong></p>
+                                    <div class="signature-line"></div>
+                                </div>
+                                <div style="display: inline-block;">
+                                    <p><strong>Officer Signature:</strong></p>
+                                    <div class="signature-line"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                `;
+
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+            }
         </script>
 
         @if(session('success'))
@@ -1314,8 +2173,6 @@
             });
         </script>
         @endif
-
-        <script src="{{ asset('js/logout.js') }}"></script>
     </div>
 </body>
 </html>

@@ -47,6 +47,7 @@ class FamilyIntakeSheet extends Model
         // JSON fields
         'family_members',
         'social_service_records',
+        'rv_service_records',
 
         // Health & Signatures
         'hc_estimated_cost',
@@ -64,6 +65,7 @@ class FamilyIntakeSheet extends Model
     protected $casts = [
         'family_members' => 'array',
         'social_service_records' => 'array',
+        'rv_service_records' => 'array',
         'head_dob' => 'date',
         'date_entry' => 'date',
     ];
