@@ -17,21 +17,35 @@
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 
     <style>
-        /* Professional Color Palette */
+        /* Enhanced Professional Color Palette */
         :root {
-            --primary-color: #7c3aed;
-            --primary-dark: #6d28d9;
-            --primary-light: #a78bfa;
-            --secondary-color: #f3f4f6;
-            --accent-color: #10b981;
-            --danger-color: #ef4444;
-            --warning-color: #f59e0b;
-            --text-primary: #111827;
-            --text-secondary: #6b7280;
-            --border-color: #e5e7eb;
-            --background-light: #f9fafb;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --primary-color: #1e40af;
+            --primary-dark: #1e3a8a;
+            --primary-light: #3b82f6;
+            --primary-lighter: #dbeafe;
+            --secondary-color: #f8fafc;
+            --accent-color: #059669;
+            --accent-light: #d1fae5;
+            --danger-color: #dc2626;
+            --danger-light: #fee2e2;
+            --warning-color: #d97706;
+            --warning-light: #fef3c7;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --border-light: #f1f5f9;
+            --background-light: #f8fafc;
+            --background-white: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --radius-sm: 0.375rem;
+            --radius: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
         }
 
         /* Enhanced Tab Styling */
@@ -83,13 +97,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
         }
 
-        .tab.tab-green {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border-color: #10b981;
-            box-shadow: var(--shadow);
-            transform: translateY(-1px);
-        }
+
 
         /* Enhanced Table Styling */
         .table-container {
@@ -117,9 +125,8 @@
             transition: background-color 0.2s ease;
         }
 
-        #tableView table th,
-        #listView table th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        #tableView table th {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
             color: white;
             font-weight: 600;
             font-size: 14px;
@@ -130,12 +137,19 @@
             z-index: 10;
         }
 
-        #tableView table tbody tr:hover,
-        #listView table tbody tr:hover {
-            background-color: var(--background-light);
-            transform: scale(1.01);
-            transition: all 0.2s ease;
+        #listView table th {
+            background: #08A045;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
+
+
 
         #tableView table tbody tr:last-child td,
         #listView table tbody tr:last-child td {
@@ -675,7 +689,7 @@
 
 <body class="bg-gray-50">
     <div class="dashboard-grid">
-        <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
+        <header class="bg-blue-600 shadow-sm p-4 flex justify-between items-center font-sans">
             <div class="flex items-center">
                 <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
                 <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
@@ -788,8 +802,8 @@
                 </nav>
                 <div class="p-2 md:p-4 border-t">
                     <form method="POST" action="{{ route('logout') }}" id="logoutForm">
-                         @csrf 
-                         <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
+                         @csrf
+                         <button type="button" onclick="confirmLogout()" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
                             <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
                             <span class="hidden md:block text-red-600">Logout</span>
                         </button>
@@ -830,16 +844,17 @@
                             </select>
                         </div>
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
-                            <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase text-sm">
+                            <thead class="bg-gradient-to-r from-green-600 to-green-600 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-4 py-3 border border-gray-200 text-center">#</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Course</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">School</th>
-                                    <th class="px-4py-3 border border-gray-200 text-center">Intake Sheet</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Intake Sheet</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 @forelse($tableApplicants as $index => $app)
                                 <tr class="hover:bg-gray-50 border-b">
@@ -883,7 +898,7 @@
                     <!-- Reviewed Applicants Tab -->
                     <div id="listView" class="overflow-x-auto hidden">
                         <div class="mb-4">
-                            <h3 class="text-lg font-semibold text-gray-700 bg-green-50 p-3 rounded-lg border border-green-200">
+                            <h3 class="text-lg font-semibold text-gray-700 bg-white p-3 rounded-lg border border-gray-200">
                             ✅ Reviewed Applicants: View applicants with assigned remarks (Poor, Non Poor, Ultra Poor).
                             </h3>
                         </div>
@@ -897,7 +912,7 @@
                             </select>
                         </div>
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
-                            <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
+                            <thead class="bg-gradient-to-r from-green-600 to-green-800 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-4 py-3 border border-gray-200 text-center">#</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Name</th>
@@ -975,11 +990,11 @@
 
                 <!-- Tab Navigation -->
                 <div class="flex border-b border-gray-200 mb-6">
-                    <button type="button" id="tab-family" class="tab-button active px-4 py-2 text-sm font-medium text-violet-600 border-b-2 border-violet-600" onclick="showTab('family')">Family Details</button>
-                    <button type="button" id="tab-family-members" class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600" onclick="showTab('family-members')">Family Members</button>
-                    <button type="button" id="tab-additional" class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600" onclick="showTab('additional')">Additional Info</button>
-                    <button type="button" id="tab-social-service" class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600" onclick="showTab('social-service')">Social Service Records</button>
-                    <button type="button" id="tab-health" class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600" onclick="showTab('health')">Health & Signatures</button>
+                    <button type="button" id="tab-family" class="tab-button active px-4 py-2 text-sm font-medium text-violet-600 border-b-2 border-violet-600">Family Details</button>
+                    <button type="button" id="tab-family-members" class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600">Family Members</button>
+                    <button type="button" id="tab-additional" class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600">Additional Info</button>
+                    <button type="button" id="tab-social-service" class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600">Social Service Records</button>
+                    <button type="button" id="tab-health" class="tab-button px-4 py-2 text-sm font-medium text-gray-500 hover:text-violet-600">Health & Signatures</button>
                 </div>
 
                 <form id="updateRemarksForm" method="POST">
