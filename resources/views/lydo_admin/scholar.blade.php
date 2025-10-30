@@ -258,6 +258,9 @@
             <button id="emailSelectedBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
                 Email
             </button>
+            <button id="printPdfBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
+                <i class="fas fa-print mr-2"></i> Print PDF
+            </button>
         </div>
     </div>
 
