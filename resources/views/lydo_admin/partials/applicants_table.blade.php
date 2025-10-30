@@ -1,8 +1,8 @@
 @forelse($applicants as $applicant)
     <tr class="hover:bg-gray-50 transition-colors duration-200">
         <td class="px-4 py-3 border border-gray-200 text-center">
-            <input type="checkbox" 
-                   name="selected_applicants" 
+            <input type="checkbox"
+                   name="selected_applicants"
                    value="{{ $applicant->applicant_email }}"
                    data-applicant-id="{{ $applicant->applicant_id }}"
                    class="applicant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
@@ -29,18 +29,3 @@
         </td>
     </tr>
 @endforelse
-
-@if($applicants->hasPages())
-    <tr>
-        <td colspan="7" class="px-4 py-3 border border-gray-200">
-            <div class="flex justify-between items-center">
-                <div class="text-sm text-gray-600">
-                    Showing {{ $applicants->firstItem() }} to {{ $applicants->lastItem() }} of {{ $applicants->total() }} entries
-                </div>
-                <div class="flex space-x-2">
-                    {{ $applicants->links('pagination::simple-tailwind') }}
-                </div>
-            </div>
-        </td>
-    </tr>
-@endif
