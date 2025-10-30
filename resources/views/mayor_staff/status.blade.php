@@ -388,12 +388,6 @@
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         {{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}
-                                        <!-- DEBUG INFO -->
-                                        <div class="debug-info">
-                                            Status: {{ $app->status }} | 
-                                            Screening: {{ $app->initial_screening }} | 
-                                            Role: {{ $app->role }}
-                                        </div>
                                     </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->barangay }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
@@ -480,12 +474,6 @@
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         {{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}
-                                        <!-- DEBUG INFO -->
-                                        <div class="debug-info">
-                                            Screening: {{ $app->initial_screening }} | 
-                                            Remarks: {{ $app->remarks }} | 
-                                            Role: {{ $app->role }}
-                                        </div>
                                     </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->barangay }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
