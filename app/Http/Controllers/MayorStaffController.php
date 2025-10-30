@@ -745,7 +745,7 @@ $percentageReviewed = $totalApplications > 0
             )
             ->where('lydo.lydopers_role', 'mayor_staff')
             // Comment these out temporarily for debugging
-             ->where('ap.status', 'Waiting')
+             ->where('ap.status', 'Pending')
              ->where('ap.initial_screening', 'Reviewed')
             ->whereIn('ap.remarks', ['Poor', 'Ultra Poor'])
             ->paginate(15);
