@@ -151,8 +151,8 @@ Route::middleware(['role:mayor_staff'])->group(function () {
 });
 
 // Public routes for intake sheet
-Route::get('/lydo_staff/intake-sheet/{application_personnel_id}', [MayorStaffController::class, 'showIntakeSheet'])->name('intake_sheet.show');
-Route::post('/lydo_staff/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheetPublic'])->name('intake_sheet.submit');
+Route::get('/Applicants/intake-sheet/{application_personnel_id}', [MayorStaffController::class, 'showIntakeSheet'])->name('intake_sheet.show');
+Route::post('/Applicants/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheetPublic'])->name('intake_sheet.submit');
 
 
 Route::middleware(['scholar.auth'])->group(function () {
