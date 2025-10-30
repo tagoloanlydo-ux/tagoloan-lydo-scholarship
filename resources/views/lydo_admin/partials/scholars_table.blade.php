@@ -1,44 +1,44 @@
-@forelse($applicants as $applicant)
+@forelse($scholars as $scholar)
     <tr class="hover:bg-gray-50 transition-colors duration-200">
         <td class="px-4 py-3 border border-gray-200 text-center">
-            <input type="checkbox" 
-                   name="selected_applicants" 
-                   value="{{ $applicant->applicant_email }}"
-                   data-applicant-id="{{ $applicant->applicant_id }}"
-                   class="applicant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+            <input type="checkbox"
+                   name="selected_scholars"
+                   value="{{ $scholar->applicant_email }}"
+                   data-scholar-id="{{ $scholar->scholar_id }}"
+                   class="scholar-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
         </td>
         <td class="px-4 py-3 border border-gray-200 text-left">
-            {{ $applicant->applicant_lname }}, {{ $applicant->applicant_fname }}
-            @if($applicant->applicant_mname)
-                {{ substr($applicant->applicant_mname, 0, 1) }}.
+            {{ $scholar->applicant_lname }}, {{ $scholar->applicant_fname }}
+            @if($scholar->applicant_mname)
+                {{ substr($scholar->applicant_mname, 0, 1) }}.
             @endif
-            @if($applicant->applicant_suffix)
-                {{ $applicant->applicant_suffix }}
+            @if($scholar->applicant_suffix)
+                {{ $scholar->applicant_suffix }}
             @endif
         </td>
-        <td class="px-4 py-3 border border-gray-200 text-center">{{ $applicant->applicant_brgy }}</td>
-        <td class="px-4 py-3 border border-gray-200 text-center">{{ $applicant->applicant_email }}</td>
-        <td class="px-4 py-3 border border-gray-200 text-center">{{ $applicant->applicant_school_name }}</td>
-        <td class="px-4 py-3 border border-gray-200 text-center">{{ $applicant->applicant_course ?? 'N/A' }}</td>
-        <td class="px-4 py-3 border border-gray-200 text-center">{{ $applicant->applicant_acad_year ?? 'N/A' }}</td>
+        <td class="px-4 py-3 border border-gray-200 text-center">{{ $scholar->applicant_brgy }}</td>
+        <td class="px-4 py-3 border border-gray-200 text-center">{{ $scholar->applicant_email }}</td>
+        <td class="px-4 py-3 border border-gray-200 text-center">{{ $scholar->applicant_school_name }}</td>
+        <td class="px-4 py-3 border border-gray-200 text-center">{{ $scholar->applicant_course ?? 'N/A' }}</td>
+        <td class="px-4 py-3 border border-gray-200 text-center">{{ $scholar->applicant_acad_year ?? 'N/A' }}</td>
     </tr>
 @empty
     <tr>
         <td colspan="7" class="px-4 py-3 border border-gray-200 text-center text-muted" style="font-size: 15px; font-weight: bold;">
-            No applicants found
+            No scholars found
         </td>
     </tr>
 @endforelse
 
-@if($applicants->hasPages())
+@if($scholars->hasPages())
     <tr>
         <td colspan="7" class="px-4 py-3 border border-gray-200">
             <div class="flex justify-between items-center">
                 <div class="text-sm text-gray-600">
-                    Showing {{ $applicants->firstItem() }} to {{ $applicants->lastItem() }} of {{ $applicants->total() }} entries
+                    Showing {{ $scholars->firstItem() }} to {{ $scholars->lastItem() }} of {{ $scholars->total() }} entries
                 </div>
                 <div class="flex space-x-2">
-                    {{ $applicants->links('pagination::simple-tailwind') }}
+                    {{ $scholars->links('pagination::simple-tailwind') }}
                 </div>
             </div>
         </td>
