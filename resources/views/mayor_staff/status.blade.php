@@ -418,9 +418,6 @@
                                 <tr>
                                     <td colspan="5" class="text-center py-4 border border-gray-200 text-gray-500">
                                         No applicants pending status.
-                                        <div class="text-xs mt-2 text-red-500">
-                                            Check if there are records in the database with: Status=Pending, Screening=Reviewed, Remarks=Poor/Ultra Poor
-                                        </div>
                                     </td>
                                 </tr>
                                 @endforelse
