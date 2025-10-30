@@ -1,8 +1,8 @@
 @forelse($scholars as $scholar)
     <tr class="hover:bg-gray-50 transition-colors duration-200">
         <td class="px-4 py-3 border border-gray-200 text-center">
-            <input type="checkbox"
-                   name="selected_scholars"
+            <input type="checkbox" 
+                   name="selected_scholars" 
                    value="{{ $scholar->applicant_email }}"
                    data-scholar-id="{{ $scholar->scholar_id }}"
                    class="scholar-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
@@ -19,7 +19,7 @@
         <td class="px-4 py-3 border border-gray-200 text-center">{{ $scholar->applicant_brgy }}</td>
         <td class="px-4 py-3 border border-gray-200 text-center">{{ $scholar->applicant_email }}</td>
         <td class="px-4 py-3 border border-gray-200 text-center">{{ $scholar->applicant_school_name }}</td>
-        <td class="px-4 py-3 border border-gray-200 text-center">{{ $scholar->applicant_course ?? 'N/A' }}</td>
+        <td class="px-4 py-3 border border-gray-200 text-center">{{ $scholar->applicant_course }}</td>
         <td class="px-4 py-3 border border-gray-200 text-center">{{ $scholar->applicant_acad_year ?? 'N/A' }}</td>
     </tr>
 @empty
