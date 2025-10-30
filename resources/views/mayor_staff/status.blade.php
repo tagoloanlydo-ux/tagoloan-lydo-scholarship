@@ -378,6 +378,7 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Remarks</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Intake Sheet</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Actions</th>
                                 </tr>
                             </thead>
 
@@ -411,6 +412,24 @@
                                             data-id="{{ $app->application_personnel_id }}">
                                             <i class="fas fa-eye mr-1"></i> View
                                         </button>
+                                    </td>
+                                    <td class="px-4 py-2 border border-gray-200 text-center">
+                                        <div class="flex gap-2 justify-center">
+                                            <button
+                                                title="Approve Application"
+                                                class="px-3 py-1 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg shadow approve-btn"
+                                                data-id="{{ $app->application_personnel_id }}"
+                                                data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}">
+                                                <i class="fas fa-check mr-1"></i> Approve
+                                            </button>
+                                            <button
+                                                title="Reject Application"
+                                                class="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg shadow reject-btn"
+                                                data-id="{{ $app->application_personnel_id }}"
+                                                data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}">
+                                                <i class="fas fa-times mr-1"></i> Reject
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
@@ -1030,5 +1049,21 @@
         @endif
 
         <script src="{{ asset('js/logout.js') }}"></script>
+
+<!-- Review Modal for Intake Sheet -->
+<div id="reviewModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="text-lg font-semibold">Intake Sheet Review</h3>
+            <button class="modal-close" onclick="closeReviewModal()">&times;</button>
+        </div>
+        <div id="modalReviewContent" class="p-4">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+        <div class="modal-actions">
+            <button class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600" onclick="closeReviewModal()">Close</button>
+        </div>
+    </div>
+</div>
     </body>
 </html>
