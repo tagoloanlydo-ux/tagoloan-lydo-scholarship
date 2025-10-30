@@ -620,15 +620,21 @@ $listApplicants = DB::table("tbl_applicant as a")
                 $data
             );
 
-            // Update tbl_application_personnel with initial_screening = 'Reviewed', remarks, and status = 'waiting'
-            DB::table('tbl_application_personnel')
+            // Fetch existing application_personnel to get application_id
+            $existingPersonnel = DB::table('tbl_application_personnel')
                 ->where('application_personnel_id', $id)
-                ->update([
-                    'initial_screening' => 'Reviewed',
-                    'remarks' => $request->remarks,
-                    'status' => 'waiting',
-                    'updated_at' => now(),
-                ]);
+                ->first();
+
+            // Insert new row in tbl_application_personnel
+            DB::table('tbl_application_personnel')->insert([
+                'application_id' => $existingPersonnel->application_id,
+                'lydopers_id' => session('lydopers')->lydopers_id,
+                'initial_screening' => 'Reviewed',
+                'remarks' => $request->remarks,
+                'status' => 'Pending',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
             DB::commit();
 
