@@ -29,7 +29,7 @@ Route::apiResource('/reports', ReportController::class);
 Route::apiResource('/notifications', NotificationController::class);
 Route::apiResource('/admins', AdminController::class);
 
-// Mayor Staff API rgffffggggoutes
+// Mayor Staff API rgffffggsdsadggoutes
 Route::get('/mayor-staff/welcome', [MayorStaffController::class, 'welcomeApi']);
 Route::get('/mayor-staff/intake-sheet/{application_personnel_id}', [MayorStaffController::class, 'getIntakeSheet']);
 
