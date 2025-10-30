@@ -597,7 +597,10 @@
                         }
 
                         console.log('intake-sheet response:', { status: response.status, contentType: ct, data });
-                        if (data) {
+
+                        if (response.status === 404) {
+                            modalContent.innerHTML = '<p class="p-4 text-center text-blue-600">Intake sheet not yet submitted by the applicant.</p>';
+                        } else if (data && !data.error) {
                             populateReviewModal(data);
                         } else {
                             modalContent.innerHTML = '<p class="p-4 text-center text-red-600">No intake sheet data found.</p>';
