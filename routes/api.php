@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\ApplicantController;
 use App\Http\Controllers\API\ApplicationController;
+use App\Http\Controllers\API\ApplicationPersonnelController;
 use App\Http\Controllers\API\ScholarController;
 use App\Http\Controllers\API\AdminController;
 use App\Http\Controllers\API\NotificationController;
@@ -21,7 +22,7 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::apiResource('/applicants', ApplicantController::class);
 Route::apiResource('/applications', ApplicationController::class);
-
+Route::apiResource('/application-personnels', ApplicationPersonnelController::class);
 
 Route::apiResource('/scholars', ScholarController::class);
 Route::apiResource('/renewals', RenewalController::class);
