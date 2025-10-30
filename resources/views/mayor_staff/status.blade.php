@@ -408,8 +408,7 @@
                                         <button
                                             title="View Intake Sheet"
                                             class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow"
-                                            data-id="{{ $app->application_personnel_id }}"
-                                            onclick="openReviewModal(this)">
+                                            data-id="{{ $app->application_personnel_id }}">
                                             <i class="fas fa-eye mr-1"></i> View
                                         </button>
                                     </td>
@@ -506,37 +505,7 @@
             </div>
         </div>
 
-        <!-- Review Modal for Intake Sheet -->
-        <div id="reviewModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="text-xl font-bold">Review Family Intake Sheet</h2>
-                    <button class="modal-close" onclick="closeReviewModal()">&times;</button>
-                </div>
 
-                <div id="modalReviewContent">
-                    <!-- Content will be populated here -->
-                    Loading...
-                </div>
-
-                <div class="modal-actions">
-                    <button
-                        type="button"
-                        onclick="window.print()"
-                        class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
-                    >
-                        Print
-                    </button>
-                    <button
-                        type="button"
-                        onclick="closeReviewModal()"
-                        class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600"
-                    >
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
 
         <script>
             let currentApplicationId = null;
