@@ -646,6 +646,15 @@
 
           <button
             type="button"
+            id="printBtn"
+            onclick="window.print()"
+            class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 hidden"
+          >
+            Print
+          </button>
+
+          <button
+            type="button"
             id="nextBtn"
             onclick="handleNext()"
             class="bg-purple-600 text-white px-5 py-2 rounded hover:bg-purple-700"
@@ -797,6 +806,12 @@
         document.getElementById("nextBtn").innerText =
           step === totalSteps ? "Submit" : "Next";
         progressBar.style.width = (step / totalSteps) * 100 + "%";
+        // Show Print button only on review step
+        if (step === totalSteps) {
+          document.getElementById("printBtn").classList.remove("hidden");
+        } else {
+          document.getElementById("printBtn").classList.add("hidden");
+        }
         // Adjust navigation alignment
         const navControls = document.getElementById("navControls");
         if (step === 1) {
