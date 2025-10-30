@@ -97,8 +97,6 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
         }
 
-
-
         /* Enhanced Table Styling */
         .table-container {
             background: white;
@@ -148,8 +146,6 @@
             top: 0;
             z-index: 10;
         }
-
-
 
         #tableView table tbody tr:last-child td,
         #listView table tbody tr:last-child td {
@@ -1353,7 +1349,6 @@
                         <div class="flex justify-between mt-4">
                             <button type="button" onclick="showTab('social-service')" class="px-4 py-2 bg-gray-500 text-white rounded-lg">Previous</button>
                             <div class="flex gap-2">
-                                <button type="button" onclick="printIntakeSheet()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">Print</button>
                                 <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Submit</button>
                             </div>
                         </div>
@@ -1375,13 +1370,6 @@
                 </div>
 
                 <div class="modal-actions">
-                    <button
-                        type="button"
-                        onclick="window.print()"
-                        class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
-                    >
-                        Print
-                    </button>
                     <button
                         type="button"
                         onclick="closeReviewModal()"
@@ -1572,6 +1560,12 @@
                     });
             }
 
+            // Close Review Modal
+            function closeReviewModal() {
+                document.getElementById('reviewModal').style.display = 'none';
+                document.body.classList.remove('modal-open');
+            }
+
             // Update the populateReviewModal function to handle null/undefined values
             function populateReviewModal(d) {
                 if (!d) {
@@ -1604,8 +1598,6 @@
                                         <td><strong>4Ps:</strong> ${d.head_4ps || "N/A"}</td>
                                         <td><strong>IP No.:</strong> ${d.head_ipno || "N/A"}</td>
                                     </tr>
-                                    <!-- Add debugging output -->
-                                    <tr><td colspan="3" class="text-xs text-gray-500">Debug: ${JSON.stringify(d)}</td></tr>
                                 </table>
                             </div>
                             
@@ -2336,314 +2328,21 @@
                 }
             }
 
-            // Print Intake Sheet function
-            function printIntakeSheet() {
-                // Collect form data
-                const formData = {
-                    serial_number: document.getElementById('serial_number').value,
-                    applicant_fname: document.getElementById('applicant_fname').value,
-                    applicant_mname: document.getElementById('applicant_mname').value,
-                    applicant_lname: document.getElementById('applicant_lname').value,
-                    applicant_suffix: document.getElementById('applicant_suffix').value,
-                    head_4ps: document.getElementById('head_4ps').value,
-                    head_ipno: document.getElementById('head_ipno').value,
-                    head_address: document.getElementById('head_address').value,
-                    head_zone: document.getElementById('head_zone').value,
-                    head_barangay: document.getElementById('head_barangay').value,
-                    head_dob: document.getElementById('head_dob').value,
-                    head_pob: document.getElementById('head_pob').value,
-                    applicant_gender: document.getElementById('applicant_gender').value,
-                    head_educ: document.getElementById('head_educ').value,
-                    head_occ: document.getElementById('head_occ').value,
-                    head_religion: document.getElementById('head_religion').value,
-                    other_income: document.getElementById('other_income').value,
-                    house_total_income: document.getElementById('house_total_income').value,
-                    house_net_income: document.getElementById('house_net_income').value,
-                    house_house: document.getElementById('house_house').value,
-                    house_house_rent: document.getElementById('house_house_rent').value,
-                    house_lot: document.getElementById('house_lot').value,
-                    house_lot_rent: document.getElementById('house_lot_rent').value,
-                    house_water: document.getElementById('house_water').value,
-                    house_electric: document.getElementById('house_electric').value,
-                    remarks: document.getElementById('remarks').value,
-                    worker_name: document.getElementById('worker_name').value,
-                    officer_name: document.getElementById('officer_name').value,
-                    date_entry: document.getElementById('date_entry').value,
-                    signature_client: document.getElementById('signature_client').value,
-                        remarks: cells[9].querySelector('select').value || '',
-                    });
+            // Logout function
+            function confirmLogout() {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You will be logged out of the system.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, logout!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('logoutForm').submit();
+                    }
                 });
-
-                // Collect service records data
-                let serviceRecords = [];
-                const serviceRows = document.querySelectorAll('#rv_service_records_tbody tr');
-                serviceRows.forEach(row => {
-                    const cells = row.cells;
-                    serviceRecords.push({
-                        date: cells[0].querySelector('input').value || '',
-                        problem: cells[1].querySelector('input').value || '',
-                        action: cells[2].querySelector('input').value || '',
-                        remarks: cells[3].querySelector('input').value || '',
-                    });
-                });
-
-                // Create printable HTML
-                const printWindow = window.open('', '_blank');
-                const printContent = `
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Family Intake Sheet - Print</title>
-                        <style>
-                            body {
-                                font-family: Arial, sans-serif;
-                                font-size: 12px;
-                                line-height: 1.4;
-                                margin: 0;
-                                padding: 20px;
-                            }
-                            .header {
-                                text-align: center;
-                                margin-bottom: 20px;
-                                border-bottom: 2px solid #333;
-                                padding-bottom: 10px;
-                            }
-                            .header h1 {
-                                margin: 0;
-                                font-size: 18px;
-                            }
-                            .section {
-                                margin-bottom: 20px;
-                                border: 1px solid #e5e7eb;
-                                padding: 15px;
-                                border-radius: 5px;
-                            }
-                            .section h3 {
-                                margin: 0 0 10px 0;
-                                font-size: 14px;
-                                border-bottom: 1px solid #e5e7eb;
-                                padding-bottom: 5px;
-                            }
-                            table {
-                                width: 100%;
-                                border-collapse: collapse;
-                                margin-top: 10px;
-                            }
-                            th, td {
-                                border: 1px solid #e5e7eb;
-                                padding: 5px;
-                                text-align: left;
-                            }
-                            th {
-                                background-color: #f9fafb;
-                                font-weight: 600;
-                            }
-                            .info-table {
-                                margin-bottom: 15px;
-                            }
-                            .info-table td {
-                                padding: 3px 5px;
-                            }
-                            .signature-section {
-                                border-top: 1px solid #333;
-                                margin-top: 30px;
-                                padding-top: 20px;
-                            }
-                            .signature-line {
-                                border-top: 1px solid #333;
-                                width: 200px;
-                                margin-top: 30px;
-                                text-align: center;
-                                display: inline-block;
-                            }
-                            .remarks-grid {
-                                display: grid;
-                                grid-template-columns: repeat(2, 1fr);
-                                gap: 10px;
-                                margin-top: 10px;
-                            }
-                            .remark-item {
-                                padding: 5px;
-                                border: 1px solid #e5e7eb;
-                                border-radius: 3px;
-                                font-size: 11px;
-                            }
-                            @media print {
-                                body {
-                                    background: white !important;
-                                    color: #000;
-                                    font-size: 10px;
-                                }
-                                .no-print {
-                                    display: none !important;
-                                }
-                                @page {
-                                    size: landscape;
-                                    margin: 4mm;
-                                }
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="header">
-                            <h1>LYDO Scholarship</h1>
-                            <h2>Family Intake Sheet</h2>
-                        </div>
-
-                        <div class="section">
-                            <h3>Head of Family</h3>
-                            <table class="info-table">
-                                <tr>
-                                    <td><strong>Serial No.:</strong> ${formData.serial_number || "AUTO_GENERATED"}</td>
-                                    <td><strong>Name:</strong> ${[formData.applicant_fname, formData.applicant_mname, formData.applicant_lname, formData.applicant_suffix].filter(Boolean).join(" ")}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Sex:</strong> ${formData.applicant_gender || "-"}</td>
-                                    <td><strong>4Ps:</strong> ${formData.head_4ps || "-"}</td>
-                                    <td><strong>IP No.:</strong> ${formData.head_ipno || "-"}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Address:</strong> ${formData.head_address || "-"}</td>
-                                    <td><strong>Zone:</strong> ${formData.head_zone || "-"}</td>
-                                    <td><strong>Barangay:</strong> ${formData.head_barangay || "-"}</td>
-                                    
-                                </tr>
-                                <tr>
-                                    <td><strong>Date of Birth:</strong> ${formatDate(formData.head_dob) || "-"}</td>
-                                    <td><strong>Place of Birth:</strong> ${formData.head_pob || "-"}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Educational Attainment:</strong> ${formData.head_educ || "-"}</td>
-                                    <td><strong>Occupation:</strong> ${formData.head_occ || "-"}</td>
-                                    <td><strong>Religion:</strong> ${formData.head_religion || "-"}</td>
-                                </tr>
-                            </table>
-                        </div>
-
-                        <div class="section">
-                            <h3>Family Members</h3>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Relation</th>
-                                        <th>Birthdate</th>
-                                        <th>Age</th>
-                                        <th>Sex</th>
-                                        <th>Civil Status</th>
-                                        <th>Educational Attainment</th>
-                                        <th>Occupation</th>
-                                        <th>Monthly Income</th>
-                                        <th>Remarks</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${familyMembers.map(f => `
-                                        <tr>
-                                            <td>${escapeHtml(f.name || '')}</td>
-                                            <td>${escapeHtml(f.relationship || '')}</td>
-                                            <td>${formatDate(f.birthdate) || ''}</td>
-                                            <td>${escapeHtml(f.age || '')}</td>
-                                            <td>${escapeHtml(f.sex || '')}</td>
-                                            <td>${escapeHtml(f.civil_status || '')}</td>
-                                            <td>${escapeHtml(f.education || '')}</td>
-                                            <td>${escapeHtml(f.occupation || '')}</td>
-                                            <td>₱${escapeHtml(f.monthly_income || '')}</td>
-                                            <td>${escapeHtml(f.remarks || '')}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                            <div class="remarks-grid">
-                                <div class="remark-item">Out of School Youth (OSY)</div>
-                                <div class="remark-item">Solo Parent (SP)</div>
-                                <div class="remark-item">Person with Disability (PWD)</div>
-                                <div class="remark-item">Senior Citizen (SC)</div>
-                                <div class="remark-item">Lactating Mother</div>
-                                <div class="remark-item">Pregnant Mother</div>
-                            </div>
-                        </div>
-
-                        <div class="section">
-                            <h3>Household Information</h3>
-                            <table class="info-table">
-                                <tr>
-                                    <td><strong>Other Source of Income:</strong> ₱${formData.other_income || "-"}</td>
-                                    <td><strong>Total Family Income:</strong> ₱${formData.house_total_income || "-"}</td>
-                                    <td><strong>Total Family Net Income:</strong> ₱${formData.house_net_income || "-"}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>House (Owned/Rented):</strong> ${formData.house_house || "-"} ${formData.house_house_rent ? `(Rent: ₱${formData.house_house_rent})` : ''}</td>
-                                    <td><strong>Lot (Owned/Rented):</strong> ${formData.house_lot || "-"} ${formData.house_lot_rent ? `(Rent: ₱${formData.house_lot_rent})` : ''}</td>
-                                    <td><strong>Water:</strong> ₱${formData.house_water || "-"}</td>
-                                    <td><strong>Electricity Source:</strong> ₱${formData.house_electric || "-"}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Remarks:</strong> ${formData.remarks || "-"}</td>
-                                </tr>
-                            </table>
-                        </div>
-
-                        ${serviceRecords.length > 0 ? `
-                        <div class="section">
-                            <h3>Social Service Records</h3>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Problem/Need</th>
-                                        <th>Action/Assistance Given</th>
-                                        <th>Remarks</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${serviceRecords.map(r => `
-                                        <tr>
-                                            <td>${formatDate(r.date) || ''}</td>
-                                            <td>${escapeHtml(r.problem || '')}</td>
-                                            <td>${escapeHtml(r.action || '')}</td>
-                                            <td>${escapeHtml(r.remarks || '')}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                        ` : ''}
-
-                        <div class="section signature-section">
-                            <h3>Signatures</h3>
-                            <table class="info-table">
-                                <tr>
-                                    <td><strong>Worker Name:</strong> ${formData.worker_name || "-"}</td>
-                                    <td><strong>Officer Name:</strong> ${formData.officer_name || "-"}</td>
-                                    <td><strong>Date Entry:</strong> ${formatDate(formData.date_entry) || "-"}</td>
-                                </tr>
-                            </table>
-                            <div style="margin-top: 40px;">
-                                <div style="display: inline-block; margin-right: 100px;">
-                                    <p><strong>Family Head Signature:</strong></p>
-                                    <div class="signature-line"></div>
-                                </div>
-                                <div style="display: inline-block; margin-right: 100px;">
-                                    <p><strong>Social Worker Signature:</strong></p>
-                                    <div class="signature-line"></div>
-                                </div>
-                                <div style="display: inline-block;">
-                                    <p><strong>Officer Signature:</strong></p>
-                                    <div class="signature-line"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </body>
-                    </html>
-                `;
-
-                printWindow.document.write(printContent);
-                printWindow.document.close();
-                printWindow.focus();
-                printWindow.print();
             }
         </script>
 
