@@ -743,7 +743,6 @@ $percentageReviewed = $totalApplications > 0
                 'ap.initial_screening as initial_screening', // For debugging
                 'lydo.lydopers_role as role' // For debugging
             )
-            ->where('lydo.lydopers_role', 'mayor_staff')
             // Comment these out temporarily for debugging
              ->where('ap.status', 'Pending')
              ->where('ap.initial_screening', 'Reviewed')
