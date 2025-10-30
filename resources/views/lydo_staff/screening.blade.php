@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="{{ asset('css/screening.css') }}" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -97,8 +95,6 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
         }
 
-
-
         /* Enhanced Table Styling */
         .table-container {
             background: white;
@@ -148,8 +144,6 @@
             top: 0;
             z-index: 10;
         }
-
-
 
         #tableView table tbody tr:last-child td,
         #listView table tbody tr:last-child td {
@@ -683,6 +677,11 @@
 
         ::-webkit-scrollbar-thumb:hover {
             background: var(--primary-dark);
+        }
+        
+        /* Ensure hidden class works */
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
@@ -1369,8 +1368,8 @@
                     <h2 class="text-xl font-bold">Review Family Intake Sheet</h2>
                     <button class="modal-close" onclick="closeReviewModal()">&times;</button>
                 </div>
-
-                <div id="modalReviewContent">
+                
+                <div class="modal-body" id="modalReviewContent">
                     <!-- Content will be populated here -->
                 </div>
 
@@ -1425,7 +1424,249 @@
             </div>
         </div>
 
+        <!-- Temporary Test Button -->
+        <div class="fixed bottom-4 right-4 z-50">
+            <button onclick="testModals()" class="bg-red-500 text-white p-2 rounded">
+                Test Modals
+            </button>
+        </div>
+
         <script>
+            // Debugging and initialization
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM loaded - checking elements...');
+                
+                // Check if key elements exist
+                const elementsToCheck = [
+                    'tableView', 'listView', 'tab-screening', 'tab-reviewed',
+                    'editRemarksModal', 'reviewModal'
+                ];
+                
+                elementsToCheck.forEach(id => {
+                    const element = document.getElementById(id);
+                    console.log(`${id}:`, element ? 'Found' : 'NOT FOUND');
+                });
+                
+                // Test tab functionality
+                const screeningTab = document.getElementById('tab-screening');
+                const reviewedTab = document.getElementById('tab-reviewed');
+                
+                if (screeningTab) {
+                    screeningTab.addEventListener('click', showTable);
+                }
+                
+                if (reviewedTab) {
+                    reviewedTab.addEventListener('click', showList);
+                }
+                
+                // Initialize with table view
+                showTable();
+                
+                // Set current date when page loads
+                setCurrentDate();
+
+                // Add event listeners for house and lot toggles
+                const houseSelect = document.getElementById('house_house');
+                const lotSelect = document.getElementById('house_lot');
+                const houseRentGroup = document.getElementById('house_rent_group');
+                const lotRentGroup = document.getElementById('lot_rent_group');
+
+                function toggleHouseFields() {
+                    const value = houseSelect.value;
+                    if (value === 'Rent') {
+                        houseRentGroup.style.display = 'block';
+                    } else {
+                        houseRentGroup.style.display = 'none';
+                        document.getElementById('house_house_rent').value = '';
+                        calculateIncomes(); // Recalculate when field is hidden
+                    }
+                }
+
+                function toggleLotFields() {
+                    const value = lotSelect.value;
+                    if (value === 'Rent') {
+                        lotRentGroup.style.display = 'block';
+                    } else {
+                        lotRentGroup.style.display = 'none';
+                        document.getElementById('house_lot_rent').value = '';
+                        calculateIncomes(); // Recalculate when field changes
+                    }
+                }
+
+                if (houseSelect) {
+                    houseSelect.addEventListener('change', toggleHouseFields);
+                    // Initialize on page load
+                    toggleHouseFields();
+                }
+                if (lotSelect) {
+                    lotSelect.addEventListener('change', toggleLotFields);
+                    // Initialize on page load
+                    toggleLotFields();
+                }
+
+                // Add event listeners for all income and expense fields
+                document.addEventListener('input', function(e) {
+                    if (e.target.name === 'family_member_income[]' ||
+                        e.target.id === 'other_income' ||
+                        e.target.id === 'house_house_rent' ||
+                        e.target.id === 'house_lot_rent' ||
+                        e.target.id === 'house_water' ||
+                        e.target.id === 'house_electric') {
+                        calculateIncomes();
+                    }
+                });
+
+                // Enable/disable next button based on remarks selection
+                const remarksSelect = document.getElementById('remarks');
+                const additionalNextBtn = document.getElementById('additional-next-btn');
+
+                function checkRemarksSelection() {
+                    if (remarksSelect && remarksSelect.value) {
+                        additionalNextBtn.disabled = false;
+                        additionalNextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        additionalNextBtn.classList.add('hover:bg-blue-700');
+                    } else {
+                        additionalNextBtn.disabled = true;
+                        additionalNextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        additionalNextBtn.classList.remove('hover:bg-blue-700');
+                    }
+                }
+
+                if (remarksSelect) {
+                    remarksSelect.addEventListener('change', checkRemarksSelection);
+                    // Initial check
+                    checkRemarksSelection();
+                }
+
+                // Add confirmation for modal form submit
+                const modalForm = document.getElementById('updateRemarksForm');
+                if (modalForm) {
+                    modalForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const selectedRemarks = document.getElementById('remarks').value;
+                        if (!selectedRemarks) {
+                            Swal.fire('Error', 'Please select a remark before updating.', 'error');
+                            return;
+                        }
+
+                        // Serialize family members data
+                        let familyMembers = [];
+                        const familyRows = document.querySelectorAll('#family_members_tbody tr');
+                        familyRows.forEach(row => {
+                            const cells = row.cells;
+                            familyMembers.push({
+                                name: cells[0].querySelector('input')?.value || '',
+                                relationship: cells[1].querySelector('select')?.value || '',
+                                birthdate: cells[2].querySelector('input')?.value || '',
+                                age: cells[3].querySelector('input')?.value || '',
+                                sex: cells[4].querySelector('select')?.value || '',
+                                civil_status: cells[5].querySelector('select')?.value || '',
+                                education: cells[6].querySelector('select')?.value || '',
+                                occupation: cells[7].querySelector('input')?.value || '',
+                                monthly_income: cells[8].querySelector('input')?.value || '',
+                                remarks: cells[9].querySelector('select')?.value || '',
+                            });
+                        });
+
+                        // Convert to JSON string
+                        document.getElementById('family_members').value = JSON.stringify(familyMembers);
+
+                        // Serialize service records data
+                        let serviceRecords = [];
+                        const serviceRows = document.querySelectorAll('#rv_service_records_tbody tr');
+                        serviceRows.forEach(row => {
+                            const cells = row.cells;
+                            serviceRecords.push({
+                                date: cells[0].querySelector('input')?.value || '',
+                                problem: cells[1].querySelector('input')?.value || '',
+                                action: cells[2].querySelector('input')?.value || '',
+                                remarks: cells[3].querySelector('input')?.value || '',
+                            });
+                        });
+
+                        // Convert to JSON string
+                        document.getElementById('rv_service_records').value = JSON.stringify(serviceRecords);
+
+                        const id = document.getElementById('remarks_id').value;
+                        modalForm.action = "/lydo_staff/update-intake-sheet/" + id;
+
+                        // Show loading state
+                        Swal.fire({
+                            title: 'Saving Intake Sheet',
+                            text: 'Please wait...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // Submit form via AJAX to handle errors better
+                        fetch(modalForm.action, {
+                            method: 'POST',
+                            body: new FormData(modalForm),
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.text();
+                        })
+                        .then(data => {
+                            Swal.close();
+
+                            // Check if response contains success message
+                            if (data.includes('success')) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: 'Intake sheet updated successfully!',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    closeEditRemarksModal();
+                                    location.reload(); // Reload to reflect changes
+                                });
+                            } else {
+                                throw new Error('Unexpected response');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to update intake sheet: ' + error.message,
+                                confirmButtonText: 'OK'
+                            });
+                        });
+                    });
+                }
+
+                // Add event listeners for real-time filtering
+                document.getElementById('nameSearch').addEventListener('input', filterTable);
+                document.getElementById('barangayFilter').addEventListener('change', filterTable);
+                document.getElementById('listNameSearch').addEventListener('input', filterList);
+                document.getElementById('listBarangayFilter').addEventListener('change', filterList);
+
+                // Close modals when clicking outside
+                window.addEventListener('click', function(event) {
+                    const editModal = document.getElementById('editRemarksModal');
+                    const reviewModal = document.getElementById('reviewModal');
+                    
+                    if (event.target === editModal) {
+                        closeEditRemarksModal();
+                    }
+                    if (event.target === reviewModal) {
+                        closeReviewModal();
+                    }
+                });
+
+                // Initial calculation
+                calculateIncomes();
+            });
+
             // Add this function to set current date
             function setCurrentDate() {
                 const today = new Date().toISOString().split('T')[0];
@@ -1434,43 +1675,61 @@
 
             // Main Tab switching functionality
             function showTable() {
-                document.getElementById('tableView').classList.remove('hidden');
-                document.getElementById('listView').classList.add('hidden');
-                document.getElementById('tab-screening').classList.add('active');
-                document.getElementById('tab-reviewed').classList.remove('active');
-                filterTable();
+                try {
+                    document.getElementById('tableView').classList.remove('hidden');
+                    document.getElementById('listView').classList.add('hidden');
+                    document.getElementById('tab-screening').classList.add('active');
+                    document.getElementById('tab-reviewed').classList.remove('active');
+                    filterTable();
+                } catch (error) {
+                    console.error('Error in showTable:', error);
+                }
             }
 
             function showList() {
-                document.getElementById('tableView').classList.add('hidden');
-                document.getElementById('listView').classList.remove('hidden');
-                document.getElementById('tab-screening').classList.remove('active');
-                document.getElementById('tab-reviewed').classList.add('active');
-                filterList();
+                try {
+                    document.getElementById('tableView').classList.add('hidden');
+                    document.getElementById('listView').classList.remove('hidden');
+                    document.getElementById('tab-screening').classList.remove('active');
+                    document.getElementById('tab-reviewed').classList.add('active');
+                    filterList();
+                } catch (error) {
+                    console.error('Error in showList:', error);
+                }
             }
 
             // Modal Tab switching functionality
             function showTab(tabName) {
+                console.log('Switching to tab:', tabName);
+                
                 // Hide all tab contents
                 const tabContents = document.querySelectorAll('.tab-content');
-                tabContents.forEach(content => content.classList.add('hidden'));
+                tabContents.forEach(content => {
+                    content.classList.add('hidden');
+                });
 
                 // Remove active class from all tab buttons
                 const tabButtons = document.querySelectorAll('.tab-button');
                 tabButtons.forEach(button => {
-                    button.classList.remove('active');
-                    button.classList.remove('text-violet-600');
+                    button.classList.remove('active', 'text-violet-600', 'border-b-2', 'border-violet-600');
                     button.classList.add('text-gray-500');
-                    button.classList.remove('border-b-2', 'border-violet-600');
                 });
 
                 // Show the selected tab content
-                document.getElementById('tab-' + tabName + '-content').classList.remove('hidden');
+                const targetContent = document.getElementById('tab-' + tabName + '-content');
+                if (targetContent) {
+                    targetContent.classList.remove('hidden');
+                } else {
+                    console.error('Tab content not found:', 'tab-' + tabName + '-content');
+                    return;
+                }
 
                 // Add active class to the selected tab button
                 const activeTab = document.getElementById('tab-' + tabName);
-                activeTab.classList.add('active', 'text-violet-600', 'border-b-2', 'border-violet-600');
-                activeTab.classList.remove('text-gray-500');
+                if (activeTab) {
+                    activeTab.classList.remove('text-gray-500');
+                    activeTab.classList.add('active', 'text-violet-600', 'border-b-2', 'border-violet-600');
+                }
             }
 
             // Open Edit Remarks Modal
@@ -1499,7 +1758,6 @@
 
                 // Generate serial number and location
                 document.getElementById('serial_number').value = 'SN-' + Date.now();
-
 
                 // Set current date for Date Entry
                 setCurrentDate();
@@ -1542,7 +1800,10 @@
                 }
                 
                 // Show loading state
-                document.getElementById('modalReviewContent').innerHTML = '<div class="p-4 text-center">Loading...</div>';
+                const modalContent = document.getElementById('modalReviewContent');
+                if (modalContent) {
+                    modalContent.innerHTML = '<div class="p-4 text-center">Loading...</div>';
+                }
                 
                 // Fetch intake sheet data with error handling
                 fetch(`/lydo_staff/intake-sheet/${id}`)
@@ -1553,7 +1814,7 @@
                         return response.json();
                     })
                     .then(data => {
-                        console.log('Fetched data:', data); // Debug log
+                        console.log('Fetched data:', data);
                         if (data) {
                             populateReviewModal(data);
                             document.getElementById('reviewModal').style.display = 'block';
@@ -1564,12 +1825,21 @@
                     })
                     .catch(err => {
                         console.error('Error fetching intake sheet data:', err);
-                        document.getElementById('modalReviewContent').innerHTML = `
-                            <div class="p-4 text-center text-red-600">
-                                Error loading data: ${err.message}
-                            </div>
-                        `;
+                        const modalContent = document.getElementById('modalReviewContent');
+                        if (modalContent) {
+                            modalContent.innerHTML = `
+                                <div class="p-4 text-center text-red-600">
+                                    Error loading data: ${err.message}
+                                </div>
+                            `;
+                        }
                     });
+            }
+
+            // Close Review Modal
+            function closeReviewModal() {
+                document.getElementById('reviewModal').style.display = 'none';
+                document.body.classList.remove('modal-open');
             }
 
             // Update the populateReviewModal function to handle null/undefined values
@@ -1604,8 +1874,6 @@
                                         <td><strong>4Ps:</strong> ${d.head_4ps || "N/A"}</td>
                                         <td><strong>IP No.:</strong> ${d.head_ipno || "N/A"}</td>
                                     </tr>
-                                    <!-- Add debugging output -->
-                                    <tr><td colspan="3" class="text-xs text-gray-500">Debug: ${JSON.stringify(d)}</td></tr>
                                 </table>
                             </div>
                             
@@ -1929,213 +2197,6 @@
                 document.getElementById('house_net_income').value = netIncome.toFixed(2);
             }
 
-            // Form submission handling
-            document.addEventListener('DOMContentLoaded', function() {
-                // Set current date when page loads
-                setCurrentDate();
-
-                // Add event listeners for house and lot toggles
-                const houseSelect = document.getElementById('house_house');
-                const lotSelect = document.getElementById('house_lot');
-                const houseRentGroup = document.getElementById('house_rent_group');
-                const lotRentGroup = document.getElementById('lot_rent_group');
-
-                function toggleHouseFields() {
-                    const value = houseSelect.value;
-                    if (value === 'Rent') {
-                        houseRentGroup.style.display = 'block';
-                    } else {
-                        houseRentGroup.style.display = 'none';
-                        document.getElementById('house_house_rent').value = '';
-                        calculateIncomes(); // Recalculate when field is hidden
-                    }
-                }
-
-                function toggleLotFields() {
-                    const value = lotSelect.value;
-                    if (value === 'Rent') {
-                        lotRentGroup.style.display = 'block';
-                    } else {
-                        lotRentGroup.style.display = 'none';
-                        document.getElementById('house_lot_rent').value = '';
-                        calculateIncomes(); // Recalculate when field changes
-                    }
-                }
-
-                if (houseSelect) {
-                    houseSelect.addEventListener('change', toggleHouseFields);
-                    // Initialize on page load
-                    toggleHouseFields();
-                }
-                if (lotSelect) {
-                    lotSelect.addEventListener('change', toggleLotFields);
-                    // Initialize on page load
-                    toggleLotFields();
-                }
-
-                // Add event listeners for all income and expense fields
-                document.addEventListener('input', function(e) {
-                    if (e.target.name === 'family_member_income[]' ||
-                        e.target.id === 'other_income' ||
-                        e.target.id === 'house_house_rent' ||
-                        e.target.id === 'house_lot_rent' ||
-                        e.target.id === 'house_water' ||
-                        e.target.id === 'house_electric') {
-                        calculateIncomes();
-                    }
-                });
-
-                // Enable/disable next button based on remarks selection
-                const remarksSelect = document.getElementById('remarks');
-                const additionalNextBtn = document.getElementById('additional-next-btn');
-
-                function checkRemarksSelection() {
-                    if (remarksSelect && remarksSelect.value) {
-                        additionalNextBtn.disabled = false;
-                        additionalNextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                        additionalNextBtn.classList.add('hover:bg-blue-700');
-                    } else {
-                        additionalNextBtn.disabled = true;
-                        additionalNextBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                        additionalNextBtn.classList.remove('hover:bg-blue-700');
-                    }
-                }
-
-                if (remarksSelect) {
-                    remarksSelect.addEventListener('change', checkRemarksSelection);
-                    // Initial check
-                    checkRemarksSelection();
-                }
-
-                // Add confirmation for modal form submit
-                const modalForm = document.getElementById('updateRemarksForm');
-                if (modalForm) {
-                    modalForm.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const selectedRemarks = document.getElementById('remarks').value;
-                        if (!selectedRemarks) {
-                            Swal.fire('Error', 'Please select a remark before updating.', 'error');
-                            return;
-                        }
-
-                        // Serialize family members data
-                        let familyMembers = [];
-                        const familyRows = document.querySelectorAll('#family_members_tbody tr');
-                        familyRows.forEach(row => {
-                            const cells = row.cells;
-                            familyMembers.push({
-                                name: cells[0].querySelector('input')?.value || '',
-                                relationship: cells[1].querySelector('select')?.value || '',
-                                birthdate: cells[2].querySelector('input')?.value || '',
-                                age: cells[3].querySelector('input')?.value || '',
-                                sex: cells[4].querySelector('select')?.value || '',
-                                civil_status: cells[5].querySelector('select')?.value || '',
-                                education: cells[6].querySelector('select')?.value || '',
-                                occupation: cells[7].querySelector('input')?.value || '',
-                                monthly_income: cells[8].querySelector('input')?.value || '',
-                                remarks: cells[9].querySelector('select')?.value || '',
-                            });
-                        });
-
-                        // Convert to JSON string
-                        document.getElementById('family_members').value = JSON.stringify(familyMembers);
-
-                        // Serialize service records data
-                        let serviceRecords = [];
-                        const serviceRows = document.querySelectorAll('#rv_service_records_tbody tr');
-                        serviceRows.forEach(row => {
-                            const cells = row.cells;
-                            serviceRecords.push({
-                                date: cells[0].querySelector('input')?.value || '',
-                                problem: cells[1].querySelector('input')?.value || '',
-                                action: cells[2].querySelector('input')?.value || '',
-                                remarks: cells[3].querySelector('input')?.value || '',
-                            });
-                        });
-
-                        // Convert to JSON string
-                        document.getElementById('rv_service_records').value = JSON.stringify(serviceRecords);
-
-                        const id = document.getElementById('remarks_id').value;
-                        modalForm.action = "/lydo_staff/update-intake-sheet/" + id;
-
-                        // Show loading state
-                        Swal.fire({
-                            title: 'Saving Intake Sheet',
-                            text: 'Please wait...',
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-
-                        // Submit form via AJAX to handle errors better
-                        fetch(modalForm.action, {
-                            method: 'POST',
-                            body: new FormData(modalForm),
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.text();
-                        })
-                        .then(data => {
-                            Swal.close();
-
-                            // Check if response contains success message
-                            if (data.includes('success')) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success!',
-                                    text: 'Intake sheet updated successfully!',
-                                    confirmButtonText: 'OK'
-                                }).then(() => {
-                                    closeEditRemarksModal();
-                                    location.reload(); // Reload to reflect changes
-                                });
-                            } else {
-                                throw new Error('Unexpected response');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'Failed to update intake sheet: ' + error.message,
-                                confirmButtonText: 'OK'
-                            });
-                        });
-                    });
-                }
-
-                // Add event listeners for real-time filtering
-                document.getElementById('nameSearch').addEventListener('input', filterTable);
-                document.getElementById('barangayFilter').addEventListener('change', filterTable);
-                document.getElementById('listNameSearch').addEventListener('input', filterList);
-                document.getElementById('listBarangayFilter').addEventListener('change', filterList);
-
-                // Close modals when clicking outside
-                window.addEventListener('click', function(event) {
-                    const editModal = document.getElementById('editRemarksModal');
-                    const reviewModal = document.getElementById('reviewModal');
-                    
-                    if (event.target === editModal) {
-                        closeEditRemarksModal();
-                    }
-                    if (event.target === reviewModal) {
-                        closeReviewModal();
-                    }
-                });
-
-                // Initial calculation
-                calculateIncomes();
-            });
-
             // Populate Edit Modal with existing data
             function populateEditModal(data) {
                 // Populate head of family details
@@ -2370,6 +2431,23 @@
                     officer_name: document.getElementById('officer_name').value,
                     date_entry: document.getElementById('date_entry').value,
                     signature_client: document.getElementById('signature_client').value,
+                };
+
+                // Collect family members data
+                let familyMembers = [];
+                const familyRows = document.querySelectorAll('#family_members_tbody tr');
+                familyRows.forEach(row => {
+                    const cells = row.cells;
+                    familyMembers.push({
+                        name: cells[0].querySelector('input').value || '',
+                        relationship: cells[1].querySelector('select').value || '',
+                        birthdate: cells[2].querySelector('input').value || '',
+                        age: cells[3].querySelector('input').value || '',
+                        sex: cells[4].querySelector('select').value || '',
+                        civil_status: cells[5].querySelector('select').value || '',
+                        education: cells[6].querySelector('select').value || '',
+                        occupation: cells[7].querySelector('input').value || '',
+                        monthly_income: cells[8].querySelector('input').value || '',
                         remarks: cells[9].querySelector('select').value || '',
                     });
                 });
@@ -2644,6 +2722,26 @@
                 printWindow.document.close();
                 printWindow.focus();
                 printWindow.print();
+            }
+
+            // Test function for debugging
+            function testModals() {
+                console.log('Testing modals...');
+                console.log('TableView:', document.getElementById('tableView'));
+                console.log('ListView:', document.getElementById('listView'));
+                console.log('EditModal:', document.getElementById('editRemarksModal'));
+                console.log('ReviewModal:', document.getElementById('reviewModal'));
+                
+                // Test tab switching
+                showTable();
+                setTimeout(() => showList(), 1000);
+                
+                // Test if we can open a modal
+                const testButton = document.querySelector('button[onclick*="openEditRemarksModal"]');
+                if (testButton) {
+                    console.log('Found test button, simulating click...');
+                    testButton.click();
+                }
             }
         </script>
 
