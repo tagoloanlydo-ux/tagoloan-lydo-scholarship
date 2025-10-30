@@ -21,6 +21,8 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::apiResource('/applicants', ApplicantController::class);
 Route::apiResource('/applications', ApplicationController::class);
+
+
 Route::apiResource('/scholars', ScholarController::class);
 Route::apiResource('/renewals', RenewalController::class);
 Route::apiResource('/disbursements', DisbursementController::class);
