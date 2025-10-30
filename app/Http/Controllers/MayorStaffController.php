@@ -528,19 +528,35 @@ $percentageReviewed = $totalApplications > 0
             ->where('application_personnel_id', $id)
             ->update(['intake_sheet_token' => $token]);
 
-        // Send approval email
-        $emailData = [
-            'applicant_fname' => $applicationPersonnel->applicant_fname,
-            'applicant_lname' => $applicationPersonnel->applicant_lname,
-            'application_personnel_id' => $id,
-            'token' => $token,
-        ];
+    // Send approval email
+    $emailData = [
+        'applicant_fname' => $applicationPersonnel->applicant_fname,
+        'applicant_lname' => $applicationPersonnel->applicant_lname,
+        'application_personnel_id' => $id,
+        'token' => $token,
+    ];
+
+    try {
+        \Log::info('Preparing initial screening approval email', $emailData);
 
         Mail::send('emails.initial-screening-approval', $emailData, function ($message) use ($applicationPersonnel) {
             $message->to($applicationPersonnel->applicant_email)
                 ->subject('Initial Screening Approval - LYDO Scholarship')
                 ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
         });
+
+        \Log::info('Initial screening approval email queued/sent', [
+            'to' => $applicationPersonnel->applicant_email,
+            'application_personnel_id' => $id,
+            'token' => $token,
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Failed to send initial screening approval email', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'data' => $emailData,
+        ]);
+    }
 
         return response()->json(['success' => true, 'message' => 'Initial screening approved successfully.']);
     }
