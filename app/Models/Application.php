@@ -12,9 +12,8 @@ class Application extends Model
     protected $table = 'tbl_application';
     protected $primaryKey = 'application_id';
     public $timestamps = true;
-        public $incrementing = true;
+    public $incrementing = true;
     protected $keyType = 'int';
-    
 
     protected $fillable = [
         'applicant_id', 'date_submitted', 'application_letter', 'cert_of_reg',
@@ -36,4 +35,10 @@ class Application extends Model
         'brgy_indigency' => 'string',
         'student_id' => 'string',
     ];
+
+    // ✅ Define relationship
+    public function applicant()
+    {
+        return $this->belongsTo(Applicant::class, 'applicant_id', 'applicant_id');
+    }
 }

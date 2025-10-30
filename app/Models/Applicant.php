@@ -12,7 +12,7 @@ class Applicant extends Model
     protected $table = 'tbl_applicant';
     protected $primaryKey = 'applicant_id';
     public $timestamps = true;
-        public $incrementing = true;
+    public $incrementing = true;
     protected $keyType = 'int';
 
     protected $fillable = [
@@ -21,4 +21,21 @@ class Applicant extends Model
         'applicant_email', 'applicant_contact_number', 'applicant_school_name',
         'applicant_year_level', 'applicant_course', 'applicant_acad_year'
     ];
+
+    /**
+     * Get the application for the applicant.
+     * Note: Using singular 'application' since one applicant has one application
+     */
+    public function application()
+    {
+        return $this->hasOne(Application::class, 'applicant_id', 'applicant_id');
+    }
+
+    /**
+     * Alternative: If you want to support multiple applications per applicant
+     */
+    public function applications()
+    {
+        return $this->hasMany(Application::class, 'applicant_id', 'applicant_id');
+    }
 }

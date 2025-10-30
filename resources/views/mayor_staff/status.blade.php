@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -166,6 +165,61 @@
 
         .intake-table tbody tr:hover {
             background-color: #f8fafc;
+        }
+
+        /* Document Viewer Styles */
+        .document-tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 1rem;
+        }
+
+        .document-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .document-tab.active {
+            border-bottom-color: #7c3aed;
+            color: #7c3aed;
+            font-weight: 600;
+        }
+
+        .document-content {
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .document-preview {
+            width: 100%;
+            max-width: 800px;
+            height: 500px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .document-preview iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .document-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .document-download {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
         }
 
         /* Print rules */
@@ -378,6 +432,7 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Remarks</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Intake Sheet</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Actions</th>
                                 </tr>
                             </thead>
 
@@ -387,12 +442,6 @@
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         {{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}
-                                        <!-- DEBUG INFO -->
-                                        <div class="debug-info">
-                                            Status: {{ $app->status }} | 
-                                            Screening: {{ $app->initial_screening }} | 
-                                            Role: {{ $app->role }}
-                                        </div>
                                     </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->barangay }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
@@ -406,12 +455,30 @@
                                     </td>
                                     <td class="px-4 py-2 border border-gray-200 text-center">
                                         <button
-                                            title="View Intake Sheet"
+                                            title="View Application Details"
                                             class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow"
                                             data-id="{{ $app->application_personnel_id }}"
                                             onclick="openReviewModal(this)">
                                             <i class="fas fa-eye mr-1"></i> View
                                         </button>
+                                    </td>
+                                    <td class="px-4 py-2 border border-gray-200 text-center">
+                                        <div class="flex gap-2 justify-center">
+                                            <button
+                                                title="Approve Application"
+                                                class="px-3 py-1 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg shadow approve-btn"
+                                                data-id="{{ $app->application_personnel_id }}"
+                                                data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}">
+                                                <i class="fas fa-check mr-1"></i> Approve
+                                            </button>
+                                            <button
+                                                title="Reject Application"
+                                                class="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg shadow reject-btn"
+                                                data-id="{{ $app->application_personnel_id }}"
+                                                data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}">
+                                                <i class="fas fa-times mr-1"></i> Reject
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
@@ -462,12 +529,6 @@
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         {{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}
-                                        <!-- DEBUG INFO -->
-                                        <div class="debug-info">
-                                            Screening: {{ $app->initial_screening }} | 
-                                            Remarks: {{ $app->remarks }} | 
-                                            Role: {{ $app->role }}
-                                        </div>
                                     </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->barangay }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
@@ -481,7 +542,7 @@
                                     </td>
                                     <td class="px-4 py-2 border border-gray-200 text-center">
                                         <button
-                                            title="View Intake Sheet"
+                                            title="View Application Details"
                                             class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow"
                                             data-id="{{ $app->application_personnel_id }}"
                                             onclick="openReviewModal(this)">
@@ -506,40 +567,9 @@
             </div>
         </div>
 
-        <!-- Review Modal for Intake Sheet -->
-        <div id="reviewModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="text-xl font-bold">Review Family Intake Sheet</h2>
-                    <button class="modal-close" onclick="closeReviewModal()">&times;</button>
-                </div>
-
-                <div id="modalReviewContent">
-                    <!-- Content will be populated here -->
-                    Loading...
-                </div>
-
-                <div class="modal-actions">
-                    <button
-                        type="button"
-                        onclick="window.print()"
-                        class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
-                    >
-                        Print
-                    </button>
-                    <button
-                        type="button"
-                        onclick="closeReviewModal()"
-                        class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600"
-                    >
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <script>
             let currentApplicationId = null;
+            let currentApplicationDocuments = null;
 
             function showTable() {
                 document.getElementById("tableView").classList.remove("hidden");
@@ -559,16 +589,17 @@
                 if (typeof filterList === 'function') filterList();
             }
 
-            // Open review modal
+            // Open review modal - enhanced to show both intake sheet and documents
             function openReviewModal(button) {
                 const id = button.getAttribute("data-id");
                 currentApplicationId = id;
 
                 const modal = document.getElementById('reviewModal');
                 const modalContent = document.getElementById('modalReviewContent');
-                modalContent.innerHTML = '<p class="p-4 text-center">Loading intake sheet...</p>';
+                modalContent.innerHTML = '<p class="p-4 text-center">Loading application details...</p>';
                 modal.style.display = 'block';
 
+                // Fetch intake sheet data
                 fetch(`/api/mayor-staff/intake-sheet/${id}`, { credentials: 'same-origin' })
                     .then(async response => {
                         const ct = response.headers.get('content-type') || '';
@@ -595,17 +626,52 @@
 
                         console.log('intake-sheet response:', { status: response.status, contentType: ct, data });
 
-                        if (response.status === 404) {
-                            modalContent.innerHTML = '<p class="p-4 text-center text-blue-600">Intake sheet not yet submitted by the applicant.</p>';
-                        } else if (data && !data.error) {
-                            populateReviewModal(data);
-                        } else {
-                            modalContent.innerHTML = '<p class="p-4 text-center text-red-600">No intake sheet data found.</p>';
-                        }
+                        // Now fetch documents data
+                        fetch(`/api/mayor-staff/documents/${id}`, { credentials: 'same-origin' })
+                            .then(async docResponse => {
+                                const docCt = docResponse.headers.get('content-type') || '';
+                                let docData = null;
+                                try {
+                                    if (docCt.includes('application/json')) {
+                                        docData = await docResponse.json();
+                                    } else {
+                                        const text = await docResponse.text();
+                                        try {
+                                            docData = JSON.parse(text);
+                                        } catch (e) {
+                                            const m = text.match(/\{[\s\S]*\}/);
+                                            if (m) {
+                                                try { docData = JSON.parse(m[0]); } catch (e2) { docData = null; }
+                                            }
+                                        }
+                                    }
+                                } catch (err) {
+                                    console.error('Error parsing document response:', err);
+                                }
+
+                                console.log('documents response:', { status: docResponse.status, contentType: docCt, docData });
+
+                                if (response.status === 404) {
+                                    modalContent.innerHTML = '<p class="p-4 text-center text-blue-600">Intake sheet not yet submitted by the applicant.</p>';
+                                } else if (data && !data.error) {
+                                    populateReviewModal(data, docData);
+                                } else {
+                                    modalContent.innerHTML = '<p class="p-4 text-center text-red-600">No intake sheet data found.</p>';
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Error fetching document data:', err);
+                                // Still show intake sheet even if documents fail
+                                if (data && !data.error) {
+                                    populateReviewModal(data, null);
+                                } else {
+                                    modalContent.innerHTML = '<p class="p-4 text-center text-red-600">Error loading application data.</p>';
+                                }
+                            });
                     })
                     .catch(err => {
                         console.error('Error fetching intake sheet data:', err);
-                        document.getElementById('modalReviewContent').innerHTML = '<p class="p-4 text-center text-red-600">Error loading intake sheet data.</p>';
+                        modalContent.innerHTML = '<p class="p-4 text-center text-red-600">Error loading intake sheet data.</p>';
                     });
             }
 
@@ -665,6 +731,25 @@
                 return normalized;
             }
 
+            // Normalize document data
+            function normalizeDocumentData(d) {
+                if (!d || typeof d !== 'object') return {};
+                const get = (keys, def = '') => {
+                    for (const k of keys) {
+                        if (d[k] !== undefined && d[k] !== null) return d[k];
+                    }
+                    return def;
+                };
+
+                return {
+                    application_letter: get(['application_letter', 'letter']),
+                    cert_of_reg: get(['cert_of_reg', 'registration_certificate']),
+                    grade_slip: get(['grade_slip', 'grades']),
+                    brgy_indigency: get(['brgy_indigency', 'indigency']),
+                    student_id: get(['student_id', 'id']),
+                };
+            }
+
             function resolveUrl(path) {
                 try {
                     if (!path) return path;
@@ -674,230 +759,364 @@
                 } catch (e) { return path; }
             }
 
-            // Populate review modal with data - COMPLETE VERSION
-            function populateReviewModal(rawData) {
+            // Populate review modal with data - COMPLETE VERSION with documents
+            function populateReviewModal(rawData, rawDocData) {
                 const modalContent = document.getElementById('modalReviewContent');
                 const d = normalizeData(rawData || {});
+                const docData = normalizeDocumentData(rawDocData || {});
+                currentApplicationDocuments = docData;
 
                 modalContent.innerHTML = `
                     <div class="review-columns">
-                        <div class="space-y-4">
-                            <!-- Header Section -->
-                            <div class="intake-section">
-                                <div class="text-center mb-4">
-                                    <h2 class="text-2xl font-bold text-gray-800">LYDO Scholarship</h2>
-                                    <h3 class="text-xl font-semibold text-gray-600">Family Intake Sheet</h3>
-                                </div>
-                                
-                                <div class="print-box p-4">
-                                    <h4 class="intake-section-title">Head of Family</h4>
-                                    <table class="min-w-full text-sm">
-                                        <tr>
-                                            <td><strong>Serial No.:</strong> ${d.serial_number || "AUTO_GENERATED"}</td>
-                                            <td><strong>Name:</strong> ${[d.applicant_fname, d.applicant_mname, d.applicant_lname, d.applicant_suffix]
-                                                .filter(Boolean)
-                                                .join(" ")}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Sex:</strong> ${d.applicant_gender || "-"}</td>
-                                            <td><strong>4Ps:</strong> ${d.head_4ps || "-"}</td>
-                                            <td><strong>IP No.:</strong> ${d.head_ipno || "-"}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Address:</strong> ${d.head_address || "-"}</td>
-                                            <td><strong>Zone:</strong> ${d.head_zone || "-"}</td>
-                                            <td><strong>Barangay:</strong> ${d.head_barangay || "-"}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Date of Birth:</strong> ${formatDate(d.head_dob) || "-"}</td>
-                                            <td><strong>Place of Birth:</strong> ${d.head_pob || "-"}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Educational Attainment:</strong> ${d.head_educ || "-"}</td>
-                                            <td><strong>Occupation:</strong> ${d.head_occ || "-"}</td>
-                                            <td><strong>Religion:</strong> ${d.head_religion || "-"}</td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-                            
-                            <!-- Family Members Section -->
-                            <div class="intake-section">
-                                <h4 class="intake-section-title">Family Members</h4>
-                                <div class="overflow-x-auto">
-                                    <table class="intake-table">
-                                        <thead>
+                        <!-- Document Tabs -->
+                        <div class="document-tabs">
+                            <div class="document-tab active" onclick="switchTab('intake')">Intake Sheet</div>
+                            <div class="document-tab" onclick="switchTab('documents')">Submitted Documents</div>
+                        </div>
+                        
+                        <!-- Intake Sheet Content -->
+                        <div id="intake-content" class="tab-content">
+                            <div class="space-y-4">
+                                <!-- Header Section -->
+                                <div class="intake-section">
+                                    <div class="text-center mb-4">
+                                        <h2 class="text-2xl font-bold text-gray-800">LYDO Scholarship</h2>
+                                        <h3 class="text-xl font-semibold text-gray-600">Family Intake Sheet</h3>
+                                    </div>
+                                    
+                                    <div class="print-box p-4">
+                                        <h4 class="intake-section-title">Head of Family</h4>
+                                        <table class="min-w-full text-sm">
                                             <tr>
-                                                <th>Name</th>
-                                                <th>Relation</th>
-                                                <th>Birthdate</th>
-                                                <th>Age</th>
-                                                <th>Sex</th>
-                                                <th>Civil Status</th>
-                                                <th>Educational Attainment</th>
-                                                <th>Occupation</th>
-                                                <th>Monthly Income</th>
-                                                <th>Remarks</th>
+                                                <td><strong>Serial No.:</strong> ${d.serial_number || "AUTO_GENERATED"}</td>
+                                                <td><strong>Name:</strong> ${[d.applicant_fname, d.applicant_mname, d.applicant_lname, d.applicant_suffix]
+                                                    .filter(Boolean)
+                                                    .join(" ")}</td>
                                             </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${(() => {
-                                                let familyMembers = d.family_members;
-                                                if (typeof familyMembers === 'string') {
-                                                    try {
-                                                        familyMembers = JSON.parse(familyMembers);
-                                                    } catch (e) {
-                                                        familyMembers = [];
-                                                    }
-                                                }
-                                                return Array.isArray(familyMembers) ? familyMembers.map(f => `
-                                                    <tr>
-                                                        <td>${escapeHtml(f.name || '')}</td>
-                                                        <td>${escapeHtml(f.relationship || '')}</td>
-                                                        <td>${formatDate(f.birthdate)}</td>
-                                                        <td>${escapeHtml(f.age || '')}</td>
-                                                        <td>${escapeHtml(f.sex || '')}</td>
-                                                        <td>${escapeHtml(f.civil_status || '')}</td>
-                                                        <td>${escapeHtml(f.education || '')}</td>
-                                                        <td>${escapeHtml(f.occupation || '')}</td>
-                                                        <td>₱${escapeHtml(f.monthly_income || '')}</td>
-                                                        <td>${escapeHtml(f.remarks || '')}</td>
-                                                    </tr>
-                                                `).join('') : '<tr><td colspan="10" class="text-center py-4 text-gray-500">No family members data</td></tr>';
-                                            })()}
-                                        </tbody>
-                                    </table>
+                                            <tr>
+                                                <td><strong>Sex:</strong> ${d.applicant_gender || "-"}</td>
+                                                <td><strong>4Ps:</strong> ${d.head_4ps || "-"}</td>
+                                                <td><strong>IP No.:</strong> ${d.head_ipno || "-"}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Address:</strong> ${d.head_address || "-"}</td>
+                                                <td><strong>Zone:</strong> ${d.head_zone || "-"}</td>
+                                                <td><strong>Barangay:</strong> ${d.head_barangay || "-"}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Date of Birth:</strong> ${formatDate(d.head_dob) || "-"}</td>
+                                                <td><strong>Place of Birth:</strong> ${d.head_pob || "-"}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Educational Attainment:</strong> ${d.head_educ || "-"}</td>
+                                                <td><strong>Occupation:</strong> ${d.head_occ || "-"}</td>
+                                                <td><strong>Religion:</strong> ${d.head_religion || "-"}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
                                 </div>
                                 
-                                <!-- Remarks Categories -->
-                                <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
-                                    <div class="text-gray-600 border border-gray-300 rounded p-2">Out of School Youth (OSY)</div>
-                                    <div class="text-gray-600 border border-gray-300 rounded p-2">Solo Parent (SP)</div>
-                                    <div class="text-gray-600 border border-gray-300 rounded p-2">Person with Disability (PWD)</div>
-                                    <div class="text-gray-600 border border-gray-300 rounded p-2">Senior Citizen (SC)</div>
-                                    <div class="text-gray-600 border border-gray-300 rounded p-2">Lactating Mother</div>
-                                    <div class="text-gray-600 border border-gray-300 rounded p-2">Pregnant Mother</div>
+                                <!-- Family Members Section -->
+                                <div class="intake-section">
+                                    <h4 class="intake-section-title">Family Members</h4>
+                                    <div class="overflow-x-auto">
+                                        <table class="intake-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Relation</th>
+                                                    <th>Birthdate</th>
+                                                    <th>Age</th>
+                                                    <th>Sex</th>
+                                                    <th>Civil Status</th>
+                                                    <th>Educational Attainment</th>
+                                                    <th>Occupation</th>
+                                                    <th>Monthly Income</th>
+                                                    <th>Remarks</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${(() => {
+                                                    let familyMembers = d.family_members;
+                                                    if (typeof familyMembers === 'string') {
+                                                        try {
+                                                            familyMembers = JSON.parse(familyMembers);
+                                                        } catch (e) {
+                                                            familyMembers = [];
+                                                        }
+                                                    }
+                                                    return Array.isArray(familyMembers) ? familyMembers.map(f => `
+                                                        <tr>
+                                                            <td>${escapeHtml(f.name || '')}</td>
+                                                            <td>${escapeHtml(f.relationship || '')}</td>
+                                                            <td>${formatDate(f.birthdate)}</td>
+                                                            <td>${escapeHtml(f.age || '')}</td>
+                                                            <td>${escapeHtml(f.sex || '')}</td>
+                                                            <td>${escapeHtml(f.civil_status || '')}</td>
+                                                            <td>${escapeHtml(f.education || '')}</td>
+                                                            <td>${escapeHtml(f.occupation || '')}</td>
+                                                            <td>₱${escapeHtml(f.monthly_income || '')}</td>
+                                                            <td>${escapeHtml(f.remarks || '')}</td>
+                                                        </tr>
+                                                    `).join('') : '<tr><td colspan="10" class="text-center py-4 text-gray-500">No family members data</td></tr>';
+                                                })()}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <!-- Remarks Categories -->
+                                    <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+                                        <div class="text-gray-600 border border-gray-300 rounded p-2">Out of School Youth (OSY)</div>
+                                        <div class="text-gray-600 border border-gray-300 rounded p-2">Solo Parent (SP)</div>
+                                        <div class="text-gray-600 border border-gray-300 rounded p-2">Person with Disability (PWD)</div>
+                                        <div class="text-gray-600 border border-gray-300 rounded p-2">Senior Citizen (SC)</div>
+                                        <div class="text-gray-600 border border-gray-300 rounded p-2">Lactating Mother</div>
+                                        <div class="text-gray-600 border border-gray-300 rounded p-2">Pregnant Mother</div>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <!-- Household Information Section -->
-                            <div class="intake-section">
-                                <h4 class="intake-section-title">Household Information</h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div class="space-y-3">
-                                        <div class="bg-blue-50 p-3 rounded-lg">
-                                            <h5 class="font-semibold text-blue-800 mb-2">Income Calculation</h5>
-                                            <p><strong>Other Source of Income:</strong> ₱${d.other_income || "0.00"}</p>
-                                            <p><strong>Total Family Income:</strong> ₱${d.house_total_income || "0.00"}</p>
-                                            <p><strong>Total Family Net Income:</strong> ₱${d.house_net_income || "0.00"}</p>
+                                
+                                <!-- Household Information Section -->
+                                <div class="intake-section">
+                                    <h4 class="intake-section-title">Household Information</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="space-y-3">
+                                            <div class="bg-blue-50 p-3 rounded-lg">
+                                                <h5 class="font-semibold text-blue-800 mb-2">Income Calculation</h5>
+                                                <p><strong>Other Source of Income:</strong> ₱${d.other_income || "0.00"}</p>
+                                                <p><strong>Total Family Income:</strong> ₱${d.house_total_income || "0.00"}</p>
+                                                <p><strong>Total Family Net Income:</strong> ₱${d.house_net_income || "0.00"}</p>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-3">
+                                            <div class="bg-red-50 p-3 rounded-lg">
+                                                <h5 class="font-semibold text-red-800 mb-2">Expenses</h5>
+                                                <p><strong>House:</strong> ${d.house_house || "-"} ${d.house_house_rent ? `(Rent: ₱${d.house_house_rent})` : ''}</p>
+                                                <p><strong>Lot:</strong> ${d.house_lot || "-"} ${d.house_lot_rent ? `(Rent: ₱${d.house_lot_rent})` : ''}</p>
+                                                <p><strong>Water:</strong> ₱${d.house_water || "0.00"}</p>
+                                                <p><strong>Electricity:</strong> ₱${d.house_electric || "0.00"}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="space-y-3">
-                                        <div class="bg-red-50 p-3 rounded-lg">
-                                            <h5 class="font-semibold text-red-800 mb-2">Expenses</h5>
-                                            <p><strong>House:</strong> ${d.house_house || "-"} ${d.house_house_rent ? `(Rent: ₱${d.house_house_rent})` : ''}</p>
-                                            <p><strong>Lot:</strong> ${d.house_lot || "-"} ${d.house_lot_rent ? `(Rent: ₱${d.house_lot_rent})` : ''}</p>
-                                            <p><strong>Water:</strong> ₱${d.house_water || "0.00"}</p>
-                                            <p><strong>Electricity:</strong> ₱${d.house_electric || "0.00"}</p>
-                                        </div>
+                                    <div class="mt-4 bg-green-50 p-3 rounded-lg">
+                                        <h5 class="font-semibold text-green-800 mb-2">Final Assessment</h5>
+                                        <p><strong>Remarks:</strong> 
+                                            <span class="px-2 py-1 text-sm rounded-lg ${
+                                                d.remarks === 'Poor' ? 'bg-red-100 text-red-800' :
+                                                d.remarks === 'Ultra Poor' ? 'bg-orange-100 text-orange-800' :
+                                                d.remarks === 'Non Poor' ? 'bg-yellow-100 text-yellow-800' :
+                                                'bg-gray-100 text-gray-800'
+                                            }">
+                                                ${d.remarks || "Not Assigned"}
+                                            </span>
+                                        </p>
                                     </div>
                                 </div>
-                                <div class="mt-4 bg-green-50 p-3 rounded-lg">
-                                    <h5 class="font-semibold text-green-800 mb-2">Final Assessment</h5>
-                                    <p><strong>Remarks:</strong> 
-                                        <span class="px-2 py-1 text-sm rounded-lg ${
-                                            d.remarks === 'Poor' ? 'bg-red-100 text-red-800' :
-                                            d.remarks === 'Ultra Poor' ? 'bg-orange-100 text-orange-800' :
-                                            d.remarks === 'Non Poor' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-gray-100 text-gray-800'
-                                        }">
-                                            ${d.remarks || "Not Assigned"}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
 
-                            <!-- Social Service Records Section -->
-                            <div class="intake-section">
-                                <h4 class="intake-section-title">Social Service Records</h4>
-                                <div class="overflow-x-auto">
-                                    <table class="intake-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Problem/Need</th>
-                                                <th>Action/Assistance Given</th>
-                                                <th>Remarks</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${(() => {
-                                                let serviceRecords = d.rv_service_records;
-                                                if (typeof serviceRecords === 'string') {
-                                                    try {
-                                                        serviceRecords = JSON.parse(serviceRecords);
-                                                    } catch (e) {
-                                                        serviceRecords = [];
+                                <!-- Social Service Records Section -->
+                                <div class="intake-section">
+                                    <h4 class="intake-section-title">Social Service Records</h4>
+                                    <div class="overflow-x-auto">
+                                        <table class="intake-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Problem/Need</th>
+                                                    <th>Action/Assistance Given</th>
+                                                    <th>Remarks</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${(() => {
+                                                    let serviceRecords = d.rv_service_records;
+                                                    if (typeof serviceRecords === 'string') {
+                                                        try {
+                                                            serviceRecords = JSON.parse(serviceRecords);
+                                                        } catch (e) {
+                                                            serviceRecords = [];
+                                                        }
                                                     }
-                                                }
-                                                return Array.isArray(serviceRecords) && serviceRecords.length > 0 ? serviceRecords.map(r => `
-                                                    <tr>
-                                                        <td>${formatDate(r.date)}</td>
-                                                        <td>${escapeHtml(r.problem || '')}</td>
-                                                        <td>${escapeHtml(r.action || '')}</td>
-                                                        <td>${escapeHtml(r.remarks || '')}</td>
-                                                    </tr>
-                                                `).join('') : '<tr><td colspan="4" class="text-center py-4 text-gray-500">No social service records found</td></tr>';
-                                            })()}
-                                        </tbody>
-                                    </table>
+                                                    return Array.isArray(serviceRecords) && serviceRecords.length > 0 ? serviceRecords.map(r => `
+                                                        <tr>
+                                                            <td>${formatDate(r.date)}</td>
+                                                            <td>${escapeHtml(r.problem || '')}</td>
+                                                            <td>${escapeHtml(r.action || '')}</td>
+                                                            <td>${escapeHtml(r.remarks || '')}</td>
+                                                        </tr>
+                                                    `).join('') : '<tr><td colspan="4" class="text-center py-4 text-gray-500">No social service records found</td></tr>';
+                                                })()}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="mt-3 text-sm text-gray-600">
+                                        <p><strong>Health Condition Codes:</strong> A. DEAD • B. INJURED • C. MISSING • D. With Illness</p>
+                                    </div>
                                 </div>
-                                <div class="mt-3 text-sm text-gray-600">
-                                    <p><strong>Health Condition Codes:</strong> A. DEAD • B. INJURED • C. MISSING • D. With Illness</p>
+                                
+                                <!-- Signatures Section -->
+                                <div class="intake-section">
+                                    <h4 class="intake-section-title">Signatures</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div class="text-center">
+                                            <p class="font-semibold mb-2">Family Head</p>
+                                            <div class="border-2 border-gray-300 rounded-lg p-4 h-32 flex items-center justify-center">
+                                                ${d.signature_client ? 
+                                                    `<img src="${d.signature_client}" style="max-width: 100%; max-height: 80px;" />` : 
+                                                    '<p class="text-gray-500 text-sm">No signature</p>'
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="font-semibold mb-2">Social Worker</p>
+                                            <div class="border-2 border-gray-300 rounded-lg p-4 h-32 flex items-center justify-center">
+                                                ${d.signature_worker ? 
+                                                    `<img src="${d.signature_worker}" style="max-width: 100%; max-height: 80px;" />` : 
+                                                    '<p class="text-gray-500 text-sm">No signature</p>'
+                                                }
+                                            </div>
+                                            <p class="mt-2 text-sm">${d.worker_name || "Not specified"}</p>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="font-semibold mb-2">Officer</p>
+                                            <div class="border-2 border-gray-300 rounded-lg p-4 h-32 flex items-center justify-center">
+                                                ${d.signature_officer ? 
+                                                    `<img src="${d.signature_officer}" style="max-width: 100%; max-height: 80px;" />` : 
+                                                    '<p class="text-gray-500 text-sm">No signature</p>'
+                                                }
+                                            </div>
+                                            <p class="mt-2 text-sm">${d.officer_name || "Not specified"}</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 text-center">
+                                        <p><strong>Date Entry:</strong> ${formatDate(d.date_entry) || "Not specified"}</p>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <!-- Signatures Section -->
-                            <div class="intake-section">
-                                <h4 class="intake-section-title">Signatures</h4>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div class="text-center">
-                                        <p class="font-semibold mb-2">Family Head</p>
-                                        <div class="border-2 border-gray-300 rounded-lg p-4 h-32 flex items-center justify-center">
-                                            ${d.signature_client ? 
-                                                `<img src="${d.signature_client}" style="max-width: 100%; max-height: 80px;" />` : 
-                                                '<p class="text-gray-500 text-sm">No signature</p>'
-                                            }
-                                        </div>
-                                    </div>
-                                    <div class="text-center">
-                                        <p class="font-semibold mb-2">Social Worker</p>
-                                        <div class="border-2 border-gray-300 rounded-lg p-4 h-32 flex items-center justify-center">
-                                            ${d.signature_worker ? 
-                                                `<img src="${d.signature_worker}" style="max-width: 100%; max-height: 80px;" />` : 
-                                                '<p class="text-gray-500 text-sm">No signature</p>'
-                                            }
-                                        </div>
-                                        <p class="mt-2 text-sm">${d.worker_name || "Not specified"}</p>
-                                    </div>
-                                    <div class="text-center">
-                                        <p class="font-semibold mb-2">Officer</p>
-                                        <div class="border-2 border-gray-300 rounded-lg p-4 h-32 flex items-center justify-center">
-                                            ${d.signature_officer ? 
-                                                `<img src="${d.signature_officer}" style="max-width: 100%; max-height: 80px;" />` : 
-                                                '<p class="text-gray-500 text-sm">No signature</p>'
-                                            }
-                                        </div>
-                                        <p class="mt-2 text-sm">${d.officer_name || "Not specified"}</p>
-                                    </div>
+                        </div>
+                        
+                        <!-- Documents Content -->
+                        <div id="documents-content" class="tab-content hidden">
+                            <div class="document-content">
+                                <div class="document-tabs mb-4">
+                                    <div class="document-tab active" onclick="switchDocument('application_letter')">Application Letter</div>
+                                    <div class="document-tab" onclick="switchDocument('cert_of_reg')">Certificate of Registration</div>
+                                    <div class="document-tab" onclick="switchDocument('grade_slip')">Grade Slip</div>
+                                    <div class="document-tab" onclick="switchDocument('brgy_indigency')">Barangay Indigency</div>
+                                    <div class="document-tab" onclick="switchDocument('student_id')">Student ID</div>
                                 </div>
-                                <div class="mt-4 text-center">
-                                    <p><strong>Date Entry:</strong> ${formatDate(d.date_entry) || "Not specified"}</p>
+                                
+                                <div class="document-preview">
+                                    <div id="document-placeholder" class="flex items-center justify-center h-full text-gray-500">
+                                        <div class="text-center">
+                                            <i class="fas fa-file-pdf text-6xl mb-4"></i>
+                                            <p>Select a document to preview</p>
+                                        </div>
+                                    </div>
+                                    <iframe id="document-viewer" class="hidden" src=""></iframe>
+                                    <img id="document-image" class="hidden" src="" alt="Document Preview">
+                                </div>
+                                
+                                <div class="document-download">
+                                    <button id="download-btn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 hidden">
+                                        <i class="fas fa-download mr-2"></i> Download Document
+                                    </button>
+                                    <button id="open-btn" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 hidden">
+                                        <i class="fas fa-external-link-alt mr-2"></i> Open in New Tab
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 `;
+            }
+
+            function switchTab(tabName) {
+                // Update tab styles
+                document.querySelectorAll('.document-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+                // Show/hide content
+                document.getElementById('intake-content').classList.add('hidden');
+                document.getElementById('documents-content').classList.add('hidden');
+                document.getElementById(`${tabName}-content`).classList.remove('hidden');
+            }
+
+            function switchDocument(docType) {
+                if (!currentApplicationDocuments) return;
+                
+                // Update tab styles
+                document.querySelectorAll('#documents-content .document-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+                const docUrl = currentApplicationDocuments[docType];
+                const placeholder = document.getElementById('document-placeholder');
+                const iframe = document.getElementById('document-viewer');
+                const image = document.getElementById('document-image');
+                const downloadBtn = document.getElementById('download-btn');
+                const openBtn = document.getElementById('open-btn');
+                
+                // Hide all viewers initially
+                placeholder.classList.add('hidden');
+                iframe.classList.add('hidden');
+                image.classList.add('hidden');
+                downloadBtn.classList.add('hidden');
+                openBtn.classList.add('hidden');
+                
+                if (!docUrl) {
+                    placeholder.classList.remove('hidden');
+                    placeholder.innerHTML = `
+                        <div class="text-center">
+                            <i class="fas fa-exclamation-circle text-6xl mb-4 text-yellow-500"></i>
+                            <p>Document not available</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Show appropriate viewer based on file type
+                const fileExt = docUrl.split('.').pop().toLowerCase();
+                const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(fileExt);
+                const isPdf = fileExt === 'pdf';
+                
+                if (isImage) {
+                    image.src = docUrl;
+                    image.classList.remove('hidden');
+                } else if (isPdf) {
+                    iframe.src = docUrl;
+                    iframe.classList.remove('hidden');
+                } else {
+                    // For other file types, show download option
+                    placeholder.classList.remove('hidden');
+                    placeholder.innerHTML = `
+                        <div class="text-center">
+                            <i class="fas fa-file text-6xl mb-4"></i>
+                            <p>This document format cannot be previewed</p>
+                            <p class="text-sm mt-2">File type: .${fileExt}</p>
+                        </div>
+                    `;
+                }
+                
+                // Show download and open buttons
+                downloadBtn.classList.remove('hidden');
+                openBtn.classList.remove('hidden');
+                
+                // Set up download button
+                downloadBtn.onclick = () => {
+                    const a = document.createElement('a');
+                    a.href = docUrl;
+                    a.download = `${docType}.${fileExt}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                };
+                
+                // Set up open button
+                openBtn.onclick = () => {
+                    window.open(docUrl, '_blank');
+                };
             }
 
             function formatDate(dateString) {
@@ -1046,6 +1265,7 @@
             function closeReviewModal() {
                 document.getElementById('reviewModal').style.display = 'none';
                 currentApplicationId = null;
+                currentApplicationDocuments = null;
             }
         </script>
 
@@ -1061,5 +1281,21 @@
         @endif
 
         <script src="{{ asset('js/logout.js') }}"></script>
+
+<!-- Review Modal for Intake Sheet and Documents -->
+<div id="reviewModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="text-lg font-semibold">Application Details</h3>
+            <button class="modal-close" onclick="closeReviewModal()">&times;</button>
+        </div>
+        <div id="modalReviewContent" class="p-4">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+        <div class="modal-actions">
+            <button class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600" onclick="closeReviewModal()">Close</button>
+        </div>
+    </div>
+</div>
     </body>
 </html>
