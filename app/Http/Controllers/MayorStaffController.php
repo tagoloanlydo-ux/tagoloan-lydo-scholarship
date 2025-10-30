@@ -628,15 +628,60 @@ $percentageReviewed = $totalApplications > 0
     }
 
 
-    public function status()
+    public function updateStatus(Request $request, $id)
     {
+        $request->validate([
+            'status' => 'required|in:Approved,Rejected',
+            'reason' => 'required_if:status,Rejected|string|max:1000'
+        ]);
+
+        // Get the application personnel record
+        $applicationPersonnel = DB::table('tbl_application_personnel as ap')
+            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+            ->where('ap.application_personnel_id', $id)
+            ->select('a.application_id', 'app.applicant_email', 'app.applicant_fname', 'app.applicant_lname')
+            ->first();
+
+        if (!$applicationPersonnel) {
+            return response()->json(['success' => false, 'message' => 'Application not found.']);
+        }
+
+        $status = $request->status;
+        $reason = $request->reason ?? null;
+
+        // Update the status and rejection_reason if rejected
+        DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $id)
+            ->update([
+                'status' => $status,
+                'rejection_reason' => $status === 'Rejected' ? $reason : null,
+                'updated_at' => now()
+            ]);
+
+        // Send email notification if rejected
+        if ($status === 'Rejected' && $reason) {
+            $emailData = [
+                'applicant_fname' => $applicationPersonnel->applicant_fname,
+                'applicant_lname' => $applicationPersonnel->applicant_lname,
+                'reason' => $reason,
+            ];
+
+            Mail::send('emails.scholar-status-rejection', $emailData, function ($message) use ($applicationPersonnel) {
+                $message->to($applicationPersonnel->applicant_email)
+                    ->subject('Application Status Update - LYDO Scholarship')
+                    ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
+            });
+        }
+
+        return response()->json(['success' => true, 'message' => 'Status updated successfully.']);
+    }
+
+     public function status()
+    {
+        // Get notifications
         $newApplications = DB::table("tbl_application as app")
-            ->join(
-                "tbl_applicant as a",
-                "a.applicant_id",
-                "=",
-                "app.applicant_id",
-            )
+            ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
             ->select(
                 "app.application_id",
                 "a.applicant_fname",
@@ -649,32 +694,16 @@ $percentageReviewed = $totalApplications > 0
             ->map(function ($item) {
                 return (object) [
                     "type" => "application",
-                    "name" =>
-                        $item->applicant_fname . " " . $item->applicant_lname,
+                    "name" => $item->applicant_fname . " " . $item->applicant_lname,
                     "created_at" => $item->created_at,
                 ];
             });
 
-        // Get NEW remarks (Poor, Non Poor, Ultra Poor, Non Indigenous)
+        // Get NEW remarks
         $newRemarks = DB::table("tbl_application_personnel as ap")
-            ->join(
-                "tbl_application as app",
-                "ap.application_id",
-                "=",
-                "app.application_id",
-            )
-            ->join(
-                "tbl_applicant as a",
-                "a.applicant_id",
-                "=",
-                "app.applicant_id",
-            )
-            ->whereIn("ap.remarks", [
-                "Poor",
-                "Non Poor",
-                "Ultra Poor",
-                "Non Indigenous",
-            ])
+            ->join("tbl_application as app", "ap.application_id", "=", "app.application_id")
+            ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+            ->whereIn("ap.remarks", ["Poor", "Non Poor", "Ultra Poor", "Non Indigenous"])
             ->select(
                 "ap.remarks",
                 "a.applicant_fname",
@@ -688,20 +717,15 @@ $percentageReviewed = $totalApplications > 0
                 return (object) [
                     "type" => "remark",
                     "remarks" => $item->remarks,
-                    "name" =>
-                        $item->applicant_fname . " " . $item->applicant_lname,
+                    "name" => $item->applicant_fname . " " . $item->applicant_lname,
                     "created_at" => $item->created_at,
                 ];
             });
 
-
-        $notifications = $newApplications
-            ->merge($newRemarks)
-            ->sortByDesc("created_at");
-
+        $notifications = $newApplications->merge($newRemarks)->sortByDesc("created_at");
         $showBadge = !session('notifications_viewed');
 
-        // Get pending applications for status update
+        // DEBUG: Get applications with relaxed conditions first
         $applications = DB::table('tbl_application_personnel as ap')
             ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
             ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
@@ -715,12 +739,15 @@ $percentageReviewed = $totalApplications > 0
                 'app.applicant_brgy as barangay',
                 'app.applicant_school_name as school',
                 'ap.remarks as remarks',
-                'ap.status as status'
+                'ap.status as status',
+                'ap.initial_screening as initial_screening', // For debugging
+                'lydo.lydopers_role as role' // For debugging
             )
-            ->where('ap.status', 'waiting')
-            ->where('ap.initial_screening', 'Reviewed')
-            ->whereIn('ap.remarks', ['Poor', 'Ultra Poor'])
             ->where('lydo.lydopers_role', 'mayor_staff')
+            // Comment these out temporarily for debugging
+             ->where('ap.status', 'Waiting')
+             ->where('ap.initial_screening', 'Reviewed')
+            ->whereIn('ap.remarks', ['Poor', 'Ultra Poor'])
             ->paginate(15);
 
         // Get list of processed applications
@@ -737,7 +764,9 @@ $percentageReviewed = $totalApplications > 0
                 'app.applicant_brgy as barangay',
                 'app.applicant_school_name as school',
                 'ap.remarks as remarks',
-                'ap.status as status'
+                'ap.status as status',
+                'ap.initial_screening as initial_screening', // For debugging
+                'lydo.lydopers_role as role' // For debugging
             )
             ->whereIn('ap.status', ['Approved', 'Rejected'])
             ->where('lydo.lydopers_role', 'mayor_staff')
@@ -750,6 +779,9 @@ $percentageReviewed = $totalApplications > 0
 
         return view('mayor_staff.status', compact('notifications', 'applications', 'listApplications', 'barangays', 'showBadge'));
     }
+
+
+
 
     public function settings()
     {
@@ -2242,6 +2274,12 @@ $percentageReviewed = $totalApplications > 0
             \Log::error('Error fetching intake sheet: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to fetch intake sheet data'], 500);
         }
+    }
+
+    public function welcomeApi(Request $request)
+    {
+        Log::info("Request received: " . $request->method() . " " . $request->path());
+        return response()->json(['message' => 'Welcome to the Mayor Staff API!']);
     }
 
 }

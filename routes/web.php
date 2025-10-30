@@ -109,6 +109,8 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/sse-applicants', [LydoStaffController::class, 'sse'])->name('LydoStaff.sse');
     Route::get('/lydo_staff/reports', [LydoStaffController::class, 'reports'])->name('LydoStaff.reports');
     Route::get('/lydo_staff/intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'showIntakeSheet'])->name('lydo_staff.intake_sheet.show');
+    Route::get('/intake-sheet/{id}', [MayorStaffController::class, 'getIntakeSheet'])->name('mayor_staff.intake-sheet');
+    Route::post('/mark-notifications-viewed', [MayorStaffController::class, 'markNotificationsViewed'])->name('mayor_staff.mark-notifications-viewed');
 
 });
 

@@ -14,6 +14,7 @@ use App\Http\Controllers\API\ReportController;
 use App\Http\Controllers\API\DisbursementController;
 use App\Http\Controllers\API\RenewalController;
 use App\Http\Controllers\API\AnnouncementController;
+use App\Http\Controllers\MayorStaffController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
@@ -27,5 +28,9 @@ Route::apiResource('/announcements', AnnouncementController::class);
 Route::apiResource('/reports', ReportController::class);
 Route::apiResource('/notifications', NotificationController::class);
 Route::apiResource('/admins', AdminController::class);
+
+// Mayor Staff API routes
+Route::get('/mayor-staff/welcome', [MayorStaffController::class, 'welcomeApi']);
+Route::get('/mayor-staff/intake-sheet/{application_personnel_id}', [MayorStaffController::class, 'getIntakeSheet']);
 
 ?>

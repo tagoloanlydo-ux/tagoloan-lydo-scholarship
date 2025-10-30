@@ -1536,59 +1536,76 @@
             // Open Review Modal
             function openReviewModal(button) {
                 const id = button.getAttribute("data-id");
+                if (!id) {
+                    console.error('No ID provided');
+                    return;
+                }
                 
-                // Fetch intake sheet data
+                // Show loading state
+                document.getElementById('modalReviewContent').innerHTML = '<div class="p-4 text-center">Loading...</div>';
+                
+                // Fetch intake sheet data with error handling
                 fetch(`/lydo_staff/intake-sheet/${id}`)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
+                        console.log('Fetched data:', data); // Debug log
                         if (data) {
                             populateReviewModal(data);
                             document.getElementById('reviewModal').style.display = 'block';
                             document.body.classList.add('modal-open');
+                        } else {
+                            throw new Error('No data received');
                         }
                     })
-                    .catch(err => console.error('Error fetching intake sheet data:', err));
+                    .catch(err => {
+                        console.error('Error fetching intake sheet data:', err);
+                        document.getElementById('modalReviewContent').innerHTML = `
+                            <div class="p-4 text-center text-red-600">
+                                Error loading data: ${err.message}
+                            </div>
+                        `;
+                    });
             }
 
-            // Close Review Modal
-            function closeReviewModal() {
-                document.getElementById('reviewModal').style.display = 'none';
-                document.body.classList.remove('modal-open');
-            }
-
-            // Populate Review Modal with data
+            // Update the populateReviewModal function to handle null/undefined values
             function populateReviewModal(d) {
+                if (!d) {
+                    console.error('No data received');
+                    return;
+                }
+
                 const modalContent = document.getElementById('modalReviewContent');
                 
+                // Add console logging to debug
+                console.log('Received data:', d);
+                
+                // Check if required data exists before populating
+                const fullName = [
+                    d.applicant_fname || '',
+                    d.applicant_mname || '',
+                    d.applicant_lname || '',
+                    d.applicant_suffix || ''
+                ].filter(Boolean).join(' ');
+
                 modalContent.innerHTML = `
                     <div class="review-columns">
                         <div class="space-y-4">
                             <div class="print-box p-4">
-                                <p><strong>Serial No.:</strong> ${d.serial_number || "AUTO_GENERATED"}</p>
-                                <p><strong>Name:</strong> ${[d.applicant_fname, d.applicant_mname, d.applicant_lname, d.applicant_suffix]
-                                    .filter(Boolean)
-                                    .join(" ")}</p>
+                                <p><strong>Serial No.:</strong> ${d.serial_number || "N/A"}</p>
+                                <p><strong>Name:</strong> ${fullName || "N/A"}</p>
                                 <table class="min-w-full text-sm">
                                     <tr>
-                                        <td><strong>Sex:</strong> ${d.applicant_gender || "-"}</td>
-                                        <td><strong>4Ps:</strong> ${d.head_4ps || "-"}</td>
-                                        <td><strong>IP No.:</strong> ${d.head_ipno || "-"}</td>
+                                        <td><strong>Sex:</strong> ${d.applicant_gender || "N/A"}</td>
+                                        <td><strong>4Ps:</strong> ${d.head_4ps || "N/A"}</td>
+                                        <td><strong>IP No.:</strong> ${d.head_ipno || "N/A"}</td>
                                     </tr>
-                                    <tr>
-                                        <td><strong>Address:</strong> ${d.head_address || "-"}</td>
-                                        <td><strong>Zone:</strong> ${d.head_zone || "-"}</td>
-                                        <td><strong>Barangay:</strong> ${d.head_barangay || "-"}</td>
-
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Date of Birth:</strong> ${formatDate(d.head_dob) || "-"}</td>
-                                        <td><strong>Place of Birth:</strong> ${d.head_pob || "-"}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Educational Attainment:</strong> ${d.head_educ || "-"}</td>
-                                        <td><strong>Occupation:</strong> ${d.head_occ || "-"}</td>
-                                        <td><strong>Religion:</strong> ${d.head_religion || "-"}</td>
-                                    </tr>
+                                    <!-- Add debugging output -->
+                                    <tr><td colspan="3" class="text-xs text-gray-500">Debug: ${JSON.stringify(d)}</td></tr>
                                 </table>
                             </div>
                             
@@ -1647,8 +1664,8 @@
                                         <td><strong>Total Family Net Income:</strong> ₱${d.house_net_income || "-"}</td>
                                     </tr>
                                     <tr>
-                                        <td><strong>House (Owned/Rented):</strong> ${d.house_house || "-"}</td>
-                                        <td><strong>Lot (Owned/Rented):</strong> ${d.house_lot || "-"}</td>
+                                        <td><strong>House (Owned/Rented):</strong> ${d.house_house || "-"} ${d.house_house_rent ? `(Rent: ₱${d.house_house_rent})` : ''}</td>
+                                        <td><strong>Lot (Owned/Rented):</strong> ${d.house_lot || "-"} ${d.house_lot_rent ? `(Rent: ₱${d.house_lot_rent})` : ''}</td>
                                         <td><strong>Water:</strong> ₱${d.house_water || "-"}</td>
                                         <td><strong>Electricity Source:</strong> ₱${d.house_electric || "-"}</td>
                                     </tr>
@@ -2135,7 +2152,9 @@
                 document.getElementById('house_total_income').value = data.house_total_income || '';
                 document.getElementById('house_net_income').value = data.house_net_income || '';
                 document.getElementById('house_house').value = data.house_house || '';
+                document.getElementById('house_house_rent').value = data.house_house_rent || '';
                 document.getElementById('house_lot').value = data.house_lot || '';
+                document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
                 document.getElementById('house_water').value = data.house_water || '';
                 document.getElementById('house_electric').value = data.house_electric || '';
 
@@ -2351,25 +2370,6 @@
                     officer_name: document.getElementById('officer_name').value,
                     date_entry: document.getElementById('date_entry').value,
                     signature_client: document.getElementById('signature_client').value,
-                    signature_worker: document.getElementById('signature_worker').value,
-                    signature_officer: document.getElementById('signature_officer').value
-                };
-
-                // Collect family members data
-                let familyMembers = [];
-                const familyRows = document.querySelectorAll('#family_members_tbody tr');
-                familyRows.forEach(row => {
-                    const cells = row.cells;
-                    familyMembers.push({
-                        name: cells[0].querySelector('input').value || '',
-                        relationship: cells[1].querySelector('select').value || '',
-                        birthdate: cells[2].querySelector('input').value || '',
-                        age: cells[3].querySelector('input').value || '',
-                        sex: cells[4].querySelector('select').value || '',
-                        civil_status: cells[5].querySelector('select').value || '',
-                        education: cells[6].querySelector('select').value || '',
-                        occupation: cells[7].querySelector('input').value || '',
-                        monthly_income: cells[8].querySelector('input').value || '',
                         remarks: cells[9].querySelector('select').value || '',
                     });
                 });
