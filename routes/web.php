@@ -42,8 +42,11 @@ Route::get('/reset-password/{token}', [LydopersController::class, 'showResetForm
 Route::post('/reset-password', [LydopersController::class, 'resetPassword'])->name('password.update');
 
 Route::middleware(['role:lydo_admin'])->group(function () {
+
     Route::get('/lydo-admin/search', [LydoAdminController::class, 'search'])->name('LydoAdmin.search');
     Route::get('/applicants/search', [LydoAdminController::class, 'ajaxSearchApplicants'])->name('applicants.ajaxSearch');
+
+
     Route::get('/lydo_admin/dashboard', [LydoAdminController::class, 'index'])->name('LydoAdmin.dashboard');
     Route::get('/lydo_admin/lydo', [LydoAdminController::class, 'lydo'])->name('LydoAdmin.lydo');
     Route::get('/lydo_admin/mayor', [LydoAdminController::class, 'mayor'])->name('LydoAdmin.mayor');
@@ -67,6 +70,7 @@ Route::put('/lydo_admin/announcement/{id}', [LydoAdminController::class, 'update
     Route::get('/lydo_admin/applicants', [LydoAdminController::class, 'applicants'])->name('LydoAdmin.applicants');
     Route::get('/lydo_admin/get-all-filtered-applicants', [LydoAdminController::class, 'getAllFilteredApplicants'])->name('LydoAdmin.getAllFilteredApplicants');
     Route::get('/lydo_admin/get-all-filtered-scholars', [LydoAdminController::class, 'getAllFilteredScholars'])->name('LydoAdmin.getAllFilteredScholars');
+    Route::get('/lydo_admin/get-scholars-data', [LydoAdminController::class, 'getScholarsData'])->name('LydoAdmin.getScholarsData');
     Route::post('/lydo_admin/get-scholar-names', [LydoAdminController::class, 'getScholarNames'])->name('LydoAdmin.getScholarNames');
     Route::post('/lydo_admin/get-scholar-names', [LydoAdminController::class, 'getScholarNames'])->name('LydoAdmin.getScholarNames');
     Route::post('/lydo_admin/create-disbursement', [LydoAdminController::class, 'createDisbursement'])->name('LydoAdmin.createDisbursement');
@@ -111,8 +115,6 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/sse-applicants', [LydoStaffController::class, 'sse'])->name('LydoStaff.sse');
     Route::get('/lydo_staff/reports', [LydoStaffController::class, 'reports'])->name('LydoStaff.reports');
     Route::get('/lydo_staff/intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'showIntakeSheet'])->name('lydo_staff.intake_sheet.show');
-    Route::get('/intake-sheet/{id}', [MayorStaffController::class, 'getIntakeSheet'])->name('mayor_staff.intake-sheet');
-    Route::post('/mark-notifications-viewed', [MayorStaffController::class, 'markNotificationsViewed'])->name('mayor_staff.mark-notifications-viewed');
 
 });
 
@@ -135,6 +137,7 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::post('/mayor_staff/send-email', [MayorStaffController::class, 'sendEmail'])->name('mayor_staff.sendEmail');
     Route::get('/mayor_staff/dashboard/updates', [MayorStaffController::class, 'getDashboardUpdates'])->name('MayorStaff.getDashboardUpdates');
     Route::get('/mayor_staff/application/updates', [MayorStaffController::class, 'getApplicationUpdates'])->name('MayorStaff.getApplicationUpdates');
+    Route::get('/mayor_staff/status/updates', [MayorStaffController::class, 'getStatusUpdates'])->name('MayorStaff.getStatusUpdates');
     Route::get('/mayor_staff/sse-applicants', [MayorStaffController::class, 'sseApplicants'])->name('MayorStaff.sseApplicants');
     Route::get('/mayor_staff/get-applications-data', [MayorStaffController::class, 'getApplicationsData'])->name('MayorStaff.getApplicationsData');
     Route::get('/mayor_staff/get-application-search-results', [MayorStaffController::class, 'getApplicationSearchResults'])->name('MayorStaff.getApplicationSearchResults');
@@ -145,14 +148,12 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::post('/mayor_staff/send-document-email', [MayorStaffController::class, 'sendDocumentEmail'])->name('mayor_staff.sendDocumentEmail');
     Route::post('/save-remarks', [MayorStaffController::class, 'saveRemarks'])->name('saveRemarks');
     Route::get('/mayor_staff/welcome', [MayorStaffController::class, 'welcome'])->name('MayorStaff.welcome');
-    Route::get('/mayor_staff/api-welcome', [MayorStaffController::class, 'apiWelcome'])->name('MayorStaff.apiWelcome');
-    Route::get('/mayor_staff/intake-sheet/{application_personnel_id}', [MayorStaffController::class, 'getIntakeSheet'])->name('mayor_staff.intake_sheet');
 
 });
 
 // Public routes for intake sheet
-Route::get('/Applicants/intake-sheet/{application_personnel_id}', [MayorStaffController::class, 'showIntakeSheet'])->name('intake_sheet.show');
-Route::post('/Applicants/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheetPublic'])->name('intake_sheet.submit');
+Route::get('/intake-sheet/{application_personnel_id}', [MayorStaffController::class, 'showIntakeSheet'])->name('intake_sheet.show');
+Route::post('/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheetPublic'])->name('intake_sheet.submit');
 
 
 Route::middleware(['scholar.auth'])->group(function () {

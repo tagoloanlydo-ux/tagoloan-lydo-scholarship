@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        /* Enhanced UI Improvements */
+        /* Enhanced UI  Mark Cagatan Improvements */
         .document-loading {
             position: relative;
         }
@@ -357,31 +357,38 @@
             }
         }
 
-        /* FIX: Modal z-index fix to appear above sidebar and navbar */
-        #applicationModal,
-        #deleteModal,
-        #rejectionModal,
-        #editInitialScreeningModal,
-        #documentModal {
-            z-index: 1100 !important; /* Higher than navbar (1000) and sidebar (999) */
+        /* FIX: Modal z-index adjustments */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100; /* Higher than sidebar and navbar */
         }
 
-        /* Ensure modal backdrop covers everything */
-        .fixed.inset-0 {
-            z-index: 1099 !important; /* Just below the modal but above everything else */
+        .modal-content {
+            background-color: white;
+            width: 100%;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: fadeIn 0.3s ease-out;
+            z-index: 1101; /* Higher than overlay */
         }
 
-        /* FIX: SweetAlert z-index to appear above modals */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Ensure SweetAlert is on top */
         .swal2-container {
-            z-index: 1200 !important; /* Higher than modals (1100) */
-        }
-
-        .swal2-popup {
-            z-index: 1201 !important;
-        }
-
-        .swal2-backdrop-show {
-            z-index: 1199 !important; /* Just below the SweetAlert but above modals */
+            z-index: 1200 !important;
         }
     </style>
 </head>
@@ -687,193 +694,187 @@
     </div>
     </div>
 
-
-     <div id="applicationModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-         <div class="bg-white w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl animate-fadeIn">
-        
-        <!-- Header -->
+    <!-- FIXED: Application Modal with proper z-index -->
+    <div id="applicationModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b">
                 <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                     <i class="fas fa-folder-open text-blue-600"></i>
                     Application Requirements</h2>
-            <button onclick="closeApplicationModal()" class="p-2 rounded-full hover:bg-gray-100 transition">
-                <i class="fas fa-times text-gray-500 text-lg"></i>
-            </button>
-        </div>
-        <!-- Body -->
-        <div id="applicationContent" class="p-6 space-y-4">
-        <!-- Dynamic Content via JS -->
-        </div>
-        <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-
+                <button onclick="closeApplicationModal()" class="p-2 rounded-full hover:bg-gray-100 transition">
+                    <i class="fas fa-times text-gray-500 text-lg"></i>
+                </button>
+            </div>
+            <!-- Body -->
+            <div id="applicationContent" class="p-6 space-y-4">
+                <!-- Dynamic Content via JS -->
+            </div>
+            <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+            </div>
         </div>
     </div>
-    </div>
 
-    <!-- Delete Confirmation Modal -->
-        <div id="deleteModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl animate-fadeIn">
-
+    <!-- FIXED: Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-md">
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b">
-            <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                <i class="fas fa-exclamation-triangle text-red-600"></i>
-                Confirm Delete
-            </h2>
-            <button onclick="closeDeleteModal()"
-                    class="p-2 rounded-full hover:bg-gray-100 transition">
-                <i class="fas fa-times text-gray-500 text-lg"></i>
-            </button>
+                <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                    Confirm Delete
+                </h2>
+                <button onclick="closeDeleteModal()"
+                        class="p-2 rounded-full hover:bg-gray-100 transition">
+                    <i class="fas fa-times text-gray-500 text-lg"></i>
+                </button>
             </div>
 
-        <!-- Body -->
-        <div id="deleteModalContent" class="p-6 space-y-4">
-        <p class="text-gray-700">Are you sure you want to delete the application for <strong id="deleteApplicantName"></strong>?</p>
-        <p class="text-sm text-gray-500">This action cannot be undone.</p>
-        </div>
-
-        <!-- Footer -->
-        <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-        <button onclick="closeDeleteModal()"
-                class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-            Cancel
-        </button>
-        <form id="deleteForm" method="POST" style="display: inline;">
-            @csrf
-            @method('DELETE')
-            <button type="submit"
-                    class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">
-            <i class="fas fa-trash mr-2"></i> Delete
-            </button>
-        </form>
-        </div>
-    </div>
-    </div>
-
-    <!-- Rejection Modal -->
-    <div id="rejectionModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl animate-fadeIn">
-
-        <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b">
-        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-            <i class="fas fa-times-circle text-red-600"></i>
-            Reject Initial Screening
-        </h2>
-        <button onclick="closeRejectionModal()"
-                class="p-2 rounded-full hover:bg-gray-100 transition">
-            <i class="fas fa-times text-gray-500 text-lg"></i>
-        </button>
-        </div>
-
-        <!-- Body -->
-        <div class="p-6 space-y-4">
-        <p class="text-gray-700">Please provide the reason for rejecting this application:</p>
-        <form id="rejectionForm">
-            <div class="mb-4">
-            <label for="rejectionReason" class="block text-gray-700 font-medium mb-2">Reason for Rejection</label>
-            <textarea id="rejectionReason" name="reason" rows="4" class="w-full border rounded px-3 py-2" placeholder="Enter the reason for rejection..." required></textarea>
+            <!-- Body -->
+            <div id="deleteModalContent" class="p-6 space-y-4">
+                <p class="text-gray-700">Are you sure you want to delete the application for <strong id="deleteApplicantName"></strong>?</p>
+                <p class="text-sm text-gray-500">This action cannot be undone.</p>
             </div>
-        </form>
-        </div>
 
-        <!-- Footer -->
-        <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-        <button onclick="closeRejectionModal()"
-                class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-            Cancel
-        </button>
-        <button id="rejectSubmitBtn" onclick="submitRejection()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
-            <i class="fas fa-times"></i>
-            <span id="rejectSubmitBtnText">Reject Application</span>
-            <div id="rejectSubmitBtnSpinner" class="hidden ml-2">
-            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+            <!-- Footer -->
+            <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+                <button onclick="closeDeleteModal()"
+                        class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                    Cancel
+                </button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit"
+                            class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">
+                        <i class="fas fa-trash mr-2"></i> Delete
+                    </button>
+                </form>
             </div>
-        </button>
         </div>
     </div>
-    </div>
 
-    <!-- Edit Initial Screening Modal -->
-    <div id="editInitialScreeningModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl animate-fadeIn">
-
-        <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b">
-        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-            <i class="fas fa-edit text-blue-600"></i>
-            Edit Initial Screening
-        </h2>
-        <button onclick="closeEditInitialScreeningModal()"
-                class="p-2 rounded-full hover:bg-gray-100 transition">
-            <i class="fas fa-times text-gray-500 text-lg"></i>
-        </button>
-        </div>
-
-        <!-- Body -->
-        <div class="p-6 space-y-4">
-        <p class="text-gray-700">Update the initial screening status for this application:</p>
-        <form id="editInitialScreeningForm" method="POST">
-            @csrf
-            @method('PATCH')
-            <input type="hidden" name="application_personnel_id" id="editApplicationPersonnelId" />
-        <div class="mb-4">
-        <label for="initialScreeningStatus" class="block text-gray-700 font-medium mb-2">Initial Screening Status</label>
-        <select id="initialScreeningStatus" name="initial_screening_status" class="w-full border rounded px-3 py-2" required>
-            <option value="">Select Status</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-        </select>
-        </div>
-        </form>
-        </div>
-
-        <!-- Footer -->
-        <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-        <button onclick="closeEditInitialScreeningModal()"
-                class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-            Cancel
-        </button>
-        <button onclick="submitEditInitialScreening()" class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
-            <i class="fas fa-save mr-2"></i> Update
-        </button>
-        </div>
-    </div>
-    </div>
-
-        <!-- Document Viewer Modal -->
-    <div id="documentModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white w-full max-w-6xl max-h-[90vh] rounded-2xl shadow-2xl animate-fadeIn">
-
-        <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b">
-        <h2 id="documentModalTitle" class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-            <i class="fas fa-file-alt text-blue-600"></i>
-            Document Viewer
-        </h2>
-        <button onclick="closeDocumentModal()" class="p-2 rounded-full hover:bg-gray-100 transition">
-            <i class="fas fa-times text-gray-500 text-lg"></i>
-        </button>
-        </div>
-
-        <!-- Body - Improved with better scrolling -->
-        <div class="document-modal-content p-6">
-            <div class="document-viewer-container mb-4">
-                <iframe id="documentViewer" src="" class="document-viewer"></iframe>
+    <!-- FIXED: Rejection Modal -->
+    <div id="rejectionModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-2xl">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b">
+                <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-times-circle text-red-600"></i>
+                    Reject Initial Screening
+                </h2>
+                <button onclick="closeRejectionModal()"
+                        class="p-2 rounded-full hover:bg-gray-100 transition">
+                    <i class="fas fa-times text-gray-500 text-lg"></i>
+                </button>
             </div>
-            <div id="documentReviewControls" class="mt-4"></div>
-        </div>
 
-        <!-- Footer -->
-        <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-        <button onclick="closeDocumentModal()" class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-            Close
-        </button>
+            <!-- Body -->
+            <div class="p-6 space-y-4">
+                <p class="text-gray-700">Please provide the reason for rejecting this application:</p>
+                <form id="rejectionForm">
+                    <div class="mb-4">
+                        <label for="rejectionReason" class="block text-gray-700 font-medium mb-2">Reason for Rejection</label>
+                        <textarea id="rejectionReason" name="reason" rows="4" class="w-full border rounded px-3 py-2" placeholder="Enter the reason for rejection..." required></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+                <button onclick="closeRejectionModal()"
+                        class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                    Cancel
+                </button>
+                <button id="rejectSubmitBtn" onclick="submitRejection()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
+                    <i class="fas fa-times"></i>
+                    <span id="rejectSubmitBtnText">Reject Application</span>
+                    <div id="rejectSubmitBtnSpinner" class="hidden ml-2">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </button>
+            </div>
         </div>
     </div>
+
+    <!-- FIXED: Edit Initial Screening Modal -->
+    <div id="editInitialScreeningModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-2xl">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b">
+                <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-edit text-blue-600"></i>
+                    Edit Initial Screening
+                </h2>
+                <button onclick="closeEditInitialScreeningModal()"
+                        class="p-2 rounded-full hover:bg-gray-100 transition">
+                    <i class="fas fa-times text-gray-500 text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 space-y-4">
+                <p class="text-gray-700">Update the initial screening status for this application:</p>
+                <form id="editInitialScreeningForm" method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="application_personnel_id" id="editApplicationPersonnelId" />
+                    <div class="mb-4">
+                        <label for="initialScreeningStatus" class="block text-gray-700 font-medium mb-2">Initial Screening Status</label>
+                        <select id="initialScreeningStatus" name="initial_screening_status" class="w-full border rounded px-3 py-2" required>
+                            <option value="">Select Status</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+                <button onclick="closeEditInitialScreeningModal()"
+                        class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                    Cancel
+                </button>
+                <button onclick="submitEditInitialScreening()" class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
+                    <i class="fas fa-save mr-2"></i> Update
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIXED: Document Viewer Modal -->
+    <div id="documentModal" class="modal-overlay hidden">
+        <div class="modal-content max-w-6xl">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b">
+                <h2 id="documentModalTitle" class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-file-alt text-blue-600"></i>
+                    Document Viewer
+                </h2>
+                <button onclick="closeDocumentModal()" class="p-2 rounded-full hover:bg-gray-100 transition">
+                    <i class="fas fa-times text-gray-500 text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Body - Improved with better scrolling -->
+            <div class="document-modal-content p-6">
+                <div class="document-viewer-container mb-4">
+                    <iframe id="documentViewer" src="" class="document-viewer"></iframe>
+                </div>
+                <div id="documentReviewControls" class="mt-4"></div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+                <button onclick="closeDocumentModal()" class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                    Close
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1147,7 +1148,7 @@
 
             document.getElementById('applicationModal').classList.remove('hidden');
 
-                        // Load existing comments and statuses
+            // Load existing comments and statuses
             loadDocumentComments(applicationPersonnelId, source);
             
             // NEW: Check for document updates to show NEW badges
@@ -1511,7 +1512,7 @@
                     Swal.fire('Error', 'Failed to save document status.', 'error');
                 } else {
                     console.log('Status saved successfully');
-                // Update the UI in the document modal
+                    // Update the UI in the document modal
                     updateDocumentModalUI(documentType);
                 }
             })
@@ -1814,7 +1815,7 @@
                             location.reload();
                         } else {
                             Swal.fire('Error', 'Failed to reject initial screening.', 'error');
-                            }
+                        }
                     })
                     .catch(() => {
                         Swal.fire('Error', 'Failed to reject initial screening.', 'error');
@@ -2014,7 +2015,7 @@
                         goodBtn.addEventListener('click', function() {
                             const docType = this.getAttribute('data-document');
                             markDocumentAsGood(docType);
-                        });
+                       });
                     }
                     
                     // Mark as Bad button
@@ -2323,4 +2324,4 @@ setInterval(pollForUpdates, 10000);
 </script>
 
 </body>
-</html>u
+</html>

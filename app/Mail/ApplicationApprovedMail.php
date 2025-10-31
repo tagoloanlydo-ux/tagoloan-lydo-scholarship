@@ -9,22 +9,20 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class InitialScreeningApproval extends Mailable
+class ApplicationApprovedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $applicant_fname;
-    public $applicant_lname;
-    public $intake_sheet_link;
+    public $applicationPersonnel;
+    public $applicationPersonnelId;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($applicant_fname, $applicant_lname, $intake_sheet_link)
+    public function __construct($applicationPersonnel)
     {
-        $this->applicant_fname = $applicant_fname;
-        $this->applicant_lname = $applicant_lname;
-        $this->intake_sheet_link = $intake_sheet_link;
+        $this->applicationPersonnel = $applicationPersonnel;
+        $this->applicationPersonnelId = $applicationPersonnel->application_personnel_id;
     }
 
     /**
@@ -33,7 +31,7 @@ class InitialScreeningApproval extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Initial Screening Approval - LYDO Scholarship',
+            subject: 'Application Approved - LYDO Scholarship',
         );
     }
 
@@ -43,11 +41,11 @@ class InitialScreeningApproval extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.initial-screening-approval',
+            view: 'emails.application-approved',
             with: [
-                'applicant_fname' => $this->applicant_fname,
-                'applicant_lname' => $this->applicant_lname,
-                'intake_sheet_link' => $this->intake_sheet_link,
+                'applicant_fname' => $this->applicationPersonnel->applicant_fname,
+                'applicant_lname' => $this->applicationPersonnel->applicant_lname,
+                'applicationPersonnelId' => $this->applicationPersonnelId,
             ],
         );
     }
