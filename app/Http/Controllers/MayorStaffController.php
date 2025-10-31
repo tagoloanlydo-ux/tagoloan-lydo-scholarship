@@ -252,7 +252,7 @@ $percentageReviewed = $totalApplications > 0
                 "ap.status",
                 "ap.initial_screening",
                 "ap.remarks",
-                "a.applicant_email"
+                "a.applicant_email",
             )
             ->where(
                 "a.applicant_acad_year",
@@ -310,7 +310,7 @@ $percentageReviewed = $totalApplications > 0
                 "ap.status",
                 "ap.initial_screening",
                 "ap.remarks",
-                "a.applicant_email"
+                "a.applicant_email",
             )
             ->where(
                 "a.applicant_acad_year",
@@ -471,9 +471,6 @@ $percentageReviewed = $totalApplications > 0
             ),
         );
     }
-
-
-
     public function updateInitialScreening(Request $request, $id)
     {
         $request->validate([
@@ -528,35 +525,19 @@ $percentageReviewed = $totalApplications > 0
             ->where('application_personnel_id', $id)
             ->update(['intake_sheet_token' => $token]);
 
-    // Send approval email
-    $emailData = [
-        'applicant_fname' => $applicationPersonnel->applicant_fname,
-        'applicant_lname' => $applicationPersonnel->applicant_lname,
-        'application_personnel_id' => $id,
-        'token' => $token,
-    ];
-
-    try {
-        \Log::info('Preparing initial screening approval email', $emailData);
+        // Send approval email
+        $emailData = [
+            'applicant_fname' => $applicationPersonnel->applicant_fname,
+            'applicant_lname' => $applicationPersonnel->applicant_lname,
+            'application_personnel_id' => $id,
+            'token' => $token,
+        ];
 
         Mail::send('emails.initial-screening-approval', $emailData, function ($message) use ($applicationPersonnel) {
             $message->to($applicationPersonnel->applicant_email)
                 ->subject('Initial Screening Approval - LYDO Scholarship')
                 ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
         });
-
-        \Log::info('Initial screening approval email queued/sent', [
-            'to' => $applicationPersonnel->applicant_email,
-            'application_personnel_id' => $id,
-            'token' => $token,
-        ]);
-    } catch (\Exception $e) {
-        \Log::error('Failed to send initial screening approval email', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-            'data' => $emailData,
-        ]);
-    }
 
         return response()->json(['success' => true, 'message' => 'Initial screening approved successfully.']);
     }
@@ -643,61 +624,15 @@ $percentageReviewed = $totalApplications > 0
         ]);
     }
 
-
-    public function updateStatus(Request $request, $id)
+    public function status(Request $request)
     {
-        $request->validate([
-            'status' => 'required|in:Approved,Rejected',
-            'reason' => 'required_if:status,Rejected|string|max:1000'
-        ]);
-
-        // Get the application personnel record
-        $applicationPersonnel = DB::table('tbl_application_personnel as ap')
-            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-            ->where('ap.application_personnel_id', $id)
-            ->select('a.application_id', 'app.applicant_email', 'app.applicant_fname', 'app.applicant_lname')
-            ->first();
-
-        if (!$applicationPersonnel) {
-            return response()->json(['success' => false, 'message' => 'Application not found.']);
-        }
-
-        $status = $request->status;
-        $reason = $request->reason ?? null;
-
-        // Update the status and rejection_reason if rejected
-        DB::table('tbl_application_personnel')
-            ->where('application_personnel_id', $id)
-            ->update([
-                'status' => $status,
-                'rejection_reason' => $status === 'Rejected' ? $reason : null,
-                'updated_at' => now()
-            ]);
-
-        // Send email notification if rejected
-        if ($status === 'Rejected' && $reason) {
-            $emailData = [
-                'applicant_fname' => $applicationPersonnel->applicant_fname,
-                'applicant_lname' => $applicationPersonnel->applicant_lname,
-                'reason' => $reason,
-            ];
-
-            Mail::send('emails.scholar-status-rejection', $emailData, function ($message) use ($applicationPersonnel) {
-                $message->to($applicationPersonnel->applicant_email)
-                    ->subject('Application Status Update - LYDO Scholarship')
-                    ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
-            });
-        }
-
-        return response()->json(['success' => true, 'message' => 'Status updated successfully.']);
-    }
-
-     public function status()
-    {
-        // Get notifications
         $newApplications = DB::table("tbl_application as app")
-            ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+            ->join(
+                "tbl_applicant as a",
+                "a.applicant_id",
+                "=",
+                "app.applicant_id",
+            )
             ->select(
                 "app.application_id",
                 "a.applicant_fname",
@@ -710,16 +645,32 @@ $percentageReviewed = $totalApplications > 0
             ->map(function ($item) {
                 return (object) [
                     "type" => "application",
-                    "name" => $item->applicant_fname . " " . $item->applicant_lname,
+                    "name" =>
+                        $item->applicant_fname . " " . $item->applicant_lname,
                     "created_at" => $item->created_at,
                 ];
             });
 
-        // Get NEW remarks
+        // Get NEW remarks (Poor, Non Poor, Ultra Poor, Non Indigenous)
         $newRemarks = DB::table("tbl_application_personnel as ap")
-            ->join("tbl_application as app", "ap.application_id", "=", "app.application_id")
-            ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
-            ->whereIn("ap.remarks", ["Poor", "Non Poor", "Ultra Poor", "Non Indigenous"])
+            ->join(
+                "tbl_application as app",
+                "ap.application_id",
+                "=",
+                "app.application_id",
+            )
+            ->join(
+                "tbl_applicant as a",
+                "a.applicant_id",
+                "=",
+                "app.applicant_id",
+            )
+            ->whereIn("ap.remarks", [
+                "Poor",
+                "Non Poor",
+                "Ultra Poor",
+                "Non Indigenous",
+            ])
             ->select(
                 "ap.remarks",
                 "a.applicant_fname",
@@ -733,16 +684,29 @@ $percentageReviewed = $totalApplications > 0
                 return (object) [
                     "type" => "remark",
                     "remarks" => $item->remarks,
-                    "name" => $item->applicant_fname . " " . $item->applicant_lname,
+                    "name" =>
+                        $item->applicant_fname . " " . $item->applicant_lname,
                     "created_at" => $item->created_at,
                 ];
             });
 
-        $notifications = $newApplications->merge($newRemarks)->sortByDesc("created_at");
-        $showBadge = !session('notifications_viewed');
+        $notifications = $newApplications
+            ->merge($newRemarks)
+            ->sortByDesc("created_at");
 
-        // DEBUG: Get applications with relaxed conditions first
-        $applications = DB::table('tbl_application_personnel as ap')
+        $applications = DB::table("tbl_application")
+            ->select(
+                "application_id",
+                "applicant_id",
+                "application_letter",
+                "cert_of_reg",
+                "grade_slip",
+                "brgy_indigency",
+            )
+            ->get()
+            ->groupBy("applicant_id");
+
+        $query = DB::table('tbl_application_personnel as ap')
             ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
             ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
             ->join('tbl_lydopers as lydo', 'ap.lydopers_id', '=', 'lydo.lydopers_id')
@@ -755,18 +719,30 @@ $percentageReviewed = $totalApplications > 0
                 'app.applicant_brgy as barangay',
                 'app.applicant_school_name as school',
                 'ap.remarks as remarks',
-                'ap.status as status',
-                'ap.initial_screening as initial_screening', // For debugging
-                'lydo.lydopers_role as role' // For debugging
+                'ap.status as status'
             )
+            ->where('ap.status', 'Pending')
             ->where('lydo.lydopers_role', 'lydo_staff')
-            // Comment these out temporarily for debugging
-             ->where('ap.status', 'Pending')
-             ->where('ap.initial_screening', 'Reviewed')
-            ->whereIn('ap.remarks', ['Poor', 'Ultra Poor'])
-            ->paginate(15);
+            ->whereIn('ap.remarks', ['Poor', 'Ultra Poor']); // Only show Poor and Ultra Poor
 
-        // Get list of processed applications
+        // ✅ Search by name
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('app.applicant_fname', 'like', "%$search%")
+                  ->orWhere('app.applicant_lname', 'like', "%$search%");
+            });
+        }
+
+        // ✅ Filter by barangay
+        if ($request->filled('barangay')) {
+            $query->where('app.applicant_brgy', $request->barangay);
+        }
+
+        $applications = $query->paginate(15);
+
+        $barangays = DB::table('tbl_applicant')->distinct()->pluck('applicant_brgy');
+
         $listApplications = DB::table('tbl_application_personnel as ap')
             ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
             ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
@@ -780,25 +756,143 @@ $percentageReviewed = $totalApplications > 0
                 'app.applicant_brgy as barangay',
                 'app.applicant_school_name as school',
                 'ap.remarks as remarks',
-                'ap.status as status',
-                'ap.initial_screening as initial_screening', // For debugging
-                'lydo.lydopers_role as role' // For debugging
+                'ap.status as status'
             )
             ->whereIn('ap.status', ['Approved', 'Rejected'])
-            ->where('lydo.lydopers_role', 'mayor_staff')
+            ->where('lydo.lydopers_role', 'lydo_staff')
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $q->where(function ($q) use ($request) {
+                    $q->where('app.applicant_fname', 'like', "%{$request->search}%")
+                      ->orWhere('app.applicant_lname', 'like', "%{$request->search}%");
+                });
+            })
+            ->when($request->filled('barangay'), function ($q) use ($request) {
+                $q->where('app.applicant_brgy', $request->barangay);
+            })
+            ->when($request->filled('status_filter'), function ($q) use ($request) {
+                $q->where('ap.status', $request->status_filter);
+            })
             ->paginate(15, ['*'], 'list');
 
-        // Get barangays for filtering
-        $barangays = DB::table('tbl_applicant')
-            ->distinct()
-            ->pluck('applicant_brgy');
+        $barangays = DB::table('tbl_applicant')->distinct()->pluck('applicant_brgy');
 
-        return view('mayor_staff.status', compact('notifications', 'applications', 'listApplications', 'barangays', 'showBadge'));
+        $showBadge = !session('notifications_viewed');
+
+        $tableApplicants = $applications;
+
+        // If AJAX request, return JSON data
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'tableApplicants' => $tableApplicants->items(),
+                'listApplications' => $listApplications->items(),
+                'tablePagination' => $tableApplicants->appends(request()->query())->links()->toHtml(),
+                'listPagination' => $listApplications->appends(request()->query())->links()->toHtml(),
+            ]);
+        }
+
+        return view('mayor_staff.status', compact('tableApplicants', 'barangays', 'notifications', 'newApplications', 'newRemarks', 'listApplications', 'showBadge'));
+}
+
+// ✅ Update status
+public function updateStatus(Request $request, $id)
+{
+    // Validate request
+    $request->validate([
+        'status' => 'required|in:Approved,Rejected',
+        'reason' => 'required_if:status,Rejected|string|max:1000'
+    ]);
+
+    // Get the application_id and applicant email from application_personnel and applicant
+    $applicationPersonnel = DB::table('tbl_application_personnel as ap')
+        ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+        ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+        ->where('ap.application_personnel_id', $id)
+        ->select('a.application_id', 'app.applicant_email', 'app.applicant_fname', 'app.applicant_lname', 'app.applicant_contact_number')
+        ->first();
+
+    if (!$applicationPersonnel) {
+        if ($request->ajax()) {
+            return response()->json(['success' => false, 'message' => 'Application not found.']);
+        }
+        return back()->with('error', 'Application not found.');
     }
 
+    // Update the status and reason if rejected
+    $updateData = ['status' => $request->status, 'updated_at' => now()];
+    if ($request->status === 'Rejected') {
+        $updateData['rejection_reason'] = $request->reason;
+    }
 
+    DB::table('tbl_application_personnel')
+        ->where('application_personnel_id', $id)
+        ->update($updateData);
 
+    // If status is Approved, add to tbl_scholar if not already exists and send email
+    if ($request->status === 'Approved') {
+        $existingScholar = Scholar::where('application_id', $applicationPersonnel->application_id)->first();
 
+        if (!$existingScholar) {
+            Scholar::create([
+                'application_id' => $applicationPersonnel->application_id,
+                'scholar_username' => $request->username ?? 'default_username',
+                'scholar_pass' => bcrypt($request->password ?? 'default123'),
+                'date_activated' => now(),
+                'scholar_status' => 'Active',
+            ]);
+        }
+
+        // Send email with registration link
+        $scholar = Scholar::where('application_id', $applicationPersonnel->application_id)->first();
+        $registrationLink = \Illuminate\Support\Facades\URL::signedRoute('scholar.scholar_reg', ['scholar_id' => $scholar->scholar_id]);
+        $emailData = [
+            'applicant_fname' => $applicationPersonnel->applicant_fname,
+            'applicant_lname' => $applicationPersonnel->applicant_lname,
+            'registration_link' => $registrationLink,
+        ];
+
+        Mail::send('emails.scholar-registration-link', $emailData, function ($message) use ($applicationPersonnel) {
+            $message->to($applicationPersonnel->applicant_email)
+                ->subject('Scholar Registration - Update Your Account')
+                ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
+        });
+
+        // Send SMS notification
+        $mobile = $applicationPersonnel->applicant_contact_number;
+        Log::info("Original mobile number: " . $mobile);
+        if (preg_match('/^0\d{10}$/', $mobile)) {
+            $mobile = '+63' . substr($mobile, 1);
+        } elseif (preg_match('/^9\d{9}$/', $mobile)) {
+            $mobile = '+63' . $mobile;
+        }
+        Log::info("Formatted mobile number: " . $mobile);
+        $smsController = new SmsController();
+        $smsMessage = "Congratulations {$applicationPersonnel->applicant_fname}! Your scholarship application has been approved. Update your username/password: {$registrationLink}";
+        Log::info("Sending SMS to: " . $mobile . " with message: " . $smsMessage);
+        $result = $smsController->sendSms($mobile, $smsMessage);
+        Log::info("SMS send result: " . ($result ? 'Success' : 'Failed'));
+    }
+
+    // If status is Rejected, send rejection email
+    if ($request->status === 'Rejected') {
+        $emailData = [
+            'applicant_fname' => $applicationPersonnel->applicant_fname,
+            'applicant_lname' => $applicationPersonnel->applicant_lname,
+            'reason' => $request->reason,
+        ];
+
+        Mail::send('emails.scholar-status-rejection', $emailData, function ($message) use ($applicationPersonnel) {
+            $message->to($applicationPersonnel->applicant_email)
+                ->subject('Scholarship Application Update')
+                ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
+        });
+    }
+
+    if ($request->ajax()) {
+        return response()->json(['success' => true, 'message' => 'Status updated successfully!']);
+    }
+
+    return back()->with('success', 'Status updated successfully!');
+}
     public function settings()
     {
                    $newApplications = DB::table("tbl_application as app")
@@ -865,7 +959,7 @@ $percentageReviewed = $totalApplications > 0
                 ];
             });
 
-
+      
         $notifications = $newApplications
             ->merge($newRemarks)
             ->sortByDesc("created_at");
@@ -1828,12 +1922,6 @@ $percentageReviewed = $totalApplications > 0
         return response()->json(['message' => 'Welcome to the Mayor Staff API!']);
     }
 
-    public function apiWelcome(Request $request)
-    {
-        Log::info("Request received: " . $request->method() . " " . $request->path());
-        return response()->json(['message' => 'Welcome to the Mayor Staff API!']);
-    }
-
     public function saveDocumentComment(Request $request)
     {
         $request->validate([
@@ -2206,96 +2294,6 @@ $percentageReviewed = $totalApplications > 0
             ->update(['intake_sheet_submitted' => true, 'updated_at' => now()]);
 
         return response()->json(['success' => true, 'message' => 'Family intake sheet submitted successfully.']);
-    }
-
-    public function getIntakeSheet($application_personnel_id)
-    {
-        try {
-            // Get the intake sheet data
-            $intakeSheet = FamilyIntakeSheet::where('application_personnel_id', $application_personnel_id)->first();
-
-            if (!$intakeSheet) {
-                return response()->json(['error' => 'Intake sheet not found'], 404);
-            }
-
-            // Get applicant details
-            $applicant = DB::table('tbl_applicant as a')
-                ->join('tbl_application as app', 'a.applicant_id', '=', 'app.applicant_id')
-                ->join('tbl_application_personnel as ap', 'app.application_id', '=', 'ap.application_id')
-                ->where('ap.application_personnel_id', $application_personnel_id)
-                ->select(
-                    'a.applicant_fname',
-                    'a.applicant_mname',
-                    'a.applicant_lname',
-                    'a.applicant_suffix',
-                    'a.applicant_gender',
-                    'a.applicant_bdate',
-                    'a.applicant_email',
-                    'a.applicant_brgy',
-                    'a.applicant_address',
-                    'a.applicant_zone',
-                    'a.applicant_pob',
-                    'a.applicant_educ',
-                    'a.applicant_occ',
-                    'a.applicant_religion',
-                    'ap.status'
-                )
-                ->first();
-
-            if (!$applicant) {
-                return response()->json(['error' => 'Applicant not found'], 404);
-            }
-
-            // Prepare the response data
-            $responseData = [
-                'serial_number' => $intakeSheet->serial_number,
-                'applicant_fname' => $applicant->applicant_fname,
-                'applicant_mname' => $applicant->applicant_mname,
-                'applicant_lname' => $applicant->applicant_lname,
-                'applicant_suffix' => $applicant->applicant_suffix,
-                'head_gender' => $applicant->applicant_gender,
-                'head_4ps' => $intakeSheet->head_4ps,
-                'head_ipno' => $intakeSheet->head_ipno,
-                'head_address' => $intakeSheet->head_address ?: $applicant->applicant_address,
-                'head_zone' => $intakeSheet->head_zone ?: $applicant->applicant_zone,
-                'head_barangay' => $intakeSheet->head_barangay ?: $applicant->applicant_brgy,
-                'head_pob' => $intakeSheet->head_pob ?: $applicant->applicant_pob,
-                'head_dob' => $intakeSheet->head_dob ?: $applicant->applicant_bdate,
-                'head_educ' => $intakeSheet->head_educ ?: $applicant->applicant_educ,
-                'head_occ' => $intakeSheet->head_occ ?: $applicant->applicant_occ,
-                'head_religion' => $intakeSheet->head_religion ?: $applicant->applicant_religion,
-                'location' => $intakeSheet->location,
-                'house_total_income' => $intakeSheet->house_total_income,
-                'house_net_income' => $intakeSheet->house_net_income,
-                'other_income' => $intakeSheet->other_income,
-                'house_house' => $intakeSheet->house_house,
-                'house_house_value' => $intakeSheet->house_house_value,
-                'house_lot' => $intakeSheet->house_lot,
-                'house_lot_value' => $intakeSheet->house_lot_value,
-                'house_house_rent' => $intakeSheet->house_house_rent,
-                'house_lot_rent' => $intakeSheet->house_lot_rent,
-                'house_water' => $intakeSheet->house_water,
-                'house_electric' => $intakeSheet->house_electric,
-                'family_members' => $intakeSheet->family_members,
-                'rv_service_records' => $intakeSheet->rv_service_records,
-                'signature_client' => $intakeSheet->signature_client ? asset('storage/' . $intakeSheet->signature_client) : null,
-                'signature_worker' => $intakeSheet->signature_worker ? asset('storage/' . $intakeSheet->signature_worker) : null,
-                'signature_officer' => $intakeSheet->signature_officer ? asset('storage/' . $intakeSheet->signature_officer) : null,
-                'status' => $applicant->status,
-                'date_entry' => $intakeSheet->date_entry,
-            ];
-
-            return response()->json($responseData);
-        } catch (\Exception $e) {
-            \Log::error('Error fetching intake sheet: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to fetch intake sheet data'], 500);
-        }
-    }
-
-    public function welcomeApi(Request $request)
-    {
-        Log::info("Request received: " . $request->method() . " " . $request->path());
-        return response()->json(['message' => 'Welcome to the Mayor Staff API!']);
     }
 
 }

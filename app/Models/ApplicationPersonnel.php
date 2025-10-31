@@ -17,7 +17,13 @@ class ApplicationPersonnel extends Model
 
     protected $fillable = [
         'application_id', 'lydopers_id',
-        'initial_screening', 'remarks', 'status'
+        'initial_screening', 'remarks', 'status',
+        'intake_sheet_token', 'update_token',
+        'public_token', 'public_token_expires_at',
+        'intake_sheet_submitted', 'rejection_reason',
+        'application_letter_status', 'cert_of_reg_status',
+        'grade_slip_status', 'brgy_indigency_status',
+        'student_id_status', 'reviewer_comment'
     ];
 
     protected $attributes = [
