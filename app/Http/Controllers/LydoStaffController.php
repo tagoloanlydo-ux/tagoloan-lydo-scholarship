@@ -340,7 +340,7 @@ class LydoStaffController extends Controller
             ->orderBy("applicant_brgy", "asc")
             ->pluck("applicant_brgy");
 
-        // Applicants without remarks
+        // Applicants with intake sheets but without remarks (pending screening)
         $tableApplicants = DB::table("tbl_applicant")
             ->join(
                 "tbl_application",
@@ -353,6 +353,12 @@ class LydoStaffController extends Controller
                 "tbl_application.application_id",
                 "=",
                 "tbl_application_personnel.application_id",
+            )
+            ->leftJoin(
+                "family_intake_sheets",
+                "tbl_application_personnel.application_personnel_id",
+                "=",
+                "family_intake_sheets.application_personnel_id",
             )
             ->select("tbl_applicant.*", "tbl_application_personnel.remarks", "tbl_application_personnel.application_personnel_id")
             ->when($search, function ($query, $search) {
@@ -372,12 +378,8 @@ class LydoStaffController extends Controller
                 $query->where("tbl_applicant.applicant_brgy", $barangay);
             })
             ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->whereNotIn("tbl_application_personnel.remarks", [
-                "Poor",
-                "Non Poor",
-                "Ultra Poor",
-                "Non Indigenous",
-            ])
+            ->where("tbl_application_personnel.remarks", "waiting")
+            ->whereNotNull("family_intake_sheets.application_personnel_id")
             ->paginate(15)
     ->appends($request->all());
 
@@ -493,12 +495,29 @@ $listApplicants = DB::table("tbl_applicant as a")
 
         $remarks = DB::table('tbl_application_personnel')->where('application_personnel_id', $application_personnel_id)->value('remarks');
 
+        // Retrieve applicant gender and place of birth
+        $applicantData = DB::table('tbl_application_personnel')
+            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
+            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+            ->where('tbl_application_personnel.application_personnel_id', $application_personnel_id)
+            ->select('tbl_applicant.applicant_gender', 'tbl_applicant.applicant_pob')
+            ->first();
+
+        $applicantGender = $applicantData ? $applicantData->applicant_gender : null;
+        $applicantPob = $applicantData ? $applicantData->applicant_pob : null;
+
         if ($intakeSheet) {
             $data = $intakeSheet->toArray();
             $data['remarks'] = $remarks;
+            $data['applicant_gender'] = $applicantGender;
+            $data['applicant_pob'] = $applicantPob;
             return response()->json($data);
         } else {
-            return response()->json(['remarks' => $remarks]);
+            return response()->json([
+                'remarks' => $remarks,
+                'applicant_gender' => $applicantGender,
+                'applicant_pob' => $applicantPob
+            ]);
         }
     }
 
@@ -523,8 +542,9 @@ $listApplicants = DB::table("tbl_applicant as a")
             'head_ipno' => 'nullable|string|max:255',
             'head_address' => 'nullable|string|max:255',
             'head_zone' => 'nullable|string|max:255',
-            'head_barangay' => 'nullable|string|max:255',
-            'head_pob' => 'nullable|string|max:255',
+        'head_barangay' => 'nullable|string|max:255',
+        'head_pob' => 'nullable|string|max:255',
+
             'head_dob' => 'nullable|date',
             'head_educ' => 'nullable|string|max:255',
             'head_occ' => 'nullable|string|max:255',
@@ -543,6 +563,7 @@ $listApplicants = DB::table("tbl_applicant as a")
             'house_house_rent' => 'nullable|numeric',
             'house_lot_rent' => 'nullable|numeric',
             'house_water' => 'nullable|string|max:255',
+            
             'house_electric' => 'nullable|string|max:255',
             'house_remarks' => 'nullable|string',
 
