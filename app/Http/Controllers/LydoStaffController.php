@@ -43,23 +43,29 @@ class LydoStaffController extends Controller
                 : ($applicantsCurrentYear > 0 ? 100 : 0);
 
 
-        $pendingInitial = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
-            ->count();
+$pendingInitial = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id",
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id",
+    )
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
 
 
         $pendingInitialPercentage =
