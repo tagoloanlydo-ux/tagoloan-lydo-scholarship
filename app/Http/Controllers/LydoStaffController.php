@@ -172,22 +172,29 @@ class LydoStaffController extends Controller
             ->orderBy("applicant_acad_year", "desc")
             ->value("applicant_acad_year");
 
-        $pendingScreening = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.remarks", "Waiting")
-            ->count();
+$pendingScreening = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id",
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id",
+    )
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
             ->where("renewal_status", "Pending")
@@ -260,23 +267,29 @@ class LydoStaffController extends Controller
             ->orderBy("applicant_acad_year", "desc")
             ->value("applicant_acad_year");
 
-        $pendingScreening = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
-            ->count();
+$pendingScreening = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id",
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id",
+    )
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
             ->where("renewal_status", "Pending")
@@ -702,23 +715,29 @@ public function updateIntakeSheet(Request $request, $application_personnel_id)
             ->orderBy("applicant_acad_year", "desc")
             ->value("applicant_acad_year");
 
-        $pendingScreening = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
-            ->count();
+$pendingScreening = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id",
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id",
+    )
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
             ->where("renewal_status", "Pending")
@@ -1049,22 +1068,29 @@ $listView = DB::table("tbl_renewal as r")
             ->orderBy("applicant_acad_year", "desc")
             ->value("applicant_acad_year");
 
-        $pendingScreening = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.remarks", "Waiting")
-            ->count();
+$pendingScreening = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id",
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id",
+    )
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
             ->where("renewal_status", "Pending")
@@ -1213,22 +1239,29 @@ $listView = DB::table("tbl_renewal as r")
             ->orderBy("applicant_acad_year", "desc")
             ->value("applicant_acad_year");
 
-        $pendingScreening = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.remarks", "Waiting")
-            ->count();
+$pendingScreening = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id",
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id",
+    )
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
             ->where("renewal_status", "Pending")
@@ -1292,22 +1325,29 @@ $listView = DB::table("tbl_renewal as r")
             ->orderBy("applicant_acad_year", "desc")
             ->value("applicant_acad_year");
 
-        $pendingScreening = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.remarks", "Waiting")
-            ->count();
+$pendingScreening = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id",
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id",
+    )
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
             ->where("renewal_status", "Pending")
