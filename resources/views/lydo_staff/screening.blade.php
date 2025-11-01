@@ -344,6 +344,50 @@
             animation: modalFadeIn 0.3s ease-out;
         }
 
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-xl);
+            max-width: 90%;
+            margin: 2% auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--background-light);
+            color: var(--text-primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
         @keyframes modalFadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -784,6 +828,7 @@
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_school_name }}</td>
                                     <td class="px-4 py-2 border border-gray-200 text-center">
                                         <button
+                                            type="button"
                                             title="Assign Remarks"
                                             class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow"
                                             data-id="{{ $app->application_personnel_id }}"
@@ -871,6 +916,7 @@
                                     </td>
                                     <td class="px-4 py-2 border border-gray-200 text-center">
                                         <button
+                                            type="button"
                                             title="View Intake Sheet"
                                             class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow"
                                             data-id="{{ $app->application_personnel_id }}"
@@ -1440,70 +1486,70 @@
                     </div>
                 </div>
             </div>
-       
+        </div>
 
-        <!-- Review Modal for Reviewed Applicants -->
-        <div id="reviewModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="text-xl font-bold">Review Family Intake Sheet</h2>
-                    <button class="modal-close" onclick="closeReviewModal()">&times;</button>
-                </div>
+<!-- Moved: Review Modal for Reviewed Applicants (now top-level, so it can open independently) -->
+<div id="reviewModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="text-xl font-bold">Review Family Intake Sheet</h2>
+            <button class="modal-close" onclick="closeReviewModal()">&times;</button>
+        </div>
 
-                <div id="modalReviewContent">
-                    <!-- Content will be populated here -->
-                </div>
+        <div id="modalReviewContent">
+            <!-- Content will be populated here -->
+        </div>
 
-                <div class="modal-actions">
-                    <button
-                        type="button"
-                        onclick="printReviewModal()"
-                        class="bg-blue-500 text-white px-5 py-2 rounded hover:bg-blue-600 mr-2"
-                    >
-                        <i class="fas fa-print mr-1"></i> Print
-                    </button>
-                    <button
-                        type="button"
-                        onclick="closeReviewModal()"
-                        class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600"
-                    >
-                        Close
-                    </button>
-                </div>
+        <div class="modal-actions">
+            <button
+                type="button"
+                onclick="printReviewModal()"
+                class="bg-blue-500 text-white px-5 py-2 rounded hover:bg-blue-600 mr-2"
+            >
+                <i class="fas fa-print mr-1"></i> Print
+            </button>
+            <button
+                type="button"
+                onclick="closeReviewModal()"
+                class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600"
+            >
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Moved: Signature Modal (also top-level) -->
+<div id="signatureModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-gray-800" id="signatureModalTitle">Signature</h3>
+            <button type="button" onclick="closeSignatureModal()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <div class="mb-4">
+            <div class="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
+                <canvas id="signatureCanvas" width="400" height="200" class="border border-gray-300 rounded bg-white"></canvas>
             </div>
         </div>
 
-        <!-- Signature Modal -->
-        <div id="signatureModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xl font-bold text-gray-800" id="signatureModalTitle">Signature</h3>
-                    <button type="button" onclick="closeSignatureModal()" class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times text-2xl"></i>
-                    </button>
-                </div>
-
-                <div class="mb-4">
-                    <div class="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
-                        <canvas id="signatureCanvas" width="400" height="200" class="border border-gray-300 rounded bg-white"></canvas>
-                    </div>
-                </div>
-
-                <div class="flex justify-between gap-3">
-                    <button type="button" onclick="clearSignature()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-                        <i class="fas fa-eraser mr-2"></i>Clear
-                    </button>
-                    <div class="flex gap-2">
-                        <button type="button" onclick="closeSignatureModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
-                            Cancel
-                        </button>
-                        <button type="button" onclick="saveSignature()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                            <i class="fas fa-save mr-2"></i>Save Signature
-                        </button>
-                    </div>
-                </div>
+        <div class="flex justify-between gap-3">
+            <button type="button" onclick="clearSignature()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                <i class="fas fa-eraser mr-2"></i>Clear
+            </button>
+            <div class="flex gap-2">
+                <button type="button" onclick="closeSignatureModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                    Cancel
+                </button>
+                <button type="button" onclick="saveSignature()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-save mr-2"></i>Save Signature
+                </button>
             </div>
         </div>
+    </div>
+</div>
 
         <script>
             // Add this function to set current date
@@ -1655,7 +1701,13 @@
                         console.log('Fetched data:', data); // Debug log
                         if (data) {
                             populateReviewModal(data);
-                            document.getElementById('reviewModal').style.display = 'block';
+
+                            // Ensure the review modal is visible (moved to top-level)
+                            const reviewModal = document.getElementById('reviewModal');
+                            if (reviewModal) {
+                                reviewModal.style.display = 'block';
+                            }
+
                             document.body.classList.add('modal-open');
                         } else {
                             throw new Error('No data received');
@@ -1673,7 +1725,10 @@
 
             // Close Review Modal
             function closeReviewModal() {
-                document.getElementById('reviewModal').style.display = 'none';
+                const reviewModal = document.getElementById('reviewModal');
+                if (reviewModal) {
+                    reviewModal.style.display = 'none';
+                }
                 document.body.classList.remove('modal-open');
             }
 
@@ -2497,6 +2552,102 @@
                     if (result.isConfirmed) {
                         document.getElementById('logoutForm').submit();
                     }
+                });
+            }
+
+            // Save as Draft function
+            function saveAsDraft() {
+                // Serialize family members data
+                let familyMembers = [];
+                const familyRows = document.querySelectorAll('#family_members_tbody tr');
+                familyRows.forEach(row => {
+                    const cells = row.cells;
+                    familyMembers.push({
+                        name: cells[0].querySelector('input')?.value || '',
+                        relationship: cells[1].querySelector('select')?.value || '',
+                        birthdate: cells[2].querySelector('input')?.value || '',
+                        age: cells[3].querySelector('input')?.value || '',
+                        sex: cells[4].querySelector('select')?.value || '',
+                        civil_status: cells[5].querySelector('select')?.value || '',
+                        education: cells[6].querySelector('select')?.value || '',
+                        occupation: cells[7].querySelector('input')?.value || '',
+                        monthly_income: cells[8].querySelector('input')?.value || '',
+                        remarks: cells[9].querySelector('select')?.value || '',
+                    });
+                });
+
+                // Convert to JSON string
+                document.getElementById('family_members').value = JSON.stringify(familyMembers);
+
+                // Serialize service records data
+                let serviceRecords = [];
+                const serviceRows = document.querySelectorAll('#rv_service_records_tbody tr');
+                serviceRows.forEach(row => {
+                    const cells = row.cells;
+                    serviceRecords.push({
+                        date: cells[0].querySelector('input')?.value || '',
+                        problem: cells[1].querySelector('input')?.value || '',
+                        action: cells[2].querySelector('input')?.value || '',
+                        remarks: cells[3].querySelector('select')?.value || '',
+                    });
+                });
+
+                // Convert to JSON string
+                document.getElementById('rv_service_records').value = JSON.stringify(serviceRecords);
+
+                const id = document.getElementById('remarks_id').value;
+                const formData = new FormData(document.getElementById('updateRemarksForm'));
+                formData.append('is_draft', '1'); // Add draft flag
+
+                // Show loading state
+                Swal.fire({
+                    title: 'Saving Draft',
+                    text: 'Please wait...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Submit form via AJAX
+                fetch("/lydo_staff/update-intake-sheet/" + id, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    Swal.close();
+
+                    // Check if response contains success message
+                    if (data.includes('success')) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Draft Saved!',
+                            text: 'Intake sheet draft saved successfully!',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            // Don't close modal, allow continue editing
+                        });
+                    } else {
+                        throw new Error('Unexpected response');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to save draft: ' + error.message,
+                        confirmButtonText: 'OK'
+                    });
                 });
             }
         </script>

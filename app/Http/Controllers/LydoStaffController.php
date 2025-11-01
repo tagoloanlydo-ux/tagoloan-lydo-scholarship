@@ -186,8 +186,7 @@ class LydoStaffController extends Controller
                 "tbl_applicant.applicant_id",
             )
             ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
+            ->where("tbl_application_personnel.remarks", "Waiting")
             ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
@@ -1064,8 +1063,7 @@ $listView = DB::table("tbl_renewal as r")
                 "tbl_applicant.applicant_id",
             )
             ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
+            ->where("tbl_application_personnel.remarks", "Waiting")
             ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
@@ -1229,8 +1227,7 @@ $listView = DB::table("tbl_renewal as r")
                 "tbl_applicant.applicant_id",
             )
             ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
+            ->where("tbl_application_personnel.remarks", "Waiting")
             ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
@@ -1309,8 +1306,7 @@ $listView = DB::table("tbl_renewal as r")
                 "tbl_applicant.applicant_id",
             )
             ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
+            ->where("tbl_application_personnel.remarks", "Waiting")
             ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
@@ -1413,5 +1409,18 @@ return view("lydo_staff.reports", compact(
     'renewalRejected',
     'remarksByYear'
 ));
+    }
+
+    public function getApplicantDetails($applicant_id)
+    {
+        $applicant = DB::table('tbl_applicant')
+            ->where('applicant_id', $applicant_id)
+            ->first();
+
+        if ($applicant) {
+            return response()->json($applicant);
+        } else {
+            return response()->json(['error' => 'Applicant not found'], 404);
+        }
     }
 }

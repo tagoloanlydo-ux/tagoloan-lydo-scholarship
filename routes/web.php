@@ -116,7 +116,8 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/reports', [LydoStaffController::class, 'reports'])->name('LydoStaff.reports');
     Route::get('/lydo_staff/intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'showIntakeSheet'])->name('lydo_staff.intake_sheet.show');
     Route::post('/lydo_staff/submit-intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'submitIntakeSheet'])->name('lydo_staff.submitIntakeSheet');
-    
+    Route::get('/lydo_staff/get-applicant-details/{applicant_id}', [LydoStaffController::class, 'getApplicantDetails'])->name('lydo_staff.getApplicantDetails');
+
 });
 
 // Mayor Staff Routes - Only accessible by mayor_staff role
