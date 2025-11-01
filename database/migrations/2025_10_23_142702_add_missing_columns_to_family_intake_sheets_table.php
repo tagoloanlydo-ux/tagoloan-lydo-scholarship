@@ -13,11 +13,10 @@ return new class extends Migration
     {
         Schema::table('family_intake_sheets', function (Blueprint $table) {
             $table->string('head_barangay')->nullable()->after('head_zone');
-            $table->string('head_pob')->nullable()->after('head_barangay');
-            $table->string('house_house_value')->nullable()->after('house_lot');
-            $table->string('house_lot_value')->nullable()->after('house_house_value');
-            $table->string('house_house_rent')->nullable()->after('house_lot_value');
-            $table->string('house_lot_rent')->nullable()->after('house_house_rent');
+            $table->string('house_value')->nullable()->after('house_lot');
+            $table->string('lot_value')->nullable()->after('house_value');
+            $table->string('house_rent')->nullable()->after('lot_value');
+            $table->string('lot_rent')->nullable()->after('house_rent');
             $table->string('house_remarks')->nullable()->after('house_electric');
         });
     }
@@ -31,10 +30,10 @@ return new class extends Migration
             $table->dropColumn([
                 'head_barangay',
                 'head_pob',
-                'house_house_value',
-                'house_lot_value',
-                'house_house_rent',
-                'house_lot_rent',
+                'house_value',
+                'lot_value',
+                'house_rent',
+                'lot_rent',
                 'house_remarks'
             ]);
         });

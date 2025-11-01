@@ -31,6 +31,7 @@ return new class extends Migration
             $table->string('head_ipno')->nullable();
             $table->string('head_address')->nullable();
             $table->string('head_zone')->nullable();
+            $table->string('head_pob')->nullable();
             $table->date('head_dob')->nullable();
             $table->string('head_educ')->nullable();
             $table->string('head_occ')->nullable();

@@ -93,7 +93,7 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/dashboard', [LydoStaffController::class, 'index'])->name('LydoStaff.dashboard');
     Route::get('/lydo_staff/screening', [LydoStaffController::class, 'screening'])->name('LydoStaff.screening');
     Route::post('/lydo_staff/update-remarks/{id}', [LydoStaffController::class, 'updateRemarks'])->name('updateApplicantsRemarks');
-    Route::post('/lydo_staff/update-intake-sheet/{id}', [LydoStaffController::class, 'updateIntakeSheet'])->name('updateIntakeSheet');
+    Route::post('/lydo_staff/update-intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'updateIntakeSheet'])->name('updateIntakeSheet');
 
     Route::get('/lydo_staff/renewal', [LydoStaffController::class, 'renewal'])->name('LydoStaff.renewal');
     Route::post('/lydo_staff/renewal/update/{scholarId}', [LydoStaffController::class, 'updateStatus']);
@@ -115,7 +115,8 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/sse-applicants', [LydoStaffController::class, 'sse'])->name('LydoStaff.sse');
     Route::get('/lydo_staff/reports', [LydoStaffController::class, 'reports'])->name('LydoStaff.reports');
     Route::get('/lydo_staff/intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'showIntakeSheet'])->name('lydo_staff.intake_sheet.show');
-
+    Route::post('/lydo_staff/submit-intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'submitIntakeSheet'])->name('lydo_staff.submitIntakeSheet');
+    
 });
 
 // Mayor Staff Routes - Only accessible by mayor_staff role

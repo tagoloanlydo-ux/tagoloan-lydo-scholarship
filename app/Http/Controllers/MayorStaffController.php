@@ -2259,7 +2259,6 @@ public function updateStatus(Request $request, $id)
             'head_ipno' => $request->head['ipno'] ?? null,
             'head_address' => $request->head['address'] ?? null,
             'head_zone' => $request->head['zone'] ?? null,
-            'head_barangay' => $request->head['barangay'] ?? null,
             'head_pob' => $request->head['pob'] ?? null,
             'head_dob' => $request->head['dob'] ?? null,
             'head_educ' => $request->head['educ'] ?? null,
@@ -2271,11 +2270,11 @@ public function updateStatus(Request $request, $id)
             'house_net_income' => $request->house['net_income'] ?? null,
             'other_income' => $request->house['other_income'] ?? null,
             'house_house' => $request->house['house'] ?? null,
-            'house_house_value' => $request->house['house_value'] ?? null,
+            'house_value' => $request->house['house_value'] ?? null,
             'house_lot' => $request->house['lot'] ?? null,
-            'house_lot_value' => $request->house['lot_value'] ?? null,
-            'house_house_rent' => $request->house['house_rent'] ?? null,
-            'house_lot_rent' => $request->house['lot_rent'] ?? null,
+            'lot_value' => $request->house['lot_value'] ?? null,
+            'house_rent' => $request->house['house_rent'] ?? null,
+            'lot_rent' => $request->house['lot_rent'] ?? null,
             'house_water' => $request->house['water'] ?? null,
             'house_electric' => $request->house['electric'] ?? null,
             'family_members' => json_encode($request->family),
@@ -2297,3 +2296,4 @@ public function updateStatus(Request $request, $id)
     }
 
 }
+

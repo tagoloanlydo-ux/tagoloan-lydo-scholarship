@@ -437,6 +437,7 @@ $listApplicants = DB::table("tbl_applicant as a")
                 "listApplicants",
                 "barangays",
                 "currentAcadYear",
+                
             ),
         );
     }
@@ -521,147 +522,179 @@ $listApplicants = DB::table("tbl_applicant as a")
         }
     }
 
-    public function updateIntakeSheet(Request $request, $id)
-    {
-        // Debug: Check what data is being received
-        \Log::info('Intake Sheet Update Request:', $request->all());
-
-        $request->validate([
-            // Foreign keys
-            'lydo_personnel_id' => 'nullable|integer',
-
-            // Applicant Details
-            'applicant_fname' => 'nullable|string|max:255',
-            'applicant_mname' => 'nullable|string|max:255',
-            'applicant_lname' => 'nullable|string|max:255',
-            'applicant_suffix' => 'nullable|string|max:255',
-            'applicant_gender' => 'nullable|string|max:255',
-
-            // Head of Family
-            'head_4ps' => 'nullable|string|max:255',
-            'head_ipno' => 'nullable|string|max:255',
-            'head_address' => 'nullable|string|max:255',
-            'head_zone' => 'nullable|string|max:255',
-        'head_barangay' => 'nullable|string|max:255',
+public function updateIntakeSheet(Request $request, $application_personnel_id)
+{
+    // Validation (kept simple; adjust as needed)
+    $validated = $request->validate([
+        'head_4ps' => 'nullable|string|max:255',
+        'head_ipno' => 'nullable|string|max:255',
+        'head_address' => 'nullable|string|max:255',
+        'head_zone' => 'nullable|string|max:255',
         'head_pob' => 'nullable|string|max:255',
+        'head_dob' => 'nullable|date',
+        'head_educ' => 'nullable|string|max:255',
+        'head_occ' => 'nullable|string|max:255',
+        'head_religion' => 'nullable|string|max:255',
+        'serial_number' => 'nullable|string|max:255',
+        'location' => 'nullable|string|max:255',
 
-            'head_dob' => 'nullable|date',
-            'head_educ' => 'nullable|string|max:255',
-            'head_occ' => 'nullable|string|max:255',
-            'head_religion' => 'nullable|string|max:255',
-            'serial_number' => 'nullable|string|max:255',
-            'location' => 'nullable|string|max:255',
+        // Household Info
+        'house_total_income' => 'nullable|numeric',
+        'house_net_income' => 'nullable|numeric',
+        'other_income' => 'nullable|numeric',
+        'house_house' => 'nullable|string|max:255',
+        'house_value' => 'nullable|numeric',
+        'house_lot' => 'nullable|string|max:255',
+        'lot_value' => 'nullable|numeric',
+        'house_rent' => 'nullable|numeric',
+        'lot_rent' => 'nullable|numeric',
+        'house_water' => 'nullable|string|max:255',
+        'house_electric' => 'nullable|string|max:255',
+        'house_remarks' => 'nullable|string',
 
-            // Household Info
-            'house_total_income' => 'nullable|numeric',
-            'house_net_income' => 'nullable|numeric',
-            'other_income' => 'nullable|numeric',
-            'house_house' => 'nullable|string|max:255',
-            'house_house_value' => 'nullable|numeric',
-            'house_lot' => 'nullable|string|max:255',
-            'house_lot_value' => 'nullable|numeric',
-            'house_house_rent' => 'nullable|numeric',
-            'house_lot_rent' => 'nullable|numeric',
-            'house_water' => 'nullable|string|max:255',
-            
-            'house_electric' => 'nullable|string|max:255',
-            'house_remarks' => 'nullable|string',
+        // JSON fields
+        'family_members' => 'nullable',
+        'social_service_records' => 'nullable',
+        'rv_service_records' => 'nullable',
 
-            // JSON fields - REMOVE JSON VALIDATION TEMPORARILY
-            'family_members' => 'nullable',
-            'social_service_records' => 'nullable',
-            'rv_service_records' => 'nullable',
+        // Signatures (store in intake sheet)
+        'signature_client' => 'nullable|string',
+        'signature_worker' => 'nullable|string',
+        'signature_officer' => 'nullable|string',
 
-            // Health & Signatures
-            'hc_estimated_cost' => 'nullable|numeric',
-            'worker_name' => 'nullable|string|max:255',
-            'officer_name' => 'nullable|string|max:255',
-            'date_entry' => 'nullable|date',
-            'signature_client' => 'nullable|string',
-            'signature_worker' => 'nullable|string',
-            'signature_officer' => 'nullable|string',
+        // Application personnel fields (may not exist on tbl_application_personnel)
+        'worker_name' => 'nullable|string|max:255',
+        'officer_name' => 'nullable|string|max:255',
+        'date_entry' => 'nullable|date',
 
-            // Remarks field
+        // Remarks field (application_personnel)
+        'remarks' => 'required|in:Poor,Non Poor,Ultra Poor',
+    ]);
+
+    try {
+        // Load application_personnel (used for remarks/status and to find applicant)
+        $ap = \App\Models\ApplicationPersonnel::findOrFail($application_personnel_id);
+
+        // Update tbl_applicant if applicant fields were submitted
+        $applicantId = DB::table('tbl_application')
+            ->where('application_id', $ap->application_id)
+            ->value('applicant_id');
+
+        if ($applicantId) {
+            $applicantUpdate = [];
+            foreach (['applicant_fname','applicant_mname','applicant_lname','applicant_suffix','applicant_gender','applicant_pob'] as $k) {
+                if ($request->filled($k) || $request->has($k)) {
+                    $applicantUpdate[$k] = $request->input($k);
+                }
+            }
+            if (!empty($applicantUpdate)) {
+                $applicantUpdate['updated_at'] = now();
+                DB::table('tbl_applicant')->where('applicant_id', $applicantId)->update($applicantUpdate);
+            }
+        }
+
+        // Update or create family_intake_sheets record (all intake/household fields + signatures)
+        $intake = \App\Models\FamilyIntakeSheet::firstOrNew(['application_personnel_id' => $application_personnel_id]);
+
+        $intakeFields = [
+            'head_4ps','head_ipno','head_address','head_zone','head_pob','head_dob','head_educ','head_occ','head_religion',
+            'serial_number','location',
+            'other_income','house_total_income','house_net_income','house_house','house_value','house_lot','lot_value',
+            'house_rent','lot_rent','house_water','house_electric','house_remarks',
+            'family_members','social_service_records','rv_service_records',
+            'signature_client','signature_worker','signature_officer'
+        ];
+
+        foreach ($intakeFields as $field) {
+            if ($request->has($field)) {
+                $intake->{$field} = $request->input($field);
+            }
+        }
+
+        // Worker/officer/date: write to tbl_application_personnel only if column exists,
+        // otherwise save into family_intake_sheets if that table has the columns.
+        $schema = \Illuminate\Support\Facades\Schema::class;
+        if (\Illuminate\Support\Facades\Schema::hasColumn('tbl_application_personnel', 'worker_name')) {
+            $ap->worker_name = $request->input('worker_name');
+        } elseif (\Illuminate\Support\Facades\Schema::hasColumn('family_intake_sheets', 'worker_name') && $request->has('worker_name')) {
+            $intake->worker_name = $request->input('worker_name');
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('tbl_application_personnel', 'officer_name')) {
+            $ap->officer_name = $request->input('officer_name');
+        } elseif (\Illuminate\Support\Facades\Schema::hasColumn('family_intake_sheets', 'officer_name') && $request->has('officer_name')) {
+            $intake->officer_name = $request->input('officer_name');
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('tbl_application_personnel', 'date_entry')) {
+            $ap->date_entry = $request->input('date_entry');
+        } elseif (\Illuminate\Support\Facades\Schema::hasColumn('family_intake_sheets', 'date_entry') && $request->has('date_entry')) {
+            $intake->date_entry = $request->input('date_entry');
+        }
+
+        // Save intake first (so any intake-side worker/officer/date are persisted)
+        $intake->updated_at = now();
+        $intake->save();
+
+        // Update application_personnel only with columns that actually exist there
+        $ap->remarks = $request->input('remarks');
+        $ap->initial_screening = 'Reviewed';
+        $ap->updated_at = now();
+        $ap->save();
+
+        return response('success', 200);
+    } catch (\Exception $e) {
+        \Log::error('Update Intake Sheet error: '.$e->getMessage());
+        return response('error', 500);
+    }
+}
+
+    public function submitIntakeSheet(Request $request, $application_personnel_id)
+    {
+        // Validate that the intake sheet exists
+        $intakeSheet = \App\Models\FamilyIntakeSheet::where('application_personnel_id', $application_personnel_id)->first();
+
+        if (!$intakeSheet) {
+            return response()->json(['error' => 'Intake sheet not found'], 404);
+        }
+
+        // Update the application_personnel record to mark as submitted
+        DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $application_personnel_id)
+            ->update([
+                'intake_sheet_submitted' => true,
+                'status' => 'Submitted', // Optional: update status if needed
+                'updated_at' => now(),
+            ]);
+
+        return response()->json(['success' => 'Intake sheet submitted successfully']);
+    }
+
+    public function updateRemarks(Request $request, $id)
+    {
+        $request->validate([
             'remarks' => 'required|in:Poor,Non Poor,Ultra Poor',
         ]);
 
-        try {
-            DB::beginTransaction();
-
-            $data = $request->only([
-                'lydo_personnel_id', 'applicant_fname', 'applicant_mname', 'applicant_lname', 'applicant_suffix', 'applicant_gender',
-                'head_4ps', 'head_ipno', 'head_address', 'head_zone', 'head_barangay',
-                'head_pob', 'head_dob', 'head_educ', 'head_occ', 'head_religion', 'serial_number', 'location',
-                'house_total_income', 'house_net_income', 'other_income', 'house_house', 'house_house_value',
-                'house_lot', 'house_lot_value', 'house_house_rent', 'house_lot_rent', 'house_water', 'house_electric',
-                'house_remarks', 'family_members', 'social_service_records', 'rv_service_records', 'hc_estimated_cost', 'worker_name',
-                'officer_name', 'date_entry', 'signature_client', 'signature_worker', 'signature_officer'
+        // Update the existing tbl_application_personnel record with the remarks
+        DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $id)
+            ->update([
+                'remarks' => $request->remarks,
+                'initial_screening' => 'Reviewed',
+                'status' => 'Pending',
+                'updated_at' => now(),
             ]);
 
-            // Set lydo_personnel_id to current user if not provided
-            if (!isset($data['lydo_personnel_id'])) {
-                $data['lydo_personnel_id'] = session('lydopers')->lydopers_id;
-            }
+        // Update the family_intake_sheet with the remarks in house_remarks field
+        DB::table('family_intake_sheets')
+            ->where('application_personnel_id', $id)
+            ->update([
+                'house_remarks' => $request->remarks,
+                'updated_at' => now(),
+            ]);
 
-            // Handle JSON fields properly
-            if (isset($data['family_members'])) {
-                // If it's already a JSON string, decode and re-encode to ensure it's valid
-                if (is_string($data['family_members'])) {
-                    $decoded = json_decode($data['family_members'], true);
-                    $data['family_members'] = json_encode($decoded, JSON_UNESCAPED_UNICODE);
-                } else {
-                    $data['family_members'] = json_encode($data['family_members'], JSON_UNESCAPED_UNICODE);
-                }
-            }
-
-            if (isset($data['social_service_records'])) {
-                if (is_string($data['social_service_records'])) {
-                    $decoded = json_decode($data['social_service_records'], true);
-                    $data['social_service_records'] = json_encode($decoded, JSON_UNESCAPED_UNICODE);
-                } else {
-                    $data['social_service_records'] = json_encode($data['social_service_records'], JSON_UNESCAPED_UNICODE);
-                }
-            }
-
-            if (isset($data['rv_service_records'])) {
-                if (is_string($data['rv_service_records'])) {
-                    $decoded = json_decode($data['rv_service_records'], true);
-                    $data['rv_service_records'] = json_encode($decoded, JSON_UNESCAPED_UNICODE);
-                } else {
-                    $data['rv_service_records'] = json_encode($data['rv_service_records'], JSON_UNESCAPED_UNICODE);
-                }
-            }
-
-            // Debug: Check processed data
-            \Log::info('Processed Intake Sheet Data:', $data);
-
-            // Update or create intake sheet
-            $intakeSheet = \App\Models\FamilyIntakeSheet::updateOrCreate(
-                ['application_personnel_id' => $id],
-                $data
-            );
-
-            // Update existing application_personnel record
-            DB::table('tbl_application_personnel')
-                ->where('application_personnel_id', $id)
-                ->update([
-                    'initial_screening' => 'Reviewed',
-                    'remarks' => $request->remarks,
-                    'status' => 'Pending',
-                    'updated_at' => now(),
-                ]);
-
-            DB::commit();
-
-            return back()->with('success', 'Intake sheet updated successfully!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Error updating intake sheet: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-
-            return back()->with('error', 'Error updating intake sheet: ' . $e->getMessage());
-        }
+        return back()->with('success', 'Remarks updated successfully');
     }
     public function renewal(Request $request)
     {

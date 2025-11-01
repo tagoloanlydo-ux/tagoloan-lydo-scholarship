@@ -990,20 +990,24 @@
                     <!-- Row 2: Applicant Name Fields -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">First Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="applicant_fname" id="applicant_fname" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" required>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+                            <!-- name removed so it won't be submitted; kept id for display -->
+                            <input type="text" id="applicant_fname" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" readonly>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Middle Name</label>
-                            <input type="text" name="applicant_mname" id="applicant_mname" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
+                            <!-- name removed so it won't be submitted; kept id for display -->
+                            <input type="text" id="applicant_mname" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" readonly>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name <span class="text-red-500">*</span></label>
-                            <input type="text" name="applicant_lname" id="applicant_lname" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" required>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+                            <!-- name removed so it won't be submitted; kept id for display -->
+                            <input type="text" id="applicant_lname" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" readonly>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Suffix</label>
-                            <input type="text" name="applicant_suffix" id="applicant_suffix" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
+                            <!-- name removed so it won't be submitted; kept id for display -->
+                            <input type="text" id="applicant_suffix" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" readonly>
                         </div>
                     </div>
                     
@@ -2327,8 +2331,15 @@
                 document.getElementById('remarks').value = data.remarks || '';
 
                 // Populate health & signatures
-                document.getElementById('worker_name').value = data.worker_name || '';
-                document.getElementById('officer_name').value = data.officer_name || '';
+                // Only overwrite worker_name if the intake record actually has a value.
+                // Otherwise keep the readonly session-provided name already rendered in the input.
+                if (data.worker_name && String(data.worker_name).trim() !== '') {
+                    document.getElementById('worker_name').value = data.worker_name;
+                }
+                // Officer name may be edited every time — keep existing logic
+                if (data.officer_name && String(data.officer_name).trim() !== '') {
+                    document.getElementById('officer_name').value = data.officer_name;
+                }
 
                 // Populate family members
                 if (data.family_members) {
