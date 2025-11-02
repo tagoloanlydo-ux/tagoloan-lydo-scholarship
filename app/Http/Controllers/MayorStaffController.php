@@ -16,11 +16,6 @@ use App\Http\Controllers\SmsController;
 
 class MayorStaffController extends Controller
 {
-    public function welcome()
-    {
-        return response()->json(['message' => 'Welcome to the LYDO Scholarship API!']);
-    }
-
     public function index()
     {
         $newApplications = DB::table("tbl_application as app")

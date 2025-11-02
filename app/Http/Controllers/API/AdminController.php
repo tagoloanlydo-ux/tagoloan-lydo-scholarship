@@ -20,6 +20,23 @@ use App\Models\Lydopers;
 class AdminController extends Controller
 {
     /**
+     * Get admin overview
+     */
+    public function index(Request $request)
+    {
+        return $this->successResponse([
+            'message' => 'Admin API endpoints available',
+            'endpoints' => [
+                'dashboard' => '/api/admin/dashboard',
+                'applicants' => '/api/admin/applicants',
+                'scholars' => '/api/admin/scholars',
+                'disbursements' => '/api/admin/disbursements',
+                'renewals' => '/api/admin/renewals',
+            ]
+        ], 'Admin API overview');
+    }
+
+    /**
      * Get admin dashboard statistics
      */
     public function dashboard(Request $request)
