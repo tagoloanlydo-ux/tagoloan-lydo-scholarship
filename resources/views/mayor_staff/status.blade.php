@@ -1028,6 +1028,14 @@
                             <p class="mt-4"><strong>Date Entry:</strong> <span id="modal-date-entry">-</span></p>
                         </div>
                     </div>
+
+                    <!-- Documents Section -->
+                    <div class="intake-section">
+                        <h3 class="intake-section-title">Documents</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="modal-documents">
+                            <!-- Documents will be populated here -->
+                        </div>
+                    </div>
                 </div>
 
                 <div class="modal-actions">
@@ -1278,6 +1286,35 @@
                 renderSignatureContainer('modal-worker-signature', d.signature_worker);
                 renderSignatureContainer('modal-officer-signature', d.signature_officer);
                 renderSignatureContainer('modal-client-signature-large', d.signature_client);
+
+                // Documents
+                let documents = d.documents || {};
+                if (typeof documents === 'string') {
+                    try { documents = JSON.parse(documents); } catch (e) { documents = {}; }
+                }
+                const docContainer = document.getElementById('modal-documents');
+                if (docContainer) {
+                    const docKeys = ['application_letter', 'cert_of_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
+                    const docLabels = {
+                        application_letter: 'Application Letter',
+                        cert_of_reg: 'Certificate of Registration',
+                        grade_slip: 'Grade Slip',
+                        brgy_indigency: 'Barangay Indigency',
+                        student_id: 'Student ID'
+                    };
+                    docContainer.innerHTML = docKeys.map(key => {
+                        const url = documents[key];
+                        if (!url) return '';
+                        const label = docLabels[key] || key;
+                        const resolvedUrl = resolveUrl(url);
+                        return `<div class="document-item p-2 border rounded-lg bg-gray-50 hover:bg-gray-100 transition">
+                            <a href="${resolvedUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-medium">${label}</a>
+                        </div>`;
+                    }).join('');
+                    if (docContainer.innerHTML.trim() === '') {
+                        docContainer.innerHTML = '<p class="text-gray-500">No documents available</p>';
+                    }
+                }
 
                 // ensure modal visible
                 const modal = document.getElementById('intakeSheetModal');
