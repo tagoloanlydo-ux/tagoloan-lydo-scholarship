@@ -16,6 +16,11 @@ use App\Http\Controllers\SmsController;
 
 class MayorStaffController extends Controller
 {
+    public function welcome()
+    {
+        return response()->json(['message' => 'Welcome to the LYDO Scholarship API!']);
+    }
+
     public function index()
     {
         $newApplications = DB::table("tbl_application as app")
@@ -624,174 +629,154 @@ $percentageReviewed = $totalApplications > 0
         ]);
     }
 
-    public function status(Request $request)
-    {
-        $newApplications = DB::table("tbl_application as app")
-            ->join(
-                "tbl_applicant as a",
-                "a.applicant_id",
-                "=",
-                "app.applicant_id",
-            )
-            ->select(
-                "app.application_id",
-                "a.applicant_fname",
-                "a.applicant_lname",
-                "app.created_at",
-            )
-            ->orderBy("app.created_at", "desc")
-            ->limit(10)
-            ->get()
-            ->map(function ($item) {
-                return (object) [
-                    "type" => "application",
-                    "name" =>
-                        $item->applicant_fname . " " . $item->applicant_lname,
-                    "created_at" => $item->created_at,
-                ];
-            });
+public function status(Request $request)
+{
+    // NEW APPLICATIONS
+    $newApplications = DB::table("tbl_application as app")
+        ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+        ->select(
+            "app.application_id",
+            "a.applicant_fname",
+            "a.applicant_lname",
+            "app.created_at"
+        )
+        ->orderBy("app.created_at", "desc")
+        ->limit(10)
+        ->get()
+        ->map(function ($item) {
+            return (object) [
+                "type" => "application",
+                "name" => $item->applicant_fname . " " . $item->applicant_lname,
+                "created_at" => $item->created_at,
+            ];
+        });
 
-        // Get NEW remarks (Poor, Non Poor, Ultra Poor, Non Indigenous)
-        $newRemarks = DB::table("tbl_application_personnel as ap")
-            ->join(
-                "tbl_application as app",
-                "ap.application_id",
-                "=",
-                "app.application_id",
-            )
-            ->join(
-                "tbl_applicant as a",
-                "a.applicant_id",
-                "=",
-                "app.applicant_id",
-            )
-            ->whereIn("ap.remarks", [
-                "Poor",
-                "Non Poor",
-                "Ultra Poor",
-                "Non Indigenous",
-            ])
-            ->select(
-                "ap.remarks",
-                "a.applicant_fname",
-                "a.applicant_lname",
-                "ap.created_at",
-            )
-            ->orderBy("ap.created_at", "desc")
-            ->limit(10)
-            ->get()
-            ->map(function ($item) {
-                return (object) [
-                    "type" => "remark",
-                    "remarks" => $item->remarks,
-                    "name" =>
-                        $item->applicant_fname . " " . $item->applicant_lname,
-                    "created_at" => $item->created_at,
-                ];
-            });
+    // NEW REMARKS
+    $newRemarks = DB::table("tbl_application_personnel as ap")
+        ->join("tbl_application as app", "ap.application_id", "=", "app.application_id")
+        ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+        ->whereIn("ap.remarks", ["Poor", "Non Poor", "Ultra Poor", "Non Indigenous"])
+        ->select("ap.remarks", "a.applicant_fname", "a.applicant_lname", "ap.created_at")
+        ->orderBy("ap.created_at", "desc")
+        ->limit(10)
+        ->get()
+        ->map(function ($item) {
+            return (object) [
+                "type" => "remark",
+                "remarks" => $item->remarks,
+                "name" => $item->applicant_fname . " " . $item->applicant_lname,
+                "created_at" => $item->created_at,
+            ];
+        });
 
-        $notifications = $newApplications
-            ->merge($newRemarks)
-            ->sortByDesc("created_at");
+    $notifications = $newApplications
+        ->merge($newRemarks)
+        ->sortByDesc("created_at");
 
-        $applications = DB::table("tbl_application")
-            ->select(
-                "application_id",
-                "applicant_id",
-                "application_letter",
-                "cert_of_reg",
-                "grade_slip",
-                "brgy_indigency",
-            )
-            ->get()
-            ->groupBy("applicant_id");
+    // DEBUG LOGS
+    \Log::info("=== STATUS PAGE DEBUG ===");
+    $allAppPersonnel = DB::table('tbl_application_personnel')->get();
+    \Log::info("All application_personnel records:", ['count' => $allAppPersonnel->count(), 'data' => $allAppPersonnel->toArray()]);
+    $allApplications = DB::table('tbl_application')->get();
+    \Log::info("All application records:", ['count' => $allApplications->count(), 'data' => $allApplications->toArray()]);
+    $allApplicants = DB::table('tbl_applicant')->get();
+    \Log::info("All applicant records:", ['count' => $allApplicants->count(), 'data' => $allApplicants->toArray()]);
 
-        $query = DB::table('tbl_application_personnel as ap')
-            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-            ->join('tbl_lydopers as lydo', 'ap.lydopers_id', '=', 'lydo.lydopers_id')
-            ->select(
-                'ap.application_personnel_id',
-                'app.applicant_fname as fname',
-                'app.applicant_mname as mname',
-                'app.applicant_lname as lname',
-                'app.applicant_suffix as suffix',
-                'app.applicant_brgy as barangay',
-                'app.applicant_school_name as school',
-                'ap.remarks as remarks',
-                'ap.status as status'
-            )
-            ->where('ap.status', 'Pending')
-            ->where('lydo.lydopers_role', 'lydo_staff')
-            ->whereIn('ap.remarks', ['Poor', 'Ultra Poor']); // Only show Poor and Ultra Poor
+    // MAIN TABLE: Pending + Reviewed applications (Poor and Ultra Poor only)
+    $query = DB::table('tbl_application_personnel as ap')
+        ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+        ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+        ->select(
+            'ap.application_personnel_id',
+            'app.applicant_fname as fname',
+            'app.applicant_mname as mname',
+            'app.applicant_lname as lname',
+            'app.applicant_suffix as suffix',
+            'app.applicant_brgy as barangay',
+            'app.applicant_school_name as school',
+            'ap.initial_screening as screening',
+            'ap.remarks as remarks',
+            'ap.status as status'
+        )
+        ->where('ap.initial_screening', 'Reviewed')
+        ->where('ap.status', 'Pending')
+     
+       // match either remark value
+       ->whereIn('ap.remarks', ['Poor', 'Ultra Poor']);
 
-        // ✅ Search by name
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('app.applicant_fname', 'like', "%$search%")
-                  ->orWhere('app.applicant_lname', 'like', "%$search%");
-            });
-        }
+    // DEBUG main query
+    $debugResults = $query->get();
+    \Log::info("Main query results:", ['count' => $debugResults->count(), 'data' => $debugResults->toArray()]);
 
-        // ✅ Filter by barangay
-        if ($request->filled('barangay')) {
-            $query->where('app.applicant_brgy', $request->barangay);
-        }
+    // SEARCH filter
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('app.applicant_fname', 'like', "%$search%")
+              ->orWhere('app.applicant_lname', 'like', "%$search%");
+        });
+    }
 
-        $applications = $query->paginate(15);
+    // BARANGAY filter
+    if ($request->filled('barangay')) {
+        $query->where('app.applicant_brgy', $request->barangay);
+    }
 
-        $barangays = DB::table('tbl_applicant')->distinct()->pluck('applicant_brgy');
+    $applications = $query->paginate(15);
 
-        $listApplications = DB::table('tbl_application_personnel as ap')
-            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-            ->join('tbl_lydopers as lydo', 'ap.lydopers_id', '=', 'lydo.lydopers_id')
-            ->select(
-                'ap.application_personnel_id',
-                'app.applicant_fname as fname',
-                'app.applicant_mname as mname',
-                'app.applicant_lname as lname',
-                'app.applicant_suffix as suffix',
-                'app.applicant_brgy as barangay',
-                'app.applicant_school_name as school',
-                'ap.remarks as remarks',
-                'ap.status as status'
-            )
-            ->whereIn('ap.status', ['Approved', 'Rejected'])
-            ->where('lydo.lydopers_role', 'lydo_staff')
-            ->when($request->filled('search'), function ($q) use ($request) {
-                $q->where(function ($q) use ($request) {
-                    $q->where('app.applicant_fname', 'like', "%{$request->search}%")
-                      ->orWhere('app.applicant_lname', 'like', "%{$request->search}%");
-                });
-            })
-            ->when($request->filled('barangay'), function ($q) use ($request) {
-                $q->where('app.applicant_brgy', $request->barangay);
-            })
-            ->when($request->filled('status_filter'), function ($q) use ($request) {
-                $q->where('ap.status', $request->status_filter);
-            })
-            ->paginate(15, ['*'], 'list');
+    // DEBUG final apps
+    \Log::info("Final applications for view:", ['count' => $applications->count(), 'data' => $applications->items()]);
 
-        $barangays = DB::table('tbl_applicant')->distinct()->pluck('applicant_brgy');
+    $barangays = DB::table('tbl_applicant')->distinct()->pluck('applicant_brgy');
 
-        $showBadge = !session('notifications_viewed');
+    // LIST: Approved or Rejected
+    $listQuery = DB::table('tbl_application_personnel as ap')
+        ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+        ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+        ->join('tbl_lydopers as lydo', 'ap.lydopers_id', '=', 'lydo.lydopers_id')
+        ->select(
+            'ap.application_personnel_id',
+            'app.applicant_fname as fname',
+            'app.applicant_mname as mname',
+            'app.applicant_lname as lname',
+            'app.applicant_suffix as suffix',
+            'app.applicant_brgy as barangay',
+            'app.applicant_school_name as school',
+            'ap.remarks as remarks',
+            'ap.status as status'
+        )
+        ->whereIn('ap.status', ['Approved', 'Rejected'])
+        ->where('lydo.lydopers_role', 'lydo_staff');
 
-        $tableApplicants = $applications;
+    $debugListResults = $listQuery->get();
+    \Log::info("List query results:", ['count' => $debugListResults->count(), 'data' => $debugListResults->toArray()]);
 
-        // If AJAX request, return JSON data
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'tableApplicants' => $tableApplicants->items(),
-                'listApplications' => $listApplications->items(),
-                'tablePagination' => $tableApplicants->appends(request()->query())->links()->toHtml(),
-                'listPagination' => $listApplications->appends(request()->query())->links()->toHtml(),
-            ]);
-        }
+    $listApplications = $listQuery->paginate(15, ['*'], 'list');
 
-        return view('mayor_staff.status', compact('tableApplicants', 'barangays', 'notifications', 'newApplications', 'newRemarks', 'listApplications', 'showBadge'));
+    $showBadge = !session('notifications_viewed');
+    $tableApplicants = $applications;
+
+    // AJAX response for frontend
+    if ($request->ajax() || $request->wantsJson()) {
+        return response()->json([
+            'tableApplicants' => $tableApplicants->items(),
+            'listApplications' => $listApplications->items(),
+            'tablePagination' => $tableApplicants->appends(request()->query())->links()->toHtml(),
+            'listPagination' => $listApplications->appends(request()->query())->links()->toHtml(),
+        ]);
+    }
+
+    return view('mayor_staff.status', compact(
+        'tableApplicants',
+        'barangays',
+        'notifications',
+        'newApplications',
+        'newRemarks',
+        'listApplications',
+        'showBadge'
+    ));
 }
+
 
 // ✅ Update status
 public function updateStatus(Request $request, $id)
@@ -1247,11 +1232,6 @@ public function updateStatus(Request $request, $id)
 
         if ($screeningStatus) {
             $query->where('ap.initial_screening', $screeningStatus);
-        }
-
-        // Add status filter
-        if ($statusFilter) {
-            $query->where('ap.status', $statusFilter);
         }
 
         $applications = $query->get();
@@ -1916,10 +1896,137 @@ public function updateStatus(Request $request, $id)
         ]);
     }
 
-    public function welcome(Request $request)
+
+
+    public function getApplicationDetails($applicationPersonnelId)
     {
-        Log::info("Request received: " . $request->method() . " " . $request->path());
-        return response()->json(['message' => 'Welcome to the Mayor Staff API!']);
+        try {
+            $applicationDetails = DB::table('tbl_application_personnel as ap')
+                ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+                ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+                ->where('ap.application_personnel_id', $applicationPersonnelId)
+                ->select(
+                    'ap.application_personnel_id',
+                    'app.applicant_fname',
+                    'app.applicant_mname',
+                    'app.applicant_lname',
+                    'app.applicant_suffix',
+                    'app.applicant_brgy',
+                    'app.applicant_school_name',
+                    'app.applicant_course',
+                    'app.applicant_year_level',
+                    'app.applicant_acad_year',
+                    'ap.initial_screening',
+                    'ap.remarks',
+                    'ap.status',
+                    'ap.created_at',
+                    'ap.updated_at'
+                )
+                ->first();
+
+            if (!$applicationDetails) {
+                return response('<div class="text-center text-red-500"><i class="bx bx-error text-4xl mb-2"></i><p>Application not found</p></div>', 404);
+            }
+
+            $fullName = trim($applicationDetails->applicant_fname . ' ' .
+                           ($applicationDetails->applicant_mname ? $applicationDetails->applicant_mname . ' ' : '') .
+                           $applicationDetails->applicant_lname .
+                           ($applicationDetails->applicant_suffix ? ', ' . $applicationDetails->applicant_suffix : ''));
+
+            $html = '
+                <div class="space-y-6">
+                    <!-- Personal Information -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-user text-blue-600 mr-2"></i>
+                            Personal Information
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Full Name</label>
+                                <p class="text-sm text-gray-900 mt-1">' . htmlspecialchars($fullName) . '</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Barangay</label>
+                                <p class="text-sm text-gray-900 mt-1">' . htmlspecialchars($applicationDetails->applicant_brgy) . '</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">School</label>
+                                <p class="text-sm text-gray-900 mt-1">' . htmlspecialchars($applicationDetails->applicant_school_name) . '</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Course</label>
+                                <p class="text-sm text-gray-900 mt-1">' . htmlspecialchars($applicationDetails->applicant_course) . '</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Year Level</label>
+                                <p class="text-sm text-gray-900 mt-1">' . htmlspecialchars($applicationDetails->applicant_year_level) . '</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Academic Year</label>
+                                <p class="text-sm text-gray-900 mt-1">' . htmlspecialchars($applicationDetails->applicant_acad_year) . '</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Application Status -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-clipboard-check text-green-600 mr-2"></i>
+                                                       Application Status
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Initial Screening</label>
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ' .
+                                    ($applicationDetails->initial_screening == 'Reviewed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800') . ' mt-1">
+                                    ' . htmlspecialchars($applicationDetails->initial_screening) . '
+                                </span>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Remarks</label>
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ' .
+                                    ($applicationDetails->remarks == 'Ultra Poor' ? 'bg-red-100 text-red-800' :
+                                     ($applicationDetails->remarks == 'Poor' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800')) . ' mt-1">
+                                    ' . htmlspecialchars($applicationDetails->remarks) . '
+                                </span>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Status</label>
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ' .
+                                    ($applicationDetails->status == 'Approved' ? 'bg-green-100 text-green-800' :
+                                     ($applicationDetails->status == 'Rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')) . ' mt-1">
+                                    ' . htmlspecialchars($applicationDetails->status) . '
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timestamps -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-clock text-purple-600 mr-2"></i>
+                            Application Timeline
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Created At</label>
+                                <p class="text-sm text-gray-900 mt-1">' . \Carbon\Carbon::parse($applicationDetails->created_at)->format('M d, Y h:i A') . '</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Last Updated</label>
+                                <p class="text-sm text-gray-900 mt-1">' . \Carbon\Carbon::parse($applicationDetails->updated_at)->format('M d, Y h:i A') . '</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ';
+
+            return response($html);
+        } catch (\Exception $e) {
+            Log::error('Error fetching application details: ' . $e->getMessage());
+            return response('<div class="text-center text-red-500"><i class="bx bx-error text-4xl mb-2"></i><p>Error loading application details</p></div>', 500);
+        }
     }
 
     public function saveDocumentComment(Request $request)
@@ -2179,7 +2286,6 @@ public function updateStatus(Request $request, $id)
         if (!$token) {
             abort(403, 'Access denied. Token required.');
         }
-
         // Get application personnel record
         $applicationPersonnel = DB::table('tbl_application_personnel')
             ->where('application_personnel_id', $application_personnel_id)
@@ -2259,7 +2365,6 @@ public function updateStatus(Request $request, $id)
             'head_ipno' => $request->head['ipno'] ?? null,
             'head_address' => $request->head['address'] ?? null,
             'head_zone' => $request->head['zone'] ?? null,
-            'head_barangay' => $request->head['barangay'] ?? null,
             'head_pob' => $request->head['pob'] ?? null,
             'head_dob' => $request->head['dob'] ?? null,
             'head_educ' => $request->head['educ'] ?? null,
@@ -2271,11 +2376,11 @@ public function updateStatus(Request $request, $id)
             'house_net_income' => $request->house['net_income'] ?? null,
             'other_income' => $request->house['other_income'] ?? null,
             'house_house' => $request->house['house'] ?? null,
-            'house_house_value' => $request->house['house_value'] ?? null,
+            'house_value' => $request->house['house_value'] ?? null,
             'house_lot' => $request->house['lot'] ?? null,
-            'house_lot_value' => $request->house['lot_value'] ?? null,
-            'house_house_rent' => $request->house['house_rent'] ?? null,
-            'house_lot_rent' => $request->house['lot_rent'] ?? null,
+            'lot_value' => $request->house['lot_value'] ?? null,
+            'house_rent' => $request->house['house_rent'] ?? null,
+            'lot_rent' => $request->house['lot_rent'] ?? null,
             'house_water' => $request->house['water'] ?? null,
             'house_electric' => $request->house['electric'] ?? null,
             'family_members' => json_encode($request->family),
@@ -2296,4 +2401,157 @@ public function updateStatus(Request $request, $id)
         return response()->json(['success' => true, 'message' => 'Family intake sheet submitted successfully.']);
     }
 
+    public function getIntakeSheet($applicationPersonnelId)
+    {
+        try {
+            \Log::info("Fetching intake sheet for application_personnel_id: {$applicationPersonnelId}");
+
+            $appRow = DB::table('tbl_application_personnel as ap')
+                ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+                ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+                ->where('ap.application_personnel_id', $applicationPersonnelId)
+                ->select(
+                    'app.applicant_id',
+                    'app.applicant_fname',
+                    'app.applicant_mname',
+                    'app.applicant_lname',
+                    'app.applicant_suffix',
+                    'app.applicant_gender',
+                    'app.applicant_brgy'
+                )
+                ->first();
+
+            if (!$appRow) {
+                \Log::warning("No application/applicant found for application_personnel_id: {$applicationPersonnelId}");
+                return response()->json(['success' => false, 'message' => 'Application or applicant not found.'], 404);
+            }
+
+            $fullName = trim(
+                ($appRow->applicant_fname ?? '') .
+                ' ' . ($appRow->applicant_mname ? $appRow->applicant_mname . ' ' : '') .
+                ($appRow->applicant_lname ?? '') .
+                ($appRow->applicant_suffix ? ', ' . $appRow->applicant_suffix : '')
+            );
+
+            $intakeSheet = FamilyIntakeSheet::where('application_personnel_id', $applicationPersonnelId)->first();
+
+            if (!$intakeSheet) {
+                \Log::info("No FamilyIntakeSheet record found, returning empty/default structure for application_personnel_id: {$applicationPersonnelId}");
+
+                $empty = [
+                    'applicant_name' => $fullName,
+                    'applicant_fname' => $appRow->applicant_fname ?? null,
+                    'applicant_mname' => $appRow->applicant_mname ?? null,
+                    'applicant_lname' => $appRow->applicant_lname ?? null,
+                    'applicant_suffix' => $appRow->applicant_suffix ?? null,
+                    'applicant_gender' => $appRow->applicant_gender ?? null,
+                    'head_4ps' => null,
+                    'head_ipno' => null,
+                    'head_address' => null,
+                    'head_zone' => null,
+                    'head_barangay' => $appRow->applicant_brgy ?? null,
+                    'head_pob' => null,
+                    'head_dob' => null,
+                    'head_educ' => null,
+                    'head_occ' => null,
+                    'head_religion' => null,
+                    'serial_number' => null,
+                    'location' => null,
+                    'house_total_income' => null,
+                    'house_net_income' => null,
+                    'other_income' => null,
+                    'house_house' => null,
+                    'house_value' => null,
+                    'house_lot' => null,
+                    'lot_value' => null,
+                    'house_rent' => null,
+                    'lot_rent' => null,
+                    'house_water' => null,
+                    'house_electric' => null,
+                    'house_remarks' => null,
+                    'family_members' => [],
+                    'social_service_records' => [],
+                    'rv_service_records' => [],
+                    'hc_estimated_cost' => null,
+                    'worker_name' => null,
+                    'officer_name' => null,
+                    'date_entry' => null,
+                    'signature_client' => null,
+                    'signature_worker' => null,
+                    'signature_officer' => null,
+                ];
+
+                return response()->json(['success' => true, 'intakeSheet' => $empty, 'intake_sheet' => $empty], 200, ['Content-Type' => 'application/json']);
+            }
+
+            $familyMembers = [];
+            if (!empty($intakeSheet->family_members)) {
+                $decoded = json_decode($intakeSheet->family_members, true);
+                $familyMembers = is_array($decoded) ? $decoded : [];
+            }
+
+            $rvServiceRecords = [];
+            if (!empty($intakeSheet->rv_service_records)) {
+                $decoded = json_decode($intakeSheet->rv_service_records, true);
+                $rvServiceRecords = is_array($decoded) ? $decoded : [];
+            }
+
+            $socialServiceRecords = [];
+            if (!empty($intakeSheet->social_service_records)) {
+                $decoded = json_decode($intakeSheet->social_service_records, true);
+                $socialServiceRecords = is_array($decoded) ? $decoded : [];
+            }
+
+            $data = [
+                'applicant_name' => $fullName,
+                'applicant_fname' => $appRow->applicant_fname ?? null,
+                'applicant_mname' => $appRow->applicant_mname ?? null,
+                'applicant_lname' => $appRow->applicant_lname ?? null,
+                'applicant_suffix' => $appRow->applicant_suffix ?? null,
+                'applicant_gender' => $appRow->applicant_gender ?? null,
+                'head_4ps' => $intakeSheet->head_4ps,
+                'head_ipno' => $intakeSheet->head_ipno,
+                'head_address' => $intakeSheet->head_address,
+                'head_zone' => $intakeSheet->head_zone,
+                'head_barangay' => $intakeSheet->head_barangay ?? $appRow->applicant_brgy ?? null,
+                'head_pob' => $intakeSheet->head_pob,
+                'head_dob' => $intakeSheet->head_dob ? (string)$intakeSheet->head_dob : null,
+                'head_educ' => $intakeSheet->head_educ,
+                'head_occ' => $intakeSheet->head_occ,
+                'head_religion' => $intakeSheet->head_religion,
+                'serial_number' => $intakeSheet->serial_number,
+                'location' => $intakeSheet->location,
+                'house_total_income' => $intakeSheet->house_total_income,
+                'house_net_income' => $intakeSheet->house_net_income,
+                'other_income' => $intakeSheet->other_income,
+                'house_house' => $intakeSheet->house_house,
+                'house_value' => $intakeSheet->house_value,
+                'house_lot' => $intakeSheet->house_lot,
+                'lot_value' => $intakeSheet->lot_value,
+                'house_rent' => $intakeSheet->house_rent,
+                'lot_rent' => $intakeSheet->lot_rent,
+                'house_water' => $intakeSheet->house_water,
+                'house_electric' => $intakeSheet->house_electric,
+                'house_remarks' => $intakeSheet->house_remarks,
+                'family_members' => $familyMembers,
+                'social_service_records' => $socialServiceRecords,
+                'rv_service_records' => $rvServiceRecords,
+                'hc_estimated_cost' => $intakeSheet->hc_estimated_cost,
+                'worker_name' => $intakeSheet->worker_name,
+                'officer_name' => $intakeSheet->officer_name,
+                'date_entry' => $intakeSheet->date_entry ? (string)$intakeSheet->date_entry : null,
+                'signature_client' => $intakeSheet->signature_client ? asset('storage/' . $intakeSheet->signature_client) : null,
+                'signature_worker' => $intakeSheet->signature_worker ? asset('storage/' . $intakeSheet->signature_worker) : null,
+                'signature_officer' => $intakeSheet->signature_officer ? asset('storage/' . $intakeSheet->signature_officer) : null,
+            ];
+
+            \Log::info("Intake sheet loaded for application_personnel_id: {$applicationPersonnelId}");
+
+            return response()->json(['success' => true, 'intakeSheet' => $data, 'intake_sheet' => $data], 200, ['Content-Type' => 'application/json']);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching intake sheet: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error loading intake sheet data.'], 500);
+        }
+    }
 }
+

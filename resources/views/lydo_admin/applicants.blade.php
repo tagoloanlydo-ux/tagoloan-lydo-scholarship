@@ -16,10 +16,128 @@
         input::placeholder, select::placeholder {
             color: black !important;
         }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        .loading-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 2rem;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner img {
+            width: 80%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .text-line {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp 1s ease forwards 0.5s both;
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 1s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .text-line {
+                font-size: 1.8rem;
+            }
+            .spinner {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .text-line {
+                font-size: 1.5rem;
+            }
+            .spinner {
+                width: 60px;
+                height: 60px;
+            }
+        }
     </style>
 </head>
 
 <body class="bg-gray-50 h-screen flex flex-col">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-container">
+            <div class="spinner">
+                <img src="{{ asset('images/LYDO.png') }}" alt="Loading">
+            </div>
+            <div class="text-line">Loading...</div>
+        </div>
+    </div>
     <!-- Header -->
     <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans flex-shrink-0">
             <div class="flex items-center">
@@ -328,7 +446,9 @@
                                         class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
                                     <span id="sendEmailText">Send Email</span>
                                     <span id="sendEmailLoading" class="hidden">
-                                        <i class="fas fa-spinner fa-spin mr-2"></i>Sending...
+                                        <div class="inline-block w-5 h-5 animate-spin mr-2">
+                                            <img src="{{ asset('images/LYDO.png') }}" alt="Loading" class="w-full h-full rounded-full">
+                                        </div>Sending...
                                     </span>
                                 </button>
                             </div>
@@ -719,6 +839,19 @@ function setupNotificationDropdown() {
 // ===============================
 // 📄 INITIALIZATION
 // ===============================
+
+/**
+ * Hide loading overlay when page is fully loaded
+ */
+window.addEventListener('load', function() {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.classList.add('fade-out');
+        setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+        }, 1000); // Match the fadeOut animation duration
+    }
+});
 
 /**
  * Initialize all functionality when DOM is loaded

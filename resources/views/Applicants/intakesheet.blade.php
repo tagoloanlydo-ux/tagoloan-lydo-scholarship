@@ -271,25 +271,39 @@
             <div class="form-group">
               <select id="head_educ" class="form-input">
                 <option value="" disabled selected>Select Educational Attainment</option>
-                <option value="College Level (1st Year)">College Level (1st Year)</option>
-                <option value="College Level (2nd Year)">College Level (2nd Year)</option>
-                <option value="College Level (3rd Year)">College Level (3rd Year)</option>
-                <option value="College Level (4th Year)">College Level (4th Year)</option>
+                <option value="Elementary">Elementary</option>
+                <option value="High School">High School</option>
+                <option value="Vocational">Vocational</option>
+                <option value="College">College</option>
+                <option value="Post Graduate">Post Graduate</option>
               </select>
               <label class="form-label">Educational Attainment <span style="color: red;">*</span></label>
             </div>
             <div class="form-group">
-              <input id="head_occ" placeholder=" " class="form-input" /><label
-                class="form-label"
-                >Occupation <span style="color: red;">*</span></label
-              >
+              <select id="head_occ" class="form-input">
+                <option value="" disabled selected>Select Occupation</option>
+                <option value="Farmer">Farmer</option>
+                <option value="Teacher">Teacher</option>
+                <option value="Driver">Driver</option>
+                <option value="Business Owner">Business Owner</option>
+                <option value="Employee">Employee</option>
+                <option value="Unemployed">Unemployed</option>
+                <option value="Student">Student</option>
+                <option value="Other">Other</option>
+              </select>
+              <label class="form-label">Occupation <span style="color: red;">*</span></label>
             </div>
             <div class="form-group md:col-span-2">
-              <input
-                id="head_religion"
-                placeholder=" "
-                class="form-input"
-              /><label class="form-label">Religion <span style="color: red;">*</span></label>
+              <select id="head_religion" class="form-input">
+                <option value="" disabled selected>Select Religion</option>
+                <option value="Catholic">Catholic</option>
+                <option value="Protestant">Protestant</option>
+                <option value="Islam">Islam</option>
+                <option value="Buddhist">Buddhist</option>
+                <option value="Atheist">Atheist</option>
+                <option value="Other">Other</option>
+              </select>
+              <label class="form-label">Religion <span style="color: red;">*</span></label>
             </div>
 
             <!-- Serial and location -->
@@ -986,13 +1000,20 @@
 
       // Collect data
       function collectData() {
+        // Get the values directly from the form inputs
+        const fname = document.getElementById('applicant_fname').value;
+        const mname = document.getElementById('applicant_mname').value;
+        const lname = document.getElementById('applicant_lname').value;
+        const suffix = document.getElementById('applicant_suffix').value;
+        
         const applicant = {
-          fname: getVal("applicant_fname"),
-          mname: getVal("applicant_mname"),
-          lname: getVal("applicant_lname"),
-          suffix: getVal("applicant_suffix"),
+          fname: fname,
+          mname: mname,
+          lname: lname,
+          suffix: suffix,
           gender: document.querySelector('input[name="applicant_gender"]:checked')?.value || "",
         };
+        
         const head = {
           _4ps: getVal("head_4ps"),
           ipno: getVal("head_ipno"),
@@ -1006,9 +1027,14 @@
           religion: getVal("head_religion"),
           sex: document.querySelector('input[name="applicant_gender"]:checked')?.value || "",
           serial: getVal("serial_number"),
+          // Include names in head as well for backward compatibility
+          fname: fname,
+          mname: mname,
+          lname: lname,
+          suffix: suffix
         };
-        const location =
-          document.querySelector('input[name="location"]:checked')?.value || "";
+
+        const location = document.querySelector('input[name="location"]:checked')?.value || "";
 
         const family = [];
         document.querySelectorAll("#familyTable tbody tr").forEach((tr) => {
@@ -1041,10 +1067,9 @@
         };
 
         const signatures = {
-          client:
-            signaturePads.client && !signaturePads.client.isEmpty()
-              ? signaturePads.client.toDataURL()
-              : null,
+          client: signaturePads.client && !signaturePads.client.isEmpty()
+            ? signaturePads.client.toDataURL()
+            : null,
         };
 
         return {
@@ -1062,7 +1087,7 @@
         return el ? el.value : "";
       }
 
-      // Populate review area
+      // Populate review area - FIXED VERSION
       function populateReview() {
         const d = collectData();
         let serial = d.head.serial;
@@ -1070,22 +1095,26 @@
           serial = generateSerialNumber();
           document.getElementById('serial_number').value = serial;
           d.head.serial = serial;
-          saveFormData(); // Save the generated serial
+          saveFormData();
         }
+        
         document.getElementById("rv_serial").innerText = serial;
         document.getElementById("printSerial").innerText = serial;
-        document.getElementById("rv_head_name").innerText = [
-          d.head.fname,
-          d.head.mname,
-          d.head.lname,
-          d.head.suffix,
-        ]
-          .filter(Boolean)
-          .join(" ");
+        
+        // FIX: Get full name directly from form inputs to ensure it shows correctly
+        const fullName = [
+          document.getElementById('applicant_fname').value,
+          document.getElementById('applicant_mname').value,
+          document.getElementById('applicant_lname').value,
+          document.getElementById('applicant_suffix').value
+        ].filter(Boolean).join(" ");
+        
+        document.getElementById("rv_head_name").innerText = fullName;
+        
         document.getElementById("rv_head_table").innerHTML = `
           <table class="min-w-full text-sm">
             <tr>
-              <td><strong>Sex:</strong> ${d.head.sex || "-"}</td>
+              <td><strong>Sex:</strong> ${d.head.sex || d.applicant.gender || "-"}</td>
               <td><strong>4Ps:</strong> ${d.head._4ps || "-"}</td>
               <td><strong>IP No.:</strong> ${d.head.ipno || "-"}</td>
             </tr>
@@ -1106,24 +1135,21 @@
             </tr>
           </table>
         `;
-        document.getElementById("rv_total_income").innerText =
-          d.house.total_income || "-";
-        document.getElementById("rv_net_income").innerText =
-          d.house.net_income || "-";
-        document.getElementById("rv_other_income").innerText =
-          d.house.other_income || "-";
+        
+        document.getElementById("rv_total_income").innerText = d.house.total_income || "-";
+        document.getElementById("rv_net_income").innerText = d.house.net_income || "-";
+        document.getElementById("rv_other_income").innerText = d.house.other_income || "-";
         document.getElementById("rv_house").innerText = d.house.house || "-";
         document.getElementById("rv_lot").innerText = d.house.lot || "-";
         document.getElementById("rv_water").innerText = d.house.water || "-";
-        document.getElementById("rv_electric").innerText =
-          d.house.electric || "-";
-        // Display rent amounts under ownership if rented
+        document.getElementById("rv_electric").innerText = d.house.electric || "-";
+        
         document.getElementById("rv_house_rent_display").innerHTML =
           d.house.house === 'Rented' ? `<strong>House Monthly Rent:</strong> ₱${d.house.house_rent || '-'}` : '';
         document.getElementById("rv_lot_rent_display").innerHTML =
           d.house.lot === 'Rented' ? `<strong>Lot Monthly Rent:</strong> ₱${d.house.lot_rent || '-'}` : '';
 
-        // family table build
+        // Family table build
         const tbody = document.querySelector("#rv_family_table tbody");
         tbody.innerHTML = "";
         d.family.forEach((f) => {
@@ -1143,7 +1169,7 @@
           tbody.appendChild(tr);
         });
 
-        // signatures
+        // Signatures
         const rvSigClient = document.getElementById("rv_sig_client");
         rvSigClient.innerHTML = "";
         if (d.signatures.client) {
@@ -1152,9 +1178,9 @@
           img.style.maxWidth = "100%";
           img.style.height = "80px";
           rvSigClient.appendChild(img);
-        } else
-          rvSigClient.innerHTML =
-            '<p class="text-xs text-gray-500">No signature</p>';
+        } else {
+          rvSigClient.innerHTML = '<p class="text-xs text-gray-500">No signature</p>';
+        }
       }
 
       function formatDate(dateString) {
@@ -1244,8 +1270,6 @@
         }
       }
 
-
-
       // Validate Step 1 fields and disable Next button if required fields are empty
       function validateStep1() {
         const requiredFields = [
@@ -1307,8 +1331,9 @@
       // Setup on load
       window.addEventListener("load", () => {
         setupSignatures();
-        loadFormData(); // Load saved data
+        loadFormData();
         showStep(currentStep);
+        
         // Attach listeners to existing birthdate inputs and make age readonly
         document.querySelectorAll('.fm-birth').forEach(attachBirthdateListener);
         document.querySelectorAll('.fm-age').forEach(ageInput => ageInput.readOnly = true);

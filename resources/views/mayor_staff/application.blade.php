@@ -390,9 +390,124 @@
         .swal2-container {
             z-index: 1200 !important;
         }
+
+        /* Loading Spinner Styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        .loading-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 2rem;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner img {
+            width: 80%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .text-line {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp 1s ease forwards 0.5s both;
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 1s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        /* Responsive design for spinner */
+        @media (max-width: 768px) {
+            .text-line {
+                font-size: 1.8rem;
+            }
+            .spinner {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .text-line {
+                font-size: 1.5rem;
+            }
+            .spinner {
+                width: 60px;
+                height: 60px;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
+
+    <!-- Loading Spinner Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-container">
+            <div class="spinner">
+                <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+            </div>
+            <div class="text-line">Loading...</div>
+        </div>
+    </div>
 
     <!-- Header -->
     <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
@@ -976,6 +1091,18 @@
             attachFilterListeners();
             filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
             filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
+        });
+
+        // Hide loading spinner when page is fully loaded
+        window.addEventListener('load', function() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('fade-out');
+                // Remove from DOM after animation completes
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 1000); // Match the animation duration
+            }
         });
 
         // ✅ Application Modal Functions

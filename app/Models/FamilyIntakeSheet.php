@@ -16,13 +16,6 @@ class FamilyIntakeSheet extends Model
         'application_personnel_id',
         'lydo_personnel_id',
 
-        // Applicant Details
-        'applicant_fname',
-        'applicant_mname',
-        'applicant_lname',
-        'applicant_suffix',
-        'applicant_gender',
-
         // Head of Family
         'head_4ps',
         'head_ipno',
@@ -42,11 +35,11 @@ class FamilyIntakeSheet extends Model
         'house_net_income',
         'other_income',
         'house_house',
-        'house_house_value',
+        'house_value',
         'house_lot',
-        'house_lot_value',
-        'house_house_rent',
-        'house_lot_rent',
+        'lot_value',
+        'house_rent',
+        'lot_rent',
         'house_water',
         'house_electric',
         'house_remarks',

@@ -43,23 +43,29 @@ class LydoStaffController extends Controller
                 : ($applicantsCurrentYear > 0 ? 100 : 0);
 
 
-        $pendingInitial = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
-            ->count();
+$pendingInitial = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id",
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id",
+    )
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
 
 
         $pendingInitialPercentage =
@@ -172,23 +178,29 @@ class LydoStaffController extends Controller
             ->orderBy("applicant_acad_year", "desc")
             ->value("applicant_acad_year");
 
-        $pendingScreening = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
-            ->count();
+$pendingScreening = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id",
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id",
+    )
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
             ->where("renewal_status", "Pending")
@@ -261,23 +273,29 @@ class LydoStaffController extends Controller
             ->orderBy("applicant_acad_year", "desc")
             ->value("applicant_acad_year");
 
-        $pendingScreening = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
-            ->count();
+$pendingScreening = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id",
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id",
+    )
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
             ->where("renewal_status", "Pending")
@@ -340,7 +358,7 @@ class LydoStaffController extends Controller
             ->orderBy("applicant_brgy", "asc")
             ->pluck("applicant_brgy");
 
-        // Applicants without remarks
+        // Applicants with intake sheets but without remarks (pending screening)
         $tableApplicants = DB::table("tbl_applicant")
             ->join(
                 "tbl_application",
@@ -353,6 +371,12 @@ class LydoStaffController extends Controller
                 "tbl_application.application_id",
                 "=",
                 "tbl_application_personnel.application_id",
+            )
+            ->leftJoin(
+                "family_intake_sheets",
+                "tbl_application_personnel.application_personnel_id",
+                "=",
+                "family_intake_sheets.application_personnel_id",
             )
             ->select("tbl_applicant.*", "tbl_application_personnel.remarks", "tbl_application_personnel.application_personnel_id")
             ->when($search, function ($query, $search) {
@@ -372,12 +396,8 @@ class LydoStaffController extends Controller
                 $query->where("tbl_applicant.applicant_brgy", $barangay);
             })
             ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->whereNotIn("tbl_application_personnel.remarks", [
-                "Poor",
-                "Non Poor",
-                "Ultra Poor",
-                "Non Indigenous",
-            ])
+            ->where("tbl_application_personnel.remarks", "waiting")
+            ->whereNotNull("family_intake_sheets.application_personnel_id")
             ->paginate(15)
     ->appends($request->all());
 
@@ -435,6 +455,7 @@ $listApplicants = DB::table("tbl_applicant as a")
                 "listApplicants",
                 "barangays",
                 "currentAcadYear",
+                
             ),
         );
     }
@@ -493,161 +514,229 @@ $listApplicants = DB::table("tbl_applicant as a")
 
         $remarks = DB::table('tbl_application_personnel')->where('application_personnel_id', $application_personnel_id)->value('remarks');
 
+        // Retrieve applicant gender and place of birth
+        $applicantData = DB::table('tbl_application_personnel')
+            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
+            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+            ->where('tbl_application_personnel.application_personnel_id', $application_personnel_id)
+            ->select('tbl_applicant.applicant_gender', 'tbl_applicant.applicant_pob')
+            ->first();
+
+        $applicantGender = $applicantData ? $applicantData->applicant_gender : null;
+        $applicantPob = $applicantData ? $applicantData->applicant_pob : null;
+
         if ($intakeSheet) {
             $data = $intakeSheet->toArray();
             $data['remarks'] = $remarks;
+            $data['applicant_gender'] = $applicantGender;
+            $data['applicant_pob'] = $applicantPob;
             return response()->json($data);
         } else {
-            return response()->json(['remarks' => $remarks]);
+            return response()->json([
+                'remarks' => $remarks,
+                'applicant_gender' => $applicantGender,
+                'applicant_pob' => $applicantPob
+            ]);
         }
     }
 
-    public function updateIntakeSheet(Request $request, $id)
+public function updateIntakeSheet(Request $request, $application_personnel_id)
+{
+    // Validation (kept simple; adjust as needed)
+    $validated = $request->validate([
+        'head_4ps' => 'nullable|string|max:255',
+        'head_ipno' => 'nullable|string|max:255',
+        'head_address' => 'nullable|string|max:255',
+        'head_zone' => 'nullable|string|max:255',
+        'head_pob' => 'nullable|string|max:255',
+        'head_dob' => 'nullable|date',
+        'head_educ' => 'nullable|string|max:255',
+        'head_occ' => 'nullable|string|max:255',
+        'head_religion' => 'nullable|string|max:255',
+        'serial_number' => 'nullable|string|max:255',
+        'location' => 'nullable|string|max:255',
+
+        // Household Info
+        'house_total_income' => 'nullable|numeric',
+        'house_net_income' => 'nullable|numeric',
+        'other_income' => 'nullable|numeric',
+        'house_house' => 'nullable|string|max:255',
+        'house_value' => 'nullable|numeric',
+        'house_lot' => 'nullable|string|max:255',
+        'lot_value' => 'nullable|numeric',
+        'house_rent' => 'nullable|numeric',
+        'lot_rent' => 'nullable|numeric',
+        'house_water' => 'nullable|string|max:255',
+        'house_electric' => 'nullable|string|max:255',
+        'house_remarks' => 'nullable|string',
+
+        // JSON fields
+        'family_members' => 'nullable',
+        'social_service_records' => 'nullable',
+        'rv_service_records' => 'nullable',
+
+        // Signatures (store in intake sheet)
+        'signature_client' => 'nullable|string',
+        'signature_worker' => 'nullable|string',
+        'signature_officer' => 'nullable|string',
+
+        // Application personnel fields (may not exist on tbl_application_personnel)
+        'worker_name' => 'nullable|string|max:255',
+        'officer_name' => 'nullable|string|max:255',
+        'date_entry' => 'nullable|date',
+
+        // Remarks field (application_personnel)
+        'remarks' => 'required|in:Poor,Non Poor,Ultra Poor',
+    ]);
+
+    try {
+        // Load application_personnel (used for remarks/status and to find applicant)
+        $ap = \App\Models\ApplicationPersonnel::findOrFail($application_personnel_id);
+
+        // Update tbl_applicant if applicant fields were submitted
+        $applicantId = DB::table('tbl_application')
+            ->where('application_id', $ap->application_id)
+            ->value('applicant_id');
+
+        if ($applicantId) {
+            $applicantUpdate = [];
+            foreach (['applicant_fname','applicant_mname','applicant_lname','applicant_suffix','applicant_gender','applicant_pob'] as $k) {
+                if ($request->filled($k) || $request->has($k)) {
+                    $applicantUpdate[$k] = $request->input($k);
+                }
+            }
+            if (!empty($applicantUpdate)) {
+                $applicantUpdate['updated_at'] = now();
+                DB::table('tbl_applicant')->where('applicant_id', $applicantId)->update($applicantUpdate);
+            }
+        }
+
+        // Update or create family_intake_sheets record (all intake/household fields + signatures)
+        $intake = \App\Models\FamilyIntakeSheet::firstOrNew(['application_personnel_id' => $application_personnel_id]);
+
+        $intakeFields = [
+            'head_4ps','head_ipno','head_address','head_zone','head_pob','head_dob','head_educ','head_occ','head_religion',
+            'serial_number','location',
+            'other_income','house_total_income','house_net_income','house_house','house_value','house_lot','lot_value',
+            'house_rent','lot_rent','house_water','house_electric','house_remarks',
+            'family_members','social_service_records','rv_service_records',
+            'signature_client','signature_worker','signature_officer'
+        ];
+
+        foreach ($intakeFields as $field) {
+            if ($request->has($field)) {
+                $intake->{$field} = $request->input($field);
+            }
+        }
+
+        // Worker/officer/date: write to tbl_application_personnel only if column exists,
+        // otherwise save into family_intake_sheets if that table has the columns.
+        $schema = \Illuminate\Support\Facades\Schema::class;
+        if (\Illuminate\Support\Facades\Schema::hasColumn('tbl_application_personnel', 'worker_name')) {
+            $ap->worker_name = $request->input('worker_name');
+        } elseif (\Illuminate\Support\Facades\Schema::hasColumn('family_intake_sheets', 'worker_name') && $request->has('worker_name')) {
+            $intake->worker_name = $request->input('worker_name');
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('tbl_application_personnel', 'officer_name')) {
+            $ap->officer_name = $request->input('officer_name');
+        } elseif (\Illuminate\Support\Facades\Schema::hasColumn('family_intake_sheets', 'officer_name') && $request->has('officer_name')) {
+            $intake->officer_name = $request->input('officer_name');
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('tbl_application_personnel', 'date_entry')) {
+            $ap->date_entry = $request->input('date_entry');
+        } elseif (\Illuminate\Support\Facades\Schema::hasColumn('family_intake_sheets', 'date_entry') && $request->has('date_entry')) {
+            $intake->date_entry = $request->input('date_entry');
+        }
+
+        // Save intake first (so any intake-side worker/officer/date are persisted)
+        $intake->updated_at = now();
+        $intake->save();
+
+        // Update application_personnel only with columns that actually exist there
+        $ap->remarks = $request->input('remarks');
+        $ap->initial_screening = 'Reviewed';
+        $ap->status = 'Pending';
+        $ap->updated_at = now();
+        $ap->save();
+
+        return response('success', 200);
+    } catch (\Exception $e) {
+        \Log::error('Update Intake Sheet error: '.$e->getMessage());
+        return response('error', 500);
+    }
+}
+    public function submitIntakeSheet(Request $request, $application_personnel_id)
     {
-        // Debug: Check what data is being received
-        \Log::info('Intake Sheet Update Request:', $request->all());
+        // Validate that the intake sheet exists
+        $intakeSheet = \App\Models\FamilyIntakeSheet::where('application_personnel_id', $application_personnel_id)->first();
 
-        $request->validate([
-            // Foreign keys
-            'lydo_personnel_id' => 'nullable|integer',
+        if (!$intakeSheet) {
+            return response()->json(['error' => 'Intake sheet not found'], 404);
+        }
 
-            // Applicant Details
-            'applicant_fname' => 'nullable|string|max:255',
-            'applicant_mname' => 'nullable|string|max:255',
-            'applicant_lname' => 'nullable|string|max:255',
-            'applicant_suffix' => 'nullable|string|max:255',
-            'applicant_gender' => 'nullable|string|max:255',
-
-            // Head of Family
-            'head_4ps' => 'nullable|string|max:255',
-            'head_ipno' => 'nullable|string|max:255',
-            'head_address' => 'nullable|string|max:255',
-            'head_zone' => 'nullable|string|max:255',
-            'head_barangay' => 'nullable|string|max:255',
-            'head_pob' => 'nullable|string|max:255',
-            'head_dob' => 'nullable|date',
-            'head_educ' => 'nullable|string|max:255',
-            'head_occ' => 'nullable|string|max:255',
-            'head_religion' => 'nullable|string|max:255',
-            'serial_number' => 'nullable|string|max:255',
-            'location' => 'nullable|string|max:255',
-
-            // Household Info
-            'house_total_income' => 'nullable|numeric',
-            'house_net_income' => 'nullable|numeric',
-            'other_income' => 'nullable|numeric',
-            'house_house' => 'nullable|string|max:255',
-            'house_house_value' => 'nullable|numeric',
-            'house_lot' => 'nullable|string|max:255',
-            'house_lot_value' => 'nullable|numeric',
-            'house_house_rent' => 'nullable|numeric',
-            'house_lot_rent' => 'nullable|numeric',
-            'house_water' => 'nullable|string|max:255',
-            'house_electric' => 'nullable|string|max:255',
-            'house_remarks' => 'nullable|string',
-
-            // JSON fields - REMOVE JSON VALIDATION TEMPORARILY
-            'family_members' => 'nullable',
-            'social_service_records' => 'nullable',
-            'rv_service_records' => 'nullable',
-
-            // Health & Signatures
-            'hc_estimated_cost' => 'nullable|numeric',
-            'worker_name' => 'nullable|string|max:255',
-            'officer_name' => 'nullable|string|max:255',
-            'date_entry' => 'nullable|date',
-            'signature_client' => 'nullable|string',
-            'signature_worker' => 'nullable|string',
-            'signature_officer' => 'nullable|string',
-
-            // Remarks field
-            'remarks' => 'required|in:Poor,Non Poor,Ultra Poor',
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            $data = $request->only([
-                'lydo_personnel_id', 'applicant_fname', 'applicant_mname', 'applicant_lname', 'applicant_suffix', 'applicant_gender',
-                'head_4ps', 'head_ipno', 'head_address', 'head_zone', 'head_barangay',
-                'head_pob', 'head_dob', 'head_educ', 'head_occ', 'head_religion', 'serial_number', 'location',
-                'house_total_income', 'house_net_income', 'other_income', 'house_house', 'house_house_value',
-                'house_lot', 'house_lot_value', 'house_house_rent', 'house_lot_rent', 'house_water', 'house_electric',
-                'house_remarks', 'family_members', 'social_service_records', 'rv_service_records', 'hc_estimated_cost', 'worker_name',
-                'officer_name', 'date_entry', 'signature_client', 'signature_worker', 'signature_officer'
-            ]);
-
-            // Set lydo_personnel_id to current user if not provided
-            if (!isset($data['lydo_personnel_id'])) {
-                $data['lydo_personnel_id'] = session('lydopers')->lydopers_id;
-            }
-
-            // Handle JSON fields properly
-            if (isset($data['family_members'])) {
-                // If it's already a JSON string, decode and re-encode to ensure it's valid
-                if (is_string($data['family_members'])) {
-                    $decoded = json_decode($data['family_members'], true);
-                    $data['family_members'] = json_encode($decoded, JSON_UNESCAPED_UNICODE);
-                } else {
-                    $data['family_members'] = json_encode($data['family_members'], JSON_UNESCAPED_UNICODE);
-                }
-            }
-
-            if (isset($data['social_service_records'])) {
-                if (is_string($data['social_service_records'])) {
-                    $decoded = json_decode($data['social_service_records'], true);
-                    $data['social_service_records'] = json_encode($decoded, JSON_UNESCAPED_UNICODE);
-                } else {
-                    $data['social_service_records'] = json_encode($data['social_service_records'], JSON_UNESCAPED_UNICODE);
-                }
-            }
-
-            if (isset($data['rv_service_records'])) {
-                if (is_string($data['rv_service_records'])) {
-                    $decoded = json_decode($data['rv_service_records'], true);
-                    $data['rv_service_records'] = json_encode($decoded, JSON_UNESCAPED_UNICODE);
-                } else {
-                    $data['rv_service_records'] = json_encode($data['rv_service_records'], JSON_UNESCAPED_UNICODE);
-                }
-            }
-
-            // Debug: Check processed data
-            \Log::info('Processed Intake Sheet Data:', $data);
-
-            // Update or create intake sheet
-            $intakeSheet = \App\Models\FamilyIntakeSheet::updateOrCreate(
-                ['application_personnel_id' => $id],
-                $data
-            );
-
-            // Fetch existing application_personnel to get application_id
-            $existingPersonnel = DB::table('tbl_application_personnel')
-                ->where('application_personnel_id', $id)
-                ->first();
-
-            // Insert new row in tbl_application_personnel
-            DB::table('tbl_application_personnel')->insert([
-                'application_id' => $existingPersonnel->application_id,
-                'lydopers_id' => session('lydopers')->lydopers_id,
-                'initial_screening' => 'Reviewed',
-                'remarks' => $request->remarks,
-                'status' => 'Pending',
-                'created_at' => now(),
+        // Update the application_personnel record to mark as submitted
+        DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $application_personnel_id)
+            ->update([
+                'intake_sheet_submitted' => true,
+                'status' => 'Submitted', // Optional: update status if needed
                 'updated_at' => now(),
             ]);
 
-            DB::commit();
+        return response()->json(['success' => 'Intake sheet submitted successfully']);
+    }
+public function updateRemarks(Request $request, $id)
+{
+    $request->validate([
+        'remarks' => 'required|in:Poor,Non Poor,Ultra Poor',
+    ]);
 
-            return back()->with('success', 'Intake sheet updated successfully!');
+    // ✅ Step 1: Update existing record
+    DB::table('tbl_application_personnel')
+        ->where('application_personnel_id', $id)
+        ->update([
+            'remarks' => $request->remarks,
+            'initial_screening' => 'Reviewed',
+            'status' => 'Pending',
+            'updated_at' => now(),
+        ]);
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Error updating intake sheet: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+    // ✅ Step 2: Update family intake sheet remarks
+    DB::table('family_intake_sheets')
+        ->where('application_personnel_id', $id)
+        ->update([
+            'house_remarks' => $request->remarks,
+            'updated_at' => now(),
+        ]);
 
-            return back()->with('error', 'Error updating intake sheet: ' . $e->getMessage());
+    // ✅ Step 3: Get the existing record details to duplicate
+    $existing = DB::table('tbl_application_personnel')->where('application_personnel_id', $id)->first();
+
+    if ($existing) {
+        // ✅ Step 4: Get the lydopers_id of Lydo Staff
+        $lydoStaff = DB::table('tbl_lydopers')
+            ->where('lydopers_role', 'lydo_staff')
+            ->first();
+
+        if ($lydoStaff) {
+            // ✅ Step 5: Insert a new row based on existing data
+            DB::table('tbl_application_personnel')->insert([
+                'application_id'     => $existing->application_id,
+                'lydopers_id'        => $lydoStaff->lydopers_id,
+                'remarks'            => $request->remarks, // same remarks (Poor, Non Poor, Ultra Poor)
+                'initial_screening'  => 'Reviewed',
+                'status'             => 'Pending',
+                'created_at'         => now(),
+                'updated_at'         => now(),
+            ]);
         }
     }
+
+    return back()->with('success', 'Remarks updated and new record added successfully.');
+}
+
     public function renewal(Request $request)
     {
         $currentAcadYear = DB::table("tbl_applicant")
@@ -655,23 +744,29 @@ $listApplicants = DB::table("tbl_applicant as a")
             ->orderBy("applicant_acad_year", "desc")
             ->value("applicant_acad_year");
 
-        $pendingScreening = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
-            ->count();
+$pendingScreening = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id",
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id",
+    )
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
             ->where("renewal_status", "Pending")
@@ -1002,23 +1097,29 @@ $listView = DB::table("tbl_renewal as r")
             ->orderBy("applicant_acad_year", "desc")
             ->value("applicant_acad_year");
 
-        $pendingScreening = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
-            ->count();
+$pendingScreening = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id",
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id",
+    )
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
             ->where("renewal_status", "Pending")
@@ -1167,23 +1268,29 @@ $listView = DB::table("tbl_renewal as r")
             ->orderBy("applicant_acad_year", "desc")
             ->value("applicant_acad_year");
 
-        $pendingScreening = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
-            ->count();
+$pendingScreening = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id",
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id",
+    )
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
             ->where("renewal_status", "Pending")
@@ -1207,163 +1314,16 @@ $listView = DB::table("tbl_renewal as r")
     }
 
 
-
-
-    public function reports(Request $request)
+    public function getApplicantDetails($applicant_id)
     {
-        $notifications = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->select(
-                "tbl_application_personnel.*",
-                DB::raw("CONCAT(
-            tbl_applicant.applicant_fname, ' ',
-            COALESCE(tbl_applicant.applicant_mname, ''), ' ',
-            tbl_applicant.applicant_lname,
-            IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')
-        ) as name"),
-            )
-            ->where(function ($q) {
-                $q->where(
-                    "tbl_application_personnel.initial_screening",
-                    "Approved",
-                )->orWhere("tbl_application_personnel.status", "Renewed");
-            })
-            ->orderBy("tbl_application_personnel.created_at", "desc")
-            ->limit(5)
-            ->get();
-        $currentAcadYear = DB::table("tbl_applicant")
-            ->select("applicant_acad_year")
-            ->orderBy("applicant_acad_year", "desc")
-            ->value("applicant_acad_year");
+        $applicant = DB::table('tbl_applicant')
+            ->where('applicant_id', $applicant_id)
+            ->first();
 
-        $pendingScreening = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-            ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->where("tbl_application_personnel.remarks", "waiting")
-            ->count();
-
-        $pendingRenewals = DB::table("tbl_renewal")
-            ->where("renewal_status", "Pending")
-            ->count();
-// Total applications (Reviewed lang)
-$totalApplications = DB::table('tbl_application_personnel')
-    ->where('initial_screening', 'Reviewed')
-    ->count();
-
-// Count per remarks (Reviewed lang)
-$poorCount = DB::table('tbl_application_personnel')
-    ->where('initial_screening', 'Reviewed')
-    ->where('remarks', 'Poor')
-    ->count();
-
-$nonPoorCount = DB::table('tbl_application_personnel')
-    ->where('initial_screening', 'Reviewed')
-    ->where('remarks', 'Non Poor')
-    ->count();
-
-$ultraPoorCount = DB::table('tbl_application_personnel')
-    ->where('initial_screening', 'Reviewed')
-    ->where('remarks', 'Ultra Poor')
-    ->count();
-
-$nonIndigenousCount = DB::table('tbl_application_personnel')
-    ->where('initial_screening', 'Reviewed')
-    ->where('remarks', 'Non Indigenous')
-    ->count();
-
-// Compute % each (relative to Reviewed only)
-$poorPercent = $totalApplications > 0 ? round(($poorCount / $totalApplications) * 100, 1) : 0;
-$nonPoorPercent = $totalApplications > 0 ? round(($nonPoorCount / $totalApplications) * 100, 1) : 0;
-$ultraPoorPercent = $totalApplications > 0 ? round(($ultraPoorCount / $totalApplications) * 100, 1) : 0;
-$nonIndigenousPercent = $totalApplications > 0 ? round(($nonIndigenousCount / $totalApplications) * 100, 1) : 0;
-
-
-
-$activeCount = DB::table('tbl_application_personnel')
-    ->where('status', 'Approved')
-    ->count();
-
-$inactiveCount = DB::table('tbl_application_personnel')
-
-    ->where('status', 'Rejected')
-    ->count();
-
-    // Remarks distribution (Poor, Non Poor, etc.)
-    $remarksData = DB::table('tbl_application_personnel')
-        ->select('remarks', DB::raw('COUNT(*) as total'))
-        ->whereIn('remarks', ['Poor', 'Non Poor', 'Ultra Poor', 'Non Indigenous'])
-        ->groupBy('remarks')
-        ->pluck('total','remarks');
-
-
-$renewalApproved = DB::table('tbl_renewal')
-    ->where('renewal_status', 'Approved')
-    ->count();
-
-$renewalRejected = DB::table('tbl_renewal')
-
-    ->where('renewal_status', 'Rejected')
-    ->count();
-
-
-
-    // --- Remarks trend (per category per year) ---
-$remarksByYear = DB::table('tbl_application_personnel')
-    ->select(
-        DB::raw("YEAR(created_at) as year"),
-        DB::raw("SUM(CASE WHEN remarks = 'Poor' THEN 1 ELSE 0 END) as poor"),
-        DB::raw("SUM(CASE WHEN remarks = 'Non Poor' THEN 1 ELSE 0 END) as non_poor"),
-        DB::raw("SUM(CASE WHEN remarks = 'Ultra Poor' THEN 1 ELSE 0 END) as ultra_poor"),
-        DB::raw("SUM(CASE WHEN remarks = 'Non Indigenous' THEN 1 ELSE 0 END) as non_indigenous")
-    )
-    ->whereIn('remarks', ['Poor', 'Non Poor', 'Ultra Poor', 'Non Indigenous'])
-    ->groupBy(DB::raw("YEAR(created_at)"))
-    ->orderBy('year')
-    ->get();
-
-return view("lydo_staff.reports", compact(
-    'notifications',
-    'currentAcadYear',
-    'pendingScreening',
-    'pendingRenewals',
-    'totalApplications',
-    'poorCount',
-    'nonPoorCount',
-    'ultraPoorCount',
-    'nonIndigenousCount',
-    'poorPercent',
-    'nonPoorPercent',
-    'ultraPoorPercent',
-    'nonIndigenousPercent',
-    'activeCount',
-    'inactiveCount',
-    'remarksData',
-    'renewalApproved',
-    'renewalRejected',
-    'remarksByYear'
-));
+        if ($applicant) {
+            return response()->json($applicant);
+        } else {
+            return response()->json(['error' => 'Applicant not found'], 404);
+        }
     }
 }
