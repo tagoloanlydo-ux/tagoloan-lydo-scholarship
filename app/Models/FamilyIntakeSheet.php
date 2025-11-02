@@ -16,12 +16,12 @@ class FamilyIntakeSheet extends Model
         'application_personnel_id',
         'lydo_personnel_id',
 
-
         // Head of Family
         'head_4ps',
         'head_ipno',
         'head_address',
         'head_zone',
+        'head_barangay',
         'head_pob',
         'head_dob',
         'head_educ',

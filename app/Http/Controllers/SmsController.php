@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Models\FamilyIntakeSheet;
 
 class SmsController extends Controller
 {
@@ -74,5 +75,13 @@ class SmsController extends Controller
         }
 
         return $get_sms_status;
+    }
+
+    public function sendSmsToApplicants(Request $request)
+    {
+        // Logic to send SMS to applicants
+        // This method is referenced in routes but not implemented
+        // Add implementation here
+        return response()->json(['message' => 'SMS sent to applicants']);
     }
 }

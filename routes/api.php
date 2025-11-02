@@ -15,6 +15,7 @@ use App\Http\Controllers\API\DisbursementController;
 use App\Http\Controllers\API\RenewalController;
 use App\Http\Controllers\API\AnnouncementController;
 use App\Http\Controllers\API\ApplicationPersonnelController;
+use App\Http\Controllers\MayorStaffController;
 
 // Wrap all routes in staging prefix to match Flutter app expectations
 Route::prefix('staging')->group(function () {
@@ -31,6 +32,10 @@ Route::prefix('staging')->group(function () {
     Route::apiResource('/notifications', NotificationController::class);
     Route::apiResource('/admins', AdminController::class);
     Route::apiResource('/application-personnels', ApplicationPersonnelController::class);
+
+    // Mayor Staff API endpoints
+    Route::get('/welcome', [MayorStaffController::class, 'welcome']);
+    Route::get('/mayor-staff/intake-sheet/{applicationPersonnelId}', [MayorStaffController::class, 'getIntakeSheet']);
 });
 
 ?>

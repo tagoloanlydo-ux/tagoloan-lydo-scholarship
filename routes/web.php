@@ -150,7 +150,11 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::post('/mayor_staff/send-document-email', [MayorStaffController::class, 'sendDocumentEmail'])->name('mayor_staff.sendDocumentEmail');
     Route::post('/save-remarks', [MayorStaffController::class, 'saveRemarks'])->name('saveRemarks');
     Route::get('/mayor_staff/welcome', [MayorStaffController::class, 'welcome'])->name('MayorStaff.welcome');
+Route::get('mayor_staff/intake-sheet/{id}', [MayorStaffController::class, 'getIntakeSheet'])->name('mayor_staff.getIntakeSheet');
 
+    Route::get('/mayor_staff/application/{applicationPersonnelId}/details', [MayorStaffController::class, 'getApplicationDetails'])->name('mayor_staff.application.details');
+Route::get('/mayor_staff/application/{id}/intake-sheet', [MayorStaffController::class, 'getIntakeSheet'])->name('mayor_staff.getIntakeSheet');
+Route::post('/mayor_staff/application/{id}/status', [MayorStaffController::class, 'updateApplicationStatus']);
 });
 
 // Public routes for intake sheet

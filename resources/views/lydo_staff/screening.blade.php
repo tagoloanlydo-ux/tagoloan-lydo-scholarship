@@ -917,17 +917,17 @@
                                     <td class="px-4 py-2 border border-gray-200 text-center">
                                         <button
                                             type="button"
-                                            title="View Intake Sheet"
-                                            class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow"
+                                            title="Review Intake Sheet"
+                                            class="px-3 py-1 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg shadow"
                                             data-id="{{ $app->application_personnel_id }}"
                                             onclick="openReviewModal(this)">
-                                            <i class="fas fa-eye mr-1"></i> View
+                                            <i class="fas fa-eye mr-1"></i> Review Intake Sheet
                                         </button>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="8" class="text-center py-4 border border-gray-200 text-gray-500">No reviewed applicants.</td>
+                                    <td colspan="7" class="text-center py-4 border border-gray-200 text-gray-500">No reviewed applicants.</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -951,7 +951,7 @@
         <!-- Header with logo -->
         <div class="flex items-center text-2xl font-bold mb-6 text-gray-800">
             <img src="{{ asset('images/LYDO.png') }}" alt="LYDO Logo" class="h-10 w-auto mr-3">
-            Family Intake Sheet
+            Family Intake Sheet - <span id="applicant_full_name"></span>
         </div>
 
         <!-- Tab Navigation -->
@@ -1487,65 +1487,67 @@
                 </div>
             </div>
         </div>
-
-<!-- Moved: Review Modal for Reviewed Applicants (now top-level, so it can open independently) -->
-<div id="reviewModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="text-xl font-bold">Review Family Intake Sheet</h2>
-            <button class="modal-close" onclick="closeReviewModal()">&times;</button>
-        </div>
-
-        <div id="modalReviewContent">
-            <!-- Content will be populated here -->
-        </div>
-
-        <div class="modal-actions">
-            <button
-                type="button"
-                onclick="printReviewModal()"
-                class="bg-blue-500 text-white px-5 py-2 rounded hover:bg-blue-600 mr-2"
-            >
-                <i class="fas fa-print mr-1"></i> Print
-            </button>
-            <button
-                type="button"
-                onclick="closeReviewModal()"
-                class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600"
-            >
-                Close
-            </button>
-        </div>
     </div>
-</div>
 
-<!-- Moved: Signature Modal (also top-level) -->
-<div id="signatureModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xl font-bold text-gray-800" id="signatureModalTitle">Signature</h3>
-            <button type="button" onclick="closeSignatureModal()" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times text-2xl"></i>
-            </button>
-        </div>
+    <!-- Review Modal for Reviewed Applicants (top-level, independent) -->
+    <div id="reviewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Review Family Intake Sheet</h2>
+                <button class="modal-close" onclick="closeReviewModal()">&times;</button>
+            </div>
 
-        <div class="mb-4">
-            <div class="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
-                <canvas id="signatureCanvas" width="400" height="200" class="border border-gray-300 rounded bg-white"></canvas>
+            <div id="modalReviewContent">
+                <!-- Content will be populated here -->
+            </div>
+
+            <div class="modal-actions">
+                <button
+                    type="button"
+                    onclick="printReviewModal()"
+                    class="bg-blue-500 text-white px-5 py-2 rounded hover:bg-blue-600 mr-2"
+                >
+                    <i class="fas fa-print mr-1"></i> Print
+                </button>
+                <button
+                    type="button"
+                    onclick="closeReviewModal()"
+                    class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600"
+                >
+                    Close
+                </button>
             </div>
         </div>
+    </div>
 
-        <div class="flex justify-between gap-3">
-            <button type="button" onclick="clearSignature()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-                <i class="fas fa-eraser mr-2"></i>Clear
-            </button>
-            <div class="flex gap-2">
-                <button type="button" onclick="closeSignatureModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
-                    Cancel
+    <!-- Signature Modal (top-level, independent) -->
+    <div id="signatureModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800" id="signatureModalTitle">Signature</h3>
+                <button type="button" onclick="closeSignatureModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
                 </button>
-                <button type="button" onclick="saveSignature()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    <i class="fas fa-save mr-2"></i>Save Signature
+            </div>
+
+            <div class="mb-4">
+                <div class="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
+                    <canvas id="signatureCanvas" width="400" height="200" class="border border-gray-300 rounded bg-white"></canvas>
+                </div>
+            </div>
+
+            <div class="flex justify-between gap-3">
+                <button type="button" onclick="clearSignature()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                    <i class="fas fa-eraser mr-2"></i>Clear
                 </button>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeSignatureModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                        Cancel
+                    </button>
+                    <button type="button" onclick="saveSignature()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-save mr-2"></i>Save Signature
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1732,7 +1734,7 @@
                 document.body.classList.remove('modal-open');
             }
 
-            // Update the populateReviewModal function to handle null/undefined values
+            // Update the populateReviewModal function to handle null/undefined values and show all data
             function populateReviewModal(d) {
                 if (!d) {
                     console.error('No data received');
@@ -1740,10 +1742,10 @@
                 }
 
                 const modalContent = document.getElementById('modalReviewContent');
-                
+
                 // Add console logging to debug
                 console.log('Received data:', d);
-                
+
                 // Check if required data exists before populating
                 const fullName = [
                     d.applicant_fname || '',
@@ -1755,20 +1757,39 @@
                 modalContent.innerHTML = `
                     <div class="review-columns">
                         <div class="space-y-4">
+                            <!-- Head of Family Section -->
                             <div class="print-box p-4">
-                                <p><strong>Serial No.:</strong> ${d.serial_number || "N/A"}</p>
-                                <p><strong>Name:</strong> ${fullName || "N/A"}</p>
+                                <h4 class="font-semibold mb-3">Head of Family</h4>
                                 <table class="min-w-full text-sm">
                                     <tr>
+                                        <td><strong>Serial No.:</strong> ${d.serial_number || "N/A"}</td>
+                                        <td><strong>Name:</strong> ${fullName || "N/A"}</td>
                                         <td><strong>Sex:</strong> ${d.applicant_gender || "N/A"}</td>
+                                    </tr>
+                                    <tr>
                                         <td><strong>4Ps:</strong> ${d.head_4ps || "N/A"}</td>
                                         <td><strong>IP No.:</strong> ${d.head_ipno || "N/A"}</td>
+                                        <td><strong>Address:</strong> ${d.head_address || "N/A"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Zone:</strong> ${d.head_zone || "N/A"}</td>
+                                        <td><strong>Barangay:</strong> ${d.head_barangay || "N/A"}</td>
+                                        <td><strong>Date of Birth:</strong> ${formatDate(d.head_dob)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Place of Birth:</strong> ${d.head_pob || "N/A"}</td>
+                                        <td><strong>Education:</strong> ${d.head_educ || "N/A"}</td>
+                                        <td><strong>Occupation:</strong> ${d.head_occ || "N/A"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3"><strong>Religion:</strong> ${d.head_religion || "N/A"}</td>
                                     </tr>
                                 </table>
                             </div>
-                            
+
+                            <!-- Family Members Section -->
                             <div class="print-box p-4">
-                                <h4 class="font-semibold">Family Members</h4>
+                                <h4 class="font-semibold mb-3">Family Members</h4>
                                 <table class="min-w-full text-sm border border-gray-300">
                                     <thead class="bg-gray-100">
                                         <tr>
@@ -1816,9 +1837,10 @@
                                     </tbody>
                                 </table>
                             </div>
-                            
+
+                            <!-- Household Information Section -->
                             <div class="print-box p-4">
-                                <h4 class="font-semibold">Household Information</h4>
+                                <h4 class="font-semibold mb-3">Household Information</h4>
                                 <table class="min-w-full text-sm">
                                     <tr>
                                         <td><strong>Other Source of Income:</strong> ₱${d.other_income || "-"}</td>
@@ -1829,13 +1851,19 @@
                                         <td><strong>House (Owned/Rented):</strong> ${d.house_house || "-"} ${d.house_house_rent ? `(Rent: ₱${d.house_house_rent})` : ''}</td>
                                         <td><strong>Lot (Owned/Rented):</strong> ${d.house_lot || "-"} ${d.house_lot_rent ? `(Rent: ₱${d.house_lot_rent})` : ''}</td>
                                         <td><strong>Water:</strong> ₱${d.house_water || "-"}</td>
-                                        <td><strong>Electricity Source:</strong> ₱${d.house_electric || "-"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3"><strong>Electricity Source:</strong> ₱${d.house_electric || "-"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3"><strong>Remarks:</strong> ${d.remarks || "N/A"}</td>
                                     </tr>
                                 </table>
                             </div>
 
+                            <!-- Social Service Records Section -->
                             <div class="print-box p-4">
-                                <h4 class="font-semibold">Social Service Records</h4>
+                                <h4 class="font-semibold mb-3">Social Service Records</h4>
                                 <table class="min-w-full text-sm thin-border">
                                     <thead class="bg-gray-100">
                                         <tr>
@@ -1867,16 +1895,44 @@
                                     </tbody>
                                 </table>
                             </div>
-                            
+
+                            <!-- Health & Signatures Section -->
                             <div class="print-box p-4">
-                                <h4 class="font-semibold">Signatures</h4>
-                                <div>
-                                    <p><strong>Family Head:</strong></p>
+                                <h4 class="font-semibold mb-3">Health & Signatures</h4>
+                                <table class="min-w-full text-sm">
+                                    <tr>
+                                        <td><strong>Worker Name:</strong> ${d.worker_name || "N/A"}</td>
+                                        <td><strong>Officer Name:</strong> ${d.officer_name || "N/A"}</td>
+                                        <td><strong>Date Entry:</strong> ${formatDate(d.date_entry)}</td>
+                                    </tr>
+                                </table>
+                                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
-                                        ${d.signature_client ? 
-                                            `<img src="${d.signature_client}" style="max-width: 100%; height: 80px;" />` : 
-                                            '<p class="text-xs text-gray-500">No signature</p>'
-                                        }
+                                        <p><strong>Family Head Signature:</strong></p>
+                                        <div class="mt-2">
+                                            ${d.signature_client ?
+                                                `<img src="${d.signature_client}" style="max-width: 100%; height: 80px; border: 1px solid #ccc;" />` :
+                                                '<p class="text-xs text-gray-500">No signature</p>'
+                                            }
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p><strong>Worker Signature:</strong></p>
+                                        <div class="mt-2">
+                                            ${d.signature_worker ?
+                                                `<img src="${d.signature_worker}" style="max-width: 100%; height: 80px; border: 1px solid #ccc;" />` :
+                                                '<p class="text-xs text-gray-500">No signature</p>'
+                                            }
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p><strong>Officer Signature:</strong></p>
+                                        <div class="mt-2">
+                                            ${d.signature_officer ?
+                                                `<img src="${d.signature_officer}" style="max-width: 100%; height: 80px; border: 1px solid #ccc;" />` :
+                                                '<p class="text-xs text-gray-500">No signature</p>'
+                                            }
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2243,7 +2299,7 @@
                                 date: cells[0].querySelector('input')?.value || '',
                                 problem: cells[1].querySelector('input')?.value || '',
                                 action: cells[2].querySelector('input')?.value || '',
-                                remarks: cells[3].querySelector('input')?.value || '',
+                                remarks: cells[3].querySelector('select')?.value || '',
                             });
                         });
 
@@ -2273,7 +2329,6 @@
                         })
                         .then(response => {
                             if (!response.ok) {
-                                throw new Error('Network response was not ok');
                             }
                             return response.text();
                         })
@@ -2649,6 +2704,102 @@
                         confirmButtonText: 'OK'
                     });
                 });
+            }
+
+            // Print Review Modal function
+            function printReviewModal() {
+                const modalContent = document.getElementById('modalReviewContent');
+                if (!modalContent) {
+                    console.error('Modal content not found');
+                    return;
+                }
+
+                const printContent = modalContent.innerHTML;
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Family Intake Sheet Review</title>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                margin: 20px;
+                                color: #000;
+                                background: white;
+                            }
+                            .print-box {
+                                border: 2px solid #e2e8f0;
+                                border-radius: 8px;
+                                background: white;
+                                padding: 1rem;
+                                margin-bottom: 1rem;
+                                page-break-inside: avoid;
+                            }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin-bottom: 1rem;
+                            }
+                            th, td {
+                                border: 1px solid #e2e8f0;
+                                padding: 8px;
+                                text-align: left;
+                            }
+                            th {
+                                background: #f8fafc;
+                                font-weight: bold;
+                            }
+                            .review-columns {
+                                display: grid;
+                                grid-template-columns: 1fr;
+                                gap: 24px;
+                            }
+                            h1 {
+                                text-align: center;
+                                margin-bottom: 20px;
+                                color: #1e40af;
+                            }
+                            h4 {
+                                font-size: 1.1rem;
+                                margin-bottom: 0.5rem;
+                                color: #1e40af;
+                            }
+                            p {
+                                margin: 0.5rem 0;
+                            }
+                            .thin-border {
+                                border: 1px solid #e2e8f0;
+                            }
+                            @media print {
+                                body {
+                                    margin: 0;
+                                    font-size: 12px;
+                                }
+                                .print-box {
+                                    break-inside: avoid;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>Family Intake Sheet Review</h1>
+                        ${printContent}
+                    </body>
+                    </html>
+                `);
+
+                printWindow.document.close();
+                printWindow.focus();
+
+                // Wait for content to load then print
+                printWindow.onload = function() {
+                    printWindow.print();
+                    printWindow.close();
+                };
             }
         </script>
 
