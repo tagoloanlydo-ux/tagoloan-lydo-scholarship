@@ -358,7 +358,6 @@
                                 <p><strong>Total Family Income:</strong> <span id="modal-house-total-income">-</span></p>
                                 <p><strong>Total Family Net Income:</strong> <span id="modal-house-net-income">-</span></p>
                                 <p><strong>Other Source of Income:</strong> <span id="modal-other-income">-</span></p>
-                                <p><strong>Remarks:</strong> <span id="modal-house-remarks">-</span></p>
                             </div>
                             <div>
                                 <p><strong>House (Owned/Rented):</strong> <span id="modal-house-house">-</span></p>
@@ -409,7 +408,7 @@
                                         <th>Remarks</th>
                                     </tr>
                                 </thead>
-                                <tbody id="modal-service-records">
+                                <tbody id="modal-service-records" class="text-center align-middle">
                                     <!-- Service records will be populated here -->
                                 </tbody>
                             </table>
@@ -418,7 +417,7 @@
 
                     <!-- Health & Signatures Section -->
                     <div class="intake-section">
-                        <h3 class="intake-section-title">Health & Signatures</h3>
+                        <h3 class="intake-section-title">Lydo Personeel Name</h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                             <!-- Left column: Worker -->
@@ -430,10 +429,10 @@
                                 </div>
                                 <!-- signature image above name, centered -->
                                 <div id="modal-worker-signature" class="mb-2 flex items-center justify-center">
-                                    <p class="text-xs text-gray-500">No signature</p>
+
                                 </div>
                                 <p><strong id="modal-worker-fullname">-</strong></p>
-                                <p class="mt-1 text-sm text-gray-600">Worker Name</p>
+                                <p class="mt-1 text-sm text-gray-600">Lydo Staff Name</p>
                             </div>
 
                             <!-- Right column: Officer -->
@@ -445,18 +444,16 @@
                                 </div>
                                 <!-- signature image above name, centered -->
                                 <div id="modal-officer-signature" class="mb-2 flex items-center justify-center">
-                                    <p class="text-xs text-gray-500">No signature</p>
+                                    
                                 </div>
                                 <p><strong id="modal-officer-fullname">-</strong></p>
-                                <p class="mt-1 text-sm text-gray-600">Officer Signature</p>
+                                <p class="mt-1 text-sm text-gray-600">Officer Name</p>
                             </div>
                         </div>
 
                         <!-- Centered Family Head Signature + Date -->
                         <div class="mt-6 text-center">
-                            <p><strong>Family Head Signature:</strong></p>
                             <div id="modal-client-signature-large" class="mt-2">
-                                <p class="text-xs text-gray-500">No signature</p>
                             </div>
                             <p class="mt-4"><strong>Date Entry:</strong> <span id="modal-date-entry">-</span></p>
                         </div>
