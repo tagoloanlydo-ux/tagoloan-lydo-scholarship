@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Scholarship Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,563 +12,6 @@
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <link rel="stylesheet" href="{{ asset('css/mayor_status.css') }}" />
 
-    <style>
-        /* Modern Design System */
-        :root {
-            --primary-color: #7c3aed;
-            --primary-dark: #6d28d9;
-            --secondary-color: #059669;
-            --danger-color: #dc2626;
-            --warning-color: #ea580c;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --border-radius: 8px;
-            --border-radius-lg: 12px;
-            --transition: all 0.2s ease-in-out;
-        }
-
-        /* Enhanced Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            overflow-y: auto;
-            animation: modalFadeIn 0.3s ease-out;
-        }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 2% auto;
-            padding: 0;
-            border-radius: var(--border-radius-lg);
-            width: 95%;
-            max-width: 1200px;
-            box-shadow: var(--shadow-xl);
-            animation: modalSlideIn 0.3s ease-out;
-            overflow: hidden;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 2rem;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: white;
-            padding: 0.5rem;
-            border-radius: 50%;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-close:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
-        }
-
-        .modal-body {
-            padding: 2rem;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            padding: 1.5rem 2rem;
-            background-color: var(--gray-50);
-            border-top: 1px solid var(--gray-200);
-        }
-
-        /* Enhanced Tab Styles */
-        .tab {
-            padding: 12px 24px;
-            cursor: pointer;
-            border-radius: var(--border-radius);
-            background: var(--gray-100);
-            color: var(--gray-600);
-            transition: var(--transition);
-            font-weight: 500;
-            border: 2px solid transparent;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .tab:hover {
-            background: var(--gray-200);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
-
-        .tab.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-            box-shadow: var(--shadow);
-        }
-
-        .tab-green.active {
-            background: var(--secondary-color);
-            color: white;
-            border-color: var(--secondary-color);
-        }
-
-        /* Enhanced Table Styles */
-        .main-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            background: white;
-        }
-
-        .main-table thead {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-        }
-
-        .main-table th {
-            padding: 1rem 1.5rem;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .main-table td {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--gray-200);
-            font-size: 0.875rem;
-            color: var(--gray-700);
-        }
-
-        .main-table tbody tr {
-            transition: var(--transition);
-        }
-
-        .main-table tbody tr:hover {
-            background-color: var(--gray-50);
-            transform: scale(1.01);
-        }
-
-        .main-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Enhanced Button Styles */
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
-
-        .btn-success {
-            background: var(--secondary-color);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-success:hover {
-            background: #047857;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
-
-        .btn-danger {
-            background: var(--danger-color);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-danger:hover {
-            background: #b91c1c;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
-
-        .btn-secondary {
-            background: var(--gray-200);
-            color: var(--gray-700);
-            border: 1px solid var(--gray-300);
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-secondary:hover {
-            background: var(--gray-300);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
-
-        /* Enhanced Intake Section Styles */
-        .intake-section {
-            margin-bottom: 2rem;
-            border: 2px solid var(--gray-200);
-            border-radius: var(--border-radius-lg);
-            padding: 2rem;
-            background: white;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
-
-        .intake-section:hover {
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary-color);
-        }
-
-        .intake-section-title {
-            font-weight: 700;
-            margin-bottom: 2rem;
-            border-bottom: 4px solid var(--primary-color);
-            padding-bottom: 1rem;
-            color: var(--gray-800);
-            font-size: 1.5rem;
-            line-height: 1.3;
-            letter-spacing: 0.025em;
-        }
-
-        .intake-section p {
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-bottom: 0.75rem;
-            color: var(--gray-700);
-            font-weight: 500;
-        }
-
-        .intake-section strong {
-            font-weight: 600;
-            color: var(--gray-900);
-            font-size: 1.125rem;
-        }
-
-        /* Enhanced Intake Table */
-        .intake-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            background: white;
-            font-size: 0.875rem;
-        }
-
-        .intake-table th {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .intake-table td {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--gray-200);
-            color: var(--gray-700);
-            font-weight: 500;
-        }
-
-        .intake-table tbody tr:hover {
-            background-color: var(--gray-50);
-        }
-
-        .intake-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Status Badges */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
-        }
-
-        .status-approved {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-
-        .status-rejected {
-            background-color: #fef2f2;
-            color: #991b1b;
-        }
-
-        .status-pending {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-poor {
-            background-color: #fee2e2;
-            color: #dc2626;
-        }
-
-        .status-ultra-poor {
-            background-color: #fed7aa;
-            color: #ea580c;
-        }
-
-        /* Enhanced Search and Filter */
-        .search-container {
-            background: white;
-            padding: 1.5rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 1.5rem;
-        }
-
-        .search-input {
-            border: 2px solid var(--gray-200);
-            border-radius: var(--border-radius);
-            padding: 0.75rem 1rem;
-            font-size: 0.875rem;
-            transition: var(--transition);
-            width: 100%;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-        }
-
-        .filter-select {
-            border: 2px solid var(--gray-200);
-            border-radius: var(--border-radius);
-            padding: 0.75rem 1rem;
-            font-size: 0.875rem;
-            transition: var(--transition);
-            background: white;
-        }
-
-        .filter-select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-        }
-
-        /* Enhanced Info Box */
-        .info-box {
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-            border: 1px solid #f59e0b;
-            border-radius: var(--border-radius);
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .info-box.success {
-            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-            border-color: #16a34a;
-        }
-
-        .info-box p {
-            margin: 0;
-            font-weight: 500;
-            color: var(--gray-800);
-        }
-
-        /* Responsive Design Improvements */
-        @media (max-width: 768px) {
-            .modal-content {
-                width: 98%;
-                margin: 1% auto;
-            }
-
-            .modal-body {
-                padding: 1rem;
-            }
-
-            .intake-section {
-                padding: 1rem;
-            }
-
-            .main-table th,
-            .main-table td {
-                padding: 0.75rem 1rem;
-            }
-
-            .tab {
-                padding: 10px 16px;
-                font-size: 0.875rem;
-            }
-
-            .btn-primary,
-            .btn-success,
-            .btn-danger,
-            .btn-secondary {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.75rem;
-            }
-        }
-
-        /* Print Styles */
-        @media print {
-            body {
-                background: white !important;
-                color: #000;
-                font-size: 10px;
-            }
-            .no-print {
-                display: none !important;
-            }
-            .max-w-6xl {
-                max-width: 100% !important;
-                width: 100% !important;
-            }
-            #reviewArea {
-                page-break-inside: avoid;
-                padding: 0.125rem !important;
-            }
-            .review-columns {
-                font-size: 9px;
-                gap: 4px;
-            }
-            .thin-border {
-                margin-bottom: 0.125rem;
-                padding: 0.125rem;
-            }
-            table {
-                font-size: 8px;
-            }
-            .text-sm {
-                font-size: 8px !important;
-            }
-            .text-xs {
-                font-size: 7px !important;
-            }
-            h2 {
-                font-size: 12px !important;
-            }
-            h4 {
-                font-size: 10px !important;
-            }
-        }
-
-        /* Loading States */
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
-        /* Animation for new elements */
-        .fade-in {
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
 </head>
 <body class="bg-gray-50">
     @php
@@ -784,20 +228,8 @@
                                                 data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}">
                                                 <i class="fas fa-eye mr-1"></i> View
                                             </button>
-                                            <button
-                                                title="Approve Application"
-                                                class="px-3 py-1 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg shadow approve-btn"
-                                                data-id="{{ $app->application_personnel_id }}"
-                                                data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}">
-                                                <i class="fas fa-check mr-1"></i> Approve
-                                            </button>
-                                            <button
-                                                title="Reject Application"
-                                                class="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg shadow reject-btn"
-                                                data-id="{{ $app->application_personnel_id }}"
-                                                data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}">
-                                                <i class="fas fa-times mr-1"></i> Reject
-                                            </button>
+                                            <!-- Approve/Reject buttons removed from table row.
+                                                 Approval / Rejection will be handled inside the modal only. -->
                                         </div>
                                     </td>
                                 </tr>
@@ -854,15 +286,6 @@
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         {{ $app->head_4ps ?? 'N/A' }}
                                     </td>
-                                    <td class="px-4 border border-gray-200 py-2 text-center">
-                                        <span class="px-2 py-1 text-sm rounded-lg
-                                            @if($app->status == 'Approved') bg-green-100 text-green-800
-                                            @elseif($app->status == 'Rejected') bg-red-100 text-red-800
-                                            @else bg-gray-100 text-gray-800
-                                            @endif">
-                                            {{ $app->status }}
-                                        </span>
-                                    </td>
                                 </tr>
                                 @empty
                                 <tr>
@@ -883,13 +306,21 @@
 
         <!-- Family Intake Sheet Modal -->
         <div id="intakeSheetModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="text-xl font-bold text-gray-800">Family Intake Sheet</h2>
-                    <button type="button" class="modal-close" onclick="closeIntakeSheetModal()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
+<div class="modal-content">
+    <div class="modal-header flex items-center justify-between bg-indigo-600 p-4 rounded-t-lg">
+        <!-- Left side: LYDO Logo -->
+        <div class="flex items-center space-x-3">
+            <img src="{{ asset('images/lydo.png') }}" alt="LYDO Logo" class="w-10 h-10 object-contain">
+            <h2 class="text-xl font-bold text-white">Family Intake Sheet</h2>
+        </div>
+
+        <!-- Right side: Close Button -->
+        <button type="button" class="modal-close text-white hover:text-gray-300" onclick="closeIntakeSheetModal()">
+            <i class="fas fa-times text-lg"></i>
+        </button>
+    </div>
+
+
                 
                 <div id="reviewArea" class="review-columns">
                     <!-- Head of Family Section -->
@@ -899,6 +330,7 @@
                             <div>
                                 <p><strong>Name:</strong> <span id="modal-applicant-name">-</span></p>
                                 <p><strong>Sex:</strong> <span id="modal-applicant-gender">-</span></p>
+                                <p><strong>Remarks:</strong> <span id="modal-remarks">-</span></p>
                                 <p><strong>Date of Birth:</strong> <span id="modal-head-dob">-</span></p>
                                 <p><strong>Place of Birth:</strong> <span id="modal-head-pob">-</span></p>
                             </div>
@@ -926,7 +358,7 @@
                                 <p><strong>Total Family Income:</strong> <span id="modal-house-total-income">-</span></p>
                                 <p><strong>Total Family Net Income:</strong> <span id="modal-house-net-income">-</span></p>
                                 <p><strong>Other Source of Income:</strong> <span id="modal-other-income">-</span></p>
-                                <p><strong>Remarks:</strong> <span id="modal-remarks">-</span></p>
+                                <p><strong>Remarks:</strong> <span id="modal-house-remarks">-</span></p>
                             </div>
                             <div>
                                 <p><strong>House (Owned/Rented):</strong> <span id="modal-house-house">-</span></p>
@@ -956,9 +388,10 @@
                                         <th>Remarks</th>
                                     </tr>
                                 </thead>
-                                <tbody id="modal-family-members">
-                                    <!-- Family members will be populated here -->
-                                </tbody>
+<tbody id="modal-family-members" class="text-center align-middle">
+    <!-- Family members will be populated here -->
+</tbody>
+
                             </table>
                         </div>
                     </div>
@@ -1000,7 +433,7 @@
                                     <p class="text-xs text-gray-500">No signature</p>
                                 </div>
                                 <p><strong id="modal-worker-fullname">-</strong></p>
-                                <p class="mt-1 text-sm text-gray-600">Worker Signature</p>
+                                <p class="mt-1 text-sm text-gray-600">Worker Name</p>
                             </div>
 
                             <!-- Right column: Officer -->
@@ -1038,9 +471,16 @@
                     </div>
                 </div>
 
+                <!-- Modal Actions -->
                 <div class="modal-actions">
                     <button type="button" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600" onclick="closeIntakeSheetModal()">
                         Close
+                    </button>
+                    <button type="button" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600" onclick="confirmApprove()">
+                        <i class="fas fa-check mr-2"></i> Approve
+                    </button>
+                    <button type="button" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600" onclick="confirmReject()">
+                        <i class="fas fa-times mr-2"></i> Reject
                     </button>
                     <button type="button" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600" onclick="printIntakeSheet()">
                         <i class="fas fa-print mr-2"></i> Print
@@ -1052,6 +492,176 @@
         <script>
             let currentApplicationId = null;
             let currentApplicationDocuments = null;
+            // convenience: server-side view template name to ask backend to send to applicant
+            const NOTIFY_TEMPLATE_REGISTRATION = 'scholar-registration-link';
+
+
+            // confirm + send Approved status (will tell server to send registration link via email & SMS)
+            function confirmApprove() {
+                if (!currentApplicationId) {
+                    Swal.fire({ icon: 'warning', title: 'No application', text: 'No application selected.' });
+                    return;
+                }
+                Swal.fire({
+                    title: 'Approve applicant?',
+                    text: 'Approving will send the scholar registration link via Email & SMS to the applicant.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, approve',
+                    cancelButtonText: 'Cancel'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        sendStatusUpdate(currentApplicationId, 'Approved', null, { notify_template: NOTIFY_TEMPLATE_REGISTRATION });
+                    }
+                });
+            }
+
+
+            // prompt for rejection reason then send Rejected status
+            function confirmReject() {
+                if (!currentApplicationId) {
+                    Swal.fire({ icon: 'warning', title: 'No application', text: 'No application selected.' });
+                    return;
+                }
+                Swal.fire({
+                    title: 'Reject applicant',
+                    text: 'Please provide a reason why this application is being rejected (this will be sent to the applicant).',
+                    input: 'textarea',
+                    inputPlaceholder: 'Type rejection reason here...',
+                    inputAttributes: { 'aria-label': 'Rejection reason' },
+                    showCancelButton: true,
+                    confirmButtonText: 'Submit rejection',
+                    cancelButtonText: 'Cancel',
+                    preConfirm: (value) => {
+                        const reason = (value || '').trim();
+                        if (!reason) {
+                            Swal.showValidationMessage('A rejection reason is required');
+                        }
+                        return reason;
+                    }
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        const reason = result.value;
+                        sendStatusUpdate(currentApplicationId, 'Rejected', reason);
+                    }
+                });
+            }
+
+
+            // centralised helper to POST status updates to server
+            async function sendStatusUpdate(applicationId, status, reason = null, extra = {}) {
+                const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+                const csrf = tokenMeta ? tokenMeta.getAttribute('content') : null;
+
+                // Ensure reason is always a string (server expects string)
+                const normalizedReason = (reason === null || reason === undefined) ? '' : String(reason);
+
+                // Build payload without undefined values
+                const payload = {
+                    status: status,
+                    ...extra
+                };
+
+                // Only include reason for rejection
+                if (status === 'Rejected') {
+                    payload.reason = normalizedReason;
+                }
+
+                Swal.fire({
+                    title: status + ' — please wait',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                try {
+                    const res = await fetch(`/mayor_staff/status/${applicationId}`, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {})
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    // read as text then try parse JSON to avoid json() throwing on HTML responses
+                    const text = await res.text();
+                    let data = null;
+                    try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
+
+                    Swal.close();
+
+                    if (!res.ok) {
+                        if (res.status === 419) {
+                            return Swal.fire({ icon: 'error', title: 'Session Expired', text: 'Your session expired. Please reload the page and try again.' });
+                        }
+                        const message = (data && data.message) ? data.message : `Server error (${res.status})`;
+                        return Swal.fire({ icon: 'error', title: 'Error', text: message });
+                    }
+
+                    if (data && data.success) {
+                        Swal.fire({ icon: 'success', title: 'Success', text: data.message || 'Status updated.' });
+                        
+                        closeIntakeSheetModal();
+                        document.querySelectorAll('#tableView .view-intake-btn').forEach(btn => {
+                            if (btn.getAttribute('data-id') == applicationId) {
+                                const tr = btn.closest('tr');
+                                if (tr) tr.remove();
+                            }
+                        });
+                        return;
+                    }
+
+                    const errMsg = (data && data.message) ? data.message : 'Failed to update status.';
+                    Swal.fire({ icon: 'error', title: 'Error', text: errMsg });
+                } catch (err) {
+                    console.error('Update status error:', err);
+                    Swal.close();
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'An error occurred while updating status.' });
+                }
+            }
+
+            // Inline update status for table buttons
+            function updateStatus(applicationId, name, status) {
+                if (status === 'Approved') {
+                    Swal.fire({
+                        title: 'Approve applicant?',
+                        text: 'Approving will send the scholar registration link via Email & SMS to the applicant.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, approve',
+                        cancelButtonText: 'Cancel'
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            sendStatusUpdate(applicationId, 'Approved', null, { notify_template: NOTIFY_TEMPLATE_REGISTRATION });
+                        }
+                    });
+                } else if (status === 'Rejected') {
+                    Swal.fire({
+                        title: 'Reject applicant',
+                        text: 'Please provide a reason why this application is being rejected (this will be sent to the applicant).',
+                        input: 'textarea',
+                        inputPlaceholder: 'Type rejection reason here...',
+                        inputAttributes: { 'aria-label': 'Rejection reason' },
+                        showCancelButton: true,
+                        confirmButtonText: 'Submit rejection',
+                        cancelButtonText: 'Cancel',
+                        preConfirm: (value) => {
+                            const reason = (value || '').trim();
+                            if (!reason) {
+                                Swal.showValidationMessage('A rejection reason is required');
+                            }
+                            return reason;
+                        }
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            const reason = result.value;
+                            sendStatusUpdate(applicationId, 'Rejected', reason);
+                        }
+                    });
+                }
+            }
 
             function showTable() {
                 const tableViewEl = document.getElementById("tableView");
@@ -1081,28 +691,61 @@
 
             // View Intake Sheet Modal Functions
             function openIntakeSheetModal(applicationId) {
-                if (!applicationId) return;
+                if (!applicationId) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No application ID provided'
+                    });
+                    return;
+                }
+
+                // Store current application ID for approve/reject actions
+                currentApplicationId = applicationId;
+
+                // Show loading state
+                const modal = document.getElementById('intakeSheetModal');
+                if (modal) {
+                    modal.style.display = 'block';
+                    const content = modal.querySelector('.modal-body');
+                    if (content) {
+                        content.innerHTML = `
+                            <div class="loading-container">
+                                <div class="loading-spinner">
+                                    <img src="{{ asset('images/LYDO.png') }}" alt="Loading">
+                                </div>
+                                <div class="loading-text">Loading Intake Sheet...</div>
+                            </div>`;
+                    }
+                }
+
+                // Fetch intake sheet data
                 fetch(`/mayor_staff/intake-sheet/${applicationId}`)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
                     .then(data => {
-                        if (data && data.success) {
-                            populateIntakeSheetModal(data.intakeSheet || data.intake_sheet || data);
-                            document.getElementById('intakeSheetModal').style.display = 'block';
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: (data && data.message) ? data.message : 'Failed to load intake sheet data.'
-                            });
+                        console.log('Intake sheet data:', data);
+                        if (!data || !data.success) throw new Error(data?.message || 'No data received');
+
+                        // Populate modal with data
+                        populateIntakeSheetModal(data.intakeSheet);
+
+                        // Show the modal
+                        if (modal) {
+                            modal.style.display = 'block';
+                            modal.scrollTop = 0;
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
+                        console.error('Error fetching intake sheet:', error);
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: 'An error occurred while loading intake sheet data.'
+                            text: 'Failed to load intake sheet data'
                         });
+                        closeIntakeSheetModal();
                     });
             }
 
@@ -1437,6 +1080,8 @@
                 return date.toLocaleDateString('en-US', options);
             }
 
+
+
             // Filter functions
             function filterTable() {
                 const nameSearchEl = document.getElementById('nameSearch');
@@ -1477,8 +1122,23 @@
                 });
             }
 
+            // Add this to the existing script
+            function bindViewButtons() {
+                document.querySelectorAll('.view-intake-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        if (!id) {
+                            console.error('No application ID found on button');
+                            return;
+                        }
+                        openIntakeSheetModal(id);
+                    });
+                });
+            }
+
             // Safe event wiring on DOM ready
             document.addEventListener("DOMContentLoaded", function() {
+                bindViewButtons();
                 let viewMode = localStorage.getItem("viewMode") || "table";
                 if(viewMode === "list") {
                     showList();
@@ -1496,20 +1156,14 @@
                 if (listNameSearch) listNameSearch.addEventListener('input', filterList);
                 if (listBarangayFilter) listBarangayFilter.addEventListener('change', filterList);
 
-                // Add event listeners for view intake sheet buttons
-                document.querySelectorAll('.view-intake-btn').forEach(button => {
-                    button.removeEventListener?.('click', null);
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        openIntakeSheetModal(id);
-                    });
-                });
+
 
                 // Add event listeners for approve/reject buttons
                 document.querySelectorAll('.approve-btn').forEach(button => {
                     button.addEventListener('click', function() {
                         const id = this.getAttribute('data-id');
                         const name = this.getAttribute('data-name');
+                       
                         updateStatus(id, name, 'Approved');
                     });
                 });
@@ -1522,33 +1176,7 @@
                     });
                 });
 
-                // Notification bell (guarded)
-                const notifBell = document.getElementById("notifBell");
-                if (notifBell) {
-                    notifBell.addEventListener("click", function () {
-                        let dropdown = document.getElementById("notifDropdown");
-                        if (dropdown) dropdown.classList.toggle("hidden");
-                        let notifCount = document.getElementById("notifCount");
-                        if (notifCount) {
-                            notifCount.remove();
-                            // Mark notifications as viewed on the server (use meta csrf if present)
-                            const tokenMeta = document.querySelector('meta[name="csrf-token"]');
-                            const csrf = tokenMeta ? tokenMeta.getAttribute('content') : null;
-                            fetch('/mayor_staff/mark-notifications-viewed', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    ...(csrf ? {'X-CSRF-TOKEN': csrf} : {})
-                                }
-                            }).then(response => response.json())
-                            .then(data => {
-                                if (data.success) console.log('Notifications marked as viewed');
-                            }).catch(error => {
-                                console.error('Error marking notifications as viewed:', error);
-                            });
-                        }
-                    });
-                }
+
 
                 // Restore dropdown open state
                 document.querySelectorAll("ul[id]").forEach(menu => {
