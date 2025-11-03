@@ -905,7 +905,7 @@
                     </tbody>
                 </table>
                 <div class="mt-4">
-                <div id="paginationControls"></div>
+                <div id="tablePagination"></div>
                 </div>
             </div>
 
