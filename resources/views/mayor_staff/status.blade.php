@@ -9,9 +9,129 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <link rel="stylesheet" href="{{ asset('css/mayor_status.css') }}" />
 
+    <style>
+        /* Fixed header + sidebar + content layout (match application.blade.php) */
+        body { height: 100vh; overflow: hidden; }
+        header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+        .sidebar-fixed { position: fixed; top: 80px; left: 0; bottom: 0; width: 64px; overflow-y: auto; z-index: 999; background: white; }
+        @media (min-width: 768px) { .sidebar-fixed { width: 256px; } }
+        .main-content-fixed { position: fixed; top: 80px; left: 64px; right: 0; bottom: 0; overflow-y: auto; padding: 1rem 1.25rem; }
+        @media (min-width: 768px) { .main-content-fixed { left: 256px; } }
+        /* modal + swal z-index fixes */
+        .modal-overlay { z-index: 1100; }
+        .swal2-container { z-index: 1200 !important; }
+
+        /* Loading Spinner Styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px); 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        .loading-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 2rem;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+             background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner img {
+            width: 80%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .text-line {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp 1s ease forwards 0.5s both;
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 1s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .text-line {
+                font-size: 1.8rem;
+            }
+            .spinner {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .text-line {
+                font-size: 1.5rem;
+            }
+            .spinner {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
     @php
@@ -95,9 +215,9 @@
 
         <!-- Main Content -->
         <div class="flex flex-1 overflow-hidden">
-            <!-- Sidebar -->
-            <div class="w-100 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
-                <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
+            <!-- Sidebar (fixed) -->
+<div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
+                <nav class="flex-1 p-2 md:p-4  space-y-1">
                     <ul class="side-menu top space-y-4">
                         <li>
                             <a href="/mayor_staff/dashboard" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
@@ -126,7 +246,7 @@
                                 <li>
                                     <a href="/mayor_staff/status"
                                         class="flex items-center p-2 rounded-lg text-gray-700 bg-violet-600 text-white">
-                                    <i class="bx bx-check-circle mr-2"></i> Update Status
+                                    <i class="bx bx-check-circle mr-2"></i> Scholarship Approval
                                     </a>
                                 </li>
                             </ul>
@@ -152,9 +272,10 @@
                     </form>
                 </div>
             </div>
-
-            <div class="flex-1 main-content-area p-4 md:p-5 text-[16px]">
-                <div class="p-4 bg-gray-50 min-h-screen rounded-lg shadow">
+            
+            <!-- Main content (fixed, scrollable area) -->
+            <div class="main-content-fixed text-[16px]">
+                <div class="p-10 bg-gray-50 min-h-screen rounded-lg shadow">
                     <div class="flex justify-between items-center mb-6">
                         <h5 class="text-3xl font-bold text-gray-800">Applicant Status Management</h5>
                     </div>
@@ -165,7 +286,7 @@
                             <div onclick="showTable()" class="tab active" id="tab-pending">
                                 <i class="fas fa-table mr-1"></i> Pending Status
                             </div>
-                            <div onclick="showList()" class="tab tab-green" id="tab-approved-rejected">
+                            <div onclick="showList()" class="tab" id="tab-approved-rejected">
                                 <i class="fas fa-list mr-1"></i> Approved/Rejected
                             </div>
                         </div>
@@ -178,14 +299,20 @@
                             📋 Pending Status: View applicants awaiting status assignment.
                             </h3>
                         </div>
-                        <div class="flex gap-2 mb-4">
-                            <input type="text" id="nameSearch" placeholder="Search name..." class="border rounded px-3 py-2 w-64">
-                            <select id="barangayFilter" class="border rounded px-3 py-2">
-                                <option value="">All Barangays</option>
-                                @foreach($barangays ?? [] as $brgy)
-                                    <option value="{{ $brgy }}">{{ $brgy }}</option>
-                                @endforeach
-                            </select>
+                        <div class="flex gap-4 mb-6">
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="searchInputTable" placeholder="Search by name..." class="search-input-enhanced pl-10 pr-4 py-3 w-80 border-2 border-gray-200 rounded-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-200">
+                            </div>
+                            <div class="relative">
+                                <i class="fas fa-filter absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <select id="barangaySelectTable" class="filter-select-enhanced pl-10 pr-4 py-3 w-64 border-2 border-gray-200 rounded-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-200 bg-white">
+                                    <option value="">All Barangays</option>
+                                    @foreach($barangays as $brgy)
+                                        <option value="{{ $brgy }}">{{ $brgy }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
                             <thead class="bg-gradient-to-r from-violet-600 to-violet-800 text-white uppercase text-sm">
@@ -193,7 +320,7 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">#</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Full Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">4Ps</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">School Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Remarks</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Actions</th>
                                 </tr>
@@ -208,12 +335,12 @@
                                     </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->barangay }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
-                                        {{ $app->head_4ps ?? 'N/A' }}
+                                        {{ $app->school ?? 'N/A' }}
                                     </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         <span class="px-2 py-1 text-sm rounded-lg
-                                            @if($app->remarks == 'Poor') bg-red-100 text-red-800
-                                            @elseif($app->remarks == 'Ultra Poor') bg-orange-100 text-orange-800
+                                            @if($app->remarks == 'Ultra Poor') bg-red-100 text-red-800
+                                            @elseif($app->remarks == 'Poor') bg-yellow-100 text-yellow-800
                                             @else bg-gray-100 text-gray-800
                                             @endif">
                                             {{ $app->remarks }}
@@ -236,16 +363,14 @@
                                 @empty
                                 <tr>
                                     <td colspan="6" class="text-center py-4 border border-gray-200 text-gray-500">
-                                        No applicants pending status matching the selected criteria.
+                                        0 results
                                     </td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
                         <div class="mt-4">
-                            @if(isset($tableApplicants) && is_object($tableApplicants) && method_exists($tableApplicants, 'appends'))
-                                {{ $tableApplicants->appends(request()->query())->links() }}
-                            @endif
+                            <div id="tablePagination" class="flex justify-center mt-4"></div>
                         </div>
                     </div>
 
@@ -256,14 +381,28 @@
                             ✅ Approved/Rejected: View applicants with assigned status.
                             </h3>
                         </div>
-                        <div class="flex gap-2 mb-4">
-                            <input type="text" id="listNameSearch" placeholder="Search name..." class="border rounded px-3 py-2 w-64">
-                            <select id="listBarangayFilter" class="border rounded px-3 py-2">
-                                <option value="">All Barangays</option>
-                                @foreach($barangays ?? [] as $brgy)
-                                    <option value="{{ $brgy }}">{{ $brgy }}</option>
-                                @endforeach
-                            </select>
+                        <div class="flex gap-4 mb-6">
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="listNameSearch" placeholder="Search by name..." class="search-input-enhanced pl-10 pr-4 py-3 w-80 border-2 border-gray-200 rounded-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-200">
+                            </div>
+                            <div class="relative">
+                                <i class="fas fa-filter absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <select id="listBarangayFilter" class="filter-select-enhanced pl-10 pr-4 py-3 w-64 border-2 border-gray-200 rounded-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-200 bg-white">
+                                    <option value="">All Barangays</option>
+                                    @foreach($barangays ?? [] as $brgy)
+                                        <option value="{{ $brgy }}">{{ $brgy }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="relative">
+                                <i class="fas fa-filter absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <select id="listStatusFilter" class="filter-select-enhanced pl-10 pr-4 py-3 w-64 border-2 border-gray-200 rounded-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-200 bg-white">
+                                    <option value="">All Status</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                            </div>
                         </div>
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
                             <thead class="bg-gradient-to-r from-green-600 to-green-800 text-white uppercase text-sm">
@@ -271,7 +410,7 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">#</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Full Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">4Ps</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">School Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
                                 </tr>
                             </thead>
@@ -284,21 +423,31 @@
                                     </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->barangay }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
-                                        {{ $app->head_4ps ?? 'N/A' }}
+                                        {{ $app->school ?? 'N/A' }}
+                                    </td>
+                                    <td class="px-4 border border-gray-200 py-2 text-center">
+                                        <span class="px-2 py-1 text-sm rounded-lg
+                                            @if($app->status == 'Approved') bg-green-100 text-green-800
+                                            @elseif($app->status == 'Rejected') bg-red-100 text-red-800
+                                            @else bg-gray-100 text-gray-800
+                                            @endif">
+                                            {{ $app->status }}
+                                        </span>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-4 border border-gray-200 text-gray-500">No approved/rejected applicants.</td>
+                                    <td colspan="5" class="text-center py-4 border border-gray-200 text-gray-500">
+                                        0 results
+                                    </td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
                         <div class="mt-4">
-                            @if(isset($listApplications) && is_object($listApplications) && method_exists($listApplications, 'appends'))
-                                {{ $listApplications->appends(request()->query())->links() }}
-                            @endif
-                        </div>
+        <!-- Add this line for list view pagination -->
+        <div id="listPagination" class="flex justify-center mt-4"></div>
+    </div>
                     </div>
                 </div>
             </div>
@@ -486,14 +635,116 @@
             </div>
         </div>
 
+        <!-- Loading Spinner Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-container">
+                <div class="spinner">
+                    <img src="{{ asset('images/LYDO.png') }}" alt="Loading Logo">
+                </div>
+                <div class="text-line">Loading...</div>
+            </div>
+        </div>
+
         <script>
+            // Hide loading spinner when page loads
+            window.addEventListener('load', function() {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.classList.add('fade-out');
+                    setTimeout(() => {
+                        loadingOverlay.style.display = 'none';
+                    }, 1000); // Match fade-out animation duration
+                }
+            });
+
             let currentApplicationId = null;
             let currentApplicationDocuments = null;
             // convenience: server-side view template name to ask backend to send to applicant
             const NOTIFY_TEMPLATE_REGISTRATION = 'scholar-registration-link';
 
+            // --- Pagination state & helpers (client-side pagination, 15 per page) ---
+            const paginationState = {
+                table: { perPage: 15, currentPage: 1, totalPages: 1, rows: [] },
+                list:  { perPage: 15, currentPage: 1, totalPages: 1, rows: [] }
+            };
 
-            // confirm + send Approved status (will tell server to send registration link via email & SMS)
+            function isDataRow(row) {
+                const td = row.querySelector('td');
+                if (!td) return false;
+                return !td.hasAttribute('colspan');
+            }
+
+            function updatePagination(view) {
+                const state = paginationState[view];
+                const selector = view === 'table' ? '#tableView tbody tr' : '#listView tbody tr';
+                const allRows = Array.from(document.querySelectorAll(selector)).filter(isDataRow);
+
+                // rows that passed the filter (visible)
+                const visibleRows = allRows.filter(r => r.style.display !== 'none');
+                state.rows = visibleRows;
+                state.totalPages = Math.max(1, Math.ceil(state.rows.length / state.perPage));
+                if (state.currentPage > state.totalPages) state.currentPage = state.totalPages;
+
+                // hide all, then show slice for current page
+                allRows.forEach(r => r.style.display = 'none');
+                const start = (state.currentPage - 1) * state.perPage;
+                const end = start + state.perPage;
+                state.rows.slice(start, end).forEach(r => r.style.display = '');
+
+                renderPaginationControls(view);
+            }
+
+            function renderPaginationControls(view) {
+                const state = paginationState[view];
+                const container = document.getElementById(view === 'table' ? 'tablePagination' : 'listPagination');
+                if (!container) return;
+
+                const createBtn = (text, disabled = false, cls = '') => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = `mx-1 px-3 py-1 rounded border ${cls} ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`;
+                    btn.textContent = text;
+                    if (disabled) btn.disabled = true;
+                    return btn;
+                };
+
+                container.innerHTML = '';
+                // Previous
+                const prev = createBtn('Prev', state.currentPage === 1);
+                prev.addEventListener('click', () => goToPage(view, state.currentPage - 1));
+                container.appendChild(prev);
+
+                // page numbers (compact: show up to 7 pages with current in middle)
+                const maxButtons = 7;
+                let startPage = Math.max(1, state.currentPage - Math.floor(maxButtons / 2));
+                let endPage = Math.min(state.totalPages, startPage + maxButtons - 1);
+                if (endPage - startPage + 1 < maxButtons) {
+                    startPage = Math.max(1, endPage - maxButtons + 1);
+                }
+
+                for (let p = startPage; p <= endPage; p++) {
+                    const cls = p === state.currentPage ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-700';
+                    const btn = createBtn(p, false, cls);
+                    btn.addEventListener('click', () => goToPage(view, p));
+                    container.appendChild(btn);
+                }
+
+                // Next
+                const next = createBtn('Next', state.currentPage === state.totalPages);
+                next.addEventListener('click', () => goToPage(view, state.currentPage + 1));
+                container.appendChild(next);
+            }
+
+            function goToPage(view, page) {
+                const state = paginationState[view];
+                if (!page || page < 1) page = 1;
+                if (page > state.totalPages) page = state.totalPages;
+                state.currentPage = page;
+                updatePagination(view);
+            }
+            // --- end pagination helpers ---
+
+            // confirm + send Approved status (will tell server to send the scholar registration link via email & SMS)
             function confirmApprove() {
                 if (!currentApplicationId) {
                     Swal.fire({ icon: 'warning', title: 'No application', text: 'No application selected.' });
@@ -607,6 +858,8 @@
                                 if (tr) tr.remove();
                             }
                         });
+                        // refresh pagination after row removal
+                        updatePagination('table');
                         return;
                     }
 
@@ -666,7 +919,10 @@
                 if (tableViewEl) tableViewEl.classList.remove("hidden");
                 if (listViewEl) listViewEl.classList.add("hidden");
                 const activeTab = document.querySelector('.tab.active');
-                if (activeTab) activeTab.classList.remove('active');
+                if (activeTab) {
+                    activeTab.classList.remove('active');
+                    activeTab.classList.remove('tab-green');
+                }
                 const tabs = document.querySelectorAll('.tab');
                 if (tabs && tabs[0]) tabs[0].classList.add('active');
                 localStorage.setItem("viewMode", "table");
@@ -679,9 +935,15 @@
                 if (listViewEl) listViewEl.classList.remove("hidden");
                 if (tableViewEl) tableViewEl.classList.add("hidden");
                 const activeTab = document.querySelector('.tab.active');
-                if (activeTab) activeTab.classList.remove('active');
+                if (activeTab) {
+                    activeTab.classList.remove('active');
+                    activeTab.classList.remove('tab-green');
+                }
                 const tabs = document.querySelectorAll('.tab');
-                if (tabs && tabs[1]) tabs[1].classList.add('active');
+                if (tabs && tabs[1]) {
+                    tabs[1].classList.add('active');
+                    tabs[1].classList.add('tab-green');
+                }
                 localStorage.setItem("viewMode", "list");
                 if (typeof filterList === 'function') filterList();
             }
@@ -780,13 +1042,33 @@
 
                 // Household / Income
                 setText('modal-other-income', d.other_income || '-');
-                setText('modal-house-house', d.house_house || '-');
+                // Display house with rent if applicable (accepts many rent key variants and formats)
+                let houseDisplay = d.house_house || '-';
+                if (d.house_house && String(d.house_house).toLowerCase().includes('rent')) {
+                    const rentRaw = d.house_house_rent ?? d.house_rent ?? d.house_rental ?? d.house_rent_amount;
+                    if (rentRaw) {
+                        const rentNum = parseFloat(String(rentRaw).replace(/[^0-9.-]+/g, '')) || 0;
+                        const rentText = rentNum ? `₱${rentNum.toLocaleString()}` : escapeHtml(String(rentRaw));
+                        houseDisplay += ` (Rent: ${rentText})`;
+                    }
+                }
+                document.getElementById('modal-house-house').innerHTML = houseDisplay;
+
                 setText('modal-house-electric', d.house_electric || '-');
                 setText('modal-remarks', d.remarks || '-');
                 setText('modal-house-total-income', d.house_total_income ?? '-');
-                setText('modal-house-lot', d.house_lot || '-');
-                setText('modal-house-net-income', d.house_net_income ?? '-');
-                setText('modal-house-water', d.house_water || '-');
+
+                // Display lot with rent if applicable (accepts many rent key variants and formats)
+                let lotDisplay = d.house_lot || '-';
+                if (d.house_lot && String(d.house_lot).toLowerCase().includes('rent')) {
+                    const lotRentRaw = d.house_lot_rent ?? d.lot_rent ?? d.house_lot_rental ?? d.house_lot_rent_amount ?? d.lot_rent_amount;
+                    if (lotRentRaw) {
+                        const lotRentNum = parseFloat(String(lotRentRaw).replace(/[^0-9.-]+/g, '')) || 0;
+                        const lotRentText = lotRentNum ? `₱${lotRentNum.toLocaleString()}` : escapeHtml(String(lotRentRaw));
+                        lotDisplay += ` (Rent: ${lotRentText})`;
+                    }
+                }
+                document.getElementById('modal-house-lot').innerHTML = lotDisplay;
 
                 // Family members - support array or JSON string
                 let family = d.family_members || [];
@@ -1083,8 +1365,8 @@
 
             // Filter functions
             function filterTable() {
-                const nameSearchEl = document.getElementById('nameSearch');
-                const barangayFilterEl = document.getElementById('barangayFilter');
+                const nameSearchEl = document.getElementById('searchInputTable');
+                const barangayFilterEl = document.getElementById('barangaySelectTable');
                 const nameSearchValue = nameSearchEl ? nameSearchEl.value.toLowerCase().trim() : '';
                 const barangayFilterValue = barangayFilterEl ? barangayFilterEl.value.toLowerCase().trim() : '';
 
@@ -1100,25 +1382,36 @@
 
                     row.style.display = (matchesName && matchesBarangay) ? '' : 'none';
                 });
+               // update pagination so only matching rows are paged and visible
+               // reset to first page when user filters
+               paginationState.table.currentPage = 1;
+               updatePagination('table');
             }
 
             function filterList() {
                 const nameSearchEl = document.getElementById('listNameSearch');
                 const barangayFilterEl = document.getElementById('listBarangayFilter');
+                const statusFilterEl = document.getElementById('listStatusFilter');
                 const nameSearchValue = nameSearchEl ? nameSearchEl.value.toLowerCase().trim() : '';
                 const barangayFilterValue = barangayFilterEl ? barangayFilterEl.value.toLowerCase().trim() : '';
+                const statusFilterValue = statusFilterEl ? statusFilterEl.value.toLowerCase().trim() : '';
 
                 const listViewRows = document.querySelectorAll('#listView tbody tr');
                 listViewRows.forEach(row => {
-                    if (!row.cells || row.cells.length < 3) return;
+                    if (!row.cells || row.cells.length < 4) return;
                     const nameCell = (row.cells[1].textContent || '').toLowerCase();
                     const barangayCell = (row.cells[2].textContent || '').toLowerCase();
+                    const statusCell = (row.cells[4].textContent || '').toLowerCase();
 
                     const matchesName = nameCell.includes(nameSearchValue);
                     const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
+                    const matchesStatus = statusFilterValue === '' || statusCell.includes(statusFilterValue);
 
-                    row.style.display = (matchesName && matchesBarangay) ? '' : 'none';
+                    row.style.display = (matchesName && matchesBarangay && matchesStatus) ? '' : 'none';
                 });
+               // update pagination for list view
+               paginationState.list.currentPage = 1;
+               updatePagination('list');
             }
 
             // Add this to the existing script
@@ -1145,15 +1438,25 @@
                     showTable();
                 }
 
-                const nameSearch = document.getElementById('nameSearch');
-                const barangayFilter = document.getElementById('barangayFilter');
+                // initialize pagination for both tables
+                // small timeout to ensure table DOM available (blade may render large HTML)
+                setTimeout(() => {
+                    // make sure filters applied initially
+                    filterTable();
+                    filterList();
+                }, 50);
+
+                const nameSearch = document.getElementById('searchInputTable');
+                const barangayFilter = document.getElementById('barangaySelectTable');
                 const listNameSearch = document.getElementById('listNameSearch');
                 const listBarangayFilter = document.getElementById('listBarangayFilter');
+                const listStatusFilter = document.getElementById('listStatusFilter');
 
                 if (nameSearch) nameSearch.addEventListener('input', filterTable);
                 if (barangayFilter) barangayFilter.addEventListener('change', filterTable);
                 if (listNameSearch) listNameSearch.addEventListener('input', filterList);
                 if (listBarangayFilter) listBarangayFilter.addEventListener('change', filterList);
+                if (listStatusFilter) listStatusFilter.addEventListener('change', filterList);
 
 
 

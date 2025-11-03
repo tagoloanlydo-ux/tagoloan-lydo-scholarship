@@ -119,36 +119,87 @@
 
         /* Enhanced Tab Styles */
         .tab {
-            padding: 12px 24px;
+            padding: 14px 28px;
             cursor: pointer;
-            border-radius: var(--border-radius);
-            background: var(--gray-100);
+            border-radius: var(--border-radius-lg);
+            background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
             color: var(--gray-600);
-            transition: var(--transition);
-            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
             border: 2px solid transparent;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .tab:hover::before {
+            left: 100%;
         }
 
         .tab:hover {
-            background: var(--gray-200);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
+            background: linear-gradient(135deg, var(--gray-200), var(--gray-300));
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            color: var(--gray-700);
         }
 
         .tab.active {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
             border-color: var(--primary-color);
-            box-shadow: var(--shadow);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+            transform: translateY(-1px) scale(1.01);
+            animation: pulse-active 2s infinite;
+        }
+
+        .tab.active::before {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
         }
 
         .tab-green.active {
-            background: var(--secondary-color);
+            background: linear-gradient(135deg, var(--secondary-color), #047857);
             color: white;
             border-color: var(--secondary-color);
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+            transform: translateY(-1px) scale(1.01);
+            animation: pulse-active-green 2s infinite;
+        }
+
+        .tab-green.active::before {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        @keyframes pulse-active {
+            0%, 100% {
+                box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+            }
+            50% {
+                box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6);
+            }
+        }
+
+        @keyframes pulse-active-green {
+            0%, 100% {
+                box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+            }
+            50% {
+                box-shadow: 0 6px 20px rgba(5, 150, 105, 0.6);
+            }
         }
 
         /* Enhanced Table Styles */
@@ -649,86 +700,6 @@
                 width: 60px;
                 height: 60px;
             }
-        }
+        } 
 
-.dashboard-grid {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    height: 100vh;
-}
 
-.main-content-area {
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-.status-badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.status-pending {
-    background-color: #fff3cd;
-    color: #856404;
-}
-
-.status-approved {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.status-rejected {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-.status-renewed {
-    background-color: #cce5ff;
-    color: #004085;
-}
-
-.sidebar-item {
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-.sidebar-item:hover::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 4px;
-    background-color: var(--primary);
-}
-
-.application-card:hover {
-    transform: translateY(-2px);
-}
-
-.active-filter {
-    background-color: var(--primary) !important;
-    color: white !important;
-}
-.application-card {
-    border: 2px solid #000000ff; /* kulay gray */
-    border-radius: 8px; /* rounded corners */
-    margin-bottom: 10px; /* space sa pagitan */
-}
-
-.tab {
-    padding: 10px 20px;
-    cursor: pointer;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-right: 5px;
-    transition: background-color 0.3s;
-}
-
-.tab.active {
-    background-color: var(--primary);
-    color: white;
-}

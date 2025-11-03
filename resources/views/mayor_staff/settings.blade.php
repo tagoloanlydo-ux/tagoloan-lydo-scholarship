@@ -83,7 +83,7 @@
         <!-- Main Content -->
         <div class="flex flex-1 overflow-hidden">
             <!-- Sidebar -->
-            <div class="w-16 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
+<div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
                 <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
                     <ul class="side-menu top space-y-4">
                       <li>
@@ -113,7 +113,7 @@
                               <li>
                                   <a href="/mayor_staff/status"
                                     class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                    <i class="bx bx-check-circle mr-2"></i> Update Status
+                                    <i class="bx bx-check-circle mr-2"></i> Scholarship Approval
                                   </a>
                               </li>
                           </ul>
@@ -136,7 +136,7 @@
                     </form>
                 </div>
             </div>
-            <div class="flex-1 main-content-area p-4 md:p-2 text-[14px]">
+            <div class="flex-1 main-content-area p-10 md:p-2 text-[14px]">
            <section class="flex-grow">
             <div class="flex flex-col md:flex-row md:space-x-1 max-full-5xl mx-full">
               <!-- Profile Card -->

@@ -189,7 +189,8 @@
         <!-- Main Content -->
         <div class="flex flex-1 overflow-hidden">
             <!-- Sidebar -->
-            <div class="w-16 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
+            <div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
+
                 <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
                     <ul class="side-menu top space-y-4">
                          <li>
@@ -219,7 +220,7 @@
                                 <li>
                                         <a href="/mayor_staff/status"
                                         class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                        <i class="bx bx-check-circle mr-2 text-white-700"></i> Update Status
+                                        <i class="bx bx-check-circle mr-2 text-white-700"></i> Scholarship Approval
                                         </a>
                                 </li>
                             </ul>
@@ -241,7 +242,7 @@
                     </form>
                 </div>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 md:p-5 text-[14px] text-black-600">
+            <div class="flex-1 overflow-y-auto p-10 md:p-5 text-[14px] text-black-600">
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
                     <!-- Card 1: Applicants -->
                     <a href="/mayor_staff/application" class="bg-white rounded-xl shadow-md p-5 flex flex-col min-h-[180px] hover:shadow-lg transition-shadow cursor-pointer">
