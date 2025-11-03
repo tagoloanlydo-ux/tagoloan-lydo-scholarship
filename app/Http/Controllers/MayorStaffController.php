@@ -289,7 +289,7 @@ $percentageReviewed = $totalApplications > 0
        
         $query->where("ap.initial_screening", "Pending");
 
-        $tableApplicants = $query->paginate();
+        $tableApplicants = $query->paginate(15);
 
 
         $listApplicants = DB::table("tbl_applicant as a")
@@ -339,7 +339,8 @@ $percentageReviewed = $totalApplications > 0
             })
             ->when($request->filled("barangay"), function ($q) use ($request) {
                 $q->where("a.applicant_brgy", $request->barangay);
-            });
+            })
+            ->paginate(15, ['*'], 'list');
 
         $barangays = DB::table("tbl_applicant")
             ->pluck("applicant_brgy")
@@ -933,7 +934,8 @@ $percentageReviewed = $totalApplications > 0
             })
             ->when($request->filled("barangay"), function ($q) use ($request) {
                 $q->where("a.applicant_brgy", $request->barangay);
-            });
+            })
+            ->paginate(15, ['*'], 'list');
 
         $applications = DB::table("tbl_application as app")
             ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
@@ -1170,7 +1172,7 @@ $percentageReviewed = $totalApplications > 0
             $query->where('app.applicant_brgy', $request->barangay);
         }
 
-        $tableApplicants = $query->paginate(0);
+        $tableApplicants = $query->paginate(15);
 
         return response()->json([
             'data' => $tableApplicants->items(),
@@ -1223,7 +1225,7 @@ $percentageReviewed = $totalApplications > 0
             $query->where('ap.status', $request->status_filter);
         }
 
-        $listApplications = $query->paginate(100, ['*'], 'list');
+        $listApplications = $query->paginate(15, ['*'], 'list');
 
         return response()->json([
             'data' => $listApplications->items(),
