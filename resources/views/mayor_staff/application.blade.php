@@ -520,63 +520,7 @@
             let openedDocuments = new Set();
             let previousDocumentStatus = {};
 
-            // Filtering: separate inputs for Table and List views
-            function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
-                try {
-                    const searchEl = document.getElementById(searchInputId);
-                    const barangayEl = document.getElementById(barangaySelectId);
-                    const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
-                    const barangayValue = barangayEl ? barangayEl.value : '';
 
-                    const tableBody = document.querySelector(tableBodySelector);
-                    if (!tableBody) return;
-
-                    const rows = tableBody.querySelectorAll('tr');
-
-                    rows.forEach(row => {
-                        const nameCell = row.cells[1]; // Name column
-                        const barangayCell = row.cells[2]; // Barangay column
-
-                        if (nameCell && barangayCell) {
-                            const nameText = nameCell.textContent.toLowerCase();
-                            const barangayText = barangayCell.textContent.trim();
-
-                            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
-                            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
-
-                            if (matchesSearch && matchesBarangay) {
-                                row.style.display = '';
-                            } else {
-                                row.style.display = 'none';
-                            }
-                        }
-                    });
-                } catch (e) {
-                    console.error('filterRows error', e);
-                }
-            }
-
-            // Attach listeners (safe: only add if elements exist)
-            const attachFilterListeners = () => {
-                const debounceDelay = 150;
-
-                const tableSearch = document.getElementById('searchInputTable');
-                const tableBrgy = document.getElementById('barangaySelectTable');
-                if (tableSearch) tableSearch.addEventListener('input', debounce(() => filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable'), debounceDelay));
-                if (tableBrgy) tableBrgy.addEventListener('change', () => filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable'));
-
-                const listSearch = document.getElementById('searchInputList');
-                const listBrgy = document.getElementById('barangaySelectList');
-                if (listSearch) listSearch.addEventListener('input', debounce(() => filterRows('#listView tbody', 'searchInputList', 'barangaySelectList'), debounceDelay));
-                if (listBrgy) listBrgy.addEventListener('change', () => filterRows('#listView tbody', 'searchInputList', 'barangaySelectList'));
-            };
-
-            // Clear filters function for table view
-            function clearFiltersTable() {
-                document.getElementById('searchInputTable').value = '';
-                document.getElementById('barangaySelectTable').value = '';
-                filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
-            }
 
             function showTable() {
                 document.getElementById("tableView").classList.remove("hidden");

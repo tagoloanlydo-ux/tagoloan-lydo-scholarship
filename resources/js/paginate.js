@@ -1,6 +1,6 @@
 // Pagination script for mayor staff application tables
 class TablePaginator {
-    constructor(tableBodyId, paginationContainerId, rowsPerPage = 10) {
+    constructor(tableBodyId, paginationContainerId, rowsPerPage = 15) {
         this.tableBodyId = tableBodyId;
         this.paginationContainerId = paginationContainerId;
         this.rowsPerPage = rowsPerPage;
@@ -226,12 +226,12 @@ window.tablePaginators = {};
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize pagination for table view (pending applications)
     if (document.getElementById('tablePagination')) {
-        window.tablePaginators['tableView tbody'] = new TablePaginator('tableView tbody', 'tablePagination', 10);
+        window.tablePaginators['tableView tbody'] = new TablePaginator('tableView tbody', 'tablePagination', 15);
     }
 
     // Initialize pagination for list view (reviewed applications)
     if (document.getElementById('listPagination')) {
-        window.tablePaginators['listView tbody'] = new TablePaginator('listView tbody', 'listPagination', 10);
+        window.tablePaginators['listView tbody'] = new TablePaginator('listView tbody', 'listPagination', 15);
     }
 
     // Attach filter listeners for table view
