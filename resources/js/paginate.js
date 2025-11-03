@@ -1,37 +1,96 @@
 const itemsPerPage = 15;
 
-function paginateTable(tableId, page) {
-    const table = document.querySelector(tableId);
-    const rows = table.querySelectorAll('tbody tr');
-    const totalPages = Math.ceil(rows.length / itemsPerPage);
+const paginationState = {
+    table: { currentPage: 1, totalPages: 1, perPage: itemsPerPage, rows: [] },
+    list: { currentPage: 1, totalPages: 1, perPage: itemsPerPage, rows: [] }
+};
 
-    // Hide all rows
-    rows.forEach(row => row.style.display = 'none');
+const isDataRow = (row) => !row.querySelector('th');
 
-    // Calculate start and end index for the current page
-    const start = (page - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
+function renderPaginationControls(view) {
+    const state = paginationState[view];
+    const container = document.getElementById(view === 'table' ? 'tablePagination' : 'listPagination');
+    if (!container) return;
 
-    // Show rows for the current page
-    for (let i = start; i < end && i < rows.length; i++) {
-        rows[i].style.display = '';
+    const createBtn = (text, disabled = false, cls = '') => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `mx-1 px-3 py-1 rounded border ${cls} ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`;
+        btn.textContent = text;
+        btn.disabled = disabled;
+        return btn;
+    };
+
+    container.innerHTML = '';
+    
+    // Previous button
+    const prev = createBtn('Prev', state.currentPage === 1);
+    prev.onclick = () => goToPage(view, state.currentPage - 1);
+    container.appendChild(prev);
+
+    // Page numbers
+    const maxButtons = 7;
+    let startPage = Math.max(1, state.currentPage - Math.floor(maxButtons / 2));
+    let endPage = Math.min(state.totalPages, startPage + maxButtons - 1);
+    if (endPage - startPage + 1 < maxButtons) {
+        startPage = Math.max(1, endPage - maxButtons + 1);
     }
 
-    // Update pagination controls
-    updatePaginationControls(totalPages, page, tableId);
+    for (let p = startPage; p <= endPage; p++) {
+        const cls = p === state.currentPage ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-700';
+        const btn = createBtn(p, false, cls);
+        btn.onclick = () => goToPage(view, p);
+        container.appendChild(btn);
+    }
+
+    // Next button
+    const next = createBtn('Next', state.currentPage === state.totalPages);
+    next.onclick = () => goToPage(view, state.currentPage + 1);
+    container.appendChild(next);
 }
 
-function updatePaginationControls(totalPages, currentPage, tableId) {
-    const paginationContainer = document.getElementById('paginationControls');
-    paginationContainer.innerHTML = '';
+function goToPage(view, page) {
+    const state = paginationState[view];
+    if (!page || page < 1) page = 1;
+    if (page > state.totalPages) page = state.totalPages;
+    
+    state.currentPage = page;
+    
+    // Hide all rows first
+    const selector = view === 'table' ? '#tableView tbody tr' : '#listView tbody tr';
+    const allRows = Array.from(document.querySelectorAll(selector)).filter(isDataRow);
+    allRows.forEach(r => r.style.display = 'none');
+    
+    // Show only rows for current page
+    const start = (state.currentPage - 1) * state.perPage;
+    const end = start + state.perPage;
+    state.rows.slice(start, end).forEach(r => r.style.display = '');
+    
+    // Re-render pagination controls
+    renderPaginationControls(view);
+}
 
-    for (let i = 1; i <= totalPages; i++) {
-        const button = document.createElement('button');
-        button.innerText = i;
-        button.className = (i === currentPage) ? 'active' : '';
-        button.onclick = () => paginateTable(tableId, i);
-        paginationContainer.appendChild(button);
+function updatePagination(view) {
+    const state = paginationState[view];
+    const selector = view === 'table' ? '#tableView tbody tr' : '#listView tbody tr';
+    const allRows = Array.from(document.querySelectorAll(selector)).filter(isDataRow);
+    
+    // Get only visible rows (not filtered out)
+    state.rows = allRows.filter(r => r.style.display !== 'none');
+    state.totalPages = Math.max(1, Math.ceil(state.rows.length / state.perPage));
+    
+    // Adjust current page if needed
+    if (state.currentPage > state.totalPages) {
+        state.currentPage = state.totalPages;
     }
+    
+    // Show rows for current page
+    allRows.forEach(r => r.style.display = 'none');
+    const start = (state.currentPage - 1) * state.perPage;
+    const end = start + state.perPage;
+    state.rows.slice(start, end).forEach(r => r.style.display = '');
+    
+    renderPaginationControls(view);
 }
 
 function filterTable(tableId, searchInputId) {
@@ -48,15 +107,16 @@ function filterTable(tableId, searchInputId) {
         row.style.display = (matchesSearch && matchesBarangay) ? '' : 'none';
     });
 
-    // Reset pagination after filtering
-    paginateTable(tableId, 1);
+    // Update pagination after filtering
+    const view = tableId === '#tableView' ? 'table' : 'list';
+    updatePagination(view);
 }
 
 // Initialize pagination and filtering
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize pagination for both views
-    paginateTable('#tableView', 1);
-    paginateTable('#listView', 1);
+    updatePagination('table');
+    updatePagination('list');
 
     // Attach filter listeners
     document.getElementById('searchInputTable').addEventListener('input', () => filterTable('#tableView', 'searchInputTable'));

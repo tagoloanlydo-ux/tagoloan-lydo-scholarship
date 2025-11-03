@@ -1499,6 +1499,6 @@
         </script>
         @endif
 
-        <script src="{{ asset('js/logout.js') }}"></script>
+        <script src="{{ asset('js/paginate.js') }}"></script>
     </body>
 </html>
