@@ -822,4 +822,5 @@ public function updateApplication(Request $request, $applicant_id)
  * Move uploaded files into storage/documents/
  */
 
+
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\LydoAdminController;
 use App\Http\Controllers\LydoStaffController;
 use App\Http\Controllers\LydopersController;
 use App\Http\Controllers\ScholarController;
+use App\Http\Controllers\StatusController;
 
 Route::get('/reset-password', function () {return redirect()->route('login');});
 Route::get('/', [LydopersController::class, 'showfrontpage'])->name('home');
@@ -94,7 +95,6 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/screening', [LydoStaffController::class, 'screening'])->name('LydoStaff.screening');
     Route::post('/lydo_staff/update-remarks/{id}', [LydoStaffController::class, 'updateRemarks'])->name('updateApplicantsRemarks');
     Route::post('/lydo_staff/update-intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'updateIntakeSheet'])->name('updateIntakeSheet');
-
     Route::get('/lydo_staff/renewal', [LydoStaffController::class, 'renewal'])->name('LydoStaff.renewal');
     Route::post('/lydo_staff/renewal/update/{scholarId}', [LydoStaffController::class, 'updateStatus']);
     Route::get('/renewals/{id}/requirements', [RenewalController::class, 'getRequirements']);
@@ -128,9 +128,9 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::post('/mayor_staff/application/{id}/approve', [MayorStaffController::class, 'approveApplication'])->name('mayor_staff.approveApplication');
     Route::post('/mayor_staff/application/{id}/reject', [MayorStaffController::class, 'rejectApplication'])->name('mayor_staff.rejectApplication');
     Route::post('/mayor_staff/application/{id}/update-initial-screening', [MayorStaffController::class, 'updateInitialScreening'])->name('application.updateInitialScreening');
+    Route::post('/mayor_staff/application/{id}/update-remarks', [MayorStaffController::class, 'updateRemarks'])->name('mayor_staff.updateRemarks');
     Route::get('/applications/{id}/requirements', [ApplicationController::class, 'getRequirements']);
-    Route::get('/mayor_staff/status', [MayorStaffController::class, 'status'])->name('MayorStaff.status');
-    Route::post('/mayor_staff/status/{id}', [MayorStaffController::class, 'updateStatus'])->name('MayorStaff.updateStatus');
+    Route::get('/mayor_staff/status', [StatusController::class, 'status'])->name('MayorStaff.status');
     Route::get('/mayor_staff/settings', [MayorStaffController::class, 'settings'])->name('MayorStaff.settings');
     Route::put('/mayor_staff/update/{id}', [MayorStaffController::class, 'updatePersonalInfo'])->name('MayorStaff.update');
     Route::put('/mayor_staff/update-password', [MayorStaffController::class, 'updatePassword'])->name('MayorStaff.updatePassword');
@@ -139,22 +139,21 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::post('/mayor_staff/send-email', [MayorStaffController::class, 'sendEmail'])->name('mayor_staff.sendEmail');
     Route::get('/mayor_staff/dashboard/updates', [MayorStaffController::class, 'getDashboardUpdates'])->name('MayorStaff.getDashboardUpdates');
     Route::get('/mayor_staff/application/updates', [MayorStaffController::class, 'getApplicationUpdates'])->name('MayorStaff.getApplicationUpdates');
-    Route::get('/mayor_staff/status/updates', [MayorStaffController::class, 'getStatusUpdates'])->name('MayorStaff.getStatusUpdates');
+    Route::get('/mayor_staff/status/updates', [StatusController::class, 'getStatusUpdates'])->name('MayorStaff.getStatusUpdates');
     Route::get('/mayor_staff/sse-applicants', [MayorStaffController::class, 'sseApplicants'])->name('MayorStaff.sseApplicants');
     Route::get('/mayor_staff/get-applications-data', [MayorStaffController::class, 'getApplicationsData'])->name('MayorStaff.getApplicationsData');
     Route::get('/mayor_staff/get-application-search-results', [MayorStaffController::class, 'getApplicationSearchResults'])->name('MayorStaff.getApplicationSearchResults');
     Route::post('/mayor_staff/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheet'])->name('mayor_staff.submitIntakeSheet');
     Route::get('/mayor_staff/get-document-comments/{id}', [MayorStaffController::class, 'getDocumentComments'])->name('mayor_staff.getDocumentComments');
     Route::post('/mayor_staff/save-document-comment', [MayorStaffController::class, 'saveDocumentComment'])->name('mayor_staff.saveDocumentComment');
-    Route::post('/mayor_staff/save-document-status', [MayorStaffController::class, 'saveDocumentStatus'])->name('mayor_staff.saveDocumentStatus');
     Route::post('/mayor_staff/send-document-email', [MayorStaffController::class, 'sendDocumentEmail'])->name('mayor_staff.sendDocumentEmail');
     Route::post('/save-remarks', [MayorStaffController::class, 'saveRemarks'])->name('saveRemarks');
-    Route::get('/mayor_staff/welcome', [MayorStaffController::class, 'welcome'])->name('MayorStaff.welcome');
-Route::get('mayor_staff/intake-sheet/{id}', [MayorStaffController::class, 'getIntakeSheet'])->name('mayor_staff.getIntakeSheet');
-
-    Route::get('/mayor_staff/application/{applicationPersonnelId}/details', [MayorStaffController::class, 'getApplicationDetails'])->name('mayor_staff.application.details');
+Route::get('mayor_staff/intake-sheet/{id}', [StatusController::class, 'getIntakeSheet'])->name('mayor_staff.getIntakeSheet');
+Route::post('/mayor_staff/status/{id}', [StatusController::class, 'updateStatus'])->name('mayor_staff.update_status');
+Route::get('/mayor_staff/application/{applicationPersonnelId}/details', [MayorStaffController::class, 'getApplicationDetails'])->name('mayor_staff.application.details');
 Route::get('/mayor_staff/application/{id}/intake-sheet', [MayorStaffController::class, 'getIntakeSheet'])->name('mayor_staff.getIntakeSheet');
 Route::post('/mayor_staff/application/{id}/status', [MayorStaffController::class, 'updateApplicationStatus']);
+Route::get('/mayor_staff/intake-sheet/{id}', [StatusController::class, 'getIntakeSheet'])->name('mayor_staff.intake-sheet');
 });
 
 // Public routes for intake sheet
