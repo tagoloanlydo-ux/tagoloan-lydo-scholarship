@@ -63,6 +63,7 @@
             align-items: center;
         }
 
+
         .spinner img {
             width: 80%;
             height: 100%;
@@ -131,6 +132,116 @@
                 height: 60px;
             }
         }
+        /* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: 0.5rem 1rem;
+    background-color: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #6d28d9;
+    transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+    background-color: #d1d5db;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pagination-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.pagination-page-input {
+    width: 3.5rem;
+    padding: 0.4rem;
+    text-align: center;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: white;
+}
+
+.pagination-page-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Responsive design for pagination */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .pagination-buttons {
+        justify-content: center;
+    }
+    
+    .pagination-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .pagination-info {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination-buttons {
+        gap: 0.25rem;
+    }
+    
+    .pagination-btn {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.75rem;
+    }
+    
+    .pagination-page-info {
+        font-size: 0.8rem;
+    }
+    
+    .pagination-page-input {
+        width: 3rem;
+        padding: 0.3rem;
+    }
+}
     </style>
 </head>
 <body class="bg-gray-50">
@@ -369,9 +480,7 @@
                                 @endforelse
                             </tbody>
                         </table>
-                        <div class="mt-4">
-                            <div id="tablePagination" class="flex justify-center mt-4"></div>
-                        </div>
+
                     </div>
 
                     <!-- Approved/Rejected Tab -->
@@ -444,10 +553,6 @@
                                 @endforelse
                             </tbody>
                         </table>
-                        <div class="mt-4">
-        <!-- Add this line for list view pagination -->
-        <div id="listPagination" class="flex justify-center mt-4"></div>
-    </div>
                     </div>
                 </div>
             </div>
@@ -661,88 +766,6 @@
             let currentApplicationDocuments = null;
             // convenience: server-side view template name to ask backend to send to applicant
             const NOTIFY_TEMPLATE_REGISTRATION = 'scholar-registration-link';
-
-            // --- Pagination state & helpers (client-side pagination, 15 per page) ---
-            const paginationState = {
-                table: { perPage: 15, currentPage: 1, totalPages: 1, rows: [] },
-                list:  { perPage: 15, currentPage: 1, totalPages: 1, rows: [] }
-            };
-
-            function isDataRow(row) {
-                const td = row.querySelector('td');
-                if (!td) return false;
-                return !td.hasAttribute('colspan');
-            }
-
-            function updatePagination(view) {
-                const state = paginationState[view];
-                const selector = view === 'table' ? '#tableView tbody tr' : '#listView tbody tr';
-                const allRows = Array.from(document.querySelectorAll(selector)).filter(isDataRow);
-
-                // rows that passed the filter (visible)
-                const visibleRows = allRows.filter(r => r.style.display !== 'none');
-                state.rows = visibleRows;
-                state.totalPages = Math.max(1, Math.ceil(state.rows.length / state.perPage));
-                if (state.currentPage > state.totalPages) state.currentPage = state.totalPages;
-
-                // hide all, then show slice for current page
-                allRows.forEach(r => r.style.display = 'none');
-                const start = (state.currentPage - 1) * state.perPage;
-                const end = start + state.perPage;
-                state.rows.slice(start, end).forEach(r => r.style.display = '');
-
-                renderPaginationControls(view);
-            }
-
-            function renderPaginationControls(view) {
-                const state = paginationState[view];
-                const container = document.getElementById(view === 'table' ? 'tablePagination' : 'listPagination');
-                if (!container) return;
-
-                const createBtn = (text, disabled = false, cls = '') => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = `mx-1 px-3 py-1 rounded border ${cls} ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`;
-                    btn.textContent = text;
-                    if (disabled) btn.disabled = true;
-                    return btn;
-                };
-
-                container.innerHTML = '';
-                // Previous
-                const prev = createBtn('Prev', state.currentPage === 1);
-                prev.addEventListener('click', () => goToPage(view, state.currentPage - 1));
-                container.appendChild(prev);
-
-                // page numbers (compact: show up to 7 pages with current in middle)
-                const maxButtons = 7;
-                let startPage = Math.max(1, state.currentPage - Math.floor(maxButtons / 2));
-                let endPage = Math.min(state.totalPages, startPage + maxButtons - 1);
-                if (endPage - startPage + 1 < maxButtons) {
-                    startPage = Math.max(1, endPage - maxButtons + 1);
-                }
-
-                for (let p = startPage; p <= endPage; p++) {
-                    const cls = p === state.currentPage ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-700';
-                    const btn = createBtn(p, false, cls);
-                    btn.addEventListener('click', () => goToPage(view, p));
-                    container.appendChild(btn);
-                }
-
-                // Next
-                const next = createBtn('Next', state.currentPage === state.totalPages);
-                next.addEventListener('click', () => goToPage(view, state.currentPage + 1));
-                container.appendChild(next);
-            }
-
-            function goToPage(view, page) {
-                const state = paginationState[view];
-                if (!page || page < 1) page = 1;
-                if (page > state.totalPages) page = state.totalPages;
-                state.currentPage = page;
-                updatePagination(view);
-            }
-            // --- end pagination helpers ---
 
             // confirm + send Approved status (will tell server to send the scholar registration link via email & SMS)
             function confirmApprove() {
@@ -1382,10 +1405,6 @@
 
                     row.style.display = (matchesName && matchesBarangay) ? '' : 'none';
                 });
-               // update pagination so only matching rows are paged and visible
-               // reset to first page when user filters
-               paginationState.table.currentPage = 1;
-               updatePagination('table');
             }
 
             function filterList() {
@@ -1499,6 +1518,188 @@
         </script>
         @endif
 
-        <script src="{{ asset('js/paginate.js') }}"></script>
+        <script>
+        
+const paginationState = {
+    table: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        filteredRows: []
+    },
+    list: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        filteredRows: []
+    }
+};
+        function initializePagination() {
+    // Initialize table view pagination
+    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
+    paginationState.table.filteredRows = tableRows;
+    updatePagination('table');
+    
+    // Initialize list view pagination
+    const listRows = Array.from(document.querySelectorAll('#listView tbody tr'));
+    paginationState.list.filteredRows = listRows;
+    updatePagination('list');
+}
+
+// Update pagination display
+function updatePagination(viewType) {
+    const state = paginationState[viewType];
+    const tableId = viewType === 'table' ? 'tableView' : 'listView';
+    const tableBody = document.querySelector(`#${tableId} tbody`);
+    
+    if (!tableBody) return;
+    
+    // Hide all rows first
+    state.filteredRows.forEach(row => {
+        row.style.display = 'none';
+    });
+    
+    // Calculate pagination
+    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
+    const endIndex = startIndex + state.rowsPerPage;
+    const pageRows = state.filteredRows.slice(startIndex, endIndex);
+    
+    // Show rows for current page
+    pageRows.forEach(row => {
+        row.style.display = '';
+    });
+    
+    // Update pagination controls
+    updatePaginationControls(viewType);
+}
+
+// Update pagination controls
+function updatePaginationControls(viewType) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    // Create or update pagination container
+    let paginationContainer = document.querySelector(`#${viewType === 'table' ? 'tableView' : 'listView'} .pagination-container`);
+    
+    if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.className = 'pagination-container';
+        
+        const tableContainer = document.querySelector(`#${viewType === 'table' ? 'tableView' : 'listView'}`);
+        tableContainer.appendChild(paginationContainer);
+    }
+    
+    // Update pagination HTML
+    paginationContainer.innerHTML = `
+        <div class="pagination-info">
+            Showing ${Math.min(state.filteredRows.length, (state.currentPage - 1) * state.rowsPerPage + 1)}-${Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length)} of ${state.filteredRows.length} entries
+        </div>
+        <div class="pagination-buttons">
+            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
+                First
+            </button>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
+                Previous
+            </button>
+            <div class="pagination-page-info">
+                Page 
+                <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)">
+                of ${totalPages}
+            </div>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+                Next
+            </button>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+                Last
+            </button>
+        </div>
+    `;
+}
+
+// Change page
+function changePage(viewType, page) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updatePagination(viewType);
+}
+
+// Go to specific page
+function goToPage(viewType, page) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    page = parseInt(page);
+    if (isNaN(page) || page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updatePagination(viewType);
+}
+
+// PALITAN ang existing filterTable function:
+function filterTable() {
+    const nameSearchEl = document.getElementById('searchInputTable');
+    const barangayFilterEl = document.getElementById('barangaySelectTable');
+    const nameSearchValue = nameSearchEl ? nameSearchEl.value.toLowerCase().trim() : '';
+    const barangayFilterValue = barangayFilterEl ? barangayFilterEl.value.toLowerCase().trim() : '';
+
+    const allTableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
+    
+    // Filter rows based on search criteria
+    const filteredRows = allTableRows.filter(row => {
+        if (!row.cells || row.cells.length < 3) return false;
+        
+        const nameCell = (row.cells[1].textContent || '').toLowerCase();
+        const barangayCell = (row.cells[2].textContent || '').toLowerCase();
+
+        const matchesName = nameCell.includes(nameSearchValue);
+        const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
+
+        return matchesName && matchesBarangay;
+    });
+
+    // Update pagination state
+    paginationState.table.filteredRows = filteredRows;
+    paginationState.table.currentPage = 1; // Reset to first page
+    updatePagination('table');
+}
+
+// PALITAN ang existing filterList function:
+function filterList() {
+    const nameSearchEl = document.getElementById('listNameSearch');
+    const barangayFilterEl = document.getElementById('listBarangayFilter');
+    const statusFilterEl = document.getElementById('listStatusFilter');
+    const nameSearchValue = nameSearchEl ? nameSearchEl.value.toLowerCase().trim() : '';
+    const barangayFilterValue = barangayFilterEl ? barangayFilterEl.value.toLowerCase().trim() : '';
+    const statusFilterValue = statusFilterEl ? statusFilterEl.value.toLowerCase().trim() : '';
+
+    const allListRows = Array.from(document.querySelectorAll('#listView tbody tr'));
+    
+    // Filter rows based on search criteria
+    const filteredRows = allListRows.filter(row => {
+        if (!row.cells || row.cells.length < 4) return false;
+        
+        const nameCell = (row.cells[1].textContent || '').toLowerCase();
+        const barangayCell = (row.cells[2].textContent || '').toLowerCase();
+        const statusCell = (row.cells[4].textContent || '').toLowerCase();
+
+        const matchesName = nameCell.includes(nameSearchValue);
+        const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
+        const matchesStatus = statusFilterValue === '' || statusCell.includes(statusFilterValue);
+
+        return matchesName && matchesBarangay && matchesStatus;
+    });
+
+    // Update pagination state
+    paginationState.list.filteredRows = filteredRows;
+    paginationState.list.currentPage = 1; // Reset to first page
+    updatePagination('list');
+}
+
+        </script>
+    
     </body>
 </html>

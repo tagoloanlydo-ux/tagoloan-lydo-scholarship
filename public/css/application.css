@@ -1,4 +1,114 @@
-          .document-loading {
+/* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: 0.5rem 1rem;
+    background-color: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #6d28d9;
+    transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+    background-color: #d1d5db;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pagination-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.pagination-page-input {
+    width: 3.5rem;
+    padding: 0.4rem;
+    text-align: center;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: white;
+}
+
+.pagination-page-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Responsive design for pagination */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .pagination-buttons {
+        justify-content: center;
+    }
+    
+    .pagination-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .pagination-info {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination-buttons {
+        gap: 0.25rem;
+    }
+    
+    .pagination-btn {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.75rem;
+    }
+    
+    .pagination-page-info {
+        font-size: 0.8rem;
+    }
+    
+    .pagination-page-input {
+        width: 3rem;
+        padding: 0.3rem;
+    }
+}
+.document-loading {
                 position: relative;
             }
             .document-loading::after {
@@ -190,48 +300,7 @@
             }
 
         /* Pagination Controls Styling */
-        #paginationControls {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
-        }
-
-        #paginationControls button {
-            padding: 0.5rem 1rem;
-            border: 1px solid #e2e8f0;
-            background-color: white;
-            color: #4a5568;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        #paginationControls button:hover {
-            background-color: #f7fafc;
-            border-color: #cbd5e0;
-        }
-
-        #paginationControls button.active {
-            background-color: #7c3aed;
-            color: white;
-            border-color: #7c3aed;
-        }
-
-        /* Responsive pagination */
-        @media (max-width: 640px) {
-            #paginationControls {
-                gap: 0.25rem;
-            }
-            
-            #paginationControls button {
-                padding: 0.375rem 0.75rem;
-                font-size: 0.875rem;
-            }
-        }
-        /* Add these styles in your existing <style> section */
-
+   
 /* Enhanced Search & Filter Inputs */
 .search-input-enhanced {
     padding: 0.75rem 2.5rem;
@@ -469,64 +538,7 @@
             }
 
             /* Responsive Pagination Styles */
-            .pagination {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                margin-top: 1rem;
-            }
-
-            .pagination li {
-                margin: 0 2px;
-            }
-
-            .pagination a, .pagination span {
-                padding: 8px 12px;
-                border: 1px solid #ddd;
-                color: #007bff;
-                text-decoration: none;
-                border-radius: 4px;
-                transition: background-color 0.3s;
-            }
-
-            .pagination a:hover {
-                background-color: #e9ecef;
-            }
-
-            .pagination .active span {
-                background-color: #007bff;
-                color: white;
-                border-color: #007bff;
-            }
-
-            /* Pagination info styling */
-            .pagination .pagination-info {
-                display: block;
-                text-align: center;
-                margin-bottom: 0.5rem;
-                font-size: 0.875rem;
-                color: #6b7280;
-            }
-
-            @media (max-width: 768px) {
-                .pagination li {
-                    margin: 2px;
-                }
-                .pagination a, .pagination span {
-                    padding: 6px 8px;
-                    font-size: 14px;
-                }
-                .pagination {
-                    justify-content: center;
-                }
-                /* Keep pagination info visible on mobile for dynamic count display */
-                .pagination .pagination-info {
-                    display: block;
-                    font-size: 0.75rem;
-                    margin-bottom: 0.25rem;
-                }
-            }
-
+  
             /* FIX: Modal z-index adjustments */
             .modal-overlay {
                 position: fixed;
@@ -664,5 +676,6 @@
                     width: 60px;
                     height: 60px;
                 }
+                
             }
   

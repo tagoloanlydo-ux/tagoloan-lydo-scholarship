@@ -11,7 +11,8 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
         <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-      <link rel="stylesheet" href="{{ asset('css/application.css') }}" />
+        <link rel="stylesheet" href="{{ asset('css/application.css') }}" />
+
     </head>
     <body class="bg-gray-50">
 
@@ -154,34 +155,35 @@
                 <!-- ✅ Table View (Applicants without remarks) -->
                 <div id="tableView">
                     <!-- Search and Filter Section -->
-                    <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
-                        <div class="flex flex-col md:flex-row gap-4 items-end">
-                            <!-- Search by Name -->
-                            <div class="flex-1">
-                                <label for="searchInputTable" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
-                                <input type="text" id="searchInputTable" placeholder="Enter applicant name..."
-                                    style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
-                                    onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-                            </div>
+<div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+    <div class="flex gap-4 items-end">
+        <!-- Left side container -->
+        <div class="flex gap-4">
+            <!-- Search by Name -->
+            <div>
+                <label for="searchInputTable" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
+                <input type="text" id="searchInputTable" placeholder="Enter applicant name..."
+                    style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
+                    onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
+                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+            </div>
 
-                            <!-- Filter by Barangay -->
-                            <div class="flex-1">
-                                <label for="barangaySelectTable" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                                <select id="barangaySelectTable"
-                                    style="padding: 0.75rem 2.5rem; width: 16rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white; appearance: none; background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"
-                                    onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-                                    <option value="">All Barangays</option>
-                                    @foreach($barangays as $brgy)
-                                        <option value="{{ $brgy }}">{{ $brgy }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-
-                        </div>
-                    </div>
+            <!-- Filter by Barangay -->
+            <div>
+                <label for="barangaySelectTable" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
+                <select id="barangaySelectTable"
+                    style="padding: 0.75rem 2.5rem; width: 16rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white; appearance: none; background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"
+                    onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
+                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                    <option value="">All Barangays</option>
+                    @foreach($barangays as $brgy)
+                        <option value="{{ $brgy }}">{{ $brgy }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
                     <div class="mb-4">
                         <h3 class="text-lg font-semibold text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
                             The list below shows applicants who have submitted applications
@@ -236,41 +238,42 @@
                     </tbody>
                 </table>
                 <div class="mt-4">
-                <div id="tablePagination"></div>
+                <div id="paginationControls"></div>
                 </div>
             </div>
 
                 <!-- ✅ List View (Approved and Rejected applications) -->
         <div id="listView" class="hidden overflow-x-auto">
                     <!-- Filter controls specific to List View -->
-                    <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
-                <div class="flex flex-col md:flex-row gap-4 items-end">
-                    <!-- Search by Name -->
-                    <div class="flex-1">
-                        <label for="searchInputList" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
-                        <input type="text" id="searchInputList" placeholder="Enter applicant name..."
-                            style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
-                            onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                            onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-                    </div>
-
-                    <!-- Filter by Barangay -->
-                    <div class="flex-1">
-                        <label for="barangaySelectList" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                        <select id="barangaySelectList"
-                            style="padding: 0.75rem 2.5rem; width: 16rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white; appearance: none; background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"
-                            onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                            onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-                            <option value="">All Barangays</option>
-                            @foreach($barangays as $brgy)
-                                <option value="{{ $brgy }}">{{ $brgy }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-
-                </div>
+ <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+    <div class="flex gap-4 items-end">
+        <!-- Left side container -->
+        <div class="flex gap-4">
+            <!-- Search by Name -->
+            <div>
+                <label for="searchInputList" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
+                <input type="text" id="searchInputList" placeholder="Enter applicant name..."
+                    style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
+                    onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
+                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
             </div>
+
+            <!-- Filter by Barangay -->
+            <div>
+                <label for="barangaySelectList" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
+                <select id="barangaySelectList"
+                    style="padding: 0.75rem 2.5rem; width: 16rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white; appearance: none; background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"
+                    onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
+                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                    <option value="">All Barangays</option>
+                    @foreach($barangays as $brgy)
+                        <option value="{{ $brgy }}">{{ $brgy }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
             <div class="mb-4">
                 <h3 class="text-lg font-semibold text-gray-700 bg-green-50 p-3 rounded-lg border border-green-200">
                 The list below shows applicants who have approved and rejected screening
@@ -322,7 +325,7 @@
             </tbody>
         </table>
                                 <div class="mt-4">
-       <div id="listPagination"></div>
+       <div id="paginationControls"></div>
     </div>
         </div>
         </div>
@@ -520,42 +523,105 @@
             let openedDocuments = new Set();
             let previousDocumentStatus = {};
 
+            // Filtering: separate inputs for Table and List views
+            function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
+                try {
+                    const searchEl = document.getElementById(searchInputId);
+                    const barangayEl = document.getElementById(barangaySelectId);
+                    const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
+                    const barangayValue = barangayEl ? barangayEl.value : '';
 
+                    const tableBody = document.querySelector(tableBodySelector);
+                    if (!tableBody) return;
 
-            function showTable() {
-                document.getElementById("tableView").classList.remove("hidden");
-                document.getElementById("listView").classList.add("hidden");
-                document.querySelector('.tab.active').classList.remove('active');
-                document.querySelectorAll('.tab')[0].classList.add('active');
-                localStorage.setItem("viewMode", "table"); // save preference
-                // Run filter for table view after showing
+                    const rows = tableBody.querySelectorAll('tr');
+
+                    rows.forEach(row => {
+                        const nameCell = row.cells[1]; // Name column
+                        const barangayCell = row.cells[2]; // Barangay column
+
+                        if (nameCell && barangayCell) {
+                            const nameText = nameCell.textContent.toLowerCase();
+                            const barangayText = barangayCell.textContent.trim();
+
+                            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
+                            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
+
+                            if (matchesSearch && matchesBarangay) {
+                                row.style.display = '';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.error('filterRows error', e);
+                }
+            }
+
+            // Attach listeners (safe: only add if elements exist)
+            const attachFilterListeners = () => {
+                const debounceDelay = 150;
+
+                const tableSearch = document.getElementById('searchInputTable');
+                const tableBrgy = document.getElementById('barangaySelectTable');
+                if (tableSearch) tableSearch.addEventListener('input', debounce(() => filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable'), debounceDelay));
+                if (tableBrgy) tableBrgy.addEventListener('change', () => filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable'));
+
+                const listSearch = document.getElementById('searchInputList');
+                const listBrgy = document.getElementById('barangaySelectList');
+                if (listSearch) listSearch.addEventListener('input', debounce(() => filterRows('#listView tbody', 'searchInputList', 'barangaySelectList'), debounceDelay));
+                if (listBrgy) listBrgy.addEventListener('change', () => filterRows('#listView tbody', 'searchInputList', 'barangaySelectList'));
+            };
+
+            // Clear filters function for table view
+            function clearFiltersTable() {
+                document.getElementById('searchInputTable').value = '';
+                document.getElementById('barangaySelectTable').value = '';
                 filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
             }
 
-            function showList() {
-                document.getElementById("listView").classList.remove("hidden");
-                document.getElementById("tableView").classList.add("hidden");
-                document.querySelector('.tab.active').classList.remove('active');
-                document.querySelectorAll('.tab')[1].classList.add('active');
-                localStorage.setItem("viewMode", "list"); // save preference
-                // Run filter for list view after showing
-                filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
-            }
+function showTable() {
+    document.getElementById("tableView").classList.remove("hidden");
+    document.getElementById("listView").classList.add("hidden");
+    document.querySelector('.tab.active').classList.remove('active');
+    document.querySelectorAll('.tab')[0].classList.add('active');
+    localStorage.setItem("viewMode", "table");
+    
+    // Update pagination for table view
+    updatePagination('table');
+}
+
+function showList() {
+    document.getElementById("listView").classList.remove("hidden");
+    document.getElementById("tableView").classList.add("hidden");
+    document.querySelector('.tab.active').classList.remove('active');
+    document.querySelectorAll('.tab')[1].classList.add('active');
+    localStorage.setItem("viewMode", "list");
+    
+    // Update pagination for list view
+    updatePagination('list');
+}
 
             // ✅ Kapag nag-load ang page, i-apply yung last view
-            document.addEventListener("DOMContentLoaded", function() {
-                let viewMode = localStorage.getItem("viewMode") || "table"; // default table
-                if(viewMode === "list") {
-                    showList();
-                } else {
-                    showTable();
-                }
-                // Attach filter listeners for both views and run initial filters
-                attachFilterListeners();
-                filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
-                filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
-            });
-
+document.addEventListener("DOMContentLoaded", function() {
+    let viewMode = localStorage.getItem("viewMode") || "table";
+    if(viewMode === "list") {
+        showList();
+    } else {
+        showTable();
+    }
+    
+    // Attach filter listeners for both views and run initial filters
+    attachFilterListeners();
+    
+    // Initialize pagination after page loads
+    initializePagination();
+    
+    // Run initial filters
+    filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
+    filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
+});
             // Hide loading spinner when page is fully loaded
             window.addEventListener('load', function() {
                 const loadingOverlay = document.getElementById('loadingOverlay');
@@ -1843,7 +1909,6 @@
                     });
                 </script>
     <script src="{{ asset('js/logout.js') }}"></script>
-    <script src="{{ asset('js/paginate.js') }}"></script>
 
     <script>
     // Real-time updates for new applications
@@ -1913,7 +1978,166 @@
             });
         });
     </script>
+<script >
+// ========== PAGINATION CODE START ========== //
 
+// Pagination state
+const paginationState = {
+    table: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        filteredRows: []
+    },
+    list: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        filteredRows: []
+    }
+};
+
+// Initialize pagination for both tables
+function initializePagination() {
+    // Initialize table view pagination
+    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
+    paginationState.table.filteredRows = tableRows;
+    updatePagination('table');
+    
+    // Initialize list view pagination
+    const listRows = Array.from(document.querySelectorAll('#listView tbody tr'));
+    paginationState.list.filteredRows = listRows;
+    updatePagination('list');
+}
+
+// Update pagination display
+function updatePagination(viewType) {
+    const state = paginationState[viewType];
+    const tableId = viewType === 'table' ? 'tableView' : 'listView';
+    const tableBody = document.querySelector(`#${tableId} tbody`);
+    
+    if (!tableBody) return;
+    
+    // Hide all rows first
+    state.filteredRows.forEach(row => {
+        row.style.display = 'none';
+    });
+    
+    // Calculate pagination
+    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
+    const endIndex = startIndex + state.rowsPerPage;
+    const pageRows = state.filteredRows.slice(startIndex, endIndex);
+    
+    // Show rows for current page
+    pageRows.forEach(row => {
+        row.style.display = '';
+    });
+    
+    // Update pagination controls
+    updatePaginationControls(viewType);
+}
+
+// Update pagination controls
+function updatePaginationControls(viewType) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    // Create or update pagination container
+    let paginationContainer = document.querySelector(`#${viewType === 'table' ? 'tableView' : 'listView'} .pagination-container`);
+    
+    if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.className = 'pagination-container';
+        
+        const tableContainer = document.querySelector(`#${viewType === 'table' ? 'tableView' : 'listView'}`);
+        tableContainer.appendChild(paginationContainer);
+    }
+    
+    // Update pagination HTML
+    paginationContainer.innerHTML = `
+        <div class="pagination-info">
+            Showing ${Math.min(state.filteredRows.length, (state.currentPage - 1) * state.rowsPerPage + 1)}-${Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length)} of ${state.filteredRows.length} entries
+        </div>
+        <div class="pagination-buttons">
+            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
+                First
+            </button>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
+                Previous
+            </button>
+            <div class="pagination-page-info">
+                Page 
+                <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)">
+                of ${totalPages}
+            </div>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+                Next
+            </button>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+                Last
+            </button>
+        </div>
+    `;
+}
+
+// Change page
+function changePage(viewType, page) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updatePagination(viewType);
+}
+
+// Go to specific page
+function goToPage(viewType, page) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    page = parseInt(page);
+    if (isNaN(page) || page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updatePagination(viewType);
+}
+
+// PALITAN ang existing filterRows function:
+function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
+    try {
+        const searchEl = document.getElementById(searchInputId);
+        const barangayEl = document.getElementById(barangaySelectId);
+        const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
+        const barangayValue = barangayEl ? barangayEl.value : '';
+
+        const allRows = Array.from(document.querySelectorAll(`${tableBodySelector} tr`));
+        
+        // Filter rows based on search criteria
+        const filteredRows = allRows.filter(row => {
+            if (!row.cells || row.cells.length < 3) return false;
+            
+            const nameCell = (row.cells[1].textContent || '').toLowerCase();
+            const barangayCell = (row.cells[2].textContent || '').toLowerCase();
+
+            const matchesSearch = searchValue === '' || nameCell.includes(searchValue);
+            const matchesBarangay = barangayValue === '' || barangayCell.includes(barangayValue);
+
+            return matchesSearch && matchesBarangay;
+        });
+
+        // Update pagination state based on which view we're in
+        const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
+        paginationState[viewType].filteredRows = filteredRows;
+        paginationState[viewType].currentPage = 1; // Reset to first page
+        updatePagination(viewType);
+    } catch (e) {
+        console.error('filterRows error', e);
+    }
+}
+
+// ========== PAGINATION CODE END ========== //
+</script>
 
     </body>
     </html>
