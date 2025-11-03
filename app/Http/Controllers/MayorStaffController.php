@@ -289,7 +289,7 @@ $percentageReviewed = $totalApplications > 0
        
         $query->where("ap.initial_screening", "Pending");
 
-        $tableApplicants = $query->paginate(15);
+        $tableApplicants = $query->paginate();
 
 
         $listApplicants = DB::table("tbl_applicant as a")
