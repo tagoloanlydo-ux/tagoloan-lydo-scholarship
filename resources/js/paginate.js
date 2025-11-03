@@ -226,47 +226,47 @@ window.tablePaginators = {};
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize pagination for table view (pending applications)
     if (document.getElementById('tablePagination')) {
-        window.tablePaginators['tableView tbody'] = new TablePaginator('tableView tbody', 'tablePagination', 15);
+        window.tablePaginators['tableTbody'] = new TablePaginator('tableTbody', 'tablePagination', 15);
     }
 
     // Initialize pagination for list view (reviewed applications)
     if (document.getElementById('listPagination')) {
-        window.tablePaginators['listView tbody'] = new TablePaginator('listView tbody', 'listPagination', 15);
+        window.tablePaginators['listTbody'] = new TablePaginator('listTbody', 'listPagination', 15);
     }
 
     // Attach filter listeners for table view
     const tableSearch = document.getElementById('searchInputTable');
     const tableBrgy = document.getElementById('barangaySelectTable');
-    if (tableSearch && window.tablePaginators['tableView tbody']) {
+    if (tableSearch && window.tablePaginators['tableTbody']) {
         tableSearch.addEventListener('input', debounce(() => {
             const searchValue = tableSearch.value.toLowerCase();
             const barangayValue = tableBrgy ? tableBrgy.value : '';
-            window.tablePaginators['tableView tbody'].filterRows(searchValue, barangayValue);
+            window.tablePaginators['tableTbody'].filterRows(searchValue, barangayValue);
         }, 150));
     }
-    if (tableBrgy && window.tablePaginators['tableView tbody']) {
+    if (tableBrgy && window.tablePaginators['tableTbody']) {
         tableBrgy.addEventListener('change', () => {
             const searchValue = tableSearch ? tableSearch.value.toLowerCase() : '';
             const barangayValue = tableBrgy.value;
-            window.tablePaginators['tableView tbody'].filterRows(searchValue, barangayValue);
+            window.tablePaginators['tableTbody'].filterRows(searchValue, barangayValue);
         });
     }
 
     // Attach filter listeners for list view
     const listSearch = document.getElementById('searchInputList');
     const listBrgy = document.getElementById('barangaySelectList');
-    if (listSearch && window.tablePaginators['listView tbody']) {
+    if (listSearch && window.tablePaginators['listTbody']) {
         listSearch.addEventListener('input', debounce(() => {
             const searchValue = listSearch.value.toLowerCase();
             const barangayValue = listBrgy ? listBrgy.value : '';
-            window.tablePaginators['listView tbody'].filterRows(searchValue, barangayValue);
+            window.tablePaginators['listTbody'].filterRows(searchValue, barangayValue);
         }, 150));
     }
-    if (listBrgy && window.tablePaginators['listView tbody']) {
+    if (listBrgy && window.tablePaginators['listTbody']) {
         listBrgy.addEventListener('change', () => {
             const searchValue = listSearch ? listSearch.value.toLowerCase() : '';
             const barangayValue = listBrgy.value;
-            window.tablePaginators['listView tbody'].filterRows(searchValue, barangayValue);
+            window.tablePaginators['listTbody'].filterRows(searchValue, barangayValue);
         });
     }
 });
