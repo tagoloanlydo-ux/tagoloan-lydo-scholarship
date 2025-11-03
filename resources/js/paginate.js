@@ -1,128 +1,294 @@
-const itemsPerPage = 15;
+// Pagination script for mayor staff application tables
+class TablePaginator {
+    constructor(tableBodyId, paginationContainerId, rowsPerPage = 10) {
+        this.tableBodyId = tableBodyId;
+        this.paginationContainerId = paginationContainerId;
+        this.rowsPerPage = rowsPerPage;
+        this.currentPage = 1;
+        this.allRows = [];
+        this.filteredRows = [];
 
-const paginationState = {
-    table: { currentPage: 1, totalPages: 1, perPage: itemsPerPage, rows: [] },
-    list: { currentPage: 1, totalPages: 1, perPage: itemsPerPage, rows: [] }
-};
-
-const isDataRow = (row) => !row.querySelector('th');
-
-function renderPaginationControls(view) {
-    const state = paginationState[view];
-    const container = document.getElementById(view === 'table' ? 'tablePagination' : 'listPagination');
-    if (!container) return;
-
-    const createBtn = (text, disabled = false, cls = '') => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = `mx-1 px-3 py-1 rounded border ${cls} ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`;
-        btn.textContent = text;
-        btn.disabled = disabled;
-        return btn;
-    };
-
-    container.innerHTML = '';
-    
-    // Previous button
-    const prev = createBtn('Prev', state.currentPage === 1);
-    prev.onclick = () => goToPage(view, state.currentPage - 1);
-    container.appendChild(prev);
-
-    // Page numbers
-    const maxButtons = 7;
-    let startPage = Math.max(1, state.currentPage - Math.floor(maxButtons / 2));
-    let endPage = Math.min(state.totalPages, startPage + maxButtons - 1);
-    if (endPage - startPage + 1 < maxButtons) {
-        startPage = Math.max(1, endPage - maxButtons + 1);
+        this.init();
     }
 
-    for (let p = startPage; p <= endPage; p++) {
-        const cls = p === state.currentPage ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-700';
-        const btn = createBtn(p, false, cls);
-        btn.onclick = () => goToPage(view, p);
-        container.appendChild(btn);
+    init() {
+        this.updateRows();
+        this.renderPagination();
+        this.showPage(1);
     }
 
-    // Next button
-    const next = createBtn('Next', state.currentPage === state.totalPages);
-    next.onclick = () => goToPage(view, state.currentPage + 1);
-    container.appendChild(next);
-}
-
-function goToPage(view, page) {
-    const state = paginationState[view];
-    if (!page || page < 1) page = 1;
-    if (page > state.totalPages) page = state.totalPages;
-    
-    state.currentPage = page;
-    
-    // Hide all rows first
-    const selector = view === 'table' ? '#tableView tbody tr' : '#listView tbody tr';
-    const allRows = Array.from(document.querySelectorAll(selector)).filter(isDataRow);
-    allRows.forEach(r => r.style.display = 'none');
-    
-    // Show only rows for current page
-    const start = (state.currentPage - 1) * state.perPage;
-    const end = start + state.perPage;
-    state.rows.slice(start, end).forEach(r => r.style.display = '');
-    
-    // Re-render pagination controls
-    renderPaginationControls(view);
-}
-
-function updatePagination(view) {
-    const state = paginationState[view];
-    const selector = view === 'table' ? '#tableView tbody tr' : '#listView tbody tr';
-    const allRows = Array.from(document.querySelectorAll(selector)).filter(isDataRow);
-    
-    // Get only visible rows (not filtered out)
-    state.rows = allRows.filter(r => r.style.display !== 'none');
-    state.totalPages = Math.max(1, Math.ceil(state.rows.length / state.perPage));
-    
-    // Adjust current page if needed
-    if (state.currentPage > state.totalPages) {
-        state.currentPage = state.totalPages;
+    updateRows() {
+        const tableBody = document.querySelector(`#${this.tableBodyId}`);
+        if (tableBody) {
+            this.allRows = Array.from(tableBody.querySelectorAll('tr'));
+            this.filteredRows = [...this.allRows];
+        }
     }
-    
-    // Show rows for current page
-    allRows.forEach(r => r.style.display = 'none');
-    const start = (state.currentPage - 1) * state.perPage;
-    const end = start + state.perPage;
-    state.rows.slice(start, end).forEach(r => r.style.display = '');
-    
-    renderPaginationControls(view);
+
+    filterRows(searchValue = '', barangayValue = '') {
+        this.filteredRows = this.allRows.filter(row => {
+            const nameCell = row.cells[1]; // Name column
+            const barangayCell = row.cells[2]; // Barangay column
+
+            if (nameCell && barangayCell) {
+                const nameText = nameCell.textContent.toLowerCase();
+                const barangayText = barangayCell.textContent.trim();
+
+                const matchesSearch = searchValue === '' || nameText.includes(searchValue);
+                const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
+
+                return matchesSearch && matchesBarangay;
+            }
+            return true;
+        });
+
+        this.currentPage = 1;
+        this.renderPagination();
+        this.showPage(1);
+    }
+
+    showPage(page) {
+        this.currentPage = page;
+        const startIndex = (page - 1) * this.rowsPerPage;
+        const endIndex = startIndex + this.rowsPerPage;
+
+        // Hide all rows first
+        this.allRows.forEach(row => {
+            row.style.display = 'none';
+        });
+
+        // Show only filtered rows for current page
+        this.filteredRows.slice(startIndex, endIndex).forEach(row => {
+            row.style.display = '';
+        });
+
+        this.updatePaginationButtons();
+    }
+
+    renderPagination() {
+        const container = document.getElementById(this.paginationContainerId);
+        if (!container) return;
+
+        const totalPages = Math.ceil(this.filteredRows.length / this.rowsPerPage);
+
+        if (totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let paginationHTML = `
+            <div class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6 rounded-b-lg">
+                <div class="flex justify-between flex-1 sm:hidden">
+                    <button id="${this.paginationContainerId}-prev-mobile" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Previous
+                    </button>
+                    <button id="${this.paginationContainerId}-next-mobile" class="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Next
+                    </button>
+                </div>
+                <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Showing <span class="font-medium">${Math.min((this.currentPage - 1) * this.rowsPerPage + 1, this.filteredRows.length)}</span>
+                            to <span class="font-medium">${Math.min(this.currentPage * this.rowsPerPage, this.filteredRows.length)}</span>
+                            of <span class="font-medium">${this.filteredRows.length}</span> results
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+        `;
+
+        // Previous button
+        paginationHTML += `
+            <button id="${this.paginationContainerId}-prev" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span class="sr-only">Previous</span>
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        `;
+
+        // Page numbers
+        const startPage = Math.max(1, this.currentPage - 2);
+        const endPage = Math.min(totalPages, this.currentPage + 2);
+
+        if (startPage > 1) {
+            paginationHTML += `
+                <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50" onclick="window.tablePaginators['${this.tableBodyId}'].showPage(1)">1</button>
+            `;
+            if (startPage > 2) {
+                paginationHTML += `<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>`;
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const isActive = i === this.currentPage;
+            paginationHTML += `
+                <button class="relative inline-flex items-center px-4 py-2 border ${isActive ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'} text-sm font-medium" onclick="window.tablePaginators['${this.tableBodyId}'].showPage(${i})">${i}</button>
+            `;
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                paginationHTML += `<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>`;
+            }
+            paginationHTML += `
+                <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50" onclick="window.tablePaginators['${this.tableBodyId}'].showPage(${totalPages})">${totalPages}</button>
+            `;
+        }
+
+        // Next button
+        paginationHTML += `
+            <button id="${this.paginationContainerId}-next" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span class="sr-only">Next</span>
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        `;
+
+        paginationHTML += `
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = paginationHTML;
+        this.updatePaginationButtons();
+        this.attachEventListeners();
+    }
+
+    updatePaginationButtons() {
+        const totalPages = Math.ceil(this.filteredRows.length / this.rowsPerPage);
+        const prevBtn = document.getElementById(`${this.paginationContainerId}-prev`);
+        const nextBtn = document.getElementById(`${this.paginationContainerId}-next`);
+        const prevMobileBtn = document.getElementById(`${this.paginationContainerId}-prev-mobile`);
+        const nextMobileBtn = document.getElementById(`${this.paginationContainerId}-next-mobile`);
+
+        if (prevBtn) {
+            prevBtn.disabled = this.currentPage === 1;
+        }
+        if (nextBtn) {
+            nextBtn.disabled = this.currentPage === totalPages;
+        }
+        if (prevMobileBtn) {
+            prevMobileBtn.disabled = this.currentPage === 1;
+        }
+        if (nextMobileBtn) {
+            nextMobileBtn.disabled = this.currentPage === totalPages;
+        }
+    }
+
+    attachEventListeners() {
+        const prevBtn = document.getElementById(`${this.paginationContainerId}-prev`);
+        const nextBtn = document.getElementById(`${this.paginationContainerId}-next`);
+        const prevMobileBtn = document.getElementById(`${this.paginationContainerId}-prev-mobile`);
+        const nextMobileBtn = document.getElementById(`${this.paginationContainerId}-next-mobile`);
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                if (this.currentPage > 1) {
+                    this.showPage(this.currentPage - 1);
+                }
+            });
+        }
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(this.filteredRows.length / this.rowsPerPage);
+                if (this.currentPage < totalPages) {
+                    this.showPage(this.currentPage + 1);
+                }
+            });
+        }
+        if (prevMobileBtn) {
+            prevMobileBtn.addEventListener('click', () => {
+                if (this.currentPage > 1) {
+                    this.showPage(this.currentPage - 1);
+                }
+            });
+        }
+        if (nextMobileBtn) {
+            nextMobileBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(this.filteredRows.length / this.rowsPerPage);
+                if (this.currentPage < totalPages) {
+                    this.showPage(this.currentPage + 1);
+                }
+            });
+        }
+    }
 }
 
-function filterTable(tableId, searchInputId) {
-    const input = document.getElementById(searchInputId).value.toLowerCase();
-    const barangaySelectId = tableId === '#tableView' ? 'barangaySelectTable' : 'barangaySelectList';
-    const barangayValue = document.getElementById(barangaySelectId).value.toLowerCase();
-    const table = document.querySelector(tableId);
-    const rows = table.querySelectorAll('tbody tr');
+// Global paginator instances
+window.tablePaginators = {};
 
-    rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        const matchesSearch = text.includes(input);
-        const matchesBarangay = barangayValue === '' || text.includes(barangayValue);
-        row.style.display = (matchesSearch && matchesBarangay) ? '' : 'none';
-    });
+// Initialize pagination when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize pagination for table view (pending applications)
+    if (document.getElementById('tablePagination')) {
+        window.tablePaginators['tableView tbody'] = new TablePaginator('tableView tbody', 'tablePagination', 10);
+    }
 
-    // Update pagination after filtering
-    const view = tableId === '#tableView' ? 'table' : 'list';
-    updatePagination(view);
-}
+    // Initialize pagination for list view (reviewed applications)
+    if (document.getElementById('listPagination')) {
+        window.tablePaginators['listView tbody'] = new TablePaginator('listView tbody', 'listPagination', 10);
+    }
 
-// Initialize pagination and filtering
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize pagination for both views
-    updatePagination('table');
-    updatePagination('list');
+    // Attach filter listeners for table view
+    const tableSearch = document.getElementById('searchInputTable');
+    const tableBrgy = document.getElementById('barangaySelectTable');
+    if (tableSearch && window.tablePaginators['tableView tbody']) {
+        tableSearch.addEventListener('input', debounce(() => {
+            const searchValue = tableSearch.value.toLowerCase();
+            const barangayValue = tableBrgy ? tableBrgy.value : '';
+            window.tablePaginators['tableView tbody'].filterRows(searchValue, barangayValue);
+        }, 150));
+    }
+    if (tableBrgy && window.tablePaginators['tableView tbody']) {
+        tableBrgy.addEventListener('change', () => {
+            const searchValue = tableSearch ? tableSearch.value.toLowerCase() : '';
+            const barangayValue = tableBrgy.value;
+            window.tablePaginators['tableView tbody'].filterRows(searchValue, barangayValue);
+        });
+    }
 
-    // Attach filter listeners
-    document.getElementById('searchInputTable').addEventListener('input', () => filterTable('#tableView', 'searchInputTable'));
-    document.getElementById('searchInputList').addEventListener('input', () => filterTable('#listView', 'searchInputList'));
-
-    // Attach barangay filter listeners
-    document.getElementById('barangaySelectTable').addEventListener('change', () => filterTable('#tableView', 'searchInputTable'));
-    document.getElementById('barangaySelectList').addEventListener('change', () => filterTable('#listView', 'searchInputList'));
+    // Attach filter listeners for list view
+    const listSearch = document.getElementById('searchInputList');
+    const listBrgy = document.getElementById('barangaySelectList');
+    if (listSearch && window.tablePaginators['listView tbody']) {
+        listSearch.addEventListener('input', debounce(() => {
+            const searchValue = listSearch.value.toLowerCase();
+            const barangayValue = listBrgy ? listBrgy.value : '';
+            window.tablePaginators['listView tbody'].filterRows(searchValue, barangayValue);
+        }, 150));
+    }
+    if (listBrgy && window.tablePaginators['listView tbody']) {
+        listBrgy.addEventListener('change', () => {
+            const searchValue = listSearch ? listSearch.value.toLowerCase() : '';
+            const barangayValue = listBrgy.value;
+            window.tablePaginators['listView tbody'].filterRows(searchValue, barangayValue);
+        });
+    }
 });
+
+// Debounce utility function
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Function to refresh pagination when table content changes
+function refreshPagination(tableBodyId) {
+    if (window.tablePaginators[tableBodyId]) {
+        window.tablePaginators[tableBodyId].updateRows();
+        window.tablePaginators[tableBodyId].renderPagination();
+        window.tablePaginators[tableBodyId].showPage(1);
+    }
+}
