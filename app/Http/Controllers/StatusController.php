@@ -305,7 +305,12 @@ class StatusController extends Controller
                     'app.applicant_suffix',
                     'app.applicant_gender',
                     'app.applicant_brgy',
-                    'ap.remarks'
+                    'ap.remarks',
+                    'a.application_letter',
+                    'a.cert_of_reg',
+                    'a.grade_slip',
+                    'a.brgy_indigency',
+                    'a.student_id'
                 )
                 ->first();
 
@@ -334,6 +339,11 @@ class StatusController extends Controller
                     'applicant_suffix' => $appRow->applicant_suffix ?? null,
                     'applicant_gender' => $appRow->applicant_gender ?? null,
                     'remarks' => $appRow->remarks ?? null,
+                    'application_letter' => $appRow->application_letter ? asset('storage/documents/' . $appRow->application_letter) : null,
+                    'cert_of_reg' => $appRow->cert_of_reg ? asset('storage/documents/' . $appRow->cert_of_reg) : null,
+                    'grade_slip' => $appRow->grade_slip ? asset('storage/documents/' . $appRow->grade_slip) : null,
+                    'brgy_indigency' => $appRow->brgy_indigency ? asset('storage/documents/' . $appRow->brgy_indigency) : null,
+                    'student_id' => $appRow->student_id ? asset('storage/documents/' . $appRow->student_id) : null,
                     'head_4ps' => null,
                     'head_ipno' => null,
                     'head_address' => null,
@@ -399,6 +409,11 @@ class StatusController extends Controller
                 'applicant_suffix' => $appRow->applicant_suffix ?? null,
                 'applicant_gender' => $appRow->applicant_gender ?? null,
                 'remarks' => $appRow->remarks ?? null,
+                'application_letter' => $appRow->application_letter ? asset('storage/documents/' . $appRow->application_letter) : null,
+                'cert_of_reg' => $appRow->cert_of_reg ? asset('storage/documents/' . $appRow->cert_of_reg) : null,
+                'grade_slip' => $appRow->grade_slip ? asset('storage/documents/' . $appRow->grade_slip) : null,
+                'brgy_indigency' => $appRow->brgy_indigency ? asset('storage/documents/' . $appRow->brgy_indigency) : null,
+                'student_id' => $appRow->student_id ? asset('storage/documents/' . $appRow->student_id) : null,
                 'head_4ps' => $intakeSheet->head_4ps,
                 'head_ipno' => $intakeSheet->head_ipno,
                 'head_address' => $intakeSheet->head_address,
