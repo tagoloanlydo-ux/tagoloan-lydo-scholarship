@@ -147,6 +147,7 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::get('/mayor_staff/get-document-comments/{id}', [MayorStaffController::class, 'getDocumentComments'])->name('mayor_staff.getDocumentComments');
     Route::post('/mayor_staff/save-document-comment', [MayorStaffController::class, 'saveDocumentComment'])->name('mayor_staff.saveDocumentComment');
     Route::post('/mayor_staff/send-document-email', [MayorStaffController::class, 'sendDocumentEmail'])->name('mayor_staff.sendDocumentEmail');
+   Route::post('/mayor_staff/save-document-status', [MayorStaffController::class, 'saveDocumentStatus'])->name('mayor_staff.saveDocumentStatus');
     Route::post('/save-remarks', [MayorStaffController::class, 'saveRemarks'])->name('saveRemarks');
 Route::get('mayor_staff/intake-sheet/{id}', [StatusController::class, 'getIntakeSheet'])->name('mayor_staff.getIntakeSheet');
 Route::post('/mayor_staff/status/{id}', [StatusController::class, 'updateStatus'])->name('mayor_staff.update_status');

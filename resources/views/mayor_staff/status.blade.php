@@ -812,7 +812,9 @@
                             const civil = escapeHtml(m.civil_status || m.civil || '');
                             const educ = escapeHtml(m.education || m.educational_attainment || '');
                             const occ = escapeHtml(m.occupation || m.occ || '');
-                            const income = escapeHtml(m.income ?? '');
+                            // Format income with peso sign and thousands separator
+                            const rawIncome = m.income || m.monthly_income || 0;
+                            const income = rawIncome ? `₱${Number(rawIncome).toLocaleString()}` : '-';
                             const remarks = escapeHtml(m.remarks || '');
                             return `<tr>
                                 <td>${name}</td>
@@ -823,7 +825,7 @@
                                 <td>${civil}</td>
                                 <td>${educ}</td>
                                 <td>${occ}</td>
-                                <td>${income}</td>
+                                <td class="text-right">${income}</td>
                                 <td>${remarks}</td>
                             </tr>`;
                         }).join('');

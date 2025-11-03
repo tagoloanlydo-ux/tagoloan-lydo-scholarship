@@ -1659,8 +1659,60 @@
                 fetch(`/lydo_staff/intake-sheet/${id}`)
                     .then(response => response.json())
                     .then(data => {
-                        if (data) {
-                            populateEditModal(data);
+                        // normalize response: API returns { success: true, intakeSheet: {...} }
+                        const sheet = (data && (data.intakeSheet || data.intake_sheet)) ? (data.intakeSheet || data.intake_sheet) : data;
+                        if (sheet) {
+                            populateEditModal(sheet);
+                        }
+                    })
+                    
+                    .catch(err => console.error('Error fetching intake sheet data:', err))
+                    .finally(() => {
+                        // Show the modal
+                        document.getElementById('editRemarksModal').classList.remove('hidden');
+                        document.body.classList.add('modal-open');
+// ...existing code...
+            // Open Edit Remarks Modal
+            function openEditRemarksModal(button) {
+                const id = button.getAttribute("data-id");
+                const name = button.getAttribute("data-name");
+                const fname = button.getAttribute("data-fname");
+                const mname = button.getAttribute("data-mname");
+                const lname = button.getAttribute("data-lname");
+                const suffix = button.getAttribute("data-suffix");
+                const bdate = button.getAttribute("data-bdate");
+                const brgy = button.getAttribute("data-brgy");
+                const gender = button.getAttribute("data-gender");
+                const pob = button.getAttribute("data-pob");
+
+                // Set the values in the modal form
+                document.getElementById('remarks_id').value = id;
+                document.getElementById('applicant_fname').value = fname || '';
+                document.getElementById('applicant_mname').value = mname || '';
+                document.getElementById('applicant_lname').value = lname || '';
+                document.getElementById('applicant_suffix').value = suffix || '';
+                document.getElementById('head_dob').value = bdate || '';
+                document.getElementById('head_barangay').value = brgy || '';
+
+                // Generate serial number and location
+                document.getElementById('serial_number').value = 'SN-' + Date.now();
+
+
+                // Set current date for Date Entry
+                setCurrentDate();
+
+                // Clear previous family members and service records
+                document.getElementById('family_members_tbody').innerHTML = '';
+                document.getElementById('rv_service_records_tbody').innerHTML = '';
+
+                // Fetch existing intake sheet data and populate form
+                fetch(`/lydo_staff/intake-sheet/${id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // normalize response: API returns { success: true, intakeSheet: {...} }
+                        const sheet = (data && (data.intakeSheet || data.intake_sheet)) ? (data.intakeSheet || data.intake_sheet) : data;
+                        if (sheet) {
+                            populateEditModal(sheet);
                         }
                     })
                     .catch(err => console.error('Error fetching intake sheet data:', err))
@@ -1671,7 +1723,11 @@
 
                         // Reset to first tab
                         showTab('family');
-                    });
+                        updateProgress('family');
+                    }); // <-- added missing closing for finally + fetch chain
+            }
+ // ...existing code...
+                        // Reset to first tab
             }
 
             // Close Edit Remarks Modal
@@ -1819,19 +1875,21 @@
                                                     familyMembers = d.family_members;
                                                 }
                                             }
-                                            return familyMembers.length > 0 ? familyMembers.map(f => `
-                                                <tr>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.name || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.relationship || f.relation || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${formatDate(f.birthdate || f.birth)}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.age || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.sex || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.civil_status || f.civil || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.education || f.educ || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.occupation || f.occ || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">₱${escapeHtml(f.monthly_income || f.income || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.remarks || '')}</td>
-                                                </tr>
+                                      // ...existing code...
+                            const income = escapeHtml(m.income ?? m.monthly_income ?? '');
+                            const remarks = escapeHtml(m.remarks ?? m.rem ?? '');
+                            return `<tr>
+                                <td>${name}</td>
+                                <td>${relation}</td>
+                                <td>${bdate}</td>
+                                <td>${age}</td>
+                                <td>${sex}</td>
+                                <td>${civil}</td>
+                                <td>${educ}</td>
+                                <td>${occ}</td>
+                                <td>₱${income}</td>
+                                <td>${remarks}</td>
+                            </tr>`;
                                             `).join('') : '<tr><td colspan="10" class="border px-2 py-1 text-center text-gray-500">No family members found</td></tr>';
                                         })()}
                                     </tbody>
@@ -2268,29 +2326,29 @@
                             return;
                         }
 
-                        // Serialize family members data
+                        // Serialize family members data (store both canonical + compatibility keys)
                         let familyMembers = [];
                         const familyRows = document.querySelectorAll('#family_members_tbody tr');
                         familyRows.forEach(row => {
                             const cells = row.cells;
+                            const incomeValue = cells[8].querySelector('input')?.value || '';
+                            const remarksValue = cells[9].querySelector('select')?.value || cells[9].querySelector('input')?.value || '';
+
                             familyMembers.push({
                                 name: cells[0].querySelector('input')?.value || '',
-                                relationship: cells[1].querySelector('select')?.value || '',
+                                relationship: cells[1].querySelector('select')?.value || cells[1].querySelector('input')?.value || '',
+                                relation: cells[1].querySelector('select')?.value || cells[1].querySelector('input')?.value || '',
+
                                 birthdate: cells[2].querySelector('input')?.value || '',
+                                birth: cells[2].querySelector('input')?.value || '',
+
                                 age: cells[3].querySelector('input')?.value || '',
                                 sex: cells[4].querySelector('select')?.value || '',
                                 civil_status: cells[5].querySelector('select')?.value || '',
+                                civil: cells[5].querySelector('select')?.value || '',
+
                                 education: cells[6].querySelector('select')?.value || '',
-                                occupation: cells[7].querySelector('input')?.value || '',
-                                monthly_income: cells[8].querySelector('input')?.value || '',
-                                remarks: cells[9].querySelector('select')?.value || '',
-                            });
-                        });
-
-                        // Convert to JSON string
-                        document.getElementById('family_members').value = JSON.stringify(familyMembers);
-
-                        // Serialize service records data
+                                educ: cells[6].querySelector('select')?.value || '',
                         let serviceRecords = [];
                         const serviceRows = document.querySelectorAll('#rv_service_records_tbody tr');
                         serviceRows.forEach(row => {
@@ -2404,38 +2462,65 @@
                     document.getElementById('applicant_gender').value = data.applicant_gender;
                 }
 
-                // Populate household information
-                document.getElementById('other_income').value = data.other_income || '';
-                document.getElementById('house_total_income').value = data.house_total_income || '';
-                document.getElementById('house_net_income').value = data.house_net_income || '';
-                document.getElementById('house_house').value = data.house_house || '';
-                document.getElementById('house_house_rent').value = data.house_house_rent || '';
-                document.getElementById('house_lot').value = data.house_lot || '';
-                document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
-                document.getElementById('house_water').value = data.house_water || '';
-                document.getElementById('house_electric').value = data.house_electric || '';
+            // Debug: log data to confirm field names/values
+                        console.log('populateEditModal data (raw):', data);
 
-                // Handle conditional fields for house and lot
-                const houseSelect = document.getElementById('house_house');
-                const lotSelect = document.getElementById('house_lot');
+            // Normalize DB values to match select options in the modal
+            function normalizeOccupancyValue(v) {
+                if (v === null || v === undefined) return '';
+                const s = String(v).trim().toLowerCase();
+                if (s === 'rent' || s === 'rented') return 'Rent';
+                if (s === 'owned' || s === 'own') return 'Owned';
+                return v;
+            }
+            // Populate household information (set selects first, then rent inputs)
+             const houseSelect = document.getElementById('house_house');
+            const lotSelect = document.getElementById('house_lot');
+            const houseRentInput = document.getElementById('house_house_rent');
+            const lotRentInput = document.getElementById('house_lot_rent');
 
-                if (data.house_house === 'Rent') {
-                    document.getElementById('house_rent_group').style.display = 'block';
-                    document.getElementById('house_house_rent').value = data.house_house_rent || '';
-                }
+            document.getElementById('other_income').value = data.other_income ?? '';
+            document.getElementById('house_total_income').value = data.house_total_income ?? '';
+            document.getElementById('house_net_income').value = data.house_net_income ?? '';
+            document.getElementById('house_water').value = data.house_water ?? '';
+            document.getElementById('house_electric').value = data.house_electric ?? '';
+// set select values first
+           
+        const mappedHouse = normalizeOccupancyValue(data.house_house);
+            const mappedLot = normalizeOccupancyValue(data.house_lot);
 
-                if (data.house_lot === 'Rent') {
-                    document.getElementById('lot_rent_group').style.display = 'block';
-                    document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
-                }
+            if (houseSelect) houseSelect.value = mappedHouse;
+            if (lotSelect) lotSelect.value = mappedLot;
 
-                // Trigger change events to update UI
-                if (houseSelect) {
-                    houseSelect.dispatchEvent(new Event('change'));
-                }
-                if (lotSelect) {
-                    lotSelect.dispatchEvent(new Event('change'));
-                }
+            // set rent inputs AFTER selects so toggle handlers won't overwrite them incorrectly
+            // accept multiple possible DB field names if needed
+            if (houseRentInput) {
+                houseRentInput.value = (data.house_house_rent ?? data.house_rent ?? data.house_value ?? '') || '';
+            }
+            if (lotRentInput) {
+                lotRentInput.value = (data.house_lot_rent ?? data.lot_rent ?? '') || '';
+            }
+
+            // Ensure rent groups visibility matches the select values (accept both Rent and Rented)
+            const houseRentGroup = document.getElementById('house_rent_group');
+            const lotRentGroup = document.getElementById('lot_rent_group');
+
+            if (houseSelect && (houseSelect.value === 'Rent')) {
+                if (houseRentGroup) houseRentGroup.style.display = 'block';
+            } else {
+                if (houseRentGroup) houseRentGroup.style.display = 'none';
+            }
+            if (lotSelect && (lotSelect.value === 'Rent')) {
+                if (lotRentGroup) lotRentGroup.style.display = 'block';
+            } else {
+                if (lotRentGroup) lotRentGroup.style.display = 'none';
+            }
+
+            // re-dispatch change so any listeners run (but after we've already set rent inputs)
+            if (houseSelect) houseSelect.dispatchEvent(new Event('change'));
+            if (lotSelect) lotSelect.dispatchEvent(new Event('change'));
+
+            console.log('populateEditModal mappedHouse, mappedLot, house_rent, lot_rent:', mappedHouse, mappedLot, houseRentInput?.value, lotRentInput?.value);
 
                 // Populate remarks
                 document.getElementById('remarks').value = data.remarks || '';
@@ -2612,22 +2697,38 @@
 
             // Save as Draft function
             function saveAsDraft() {
-                // Serialize family members data
+                // Serialize family members data (store both canonical + compatibility keys)
                 let familyMembers = [];
                 const familyRows = document.querySelectorAll('#family_members_tbody tr');
                 familyRows.forEach(row => {
                     const cells = row.cells;
+                    const incomeValue = cells[8].querySelector('input')?.value || '';
+                    const remarksValue = cells[9].querySelector('select')?.value || cells[9].querySelector('input')?.value || '';
+
                     familyMembers.push({
                         name: cells[0].querySelector('input')?.value || '',
-                        relationship: cells[1].querySelector('select')?.value || '',
+                        relationship: cells[1].querySelector('select')?.value || cells[1].querySelector('input')?.value || '',
+                        relation: cells[1].querySelector('select')?.value || cells[1].querySelector('input')?.value || '',
+
                         birthdate: cells[2].querySelector('input')?.value || '',
+                        birth: cells[2].querySelector('input')?.value || '',
+
                         age: cells[3].querySelector('input')?.value || '',
                         sex: cells[4].querySelector('select')?.value || '',
                         civil_status: cells[5].querySelector('select')?.value || '',
+                        civil: cells[5].querySelector('select')?.value || '',
+
                         education: cells[6].querySelector('select')?.value || '',
+                        educ: cells[6].querySelector('select')?.value || '',
+
                         occupation: cells[7].querySelector('input')?.value || '',
-                        monthly_income: cells[8].querySelector('input')?.value || '',
-                        remarks: cells[9].querySelector('select')?.value || '',
+                        occ: cells[7].querySelector('input')?.value || '',
+
+                        monthly_income: incomeValue,
+                        income: incomeValue, // compatibility for other views
+
+                        remarks: remarksValue,
+                        rem: remarksValue // compatibility
                     });
                 });
 
