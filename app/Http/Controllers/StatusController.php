@@ -69,7 +69,7 @@ class StatusController extends Controller
     $allApplicants = DB::table('tbl_applicant')->get();
     \Log::info("All applicant records:", ['count' => $allApplicants->count(), 'data' => $allApplicants->toArray()]);
 
-    // MAIN TABLE: Pending + Reviewed applications (Poor and Ultra Poor only)
+    // MAIN TABLE: Pending + Approved applications (Poor and Ultra Poor only)
     $query = DB::table('tbl_application_personnel as ap')
         ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
         ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
@@ -85,9 +85,9 @@ class StatusController extends Controller
             'ap.remarks as remarks',
             'ap.status as status'
         )
-        ->where('ap.initial_screening', 'Reviewed')
+        ->where('ap.initial_screening', 'Approved')
         ->where('ap.status', 'Pending')
-     
+
        // match either remark value
        ->whereIn('ap.remarks', ['Poor', 'Ultra Poor']);
 

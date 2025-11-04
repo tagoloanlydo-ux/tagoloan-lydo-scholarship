@@ -9,6 +9,86 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="{{ asset('css/renewal.css') }}" />
+    <style>
+        :root {
+            --primary-color: #7c3aed;
+            --primary-dark: #6d28d9;
+            --primary-light: #a78bfa;
+            --text-secondary: #64748b;
+        }
+
+        .tab {
+            cursor: pointer;
+            padding: 14px 28px;
+            border-radius: 16px;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            color: var(--text-secondary);
+            border: 2px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .tab:hover::before {
+            left: 100%;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 20px rgba(30, 64, 175, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px) scale(1.02);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab.tab-green.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-color: #10b981;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px) scale(1.02);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab:hover:not(.active) {
+            background: linear-gradient(145deg, #f1f5f9, #e2e8f0);
+            border-color: var(--primary-light);
+            color: var(--primary-color);
+            transform: translateY(-1px) scale(1.01);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .tab.tab-green:hover:not(.active) {
+            background: linear-gradient(145deg, #d1fae5, #a7f3d0);
+            border-color: #10b981;
+            color: #065f46;
+            transform: translateY(-1px) scale(1.01);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .tab:active {
+            transform: translateY(0) scale(0.98);
+            transition: all 0.1s ease;
+        }
+    </style>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
@@ -117,16 +197,7 @@
                         <h2 class="text-3xl font-bold text-gray-800">Scholar Renewal Review</h2>
                 </div>
 
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <div class="flex gap-2 mb-4">
-                <input type="text" id="nameSearch" placeholder="Search name..." class="border rounded px-3 py-2 w-64">
-                <select id="barangayFilter" class="border rounded px-3 py-2">
-                    <option value="">All Barangays</option>
-                    @foreach($barangays as $brgy)
-                        <option value="{{ $brgy }}">{{ $brgy }}</option>
-                    @endforeach
-                </select>
-            </div>
+        <div class="flex flex-col md:flex-row items-center mb-6 gap-4">
             <div class="flex gap-2">
                 <div onclick="showTable()" class="tab active" id="tab-renewal">
                     <i class="fas fa-table mr-1"></i> Process Renewals
@@ -291,6 +362,15 @@
             <h3 class="text-lg font-semibold text-gray-700 bg-green-50 p-3 rounded-lg border border-green-200">
             Processed Renewal Applications: View applications with their current approval status
             </h3>
+        </div>
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="listNameSearch" placeholder="Search name..." class="border rounded px-3 py-2 w-64">
+            <select id="listBarangayFilter" class="border rounded px-3 py-2">
+                <option value="">All Barangays</option>
+                @foreach($barangays as $brgy)
+                    <option value="{{ $brgy }}">{{ $brgy }}</option>
+                @endforeach
+            </select>
         </div>
         <table class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
         <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
@@ -740,22 +820,26 @@ function updateRenewalStatus(renewalId, status) {
     function showTable() {
         document.getElementById("tableView").classList.remove("hidden");
         document.getElementById("listView").classList.add("hidden");
-        
+
         // Update tab active states
         document.getElementById("tab-renewal").classList.add("active");
+        document.getElementById("tab-renewal").classList.remove("tab-green");
         document.getElementById("tab-review").classList.remove("active");
-        
+        document.getElementById("tab-review").classList.remove("tab-green");
+
         localStorage.setItem("viewMode", "table"); // save preference
     }
 
     function showList() {
         document.getElementById("listView").classList.remove("hidden");
         document.getElementById("tableView").classList.add("hidden");
-        
+
         // Update tab active states
         document.getElementById("tab-review").classList.add("active");
+        document.getElementById("tab-review").classList.add("tab-green");
         document.getElementById("tab-renewal").classList.remove("active");
-        
+        document.getElementById("tab-renewal").classList.remove("tab-green");
+
         localStorage.setItem("viewMode", "list"); // save preference
     }
 
@@ -995,6 +1079,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     nameSearch.addEventListener('input', filterTable);
     barangayFilter.addEventListener('change', filterTable);
+});
+</script>
+
+<script>
+// Client-side filtering for listView
+document.addEventListener('DOMContentLoaded', function() {
+    const listNameSearch = document.getElementById('listNameSearch');
+    const listBarangayFilter = document.getElementById('listBarangayFilter');
+
+    function filterList() {
+        const searchValue = listNameSearch.value.toLowerCase();
+        const barangayValue = listBarangayFilter.value;
+
+        const rows = document.querySelectorAll('#listView tbody tr');
+
+        rows.forEach(row => {
+            const nameCell = row.querySelector('td:nth-child(2)'); // Name column
+            const barangayCell = row.querySelector('td:nth-child(3)'); // Barangay column
+
+            if (nameCell && barangayCell) {
+                const nameText = nameCell.textContent.toLowerCase();
+                const barangayText = barangayCell.textContent;
+
+                const nameMatch = nameText.includes(searchValue);
+                const barangayMatch = barangayValue === '' || barangayText === barangayValue;
+
+                if (nameMatch && barangayMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    listNameSearch.addEventListener('input', filterList);
+    listBarangayFilter.addEventListener('change', filterList);
 });
 </script>
 </body>

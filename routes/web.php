@@ -159,6 +159,9 @@ Route::get('/mayor_staff/intake-sheet/{id}', [StatusController::class, 'getIntak
 
 // Public routes for intake sheet
 Route::get('/intake-sheet/{application_personnel_id}', [MayorStaffController::class, 'showIntakeSheet'])->name('intake_sheet.show');
+Route::get('/intake-sheet-submitted', function () {
+    return view('Applicants.intakesheet_submitted');
+})->name('intake_sheet.submitted');
 Route::post('/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheetPublic'])->name('intake_sheet.submit');
 
 

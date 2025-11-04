@@ -36,6 +36,7 @@ Route::prefix('staging')->group(function () {
     // Mayor Staff API endpoints
     Route::get('/welcome', [MayorStaffController::class, 'welcome']);
     Route::get('/mayor-staff/intake-sheet/{applicationPersonnelId}', [MayorStaffController::class, 'getIntakeSheet']);
+    Route::post('/mayor-staff/update-status/{id}', [MayorStaffController::class, 'updateStatus']);
 });
 
 ?>

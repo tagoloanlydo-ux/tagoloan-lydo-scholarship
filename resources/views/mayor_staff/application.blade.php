@@ -220,7 +220,7 @@
                                 <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
                                 <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
                                 <td class="px-6 py-4 text-center">
-                                    <button
+                                    <button type="button"
                                         class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
                                         onclick="openApplicationModal({{ $app->application_personnel_id }}, 'pending')">
                                         Review Applications
@@ -1445,8 +1445,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     allowOutsideClick: false
                                 });
                                 closeApplicationModal();
-                                // Reload the page to reflect changes
-                                location.reload();
+                                // Removed page reload to prevent refresh when closing modal
                             } else {
                                 Swal.fire('Error', 'Failed to approve initial screening.', 'error');
                             }
@@ -2167,5 +2166,4 @@ function goToPage(viewType, page) {
 </script>
 
     </body>
-    </html>
     </html>

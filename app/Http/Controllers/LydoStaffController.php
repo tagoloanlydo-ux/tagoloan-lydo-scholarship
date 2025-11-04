@@ -139,7 +139,7 @@ $pendingInitial = DB::table("tbl_application_personnel")
                 }
             })
             ->where("tbl_application_personnel.initial_screening", "Approved")
-            ->paginate(15);
+            ->paginate();
 
         $notifications = DB::table("tbl_application_personnel")
             ->join(
@@ -398,7 +398,7 @@ $pendingScreening = DB::table("tbl_application_personnel")
             ->where("tbl_application_personnel.initial_screening", "Approved")
             ->where("tbl_application_personnel.remarks", "waiting")
             ->whereNotNull("family_intake_sheets.application_personnel_id")
-            ->paginate(15)
+            ->paginate()
     ->appends($request->all());
 
         $currentAcadYear = DB::table("tbl_applicant")
@@ -442,7 +442,7 @@ $listApplicants = DB::table("tbl_applicant as a")
     })
     ->whereIn("ap.remarks", ["Poor", "Non Poor", "Ultra Poor"])
     ->where("a.applicant_acad_year", $currentAcadYear)
-    ->paginate(15)
+    ->paginate()
     ->appends($request->all());
 
         return view(
@@ -819,7 +819,7 @@ $pendingScreening = DB::table("tbl_application_personnel")
             ->when($request->barangay, function ($query, $barangay) {
                 $query->where("a.applicant_brgy", $barangay);
             })
-            ->paginate(15);
+            ->paginate();
 
         $renewals = DB::table("tbl_renewal")
             ->select(
@@ -904,7 +904,7 @@ $listView = DB::table("tbl_renewal as r")
     ->when($request->barangay, function ($query, $barangay) {
         $query->where("a.applicant_brgy", $barangay);
     })
-    ->paginate(15) // ✅ use paginate instead of get
+    ->paginate() // ✅ use paginate instead of get
     ->appends($request->all());
 
         return view(

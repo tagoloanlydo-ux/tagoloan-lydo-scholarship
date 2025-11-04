@@ -48,53 +48,77 @@
             --radius-lg: 1rem;
         }
 
-        /* Enhanced Tab Styling */
+        /* Modern Tab Styling */
         .tab {
             cursor: pointer;
-            padding: 12px 24px;
-            border-radius: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background-color: white;
+            padding: 14px 28px;
+            border-radius: 16px;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
             color: var(--text-secondary);
-            border: 2px solid var(--border-color);
+            border: 2px solid transparent;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 14px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .tab:hover::before {
+            left: 100%;
         }
 
         .tab.active {
             background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
             border-color: var(--primary-color);
-            box-shadow: var(--shadow);
-            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(30, 64, 175, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px) scale(1.02);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .tab.tab-green.active {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
             border-color: #10b981;
-            box-shadow: var(--shadow);
-            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px) scale(1.02);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .tab:hover:not(.active) {
-            background-color: var(--secondary-color);
+            background: linear-gradient(145deg, #f1f5f9, #e2e8f0);
             border-color: var(--primary-light);
             color: var(--primary-color);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+            transform: translateY(-1px) scale(1.01);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
         }
 
         .tab.tab-green:hover:not(.active) {
-            background-color: #d1fae5;
+            background: linear-gradient(145deg, #d1fae5, #a7f3d0);
             border-color: #10b981;
             color: #065f46;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+            transform: translateY(-1px) scale(1.01);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .tab:active {
+            transform: translateY(0) scale(0.98);
+            transition: all 0.1s ease;
         }
 
         /* Enhanced Table Styling */
@@ -647,12 +671,102 @@
             color: #64748b;
             cursor: not-allowed;
         }
+        /* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: 0.5rem 1rem;
+    background-color: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #6d28d9;
+    transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+    background-color: #d1d5db;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pagination-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.pagination-page-input {
+    width: 3.5rem;
+    padding: 0.4rem;
+    text-align: center;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: white;
+}
+
+.pagination-page-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Responsive design for pagination */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .pagination-buttons {
+        justify-content: center;
+    }
+
+    .pagination-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .pagination-info {
+        font-size: 0.8rem;
+    }
+}
     </style>
 </head>
 
 <body class="bg-gray-50">
     <div class="dashboard-grid">
-        <header class="bg-blue-600 shadow-sm p-4 flex justify-between items-center font-sans">
+        <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
             <div class="flex items-center">
                 <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
                 <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
@@ -854,9 +968,8 @@
                                 @endforelse
                             </tbody>
                         </table>
-                        <div class="mt-4">
-                            {{ $tableApplicants->appends(request()->query())->links() }}
-                        </div>
+                        <!-- Pagination for Table View -->
+                        <div class="pagination-container" id="tablePagination"></div>
                     </div>
 
                     <!-- Reviewed Applicants Tab -->
@@ -898,9 +1011,9 @@
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_school_name }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         <span class="px-2 py-1 text-sm rounded-lg
-                                            @if($app->remarks == 'Poor') bg-red-100 text-red-800
-                                            @elseif($app->remarks == 'Non Poor') bg-yellow-100 text-yellow-800
-                                            @elseif($app->remarks == 'Ultra Poor') bg-orange-100 text-orange-800
+                                            @if($app->remarks == 'Poor') bg-yellow-100 text-yellow-800
+                                            @elseif($app->remarks == 'Non Poor') bg-green-100 text-green-800
+                                            @elseif($app->remarks == 'Ultra Poor') bg-red-100 text-red-800
                                             @else bg-gray-100 text-gray-800
                                             @endif">
                                             {{ $app->remarks }}
@@ -932,9 +1045,8 @@
                                 @endforelse
                             </tbody>
                         </table>
-                        <div class="mt-4">
-                            {{ $listApplicants->appends(request()->query())->links() }}
-                        </div>
+                        <!-- Pagination for List View -->
+                        <div class="pagination-container" id="listPagination"></div>
                     </div>
                 </div>
             </div>
@@ -1552,7 +1664,243 @@
         </div>
     </div>
 </div>
+        <script>
+  // Pagination state
+const paginationState = {
+    table: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        allRows: [],
+        filteredRows: []
+    },
+    list: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        allRows: [],
+        filteredRows: []
+    }
+};
 
+// Initialize pagination when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializePagination();
+    
+    // Update the existing event listeners to use debounce
+    document.getElementById('nameSearch').addEventListener('input', debounce(filterTable, 300));
+    document.getElementById('barangayFilter').addEventListener('change', filterTable);
+    document.getElementById('listNameSearch').addEventListener('input', debounce(filterList, 300));
+    document.getElementById('listBarangayFilter').addEventListener('change', filterList);
+});
+
+// Initialize pagination
+function initializePagination() {
+    // Get ALL table rows (not just visible ones)
+    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
+    paginationState.table.allRows = tableRows.filter(row => !row.querySelector('td[colspan]'));
+    paginationState.table.filteredRows = [...paginationState.table.allRows];
+    
+    // Get ALL list rows
+    const listRows = Array.from(document.querySelectorAll('#listView tbody tr'));
+    paginationState.list.allRows = listRows.filter(row => !row.querySelector('td[colspan]'));
+    paginationState.list.filteredRows = [...paginationState.list.allRows];
+    
+    updatePagination('table');
+    updatePagination('list');
+}
+
+// Update pagination display
+function updatePagination(viewType) {
+    const state = paginationState[viewType];
+    const containerId = viewType === 'table' ? 'tablePagination' : 'listPagination';
+    const container = document.getElementById(containerId);
+    
+    if (!container) return;
+    
+    // Hide all rows first
+    state.allRows.forEach(row => {
+        row.style.display = 'none';
+    });
+    
+    // Calculate pagination for filtered rows
+    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
+    const endIndex = startIndex + state.rowsPerPage;
+    const pageRows = state.filteredRows.slice(startIndex, endIndex);
+    
+    // Show only rows for current page
+    pageRows.forEach(row => {
+        row.style.display = '';
+    });
+    
+    // Update pagination controls
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    const startItem = state.filteredRows.length === 0 ? 0 : Math.min(startIndex + 1, state.filteredRows.length);
+    const endItem = Math.min(endIndex, state.filteredRows.length);
+    
+    container.innerHTML = `
+        <div class="pagination-info">
+            Showing ${startItem} to ${endItem} of ${state.filteredRows.length} entries
+        </div>
+        <div class="pagination-buttons">
+            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
+                <i class="fas fa-angle-double-left"></i>
+            </button>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
+                <i class="fas fa-angle-left"></i>
+            </button>
+            <div class="pagination-page-info">
+                Page <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)"> of ${totalPages}
+            </div>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+                <i class="fas fa-angle-right"></i>
+            </button>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+                <i class="fas fa-angle-double-right"></i>
+            </button>
+        </div>
+    `;
+}
+
+// Update the existing filter functions to work with pagination
+function filterList() {
+    const nameSearchValue = document.getElementById('listNameSearch').value.toLowerCase().trim();
+    const barangayFilterValue = document.getElementById('listBarangayFilter').value.toLowerCase().trim();
+
+    const filteredRows = paginationState.list.allRows.filter(row => {
+        const nameCell = row.cells[1];
+        const barangayCell = row.cells[2];
+
+        if (!nameCell || !barangayCell) return false;
+
+        const name = nameCell.textContent.toLowerCase();
+        const barangay = barangayCell.textContent.toLowerCase();
+
+        const matchesName = name.includes(nameSearchValue);
+        const matchesBarangay = barangayFilterValue === '' || barangay.includes(barangayFilterValue);
+
+        return matchesName && matchesBarangay;
+    });
+
+    // Update filtered rows and reset to page 1
+    paginationState.list.filteredRows = filteredRows;
+    paginationState.list.currentPage = 1;
+    updatePagination('list');
+}
+// Change page
+function changePage(viewType, page) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updatePagination(viewType);
+}
+
+// Go to specific page
+function goToPage(viewType, page) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    page = parseInt(page);
+    if (isNaN(page) || page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updatePagination(viewType);
+}
+
+// Update the existing filter functions to work with pagination
+function filterTable() {
+    const nameSearchValue = document.getElementById('nameSearch').value.toLowerCase().trim();
+    const barangayFilterValue = document.getElementById('barangayFilter').value.toLowerCase().trim();
+
+    const filteredRows = paginationState.table.allRows.filter(row => {
+        const nameCell = row.cells[1];
+        const barangayCell = row.cells[2];
+
+        if (!nameCell || !barangayCell) return false;
+
+        const name = nameCell.textContent.toLowerCase();
+        const barangay = barangayCell.textContent.toLowerCase();
+
+        const matchesName = name.includes(nameSearchValue);
+        const matchesBarangay = barangayFilterValue === '' || barangay.includes(barangayFilterValue);
+
+        return matchesName && matchesBarangay;
+    });
+
+    // Debug: Check if filtering is working
+    console.log(`Filtered ${filteredRows.length} rows from ${paginationState.table.allRows.length} total rows`);
+
+    // Update filtered rows and reset to page 1
+    paginationState.table.filteredRows = filteredRows;
+    paginationState.table.currentPage = 1;
+    updatePagination('table');
+}
+
+function filterList() {
+    const nameSearchValue = document.getElementById('listNameSearch').value.toLowerCase().trim();
+    const barangayFilterValue = document.getElementById('listBarangayFilter').value.toLowerCase().trim();
+
+    const filteredRows = paginationState.list.allRows.filter(row => {
+        const nameCell = row.cells[1];
+        const barangayCell = row.cells[2];
+
+        if (!nameCell || !barangayCell) return false;
+
+        const name = nameCell.textContent.toLowerCase();
+        const barangay = barangayCell.textContent.toLowerCase();
+
+        const matchesName = name.includes(nameSearchValue);
+        const matchesBarangay = barangayFilterValue === '' || barangay.includes(barangayFilterValue);
+
+        return matchesName && matchesBarangay;
+    });
+
+    // Update filtered rows and reset to page 1
+    paginationState.list.filteredRows = filteredRows;
+    paginationState.list.currentPage = 1;
+    updatePagination('list');
+}
+
+// Update the existing showTable and showList functions
+function showTable() {
+    document.getElementById('tableView').classList.remove('hidden');
+    document.getElementById('listView').classList.add('hidden');
+    document.getElementById('tab-screening').classList.add('active');
+    document.getElementById('tab-reviewed').classList.remove('active');
+    
+    // Reset to first page
+    paginationState.table.currentPage = 1;
+    updatePagination('table');
+}
+
+function showList() {
+    document.getElementById('tableView').classList.add('hidden');
+    document.getElementById('listView').classList.remove('hidden');
+    document.getElementById('tab-screening').classList.remove('active');
+    document.getElementById('tab-reviewed').classList.add('active');
+    
+    // Reset to first page
+    paginationState.list.currentPage = 1;
+    updatePagination('list');
+}
+
+// Debounce function for search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+                </script>
         <script>
             // Add this function to set current date
             function setCurrentDate() {
@@ -1605,7 +1953,7 @@
             }
 
             // Update progress bar and step indicator
-            function updateProgress(tabName) {
+            function updateProgress(tabName) {nameSearch
                 const stepInfo = {
                     'family': { step: 1, title: 'Family Details', width: '20%' },
                     'family-members': { step: 2, title: 'Family Members', width: '40%' },
@@ -1659,60 +2007,8 @@
                 fetch(`/lydo_staff/intake-sheet/${id}`)
                     .then(response => response.json())
                     .then(data => {
-                        // normalize response: API returns { success: true, intakeSheet: {...} }
-                        const sheet = (data && (data.intakeSheet || data.intake_sheet)) ? (data.intakeSheet || data.intake_sheet) : data;
-                        if (sheet) {
-                            populateEditModal(sheet);
-                        }
-                    })
-                    
-                    .catch(err => console.error('Error fetching intake sheet data:', err))
-                    .finally(() => {
-                        // Show the modal
-                        document.getElementById('editRemarksModal').classList.remove('hidden');
-                        document.body.classList.add('modal-open');
-// ...existing code...
-            // Open Edit Remarks Modal
-            function openEditRemarksModal(button) {
-                const id = button.getAttribute("data-id");
-                const name = button.getAttribute("data-name");
-                const fname = button.getAttribute("data-fname");
-                const mname = button.getAttribute("data-mname");
-                const lname = button.getAttribute("data-lname");
-                const suffix = button.getAttribute("data-suffix");
-                const bdate = button.getAttribute("data-bdate");
-                const brgy = button.getAttribute("data-brgy");
-                const gender = button.getAttribute("data-gender");
-                const pob = button.getAttribute("data-pob");
-
-                // Set the values in the modal form
-                document.getElementById('remarks_id').value = id;
-                document.getElementById('applicant_fname').value = fname || '';
-                document.getElementById('applicant_mname').value = mname || '';
-                document.getElementById('applicant_lname').value = lname || '';
-                document.getElementById('applicant_suffix').value = suffix || '';
-                document.getElementById('head_dob').value = bdate || '';
-                document.getElementById('head_barangay').value = brgy || '';
-
-                // Generate serial number and location
-                document.getElementById('serial_number').value = 'SN-' + Date.now();
-
-
-                // Set current date for Date Entry
-                setCurrentDate();
-
-                // Clear previous family members and service records
-                document.getElementById('family_members_tbody').innerHTML = '';
-                document.getElementById('rv_service_records_tbody').innerHTML = '';
-
-                // Fetch existing intake sheet data and populate form
-                fetch(`/lydo_staff/intake-sheet/${id}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // normalize response: API returns { success: true, intakeSheet: {...} }
-                        const sheet = (data && (data.intakeSheet || data.intake_sheet)) ? (data.intakeSheet || data.intake_sheet) : data;
-                        if (sheet) {
-                            populateEditModal(sheet);
+                        if (data) {
+                            populateEditModal(data);
                         }
                     })
                     .catch(err => console.error('Error fetching intake sheet data:', err))
@@ -1723,11 +2019,7 @@
 
                         // Reset to first tab
                         showTab('family');
-                        updateProgress('family');
-                    }); // <-- added missing closing for finally + fetch chain
-            }
- // ...existing code...
-                        // Reset to first tab
+                    });
             }
 
             // Close Edit Remarks Modal
@@ -1875,21 +2167,19 @@
                                                     familyMembers = d.family_members;
                                                 }
                                             }
-                                      // ...existing code...
-                            const income = escapeHtml(m.income ?? m.monthly_income ?? '');
-                            const remarks = escapeHtml(m.remarks ?? m.rem ?? '');
-                            return `<tr>
-                                <td>${name}</td>
-                                <td>${relation}</td>
-                                <td>${bdate}</td>
-                                <td>${age}</td>
-                                <td>${sex}</td>
-                                <td>${civil}</td>
-                                <td>${educ}</td>
-                                <td>${occ}</td>
-                                <td>₱${income}</td>
-                                <td>${remarks}</td>
-                            </tr>`;
+                                            return familyMembers.length > 0 ? familyMembers.map(f => `
+                                                <tr>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.name || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.relationship || f.relation || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${formatDate(f.birthdate || f.birth)}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.age || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.sex || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.civil_status || f.civil || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.education || f.educ || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.occupation || f.occ || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">₱${escapeHtml(f.monthly_income || f.income || '')}</td>
+                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.remarks || '')}</td>
+                                                </tr>
                                             `).join('') : '<tr><td colspan="10" class="border px-2 py-1 text-center text-gray-500">No family members found</td></tr>';
                                         })()}
                                     </tbody>
@@ -2326,29 +2616,29 @@
                             return;
                         }
 
-                        // Serialize family members data (store both canonical + compatibility keys)
+                        // Serialize family members data
                         let familyMembers = [];
                         const familyRows = document.querySelectorAll('#family_members_tbody tr');
                         familyRows.forEach(row => {
                             const cells = row.cells;
-                            const incomeValue = cells[8].querySelector('input')?.value || '';
-                            const remarksValue = cells[9].querySelector('select')?.value || cells[9].querySelector('input')?.value || '';
-
                             familyMembers.push({
                                 name: cells[0].querySelector('input')?.value || '',
-                                relationship: cells[1].querySelector('select')?.value || cells[1].querySelector('input')?.value || '',
-                                relation: cells[1].querySelector('select')?.value || cells[1].querySelector('input')?.value || '',
-
+                                relationship: cells[1].querySelector('select')?.value || '',
                                 birthdate: cells[2].querySelector('input')?.value || '',
-                                birth: cells[2].querySelector('input')?.value || '',
-
                                 age: cells[3].querySelector('input')?.value || '',
                                 sex: cells[4].querySelector('select')?.value || '',
                                 civil_status: cells[5].querySelector('select')?.value || '',
-                                civil: cells[5].querySelector('select')?.value || '',
-
                                 education: cells[6].querySelector('select')?.value || '',
-                                educ: cells[6].querySelector('select')?.value || '',
+                                occupation: cells[7].querySelector('input')?.value || '',
+                                monthly_income: cells[8].querySelector('input')?.value || '',
+                                remarks: cells[9].querySelector('select')?.value || '',
+                            });
+                        });
+
+                        // Convert to JSON string
+                        document.getElementById('family_members').value = JSON.stringify(familyMembers);
+
+                        // Serialize service records data
                         let serviceRecords = [];
                         const serviceRows = document.querySelectorAll('#rv_service_records_tbody tr');
                         serviceRows.forEach(row => {
@@ -2421,9 +2711,9 @@
                 }
 
                 // Add event listeners for real-time filtering
-                document.getElementById('nameSearch').addEventListener('input', filterTable);
+                 document.getElementById('nameSearch').addEventListener('input', debounce(filterTable, 300));
                 document.getElementById('barangayFilter').addEventListener('change', filterTable);
-                document.getElementById('listNameSearch').addEventListener('input', filterList);
+                document.getElementById('listNameSearch').addEventListener('input', debounce(filterList, 300));
                 document.getElementById('listBarangayFilter').addEventListener('change', filterList);
 
                 // Close modals when clicking outside
@@ -2462,65 +2752,38 @@
                     document.getElementById('applicant_gender').value = data.applicant_gender;
                 }
 
-            // Debug: log data to confirm field names/values
-                        console.log('populateEditModal data (raw):', data);
+                // Populate household information
+                document.getElementById('other_income').value = data.other_income || '';
+                document.getElementById('house_total_income').value = data.house_total_income || '';
+                document.getElementById('house_net_income').value = data.house_net_income || '';
+                document.getElementById('house_house').value = data.house_house || '';
+                document.getElementById('house_house_rent').value = data.house_house_rent || '';
+                document.getElementById('house_lot').value = data.house_lot || '';
+                document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
+                document.getElementById('house_water').value = data.house_water || '';
+                document.getElementById('house_electric').value = data.house_electric || '';
 
-            // Normalize DB values to match select options in the modal
-            function normalizeOccupancyValue(v) {
-                if (v === null || v === undefined) return '';
-                const s = String(v).trim().toLowerCase();
-                if (s === 'rent' || s === 'rented') return 'Rent';
-                if (s === 'owned' || s === 'own') return 'Owned';
-                return v;
-            }
-            // Populate household information (set selects first, then rent inputs)
-             const houseSelect = document.getElementById('house_house');
-            const lotSelect = document.getElementById('house_lot');
-            const houseRentInput = document.getElementById('house_house_rent');
-            const lotRentInput = document.getElementById('house_lot_rent');
+                // Handle conditional fields for house and lot
+                const houseSelect = document.getElementById('house_house');
+                const lotSelect = document.getElementById('house_lot');
 
-            document.getElementById('other_income').value = data.other_income ?? '';
-            document.getElementById('house_total_income').value = data.house_total_income ?? '';
-            document.getElementById('house_net_income').value = data.house_net_income ?? '';
-            document.getElementById('house_water').value = data.house_water ?? '';
-            document.getElementById('house_electric').value = data.house_electric ?? '';
-// set select values first
-           
-        const mappedHouse = normalizeOccupancyValue(data.house_house);
-            const mappedLot = normalizeOccupancyValue(data.house_lot);
+                if (data.house_house === 'Rent') {
+                    document.getElementById('house_rent_group').style.display = 'block';
+                    document.getElementById('house_house_rent').value = data.house_house_rent || '';
+                }
 
-            if (houseSelect) houseSelect.value = mappedHouse;
-            if (lotSelect) lotSelect.value = mappedLot;
+                if (data.house_lot === 'Rent') {
+                    document.getElementById('lot_rent_group').style.display = 'block';
+                    document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
+                }
 
-            // set rent inputs AFTER selects so toggle handlers won't overwrite them incorrectly
-            // accept multiple possible DB field names if needed
-            if (houseRentInput) {
-                houseRentInput.value = (data.house_house_rent ?? data.house_rent ?? data.house_value ?? '') || '';
-            }
-            if (lotRentInput) {
-                lotRentInput.value = (data.house_lot_rent ?? data.lot_rent ?? '') || '';
-            }
-
-            // Ensure rent groups visibility matches the select values (accept both Rent and Rented)
-            const houseRentGroup = document.getElementById('house_rent_group');
-            const lotRentGroup = document.getElementById('lot_rent_group');
-
-            if (houseSelect && (houseSelect.value === 'Rent')) {
-                if (houseRentGroup) houseRentGroup.style.display = 'block';
-            } else {
-                if (houseRentGroup) houseRentGroup.style.display = 'none';
-            }
-            if (lotSelect && (lotSelect.value === 'Rent')) {
-                if (lotRentGroup) lotRentGroup.style.display = 'block';
-            } else {
-                if (lotRentGroup) lotRentGroup.style.display = 'none';
-            }
-
-            // re-dispatch change so any listeners run (but after we've already set rent inputs)
-            if (houseSelect) houseSelect.dispatchEvent(new Event('change'));
-            if (lotSelect) lotSelect.dispatchEvent(new Event('change'));
-
-            console.log('populateEditModal mappedHouse, mappedLot, house_rent, lot_rent:', mappedHouse, mappedLot, houseRentInput?.value, lotRentInput?.value);
+                // Trigger change events to update UI
+                if (houseSelect) {
+                    houseSelect.dispatchEvent(new Event('change'));
+                }
+                if (lotSelect) {
+                    lotSelect.dispatchEvent(new Event('change'));
+                }
 
                 // Populate remarks
                 document.getElementById('remarks').value = data.remarks || '';
@@ -2697,38 +2960,22 @@
 
             // Save as Draft function
             function saveAsDraft() {
-                // Serialize family members data (store both canonical + compatibility keys)
+                // Serialize family members data
                 let familyMembers = [];
                 const familyRows = document.querySelectorAll('#family_members_tbody tr');
                 familyRows.forEach(row => {
                     const cells = row.cells;
-                    const incomeValue = cells[8].querySelector('input')?.value || '';
-                    const remarksValue = cells[9].querySelector('select')?.value || cells[9].querySelector('input')?.value || '';
-
                     familyMembers.push({
                         name: cells[0].querySelector('input')?.value || '',
-                        relationship: cells[1].querySelector('select')?.value || cells[1].querySelector('input')?.value || '',
-                        relation: cells[1].querySelector('select')?.value || cells[1].querySelector('input')?.value || '',
-
+                        relationship: cells[1].querySelector('select')?.value || '',
                         birthdate: cells[2].querySelector('input')?.value || '',
-                        birth: cells[2].querySelector('input')?.value || '',
-
                         age: cells[3].querySelector('input')?.value || '',
                         sex: cells[4].querySelector('select')?.value || '',
                         civil_status: cells[5].querySelector('select')?.value || '',
-                        civil: cells[5].querySelector('select')?.value || '',
-
                         education: cells[6].querySelector('select')?.value || '',
-                        educ: cells[6].querySelector('select')?.value || '',
-
                         occupation: cells[7].querySelector('input')?.value || '',
-                        occ: cells[7].querySelector('input')?.value || '',
-
-                        monthly_income: incomeValue,
-                        income: incomeValue, // compatibility for other views
-
-                        remarks: remarksValue,
-                        rem: remarksValue // compatibility
+                        monthly_income: cells[8].querySelector('input')?.value || '',
+                        remarks: cells[9].querySelector('select')?.value || '',
                     });
                 });
 

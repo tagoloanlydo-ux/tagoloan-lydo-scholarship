@@ -215,6 +215,7 @@
 }
 
 /* Tab Styles */
+/* Update the Tab Styles section */
 .tab {
     padding: 0.5rem 1rem;
     background-color: #f3f4f6;
@@ -222,7 +223,7 @@
     border: 1px solid #d1d5db;
     border-radius: 0.375rem;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
     font-weight: 500;
@@ -232,14 +233,30 @@
     background-color: #e5e7eb;
 }
 
+/* Default active state */
 .tab.active {
-    background-color: #7c3aed;
     color: white;
+    border-color: transparent;
+}
+
+/* Purple for Pending Status tab */
+#tab-pending.active {
+    background-color: #7c3aed;
     border-color: #7c3aed;
 }
 
-.tab.active:hover {
+#tab-pending.active:hover {
     background-color: #6d28d9;
+}
+
+/* Green for Approved/Rejected tab */
+#tab-approved-rejected.active {
+    background-color: #10b981 !important;
+    border-color: #10b981 !important;
+}
+
+#tab-approved-rejected.active:hover {
+    background-color: #059669 !important;
 }
 
 /* Enhanced Filter Styles */
@@ -359,7 +376,7 @@
             $status = data_get($a, 'status');
             $remarks = data_get($a, 'remarks');
 
-            return $screening === 'Reviewed'
+            return $screening === 'Approved'
                 && $status === 'Pending'
                 && in_array($remarks, ['Poor', 'Ultra Poor']);
         })->values();
@@ -429,31 +446,32 @@
                             </a>
                         </li>
                         <li class="relative">
-                            <button onclick="toggleDropdown('scholarMenu')"
-                                class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-                                <div class="flex items-center">
-                                    <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
-                                    <span class="ml-4 hidden md:block text-lg">Applicants</span>
-                                </div>
-                                <i class="bx bx-chevron-down ml-2"></i>
-                            </button>
+    <button type="button" onclick="toggleDropdown('scholarMenu')"
+        class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+        <div class="flex items-center">
+            <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
+            <span class="ml-4 hidden md:block text-lg">Applicants</span>
+        </div>
+        <i class="bx bx-chevron-down ml-2"></i>
+    </button>
 
-                            <!-- Dropdown Menu -->
-                            <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
-                                <li>
-                                    <a href="/mayor_staff/application"
-                                    class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                    <i class="bx bx-search-alt mr-2"></i> Review Applications
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="/mayor_staff/status"
-                                        class="flex items-center p-2 rounded-lg text-gray-700 bg-violet-600 text-white">
-                                    <i class="bx bx-check-circle mr-2"></i> Scholarship Approval
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+    <!-- Dropdown Menu - changed to be in-flow so it pushes following items down -->
+    <ul id="scholarMenu" class="mt-2 w-full bg-white shadow-lg border border-gray-200 rounded-lg space-y-2 hidden transition-all duration-200 overflow-hidden">
+        <li>
+            <a href="/mayor_staff/application"
+            class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+            <i class="bx bx-search-alt mr-2"></i> Review Applications
+            </a>
+        </li>
+        <li>
+            <a href="/mayor_staff/status"
+                class="flex items-center p-2 rounded-lg text-gray-700 bg-violet-600 text-white">
+            <i class="bx bx-check-circle mr-2"></i> Scholarship Approval
+            </a>
+        </li>
+    </ul>
+</li>
+
                         <ul class="side-menu space-y-1">
                             <li>
                                 <a href="/mayor_staff/settings" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
@@ -478,7 +496,7 @@
             
             <!-- Main content (fixed, scrollable area) -->
             <div class="main-content-fixed text-[16px]">
-                <div class="p-20 bg-gray-50 min-h-screen rounded-lg shadow">
+                <div class="p-10 bg-gray-50 min-h-screen rounded-lg shadow">
                     <div class="flex justify-between items-center mb-6">
                         <h5 class="text-3xl font-bold text-gray-800">Applicant Status Management</h5>
                     </div>
@@ -840,10 +858,10 @@
                         <button type="button" class="btn btn-danger" onclick="closeIntakeSheetModal()">
                             <i class="fas fa-times mr-2"></i> Close
                         </button>
-                        <button type="button" class="btn btn-success" id="approveBtn">
-                            <i class="fas fa-check mr-2"></i> Approve
+                       <button type="button" class="btn btn-success" id="approveBtn">
+                          <i class="fas fa-check mr-2"></i> Approve
                         </button>
-                        <button type="button" class="btn btn-danger" id="rejectBtn">
+                       <button type="button" class="btn btn-danger" id="rejectBtn">
                             <i class="fas fa-times mr-2"></i> Reject
                         </button>
                     </div>
@@ -853,473 +871,378 @@
     </div>
 
     <script>
-        // Global variables
-        let currentApplicationId = null;
-        let currentApplicationName = null;
-        let currentView = 'table'; // 'table' or 'list'
-        let tableData = [];
-        let listData = [];
+ // Global variables
+let currentApplicationId = null;
+let currentApplicationName = null;
+let currentView = 'table';
 
-        // Pagination state
-        let currentPage = 1;
-        const rowsPerPage = 15;
+// Pagination state
+const paginationState = {
+    table: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        allRows: [],
+        filteredRows: []
+    },
+    list: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        allRows: [],
+        filteredRows: []
+    }
+};
 
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize data
-            initializeData();
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+    initializeData();
+    initializePagination();
+    initializeFiltering();
+    initializeModalEvents();
+    initializeNotificationDropdown();
+    initializeSidebarDropdown();
+});
 
-            // Initialize pagination
-            initializePagination();
-
-            // Initialize filtering
-            initializeFiltering();
-
-            // Initialize modal events
-            initializeModalEvents();
-
-            // Initialize notification dropdown
-            initializeNotificationDropdown();
-
-            // Initialize sidebar dropdown state
-            initializeSidebarDropdown();
+// Initialize modal events
+function initializeModalEvents() {
+    // View intake sheet buttons
+    document.querySelectorAll('.view-intake-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            openIntakeSheetModal(id, name, 'intake');
         });
+    });
 
-        // Initialize data from the tables
-        function initializeData() {
-            // Get table data
-            const tableRows = document.querySelectorAll('#tableView tbody tr');
-            tableData = Array.from(tableRows).map(row => ({
-                element: row,
-                name: row.dataset.name || '',
-                barangay: row.dataset.barangay || '',
-                remarks: row.dataset.remarks || ''
-            }));
+    // Review renewal buttons
+    document.querySelectorAll('.review-renewal-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            openIntakeSheetModal(id, name, 'renewal');
+        });
+    });
 
-            // Get list data
-            const listRows = document.querySelectorAll('#listView tbody tr');
-            listData = Array.from(listRows).map(row => ({
-                element: row,
-                name: row.dataset.name || '',
-                barangay: row.dataset.barangay || '',
-                status: row.dataset.status || ''
-            }));
-        }
-
-        // Initialize pagination
-        function initializePagination() {
-            updatePagination('table');
-            updatePagination('list');
-        }
-
-        // Initialize filtering functionality
-        function getUniqueBarangays() {
-            const barangays = new Set();
-
-            // Get barangays from table view
-            document.querySelectorAll('#tableView tbody tr').forEach(row => {
-                const barangayCell = row.cells[2]; // Barangay is in third column
-                if (barangayCell) {
-                    const barangay = barangayCell.textContent.trim();
-                    if (barangay) barangays.add(barangay);
-                }
-            });
-
-            // Get barangays from list view
-            document.querySelectorAll('#listView tbody tr').forEach(row => {
-                const barangayCell = row.cells[2]; // Barangay is in third column
-                if (barangayCell) {
-                    const barangay = barangayCell.textContent.trim();
-                    if (barangay) barangays.add(barangay);
-                }
-            });
-
-            return Array.from(barangays).sort();
-        }
-
-        function populateBarangayFilters() {
-            const barangays = getUniqueBarangays();
-
-            // Get filter elements
-            const tableBarangayFilter = document.getElementById('barangaySelectTable');
-            const listBarangayFilter = document.getElementById('listBarangayFilter');
-
-            // Function to populate a single dropdown
-            const populateDropdown = (dropdown) => {
-                if (!dropdown) return;
-
-                // Clear existing options except the first one
-                dropdown.innerHTML = '<option value="">All Barangays</option>';
-
-                // Add options for each barangay
-                barangays.forEach(barangay => {
-                    const option = document.createElement('option');
-                    option.value = barangay;
-                    option.textContent = barangay;
-                    dropdown.appendChild(option);
-                });
-            };
-
-            // Populate both dropdowns
-            populateDropdown(tableBarangayFilter);
-            populateDropdown(listBarangayFilter);
-        }
-
-        function initializeFiltering() {
-            // Populate barangay filters first
-            populateBarangayFilters();
-
-            const tableNameSearch = document.getElementById('searchInputTable');
-            const tableBarangayFilter = document.getElementById('barangaySelectTable');
-
-            const listNameSearch = document.getElementById('listNameSearch');
-            const listBarangayFilter = document.getElementById('listBarangayFilter');
-            const listStatusFilter = document.getElementById('listStatusFilter');
-
-            function filterTableView() {
-                const searchTerm = tableNameSearch.value.toLowerCase();
-                const selectedBarangay = tableBarangayFilter.value;
-
-                const rows = document.querySelectorAll('#tableView tbody tr');
-
-                rows.forEach(row => {
-                    if (row.cells.length < 3) return; // Skip invalid rows
-
-                    const nameCell = row.cells[1];
-                    const barangayCell = row.cells[2];
-
-                    if (!nameCell || !barangayCell) return;
-
-                    const name = nameCell.textContent.toLowerCase();
-                    const barangay = barangayCell.textContent.trim();
-
-                    const nameMatch = name.includes(searchTerm);
-                    const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
-
-                    row.style.display = nameMatch && barangayMatch ? '' : 'none';
-                });
-
-                // Reset to first page and update pagination after filtering
-                currentPage = 1;
-                updatePagination('table');
+    // Approve button
+    const approveBtn = document.getElementById('approveBtn');
+    if (approveBtn) {
+        approveBtn.addEventListener('click', function() {
+            if (currentApplicationId && currentApplicationName) {
+                approveApplication(currentApplicationId, currentApplicationName);
             }
+        });
+    }
 
-            function filterListView() {
-                const searchTerm = listNameSearch.value.toLowerCase();
-                const selectedBarangay = listBarangayFilter.value;
-                const selectedStatus = listStatusFilter.value;
-
-                const rows = document.querySelectorAll('#listView tbody tr');
-
-                rows.forEach(row => {
-                    if (row.cells.length < 5) return; // Skip invalid rows
-
-                    const nameCell = row.cells[1];
-                    const barangayCell = row.cells[2];
-                    const statusCell = row.cells[4];
-
-                    if (!nameCell || !barangayCell || !statusCell) return;
-
-                    const name = nameCell.textContent.toLowerCase();
-                    const barangay = barangayCell.textContent.trim();
-                    const status = statusCell.textContent.trim();
-
-                    const nameMatch = name.includes(searchTerm);
-                    const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
-                    const statusMatch = !selectedStatus || status.toLowerCase() === selectedStatus.toLowerCase();
-
-                    row.style.display = nameMatch && barangayMatch && statusMatch ? '' : 'none';
-                });
+    // Reject button
+    const rejectBtn = document.getElementById('rejectBtn');
+    if (rejectBtn) {
+        rejectBtn.addEventListener('click', function() {
+            if (currentApplicationId && currentApplicationName) {
+                rejectApplication(currentApplicationId, currentApplicationName);
             }
+        });
+    }
+}
 
-            // Add event listeners
-            if (tableNameSearch) {
-                tableNameSearch.addEventListener('input', filterTableView);
-            }
-            if (tableBarangayFilter) {
-                tableBarangayFilter.addEventListener('change', filterTableView);
-            }
+// Initialize data from the tables
+function initializeData() {
+    // Get ALL table rows (not just visible ones)
+    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
+    paginationState.table.allRows = tableRows.filter(row => !row.querySelector('td[colspan]'));
+    paginationState.table.filteredRows = [...paginationState.table.allRows];
+    
+    // Get ALL list rows
+    const listRows = Array.from(document.querySelectorAll('#listView tbody tr'));
+    paginationState.list.allRows = listRows.filter(row => !row.querySelector('td[colspan]'));
+    paginationState.list.filteredRows = [...paginationState.list.allRows];
+}
 
+// Initialize pagination
+function initializePagination() {
+    updatePagination('table');
+    updatePagination('list');
+}
 
-
-            if (listNameSearch) {
-                listNameSearch.addEventListener('input', filterListView);
-            }
-            if (listBarangayFilter) {
-                listBarangayFilter.addEventListener('change', filterListView);
-            }
-            if (listStatusFilter) {
-                listStatusFilter.addEventListener('change', filterListView);
-            }
-        }
-        // Initialize modal events
-        function initializeModalEvents() {
-            // View intake sheet buttons
-            document.querySelectorAll('.view-intake-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const id = this.getAttribute('data-id');
-                    const name = this.getAttribute('data-name');
-                    openIntakeSheetModal(id, name);
-                });
-            });
-
-            // Approve and reject buttons
-            document.getElementById('approveBtn').addEventListener('click', function() {
-                if (currentApplicationId) {
-                    approveApplication(currentApplicationId, currentApplicationName);
-                }
-            });
-
-            document.getElementById('rejectBtn').addEventListener('click', function() {
-                if (currentApplicationId) {
-                    rejectApplication(currentApplicationId, currentApplicationName);
-                }
-            });
-        }
-
-        // Initialize notification dropdown
-        function initializeNotificationDropdown() {
-            const notifBell = document.getElementById('notifBell');
-            const notifDropdown = document.getElementById('notifDropdown');
-
-            if (notifBell && notifDropdown) {
-                notifBell.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    notifDropdown.classList.toggle('hidden');
-                });
-
-                // Close dropdown when clicking outside
-                document.addEventListener('click', function() {
-                    notifDropdown.classList.add('hidden');
-                });
-            }
-        }
-
-        // Initialize sidebar dropdown state
-        function initializeSidebarDropdown() {
-            // Since we're on the status page, show the scholarMenu
-            const scholarMenu = document.getElementById('scholarMenu');
-            if (scholarMenu) {
-                scholarMenu.classList.remove('hidden');
-            }
-        }
-
-
-
-
-        // Replace the updatePagination function
+// Update pagination display
 function updatePagination(viewType) {
+    const state = paginationState[viewType];
     const containerId = viewType === 'table' ? 'tablePagination' : 'listPagination';
     const container = document.getElementById(containerId);
+    
     if (!container) return;
-
-    const rows = viewType === 'table' ?
-        Array.from(document.querySelectorAll('#tableView tbody tr')) :
-        Array.from(document.querySelectorAll('#listView tbody tr'));
-
-    // Get all visible rows before pagination
-    const visibleRows = rows.filter(row =>
-        !row.hasAttribute('style') ||
-        !row.style.display ||
-        row.style.display !== 'none'
-    );
-
+    
     // Hide all rows first
-    rows.forEach(row => row.style.display = 'none');
-
-    // Calculate start and end indexes for current page
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = Math.min(startIndex + rowsPerPage, visibleRows.length);
-
+    state.allRows.forEach(row => {
+        row.style.display = 'none';
+    });
+    
+    // Calculate pagination for filtered rows
+    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
+    const endIndex = startIndex + state.rowsPerPage;
+    const pageRows = state.filteredRows.slice(startIndex, endIndex);
+    
     // Show only rows for current page
-    for (let i = startIndex; i < endIndex; i++) {
-        if (visibleRows[i]) {
-            visibleRows[i].style.display = '';
-        }
-    }
-
-    // Update pagination info
-    const totalRows = visibleRows.length;
-    const totalPages = Math.ceil(totalRows / rowsPerPage);
-
-    // Ensure current page is within valid range
-    if (currentPage > totalPages) {
-        currentPage = totalPages;
-    }
-    if (currentPage < 1) {
-        currentPage = 1;
-    }
-
-    // Generate pagination HTML
-    let paginationHTML = `
+    pageRows.forEach(row => {
+        row.style.display = '';
+    });
+    
+    // Update pagination controls
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    const startItem = state.filteredRows.length === 0 ? 0 : Math.min((state.currentPage - 1) * state.rowsPerPage + 1, state.filteredRows.length);
+    const endItem = Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
+    
+    container.innerHTML = `
         <div class="pagination-info">
-            Showing ${Math.min((currentPage - 1) * rowsPerPage + 1, totalRows)} to ${Math.min(currentPage * rowsPerPage, totalRows)} of ${totalRows} entries
+            Showing ${startItem} to ${endItem} of ${state.filteredRows.length} entries
         </div>
         <div class="pagination-buttons">
-            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${currentPage === 1 ? 'disabled' : ''}>
+            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
                 <i class="fas fa-angle-double-left"></i>
             </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
                 <i class="fas fa-angle-left"></i>
             </button>
             <div class="pagination-page-info">
-                Page <input type="number" class="pagination-page-input" value="${currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)"> of ${totalPages}
+                Page <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)"> of ${totalPages}
             </div>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
                 <i class="fas fa-angle-right"></i>
             </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
                 <i class="fas fa-angle-double-right"></i>
             </button>
         </div>
     `;
-
-    container.innerHTML = paginationHTML;
 }
 
-        // Update the changePage function:
+// Change page
 function changePage(viewType, page) {
-    const rows = viewType === 'table' ?
-        Array.from(document.querySelectorAll('#tableView tbody tr')) :
-        Array.from(document.querySelectorAll('#listView tbody tr'));
-
-    const visibleRows = rows.filter(row =>
-        !row.hasAttribute('style') ||
-        !row.style.display ||
-        row.style.display !== 'none'
-    );
-
-    const totalPages = Math.ceil(visibleRows.length / rowsPerPage);
-
-    // Ensure page is within valid range
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
     if (page < 1) page = 1;
     if (page > totalPages) page = totalPages;
-
-    currentPage = page;
+    
+    state.currentPage = page;
     updatePagination(viewType);
 }
 
-        // Go to specific page
-        function goToPage(viewType, page) {
-            const rows = viewType === 'table' ?
-                Array.from(document.querySelectorAll('#tableView tbody tr')).filter(row =>
-                    !row.hasAttribute('style') || !row.style.display || row.style.display !== 'none'
-                ) :
-                Array.from(document.querySelectorAll('#listView tbody tr')).filter(row =>
-                    !row.hasAttribute('style') || !row.style.display || row.style.display !== 'none'
-                );
+// Go to specific page
+function goToPage(viewType, page) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    page = parseInt(page);
+    if (isNaN(page) || page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updatePagination(viewType);
+}
 
-            const totalRows = rows.length;
-            const totalPages = Math.ceil(totalRows / rowsPerPage);
+// Initialize filtering functionality
+function initializeFiltering() {
+    populateBarangayFilters();
+    
+    const tableNameSearch = document.getElementById('searchInputTable');
+    const tableBarangayFilter = document.getElementById('barangaySelectTable');
+    
+    const listNameSearch = document.getElementById('listNameSearch');
+    const listBarangayFilter = document.getElementById('listBarangayFilter');
+    const listStatusFilter = document.getElementById('listStatusFilter');
 
-            page = parseInt(page);
-            if (isNaN(page) || page < 1) page = 1;
-            if (page > totalPages) page = totalPages;
+    // Table View Filtering
+    function filterTableView() {
+        const searchTerm = tableNameSearch.value.toLowerCase();
+        const selectedBarangay = tableBarangayFilter.value;
 
-            currentPage = page;
-            updatePagination(viewType);
-        }
+        const filteredRows = paginationState.table.allRows.filter(row => {
+            const nameCell = row.cells[1];
+            const barangayCell = row.cells[2];
 
-        // Replace the updateVisibleRows function with this:
-function updateVisibleRows(viewType) {
-    const rows = viewType === 'table' ?
-        Array.from(document.querySelectorAll('#tableView tbody tr')) :
-        Array.from(document.querySelectorAll('#listView tbody tr'));
+            if (!nameCell || !barangayCell) return false;
 
-    // Get all visible rows before pagination
-    const visibleRows = rows.filter(row =>
-        !row.hasAttribute('style') ||
-        !row.style.display ||
-        row.style.display !== 'none'
-    );
+            const name = nameCell.textContent.toLowerCase();
+            const barangay = barangayCell.textContent.trim();
 
-    // Hide all rows first
-    rows.forEach(row => row.style.display = 'none');
+            const nameMatch = name.includes(searchTerm);
+            const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
 
-    // Calculate start and end indexes for current page
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = Math.min(startIndex + rowsPerPage, visibleRows.length);
+            return nameMatch && barangayMatch;
+        });
 
-    // Show only rows for current page
-    for (let i = startIndex; i < endIndex; i++) {
-        if (visibleRows[i]) {
-            visibleRows[i].style.display = '';
-        }
+        // Update filtered rows and reset to page 1
+        paginationState.table.filteredRows = filteredRows;
+        paginationState.table.currentPage = 1;
+        updatePagination('table');
     }
 
-    // Update pagination info
-    const totalRows = visibleRows.length;
-    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    // List View Filtering
+    function filterListView() {
+        const searchTerm = listNameSearch.value.toLowerCase();
+        const selectedBarangay = listBarangayFilter.value;
+        const selectedStatus = listStatusFilter.value;
 
-    // Enable/disable next buttons based on current page
-    const nextBtn = document.querySelector(`#${viewType}Pagination .pagination-btn[onclick*="changePage('${viewType}', ${currentPage + 1})"]`);
-    const lastBtn = document.querySelector(`#${viewType}Pagination .pagination-btn[onclick*="changePage('${viewType}', ${totalPages})"]`);
+        const filteredRows = paginationState.list.allRows.filter(row => {
+            const nameCell = row.cells[1];
+            const barangayCell = row.cells[2];
+            const statusCell = row.cells[4];
 
-    if (nextBtn) {
-        nextBtn.disabled = currentPage >= totalPages;
+            if (!nameCell || !barangayCell || !statusCell) return false;
+
+            const name = nameCell.textContent.toLowerCase();
+            const barangay = barangayCell.textContent.trim();
+            const status = statusCell.textContent.trim();
+
+            const nameMatch = name.includes(searchTerm);
+            const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+            const statusMatch = !selectedStatus || status.toLowerCase() === selectedStatus.toLowerCase();
+
+            return nameMatch && barangayMatch && statusMatch;
+        });
+
+        // Update filtered rows and reset to page 1
+        paginationState.list.filteredRows = filteredRows;
+        paginationState.list.currentPage = 1;
+        updatePagination('list');
     }
-    if (lastBtn) {
-        lastBtn.disabled = currentPage >= totalPages;
+
+    // Add event listeners with debouncing
+    if (tableNameSearch) {
+        tableNameSearch.addEventListener('input', debounce(filterTableView, 300));
+    }
+    if (tableBarangayFilter) {
+        tableBarangayFilter.addEventListener('change', filterTableView);
+    }
+    
+    if (listNameSearch) {
+        listNameSearch.addEventListener('input', debounce(filterListView, 300));
+    }
+    if (listBarangayFilter) {
+        listBarangayFilter.addEventListener('change', filterListView);
+    }
+    if (listStatusFilter) {
+        listStatusFilter.addEventListener('change', filterListView);
     }
 }
 
-        // Tab switching functions
-        function showTable() {
-            // Show loading spinner
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            document.getElementById('loadingOverlay').classList.remove('fade-out');
+// Debounce function for search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 
-            setTimeout(() => {
-                document.getElementById('loadingOverlay').classList.add('fade-out');
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                }, 1000);
-            }, 300);
+// Populate barangay filters (keep your existing function)
+function populateBarangayFilters() {
+    const barangays = getUniqueBarangays();
+    
+    const tableBarangayFilter = document.getElementById('barangaySelectTable');
+    const listBarangayFilter = document.getElementById('listBarangayFilter');
 
-            document.getElementById('tableView').classList.remove('hidden');
-            document.getElementById('listView').classList.add('hidden');
-            document.getElementById('tab-pending').classList.add('active');
-            document.getElementById('tab-approved-rejected').classList.remove('active');
-            currentView = 'table';
-            currentPage = 1;
-            updatePagination('table');
+    const populateDropdown = (dropdown) => {
+        if (!dropdown) return;
+        dropdown.innerHTML = '<option value="">All Barangays</option>';
+        barangays.forEach(barangay => {
+            const option = document.createElement('option');
+            option.value = barangay;
+            option.textContent = barangay;
+            dropdown.appendChild(option);
+        });
+    };
+
+    populateDropdown(tableBarangayFilter);
+    populateDropdown(listBarangayFilter);
+}
+
+// Get unique barangays (keep your existing function)
+function getUniqueBarangays() {
+    const barangays = new Set();
+    
+    document.querySelectorAll('#tableView tbody tr, #listView tbody tr').forEach(row => {
+        const barangayCell = row.cells[2];
+        if (barangayCell) {
+            const barangay = barangayCell.textContent.trim();
+            if (barangay) barangays.add(barangay);
         }
+    });
+    
+    return Array.from(barangays).sort();
+}
 
-        function showList() {
-            // Show loading spinner
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            document.getElementById('loadingOverlay').classList.remove('fade-out');
+// Tab switching functions - UPDATED
+function showTable() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.getElementById('loadingOverlay').classList.remove('fade-out');
 
-            setTimeout(() => {
-                document.getElementById('loadingOverlay').classList.add('fade-out');
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                }, 1000);
-            }, 300);
+    setTimeout(() => {
+        document.getElementById('tableView').classList.remove('hidden');
+        document.getElementById('listView').classList.add('hidden');
+        document.getElementById('tab-pending').classList.add('active');
+        document.getElementById('tab-approved-rejected').classList.remove('active');
+        currentView = 'table';
+        
+        // Reset to first page
+        paginationState.table.currentPage = 1;
+        updatePagination('table');
+        
+        document.getElementById('loadingOverlay').classList.add('fade-out');
+        setTimeout(() => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }, 1000);
+    }, 300);
+}
 
-            document.getElementById('tableView').classList.add('hidden');
-            document.getElementById('listView').classList.remove('hidden');
-            document.getElementById('tab-pending').classList.remove('active');
-            document.getElementById('tab-approved-rejected').classList.add('active');
-            currentView = 'list';
-            currentPage = 1;
-            updatePagination('list');
-        }
+function showList() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.getElementById('loadingOverlay').classList.remove('fade-out');
+
+    setTimeout(() => {
+        document.getElementById('tableView').classList.add('hidden');
+        document.getElementById('listView').classList.remove('hidden');
+        document.getElementById('tab-pending').classList.remove('active');
+        document.getElementById('tab-approved-rejected').classList.add('active');
+        currentView = 'list';
+        
+        // Reset to first page
+        paginationState.list.currentPage = 1;
+        updatePagination('list');
+        
+        document.getElementById('loadingOverlay').classList.add('fade-out');
+        setTimeout(() => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }, 1000);
+    }, 300);
+}
+
+// Keep all your existing modal functions (openIntakeSheetModal, closeIntakeSheetModal, etc.)
+// They should work without changes
 
         // Modal functions
-        function openIntakeSheetModal(id, name) {
+        function openIntakeSheetModal(id, name, type = 'intake') {
             currentApplicationId = id;
             currentApplicationName = name;
-            
+
+            // Update modal title based on type
+            const modalTitle = document.querySelector('#intakeSheetModal .modal-header h2');
+            if (modalTitle) {
+                modalTitle.textContent = type === 'renewal' ? 'Renewal Documents Review' : 'Family Intake Sheet';
+            }
+
             // Show loading
             document.getElementById('loadingOverlay').style.display = 'flex';
             document.getElementById('loadingOverlay').classList.remove('fade-out');
-            
+
             // Fetch intake sheet data
             fetch(`/mayor_staff/intake-sheet/${id}`)
                 .then(response => response.json())
                 .then(data => {
-                    populateIntakeSheetModal(data);
+                    populateIntakeSheetModal(data, type);
                     document.getElementById('intakeSheetModal').style.display = 'block';
                     document.getElementById('loadingOverlay').classList.add('fade-out');
                     setTimeout(() => {
@@ -1587,23 +1510,65 @@ function updateVisibleRows(viewType) {
         }
     });
 </script>
+// ...existing code...
 <script>
-document.getElementById("logoutForm").addEventListener("submit", function (e) {
-    e.preventDefault();
-    Swal.fire({
-        title: "Are you sure you want to logout?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, logout",
-        cancelButtonText: "Cancel",
-    }).then((result) => {
-        if (result.isConfirmed) {
-            e.target.submit();
-        }
-    });
-});
+function toggleDropdown(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const btn = document.querySelector(`button[onclick="toggleDropdown('${id}')"]`);
+    const chevron = btn ? btn.querySelector('i.bx') : null;
+
+    const willOpen = el.classList.contains('hidden'); // if hidden now, will open
+    // Toggle visibility
+    el.classList.toggle('hidden');
+
+    // Optional: rotate chevron for visual cue
+    if (chevron) {
+        chevron.classList.toggle('rotate-180', willOpen);
+    }
+
+    // Persist state in localStorage so it stays open across pages
+    try {
+        localStorage.setItem(`sidebarDropdown_${id}`, willOpen ? 'open' : 'closed');
+    } catch (e) {
+        console.warn('Could not persist dropdown state:', e);
+    }
+}
+
+function initializeSidebarDropdown() {
+    // Restore saved dropdown states on page load
+    try {
+        Object.keys(localStorage).forEach(key => {
+            if (!key.startsWith('sidebarDropdown_')) return;
+            const id = key.replace('sidebarDropdown_', '');
+            const state = localStorage.getItem(key);
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            const btn = document.querySelector(`button[onclick="toggleDropdown('${id}')"]`);
+            const chevron = btn ? btn.querySelector('i.bx') : null;
+
+            if (state === 'open') {
+                el.classList.remove('hidden');
+                if (chevron) chevron.classList.add('rotate-180');
+            } else {
+                el.classList.add('hidden');
+                if (chevron) chevron.classList.remove('rotate-180');
+            }
+        });
+    } catch (e) {
+        console.warn('initializeSidebarDropdown error:', e);
+    }
+}
+
+// Call initializeSidebarDropdown if DOM already loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeSidebarDropdown);
+} else {
+    initializeSidebarDropdown();
+}
 </script>
+// ...existing code...
 </body>
 </html>

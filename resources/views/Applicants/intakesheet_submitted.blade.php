@@ -60,8 +60,8 @@
                         <div class="checkmark">✓</div>
                         <h4 class="card-title text-success mb-3">Intake Sheet Already Submitted</h4>
                         <p class="card-text text-muted mb-4">
-                            Thank you, {{ $applicant->applicant_fname }} {{ $applicant->applicant_lname }}!
-                            Your Family Intake Sheet has already been submitted successfully.
+                            Thank you!
+                            Your Family Intake Sheet has been submitted successfully.
                         </p>
                         <p class="text-muted small">
                             Please wait for an announcement regarding the date and time for your face-to-face interview.
