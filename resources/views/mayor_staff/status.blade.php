@@ -202,22 +202,22 @@
     box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
 
-/* Responsive design for pagination */
+        /* Responsive design for pagination */
 @media (max-width: 768px) {
     .pagination-container {
         flex-direction: column;
         gap: 0.75rem;
     }
-    
+
     .pagination-buttons {
         justify-content: center;
     }
-    
+
     .pagination-btn {
         padding: 0.4rem 0.8rem;
         font-size: 0.8rem;
     }
-    
+
     .pagination-info {
         font-size: 0.8rem;
     }
@@ -227,19 +227,132 @@
     .pagination-buttons {
         gap: 0.25rem;
     }
-    
+
     .pagination-btn {
         padding: 0.35rem 0.7rem;
         font-size: 0.75rem;
     }
-    
+
     .pagination-page-info {
         font-size: 0.8rem;
     }
-    
+
     .pagination-page-input {
         width: 3rem;
         padding: 0.3rem;
+    }
+}
+
+/* Tab Styles */
+.tab {
+    padding: 0.5rem 1rem;
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.tab:hover {
+    background-color: #e5e7eb;
+}
+
+.tab.active {
+    background-color: #7c3aed;
+    color: white;
+    border-color: #7c3aed;
+}
+
+.tab.active:hover {
+    background-color: #6d28d9;
+}
+
+/* Enhanced Filter Styles */
+.filter-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.filter-input {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    min-width: 200px;
+}
+
+.filter-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.filter-select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: white;
+    transition: all 0.2s;
+    min-width: 200px;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.clear-filters-btn {
+    padding: 0.5rem 1rem;
+    background-color: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.875rem;
+    font-weight: 500;
+    align-self: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+.clear-filters-btn:hover {
+    background-color: #4b5563;
+}
+
+@media (max-width: 768px) {
+    .filter-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-input, .filter-select {
+        min-width: 100%;
+    }
+    
+    .clear-filters-btn {
+        align-self: stretch;
     }
 }
     </style>
@@ -327,7 +440,7 @@
         <!-- Main Content -->
         <div class="flex flex-1 overflow-hidden">
             <!-- Sidebar (fixed) -->
-<div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
+<div class="sidebar-fixed w-90 bg-white shadow-md flex flex-col transition-all duration-300">
                 <nav class="flex-1 p-2 md:p-4  space-y-1">
                     <ul class="side-menu top space-y-4">
                         <li>
@@ -394,12 +507,12 @@
                     <!-- ✅ Applicants -->
                     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                         <div class="flex gap-2">
-                            <div onclick="showTable()" class="tab active" id="tab-pending">
+                            <button type="button" onclick="showTable()" class="tab active" id="tab-pending">
                                 <i class="fas fa-table mr-1"></i> Pending Status
-                            </div>
-                            <div onclick="showList()" class="tab" id="tab-approved-rejected">
+                            </button>
+                            <button type="button" onclick="showList()" class="tab" id="tab-approved-rejected">
                                 <i class="fas fa-list mr-1"></i> Approved/Rejected
-                            </div>
+                            </button>
                         </div>
                     </div>
 
@@ -410,21 +523,25 @@
                             📋 Pending Status: View applicants awaiting status assignment.
                             </h3>
                         </div>
-                        <div class="flex gap-4 mb-6">
-                            <div class="relative">
-                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                <input type="text" id="searchInputTable" placeholder="Search by name..." class="search-input-enhanced pl-10 pr-4 py-3 w-80 border-2 border-gray-200 rounded-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-200">
-                            </div>
-                            <div class="relative">
-                                <i class="fas fa-filter absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                <select id="barangaySelectTable" class="filter-select-enhanced pl-10 pr-4 py-3 w-64 border-2 border-gray-200 rounded-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-200 bg-white">
-                                    <option value="">All Barangays</option>
-                                    @foreach($barangays as $brgy)
-                                        <option value="{{ $brgy }}">{{ $brgy }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
+                        
+  <!-- Add this before your table -->
+<div class="filter-container">
+    <div class="filter-group">
+        <label for="searchInputTable" class="filter-label">Search by Name</label>
+        <input type="text" id="searchInputTable" class="filter-input" placeholder="Type to search...">
+    </div>
+
+    <div class="filter-group">
+        <label for="barangaySelectTable" class="filter-label">Filter by Barangay</label>
+        <select id="barangaySelectTable" class="filter-select">
+            <option value="">All Barangays</option>
+            <!-- Add your barangay options dynamically -->
+        </select>
+    </div>
+
+
+</div>
+                        
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
                             <thead class="bg-gradient-to-r from-violet-600 to-violet-800 text-white uppercase text-sm">
                                 <tr>
@@ -439,7 +556,7 @@
 
                             <tbody>
                                 @forelse($filteredApplications ?? [] as $index => $app)
-                                <tr class="hover:bg-gray-50 border-b">
+                                <tr class="hover:bg-gray-50 border-b" data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}" data-barangay="{{ $app->barangay }}" data-remarks="{{ $app->remarks }}">
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         {{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}
@@ -481,6 +598,8 @@
                             </tbody>
                         </table>
 
+                        <!-- Pagination for Table View -->
+                        <div class="pagination-container" id="tablePagination"></div>
                     </div>
 
                     <!-- Approved/Rejected Tab -->
@@ -490,29 +609,33 @@
                             ✅ Approved/Rejected: View applicants with assigned status.
                             </h3>
                         </div>
-                        <div class="flex gap-4 mb-6">
-                            <div class="relative">
-                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                <input type="text" id="listNameSearch" placeholder="Search by name..." class="search-input-enhanced pl-10 pr-4 py-3 w-80 border-2 border-gray-200 rounded-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-200">
-                            </div>
-                            <div class="relative">
-                                <i class="fas fa-filter absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                <select id="listBarangayFilter" class="filter-select-enhanced pl-10 pr-4 py-3 w-64 border-2 border-gray-200 rounded-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-200 bg-white">
-                                    <option value="">All Barangays</option>
-                                    @foreach($barangays ?? [] as $brgy)
-                                        <option value="{{ $brgy }}">{{ $brgy }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="relative">
-                                <i class="fas fa-filter absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                <select id="listStatusFilter" class="filter-select-enhanced pl-10 pr-4 py-3 w-64 border-2 border-gray-200 rounded-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-200 bg-white">
-                                    <option value="">All Status</option>
-                                    <option value="Approved">Approved</option>
-                                    <option value="Rejected">Rejected</option>
-                                </select>
-                            </div>
-                        </div>
+                        
+                        <!-- Enhanced Filter Section for List View -->
+        <!-- Add this before your table -->
+<div class="filter-container">
+    <div class="filter-group">
+        <label for="listNameSearch" class="filter-label">Search by Name</label>
+        <input type="text" id="listNameSearch" class="filter-input" placeholder="Type to search...">
+    </div>
+
+    <div class="filter-group">
+        <label for="listBarangayFilter" class="filter-label">Filter by Barangay</label>
+        <select id="listBarangayFilter" class="filter-select">
+            <option value="">All Barangays</option>
+            <!-- Add your barangay options dynamically -->
+        </select>
+    </div>
+
+    <div class="filter-group">
+        <label for="listStatusFilter" class="filter-label">Filter by Status</label>
+        <select id="listStatusFilter" class="filter-select">
+            <option value="">All Status</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+        </select>
+    </div>
+</div>
+                        
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
                             <thead class="bg-gradient-to-r from-green-600 to-green-800 text-white uppercase text-sm">
                                 <tr>
@@ -525,7 +648,7 @@
                             </thead>
                             <tbody>
                                 @forelse($listApplications ?? [] as $index => $app)
-                                <tr class="hover:bg-gray-50 border-b">
+                                <tr class="hover:bg-gray-50 border-b" data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}" data-barangay="{{ $app->barangay }}" data-status="{{ $app->status }}">
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         {{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}
@@ -553,6 +676,9 @@
                                 @endforelse
                             </tbody>
                         </table>
+                        
+                        <!-- Pagination for List View -->
+                        <div class="pagination-container" id="listPagination"></div>
                     </div>
                 </div>
             </div>
@@ -573,7 +699,6 @@
             <i class="fas fa-times text-lg"></i>
         </button>
     </div>
-
 
                 
                 <div id="reviewArea" class="review-columns">
@@ -716,990 +841,744 @@
                     <!-- Documents Section -->
                     <div class="intake-section">
                         <h3 class="intake-section-title">Documents</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="modal-documents">
-                            <!-- Documents will be populated here -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p><strong>Barangay Clearance:</strong> <span id="modal-doc-brgy-clearance">-</span></p>
+                                <p><strong>Certificate of Indigency:</strong> <span id="modal-doc-cert-indigency">-</span></p>
+                                <p><strong>Certificate of Enrollment:</strong> <span id="modal-doc-cert-enrollment">-</span></p>
+                                <p><strong>Certificate of Grades:</strong> <span id="modal-doc-cert-grades">-</span></p>
+                            </div>
+                            <div>
+                                <p><strong>Birth Certificate:</strong> <span id="modal-doc-birth-cert">-</span></p>
+                                <p><strong>Valid ID:</strong> <span id="modal-doc-valid-id">-</span></p>
+                                <p><strong>Picture (2x2):</strong> <span id="modal-doc-picture">-</span></p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Modal Actions -->
-                <div class="modal-actions">
-                    <button type="button" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600" onclick="closeIntakeSheetModal()">
-                        Close
-                    </button>
-                    <button type="button" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600" onclick="confirmApprove()">
-                        <i class="fas fa-check mr-2"></i> Approve
-                    </button>
-                    <button type="button" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600" onclick="confirmReject()">
-                        <i class="fas fa-times mr-2"></i> Reject
-                    </button>
-                    <button type="button" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600" onclick="printIntakeSheet()">
-                        <i class="fas fa-print mr-2"></i> Print
-                    </button>
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end gap-4 mt-6">
+                        <button type="button" class="btn btn-danger" onclick="closeIntakeSheetModal()">
+                            <i class="fas fa-times mr-2"></i> Close
+                        </button>
+                        <button type="button" class="btn btn-success" id="approveBtn">
+                            <i class="fas fa-check mr-2"></i> Approve
+                        </button>
+                        <button type="button" class="btn btn-danger" id="rejectBtn">
+                            <i class="fas fa-times mr-2"></i> Reject
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Loading Spinner Overlay -->
-        <div class="loading-overlay" id="loadingOverlay">
-            <div class="loading-container">
-                <div class="spinner">
-                    <img src="{{ asset('images/LYDO.png') }}" alt="Loading Logo">
-                </div>
-                <div class="text-line">Loading...</div>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-container">
+            <div class="spinner">
+                <img src="{{ asset('images/LYDO.png') }}" alt="Loading...">
             </div>
+            <div class="text-line">Loading, please wait...</div>
         </div>
-
-        <script>
-            // Hide loading spinner when page loads
-            window.addEventListener('load', function() {
-                const loadingOverlay = document.getElementById('loadingOverlay');
-                if (loadingOverlay) {
-                    loadingOverlay.classList.add('fade-out');
-                    setTimeout(() => {
-                        loadingOverlay.style.display = 'none';
-                    }, 1000); // Match fade-out animation duration
-                }
-            });
-
-            let currentApplicationId = null;
-            let currentApplicationDocuments = null;
-            // convenience: server-side view template name to ask backend to send to applicant
-            const NOTIFY_TEMPLATE_REGISTRATION = 'scholar-registration-link';
-
-            // confirm + send Approved status (will tell server to send the scholar registration link via email & SMS)
-            function confirmApprove() {
-                if (!currentApplicationId) {
-                    Swal.fire({ icon: 'warning', title: 'No application', text: 'No application selected.' });
-                    return;
-                }
-                Swal.fire({
-                    title: 'Approve applicant?',
-                    text: 'Approving will send the scholar registration link via Email & SMS to the applicant.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, approve',
-                    cancelButtonText: 'Cancel'
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        sendStatusUpdate(currentApplicationId, 'Approved', null, { notify_template: NOTIFY_TEMPLATE_REGISTRATION });
-                    }
-                });
-            }
-
-
-            // prompt for rejection reason then send Rejected status
-            function confirmReject() {
-                if (!currentApplicationId) {
-                    Swal.fire({ icon: 'warning', title: 'No application', text: 'No application selected.' });
-                    return;
-                }
-                Swal.fire({
-                    title: 'Reject applicant',
-                    text: 'Please provide a reason why this application is being rejected (this will be sent to the applicant).',
-                    input: 'textarea',
-                    inputPlaceholder: 'Type rejection reason here...',
-                    inputAttributes: { 'aria-label': 'Rejection reason' },
-                    showCancelButton: true,
-                    confirmButtonText: 'Submit rejection',
-                    cancelButtonText: 'Cancel',
-                    preConfirm: (value) => {
-                        const reason = (value || '').trim();
-                        if (!reason) {
-                            Swal.showValidationMessage('A rejection reason is required');
-                        }
-                        return reason;
-                    }
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        const reason = result.value;
-                        sendStatusUpdate(currentApplicationId, 'Rejected', reason);
-                    }
-                });
-            }
-
-
-            // centralised helper to POST status updates to server
-            async function sendStatusUpdate(applicationId, status, reason = null, extra = {}) {
-                const tokenMeta = document.querySelector('meta[name="csrf-token"]');
-                const csrf = tokenMeta ? tokenMeta.getAttribute('content') : null;
-
-                // Ensure reason is always a string (server expects string)
-                const normalizedReason = (reason === null || reason === undefined) ? '' : String(reason);
-
-                // Build payload without undefined values
-                const payload = {
-                    status: status,
-                    ...extra
-                };
-
-                // Only include reason for rejection
-                if (status === 'Rejected') {
-                    payload.reason = normalizedReason;
-                }
-
-                Swal.fire({
-                    title: status + ' — please wait',
-                    allowOutsideClick: false,
-                    didOpen: () => { Swal.showLoading(); }
-                });
-
-                try {
-                    const res = await fetch(`/mayor_staff/status/${applicationId}`, {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {})
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    // read as text then try parse JSON to avoid json() throwing on HTML responses
-                    const text = await res.text();
-                    let data = null;
-                    try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
-
-                    Swal.close();
-
-                    if (!res.ok) {
-                        if (res.status === 419) {
-                            return Swal.fire({ icon: 'error', title: 'Session Expired', text: 'Your session expired. Please reload the page and try again.' });
-                        }
-                        const message = (data && data.message) ? data.message : `Server error (${res.status})`;
-                        return Swal.fire({ icon: 'error', title: 'Error', text: message });
-                    }
-
-                    if (data && data.success) {
-                        Swal.fire({ icon: 'success', title: 'Success', text: data.message || 'Status updated.' });
-                        
-                        closeIntakeSheetModal();
-                        document.querySelectorAll('#tableView .view-intake-btn').forEach(btn => {
-                            if (btn.getAttribute('data-id') == applicationId) {
-                                const tr = btn.closest('tr');
-                                if (tr) tr.remove();
-                            }
-                        });
-                        // refresh pagination after row removal
-                        updatePagination('table');
-                        return;
-                    }
-
-                    const errMsg = (data && data.message) ? data.message : 'Failed to update status.';
-                    Swal.fire({ icon: 'error', title: 'Error', text: errMsg });
-                } catch (err) {
-                    console.error('Update status error:', err);
-                    Swal.close();
-                    Swal.fire({ icon: 'error', title: 'Error', text: 'An error occurred while updating status.' });
-                }
-            }
-
-            // Inline update status for table buttons
-            function updateStatus(applicationId, name, status) {
-                if (status === 'Approved') {
-                    Swal.fire({
-                        title: 'Approve applicant?',
-                        text: 'Approving will send the scholar registration link via Email & SMS to the applicant.',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonText: 'Yes, approve',
-                        cancelButtonText: 'Cancel'
-                    }).then(result => {
-                        if (result.isConfirmed) {
-                            sendStatusUpdate(applicationId, 'Approved', null, { notify_template: NOTIFY_TEMPLATE_REGISTRATION });
-                        }
-                    });
-                } else if (status === 'Rejected') {
-                    Swal.fire({
-                        title: 'Reject applicant',
-                        text: 'Please provide a reason why this application is being rejected (this will be sent to the applicant).',
-                        input: 'textarea',
-                        inputPlaceholder: 'Type rejection reason here...',
-                        inputAttributes: { 'aria-label': 'Rejection reason' },
-                        showCancelButton: true,
-                        confirmButtonText: 'Submit rejection',
-                        cancelButtonText: 'Cancel',
-                        preConfirm: (value) => {
-                            const reason = (value || '').trim();
-                            if (!reason) {
-                                Swal.showValidationMessage('A rejection reason is required');
-                            }
-                            return reason;
-                        }
-                    }).then(result => {
-                        if (result.isConfirmed) {
-                            const reason = result.value;
-                            sendStatusUpdate(applicationId, 'Rejected', reason);
-                        }
-                    });
-                }
-            }
-
-            function showTable() {
-                const tableViewEl = document.getElementById("tableView");
-                const listViewEl = document.getElementById("listView");
-                if (tableViewEl) tableViewEl.classList.remove("hidden");
-                if (listViewEl) listViewEl.classList.add("hidden");
-                const activeTab = document.querySelector('.tab.active');
-                if (activeTab) {
-                    activeTab.classList.remove('active');
-                    activeTab.classList.remove('tab-green');
-                }
-                const tabs = document.querySelectorAll('.tab');
-                if (tabs && tabs[0]) tabs[0].classList.add('active');
-                localStorage.setItem("viewMode", "table");
-                if (typeof filterTable === 'function') filterTable();
-            }
-
-            function showList() {
-                const tableViewEl = document.getElementById("tableView");
-                const listViewEl = document.getElementById("listView");
-                if (listViewEl) listViewEl.classList.remove("hidden");
-                if (tableViewEl) tableViewEl.classList.add("hidden");
-                const activeTab = document.querySelector('.tab.active');
-                if (activeTab) {
-                    activeTab.classList.remove('active');
-                    activeTab.classList.remove('tab-green');
-                }
-                const tabs = document.querySelectorAll('.tab');
-                if (tabs && tabs[1]) {
-                    tabs[1].classList.add('active');
-                    tabs[1].classList.add('tab-green');
-                }
-                localStorage.setItem("viewMode", "list");
-                if (typeof filterList === 'function') filterList();
-            }
-
-            // View Intake Sheet Modal Functions
-            function openIntakeSheetModal(applicationId) {
-                if (!applicationId) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'No application ID provided'
-                    });
-                    return;
-                }
-
-                // Store current application ID for approve/reject actions
-                currentApplicationId = applicationId;
-
-                // Show loading state
-                const modal = document.getElementById('intakeSheetModal');
-                if (modal) {
-                    modal.style.display = 'block';
-                    const content = modal.querySelector('.modal-body');
-                    if (content) {
-                        content.innerHTML = `
-                            <div class="loading-container">
-                                <div class="loading-spinner">
-                                    <img src="{{ asset('images/LYDO.png') }}" alt="Loading">
-                                </div>
-                                <div class="loading-text">Loading Intake Sheet...</div>
-                            </div>`;
-                    }
-                }
-
-                // Fetch intake sheet data
-                fetch(`/mayor_staff/intake-sheet/${applicationId}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Intake sheet data:', data);
-                        if (!data || !data.success) throw new Error(data?.message || 'No data received');
-
-                        // Populate modal with data
-                        populateIntakeSheetModal(data.intakeSheet);
-
-                        // Show the modal
-                        if (modal) {
-                            modal.style.display = 'block';
-                            modal.scrollTop = 0;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching intake sheet:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Failed to load intake sheet data'
-                        });
-                        closeIntakeSheetModal();
-                    });
-            }
-
-            function closeIntakeSheetModal() {
-                const modal = document.getElementById('intakeSheetModal');
-                if (modal) modal.style.display = 'none';
-            }
-
-            function populateIntakeSheetModal(intake) {
-                // normalize & accept both intakeSheet / intake_sheet shapes
-                const payload = intake || {};
-                const d = normalizeData(payload);
-
-                const setText = (id, value) => {
-                    const el = document.getElementById(id);
-                    if (!el) return;
-                    el.textContent = value === null || value === undefined || value === '' ? '-' : value;
-                };
-
-                // Applicant / Head info
-                const applicantName = d.applicant_name || [d.applicant_fname, d.applicant_mname, d.applicant_lname, d.applicant_suffix].filter(Boolean).join(' ');
-                setText('modal-applicant-name', applicantName || '-');
-                setText('modal-applicant-gender', d.applicant_gender || '-');
-                setText('modal-serial-number', d.serial_number || '-');
-                setText('modal-head-4ps', d.head_4ps || '-');
-                setText('modal-head-ipno', d.head_ipno || '-');
-                setText('modal-head-address', d.head_address || '-');
-                setText('modal-head-zone', d.head_zone || '-');
-                setText('modal-head-barangay', d.head_barangay || '-');
-                setText('modal-head-pob', d.head_pob || '-');
-                setText('modal-head-dob', d.head_dob ? formatDate(d.head_dob) : '-');
-                setText('modal-head-educ', d.head_educ || '-');
-                setText('modal-head-occ', d.head_occ || '-');
-                setText('modal-head-religion', d.head_religion || '-');
-
-                // Household / Income
-                setText('modal-other-income', d.other_income || '-');
-                // Display house with rent if applicable (accepts many rent key variants and formats)
-                let houseDisplay = d.house_house || '-';
-                if (d.house_house && String(d.house_house).toLowerCase().includes('rent')) {
-                    const rentRaw = d.house_house_rent ?? d.house_rent ?? d.house_rental ?? d.house_rent_amount;
-                    if (rentRaw) {
-                        const rentNum = parseFloat(String(rentRaw).replace(/[^0-9.-]+/g, '')) || 0;
-                        const rentText = rentNum ? `₱${rentNum.toLocaleString()}` : escapeHtml(String(rentRaw));
-                        houseDisplay += ` (Rent: ${rentText})`;
-                    }
-                }
-                document.getElementById('modal-house-house').innerHTML = houseDisplay;
-
-                setText('modal-house-electric', d.house_electric || '-');
-                setText('modal-remarks', d.remarks || '-');
-                setText('modal-house-total-income', d.house_total_income ?? '-');
-
-                // Display lot with rent if applicable (accepts many rent key variants and formats)
-                let lotDisplay = d.house_lot || '-';
-                if (d.house_lot && String(d.house_lot).toLowerCase().includes('rent')) {
-                    const lotRentRaw = d.house_lot_rent ?? d.lot_rent ?? d.house_lot_rental ?? d.house_lot_rent_amount ?? d.lot_rent_amount;
-                    if (lotRentRaw) {
-                        const lotRentNum = parseFloat(String(lotRentRaw).replace(/[^0-9.-]+/g, '')) || 0;
-                        const lotRentText = lotRentNum ? `₱${lotRentNum.toLocaleString()}` : escapeHtml(String(lotRentRaw));
-                        lotDisplay += ` (Rent: ${lotRentText})`;
-                    }
-                }
-                document.getElementById('modal-house-lot').innerHTML = lotDisplay;
-
-                // Family members - support array or JSON string
-                let family = d.family_members || [];
-                if (typeof family === 'string') {
-                    try { family = JSON.parse(family); } catch (e) { family = []; }
-                }
-                if (!Array.isArray(family)) family = [];
-
-                const fmBody = document.getElementById('modal-family-members');
-                if (fmBody) {
-                    if (family.length === 0) {
-                        fmBody.innerHTML = '<tr><td colspan="10" class="text-center">No family members recorded</td></tr>';
-                    } else {
-                        fmBody.innerHTML = family.map(m => {
-                            const name = escapeHtml(m.name || m.fullname || m.full_name || `${m.first_name||''} ${m.last_name||''}`.trim());
-                            const relation = escapeHtml(m.relationship || m.relation || m.rel || '');
-                            const bdate = m.birthdate || m.dob || m.birth || '';
-                            const age = m.age || m.years || (bdate ? Math.max(0, new Date().getFullYear() - new Date(bdate).getFullYear()) : '');
-                            const sex = escapeHtml(m.sex || m.gender || '');
-                            const civil = escapeHtml(m.civil_status || m.civil || '');
-                            const educ = escapeHtml(m.education || m.educational_attainment || '');
-                            const occ = escapeHtml(m.occupation || m.occ || '');
-                            // Format income with peso sign and thousands separator
-                            const rawIncome = m.income || m.monthly_income || 0;
-                            const income = rawIncome ? `₱${Number(rawIncome).toLocaleString()}` : '-';
-                            const remarks = escapeHtml(m.remarks || '');
-                            return `<tr>
-                                <td>${name}</td>
-                                <td>${relation}</td>
-                                <td>${bdate ? escapeHtml(formatDate(bdate)) : ''}</td>
-                                <td>${age}</td>
-                                <td>${sex}</td>
-                                <td>${civil}</td>
-                                <td>${educ}</td>
-                                <td>${occ}</td>
-                                <td class="text-right">${income}</td>
-                                <td>${remarks}</td>
-                            </tr>`;
-                        }).join('');
-                    }
-                }
-
-                // Service records - support array or JSON string
-                let services = d.rv_service_records || d.rv_service_records || d.social_service_records || [];
-                if (typeof services === 'string') {
-                    try { services = JSON.parse(services); } catch (e) { services = []; }
-                }
-                if (!Array.isArray(services)) services = [];
-
-                const srBody = document.getElementById('modal-service-records');
-                if (srBody) {
-                    if (services.length === 0) {
-                        srBody.innerHTML = '<tr><td colspan="4" class="text-center">No service records</td></tr>';
-                    } else {
-                        srBody.innerHTML = services.map(s => {
-                            const date = s.date || s.record_date || s.created_at || '';
-                            const problem = escapeHtml(s.problem || s.need || s.issue || '');
-                            const action = escapeHtml(s.action || s.assistance || s.service || '');
-                            const remarks = escapeHtml(s.remarks || '');
-                            return `<tr>
-                                <td>${date ? escapeHtml(formatDate(date)) : ''}</td>
-                                <td>${problem}</td>
-                                <td>${action}</td>
-                                <td>${remarks}</td>
-                            </tr>`;
-                        }).join('');
-                    }
-                }
-
-                // Worker / Officer names + date
-                setText('modal-worker-fullname', d.worker_name || '-');
-                setText('modal-officer-fullname', d.officer_name || '-');
-                setText('modal-date-entry', d.date_entry ? formatDate(d.date_entry) : '-');
-
-                const setImage = (imgId, url) => {
-                    const imgEl = document.getElementById(imgId);
-                    if (!imgEl) return;
-                    let u = '';
-                    if (!url) { imgEl.style.display = 'none'; return; }
-                    if (typeof url === 'string') u = url.trim();
-                    // if url given as object {url: '...'} or {path: '...'}
-                    if (!u && typeof url === 'object') {
-                        u = (url.url || url.path || url.src || '') + '';
-                    }
-                    if (!u || u === '-') { imgEl.style.display = 'none'; return; }
-                    try {
-                        const resolved = resolveUrl(u);
-                        imgEl.onerror = () => { imgEl.style.display = 'none'; };
-                        imgEl.onload = () => { imgEl.style.display = ''; };
-                        imgEl.src = resolved;
-                    } catch (e) {
-                        imgEl.style.display = 'none';
-                    }
-                };
-
-                const renderSignatureContainer = (containerId, url) => {
-                    const el = document.getElementById(containerId);
-                    if (!el) return;
-                    let u = '';
-                    if (!url) { el.innerHTML = '<p class="text-xs text-gray-500">No signature</p>'; return; }
-                    if (typeof url === 'string') u = url.trim();
-                    if (!u && typeof url === 'object') {
-                        // handle {url:...} or arrays
-                        if (Array.isArray(url)) {
-                            u = (url[0] && (url[0].url || url[0].path || url[0])) || '';
-                        } else {
-                            u = (url.url || url.path || url.src || '') + '';
-                        }
-                    }
-                    if (!u || u === '-') {
-                        el.innerHTML = '<p class="text-xs text-gray-500">No signature</p>';
-                        return;
-                    }
-                    const resolved = resolveUrl(u);
-                    const img = document.createElement('img');
-                    img.style.maxWidth = '220px';
-                    img.style.height = '80px';
-                    img.style.objectFit = 'contain';
-                    img.style.border = '1px solid #e5e7eb';
-                    img.alt = 'signature';
-                    img.onerror = () => { el.innerHTML = '<p class="text-xs text-gray-500">No signature</p>'; };
-                    img.onload = () => { /* keep image */ };
-                    img.src = resolved;
-                    el.innerHTML = '';
-                    // center image inside container
-                    const wrapper = document.createElement('div');
-                    wrapper.style.display = 'flex';
-                    wrapper.style.justifyContent = 'center';
-                    wrapper.style.alignItems = 'center';
-                    wrapper.appendChild(img);
-                    el.appendChild(wrapper);
-                };
-
-                // try worker/officer photo fields, fall back to signature if no photo available
-                setImage('modal-worker-photo-img', d.worker_photo || d.worker_picture || d.signature_worker);
-                setImage('modal-officer-photo-img', d.officer_photo || d.officer_picture || d.signature_officer);
-
-                // render signatures
-                renderSignatureContainer('modal-worker-signature', d.signature_worker);
-                renderSignatureContainer('modal-officer-signature', d.signature_officer);
-                renderSignatureContainer('modal-client-signature-large', d.signature_client);
-
-                // Documents
-                let documents = d.documents || {};
-                if (typeof documents === 'string') {
-                    try { documents = JSON.parse(documents); } catch (e) { documents = {}; }
-                }
-                const docContainer = document.getElementById('modal-documents');
-                if (docContainer) {
-                    const docKeys = ['application_letter', 'cert_of_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
-                    const docLabels = {
-                        application_letter: 'Application Letter',
-                        cert_of_reg: 'Certificate of Registration',
-                        grade_slip: 'Grade Slip',
-                        brgy_indigency: 'Barangay Indigency',
-                        student_id: 'Student ID'
-                    };
-                    docContainer.innerHTML = docKeys.map(key => {
-                        const url = documents[key];
-                        if (!url) return '';
-                        const label = docLabels[key] || key;
-                        const resolvedUrl = resolveUrl(url);
-                        return `<div class="document-item p-2 border rounded-lg bg-gray-50 hover:bg-gray-100 transition">
-                            <a href="${resolvedUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-medium">${label}</a>
-                        </div>`;
-                    }).join('');
-                    if (docContainer.innerHTML.trim() === '') {
-                        docContainer.innerHTML = '<p class="text-gray-500">No documents available</p>';
-                    }
-                }
-
-                // ensure modal visible
-                const modal = document.getElementById('intakeSheetModal');
-                if (modal) {
-                    modal.style.display = 'block';
-                    modal.scrollTop = 0;
-                }
-            }
-
-            function printIntakeSheet() {
-                // simple print of modal content
-                const content = document.querySelector('#intakeSheetModal .modal-content').innerHTML;
-                const win = window.open('', '_blank');
-                win.document.write('<html><head><title>Print Intake Sheet</title></head><body>' + content + '</body></html>');
-                win.document.close();
-                win.print();
-                win.close();
-            }
-
-            // small helper
-            function escapeHtml(s) {
-                if (s === null || s === undefined) return '';
-                return String(s)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;');
-            }
-
-            // Normalize server payload to expected keys (fallbacks)
-            function normalizeData(d) {
-                if (!d || typeof d !== 'object') return {};
-                const get = (keys, def = '') => {
-                    for (const k of keys) {
-                        if (d[k] !== undefined && d[k] !== null) return d[k];
-                    }
-                    return def;
-                };
-
-                const normalized = {
-                    serial_number: get(['serial_number', 'serial_no', 'serial']),
-                    applicant_fname: get(['applicant_fname', 'fname', 'first_name', 'firstName']),
-                    applicant_mname: get(['applicant_mname', 'mname', 'middle_name', 'middleName']),
-                    applicant_lname: get(['applicant_lname', 'lname', 'last_name', 'lastName']),
-                    applicant_suffix: get(['applicant_suffix', 'suffix']),
-                    applicant_gender: get(['applicant_gender', 'gender', 'sex']),
-                    head_4ps: get(['head_4ps', '4ps', 'four_ps']),
-                    head_ipno: get(['head_ipno', 'ip_no', 'ipno']),
-                    head_address: get(['head_address', 'address']),
-                    head_zone: get(['head_zone', 'zone']),
-                    head_barangay: get(['head_barangay', 'barangay', 'head_brgy']),
-                    head_dob: get(['head_dob', 'dob', 'birthdate']),
-                    head_pob: get(['head_pob', 'pob', 'place_of_birth']),
-                    head_educ: get(['head_educ', 'education', 'educ']),
-                    head_occ: get(['head_occ', 'occupation', 'occ']),
-                    head_religion: get(['head_religion', 'religion']),
-                    family_members: get(['family_members', 'members', 'family']),
-                    rv_service_records: get(['rv_service_records', 'service_records', 'serviceRecords']),
-                    other_income: get(['other_income', 'other_source_income', 'otherIncome', 'other']),
-                    house_total_income: get(['house_total_income', 'total_income']),
-                    house_net_income: get(['house_net_income', 'net_income']),
-                    house_house: get(['house_house']),
-                    house_house_rent: get(['house_house_rent']),
-                    house_lot: get(['house_lot']),
-                    house_lot_rent: get(['house_lot_rent']),
-                    house_water: get(['house_water']),
-                    house_electric: get(['house_electric']),
-                    remarks: get(['remarks', 'final_remarks', 'assessment']),
-                    signature_client: get(['signature_client', 'signature_client_url', 'client_signature']),
-                    signature_worker: get(['signature_worker', 'signature_worker_url', 'worker_signature']),
-                    signature_officer: get(['signature_officer', 'signature_officer_url', 'officer_signature']),
-                    worker_name: get(['worker_name', 'social_worker', 'worker']),
-                    officer_name: get(['officer_name', 'officer']),
-                    date_entry: get(['date_entry', 'created_at', 'date']),
-                };
-
-                ['signature_client', 'signature_worker', 'signature_officer'].forEach(k => {
-                    if (normalized[k] && typeof normalized[k] === 'string' && normalized[k].startsWith('/')) {
-                        normalized[k] = resolveUrl(normalized[k]);
-                    }
-                });
-
-                return normalized;
-            }
-
-            // Normalize document data
-            function normalizeDocumentData(d) {
-                if (!d || typeof d !== 'object') return {};
-                const get = (keys, def = '') => {
-                    for (const k of keys) {
-                        if (d[k] !== undefined && d[k] !== null) return d[k];
-                    }
-                    return def;
-                };
-
-                return {
-                    application_letter: get(['application_letter', 'letter']),
-                    cert_of_reg: get(['cert_of_reg', 'registration_certificate']),
-                    grade_slip: get(['grade_slip', 'grades']),
-                    brgy_indigency: get(['brgy_indigency', 'indigency']),
-                    student_id: get(['student_id', 'id']),
-                };
-            }
-
-            function resolveUrl(path) {
-                try {
-                    if (!path) return path;
-                    if (path.startsWith('http://') || path.startsWith('https://')) return path;
-                    const base = window.location.origin;
-                    return base + (path.startsWith('/') ? '' : '/') + path;
-                } catch (e) { return path; }
-            }
-
-            function formatDate(dateString) {
-                if (!dateString) return "-";
-                const date = new Date(dateString);
-                if (isNaN(date)) return dateString;
-                const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                return date.toLocaleDateString('en-US', options);
-            }
-
-
-
-            // Filter functions
-            function filterTable() {
-                const nameSearchEl = document.getElementById('searchInputTable');
-                const barangayFilterEl = document.getElementById('barangaySelectTable');
-                const nameSearchValue = nameSearchEl ? nameSearchEl.value.toLowerCase().trim() : '';
-                const barangayFilterValue = barangayFilterEl ? barangayFilterEl.value.toLowerCase().trim() : '';
-
-                const tableViewRows = document.querySelectorAll('#tableView tbody tr');
-                tableViewRows.forEach(row => {
-                    // skip header/empty rows
-                    if (!row.cells || row.cells.length < 3) return;
-                    const nameCell = (row.cells[1].textContent || '').toLowerCase();
-                    const barangayCell = (row.cells[2].textContent || '').toLowerCase();
-
-                    const matchesName = nameCell.includes(nameSearchValue);
-                    const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
-
-                    row.style.display = (matchesName && matchesBarangay) ? '' : 'none';
-                });
-            }
-
-            function filterList() {
-                const nameSearchEl = document.getElementById('listNameSearch');
-                const barangayFilterEl = document.getElementById('listBarangayFilter');
-                const statusFilterEl = document.getElementById('listStatusFilter');
-                const nameSearchValue = nameSearchEl ? nameSearchEl.value.toLowerCase().trim() : '';
-                const barangayFilterValue = barangayFilterEl ? barangayFilterEl.value.toLowerCase().trim() : '';
-                const statusFilterValue = statusFilterEl ? statusFilterEl.value.toLowerCase().trim() : '';
-
-                const listViewRows = document.querySelectorAll('#listView tbody tr');
-                listViewRows.forEach(row => {
-                    if (!row.cells || row.cells.length < 4) return;
-                    const nameCell = (row.cells[1].textContent || '').toLowerCase();
-                    const barangayCell = (row.cells[2].textContent || '').toLowerCase();
-                    const statusCell = (row.cells[4].textContent || '').toLowerCase();
-
-                    const matchesName = nameCell.includes(nameSearchValue);
-                    const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
-                    const matchesStatus = statusFilterValue === '' || statusCell.includes(statusFilterValue);
-
-                    row.style.display = (matchesName && matchesBarangay && matchesStatus) ? '' : 'none';
-                });
-               // update pagination for list view
-               paginationState.list.currentPage = 1;
-               updatePagination('list');
-            }
-
-            // Add this to the existing script
-            function bindViewButtons() {
-                document.querySelectorAll('.view-intake-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        if (!id) {
-                            console.error('No application ID found on button');
-                            return;
-                        }
-                        openIntakeSheetModal(id);
-                    });
-                });
-            }
-
-            // Safe event wiring on DOM ready
-            document.addEventListener("DOMContentLoaded", function() {
-                bindViewButtons();
-                let viewMode = localStorage.getItem("viewMode") || "table";
-                if(viewMode === "list") {
-                    showList();
-                } else {
-                    showTable();
-                }
-
-                // initialize pagination for both tables
-                // small timeout to ensure table DOM available (blade may render large HTML)
-                setTimeout(() => {
-                    // make sure filters applied initially
-                    filterTable();
-                    filterList();
-                }, 50);
-
-                const nameSearch = document.getElementById('searchInputTable');
-                const barangayFilter = document.getElementById('barangaySelectTable');
-                const listNameSearch = document.getElementById('listNameSearch');
-                const listBarangayFilter = document.getElementById('listBarangayFilter');
-                const listStatusFilter = document.getElementById('listStatusFilter');
-
-                if (nameSearch) nameSearch.addEventListener('input', filterTable);
-                if (barangayFilter) barangayFilter.addEventListener('change', filterTable);
-                if (listNameSearch) listNameSearch.addEventListener('input', filterList);
-                if (listBarangayFilter) listBarangayFilter.addEventListener('change', filterList);
-                if (listStatusFilter) listStatusFilter.addEventListener('change', filterList);
-
-
-
-                // Add event listeners for approve/reject buttons
-                document.querySelectorAll('.approve-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        const name = this.getAttribute('data-name');
-                       
-                        updateStatus(id, name, 'Approved');
-                    });
-                });
-                
-                document.querySelectorAll('.reject-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        const name = this.getAttribute('data-name');
-                        updateStatus(id, name, 'Rejected');
-                    });
-                });
-
-
-
-                // Restore dropdown open state
-                document.querySelectorAll("ul[id]").forEach(menu => {
-                    const state = localStorage.getItem(menu.id);
-                    if (state === "open") menu.classList.remove("hidden");
-                });
-            });
-        </script>
-
-        @if(session('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: '{{ session("success") }}',
-                confirmButtonText: 'OK'
-            });
-        </script>
-        @endif
-
-        <script>
-        
-const paginationState = {
-    table: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        filteredRows: []
-    },
-    list: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        filteredRows: []
-    }
-};
+    </div>
+
+    <script>
+        // Global variables
+        let currentApplicationId = null;
+        let currentApplicationName = null;
+        let currentView = 'table'; // 'table' or 'list'
+        let tableData = [];
+        let listData = [];
+
+        // Pagination state
+        let currentPage = 1;
+        const rowsPerPage = 15;
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize data
+            initializeData();
+
+            // Initialize pagination
+            initializePagination();
+
+            // Initialize filtering
+            initializeFiltering();
+
+            // Initialize modal events
+            initializeModalEvents();
+
+            // Initialize notification dropdown
+            initializeNotificationDropdown();
+
+            // Initialize sidebar dropdown state
+            initializeSidebarDropdown();
+        });
+
+        // Initialize data from the tables
+        function initializeData() {
+            // Get table data
+            const tableRows = document.querySelectorAll('#tableView tbody tr');
+            tableData = Array.from(tableRows).map(row => ({
+                element: row,
+                name: row.dataset.name || '',
+                barangay: row.dataset.barangay || '',
+                remarks: row.dataset.remarks || ''
+            }));
+
+            // Get list data
+            const listRows = document.querySelectorAll('#listView tbody tr');
+            listData = Array.from(listRows).map(row => ({
+                element: row,
+                name: row.dataset.name || '',
+                barangay: row.dataset.barangay || '',
+                status: row.dataset.status || ''
+            }));
+        }
+
+        // Initialize pagination
         function initializePagination() {
-    // Initialize table view pagination
-    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
-    paginationState.table.filteredRows = tableRows;
-    updatePagination('table');
-    
-    // Initialize list view pagination
-    const listRows = Array.from(document.querySelectorAll('#listView tbody tr'));
-    paginationState.list.filteredRows = listRows;
-    updatePagination('list');
-}
+            updatePagination('table');
+            updatePagination('list');
+        }
 
-// Update pagination display
+        // Initialize filtering functionality
+        function getUniqueBarangays() {
+            const barangays = new Set();
+
+            // Get barangays from table view
+            document.querySelectorAll('#tableView tbody tr').forEach(row => {
+                const barangayCell = row.cells[2]; // Barangay is in third column
+                if (barangayCell) {
+                    const barangay = barangayCell.textContent.trim();
+                    if (barangay) barangays.add(barangay);
+                }
+            });
+
+            // Get barangays from list view
+            document.querySelectorAll('#listView tbody tr').forEach(row => {
+                const barangayCell = row.cells[2]; // Barangay is in third column
+                if (barangayCell) {
+                    const barangay = barangayCell.textContent.trim();
+                    if (barangay) barangays.add(barangay);
+                }
+            });
+
+            return Array.from(barangays).sort();
+        }
+
+        function populateBarangayFilters() {
+            const barangays = getUniqueBarangays();
+
+            // Get filter elements
+            const tableBarangayFilter = document.getElementById('barangaySelectTable');
+            const listBarangayFilter = document.getElementById('listBarangayFilter');
+
+            // Function to populate a single dropdown
+            const populateDropdown = (dropdown) => {
+                if (!dropdown) return;
+
+                // Clear existing options except the first one
+                dropdown.innerHTML = '<option value="">All Barangays</option>';
+
+                // Add options for each barangay
+                barangays.forEach(barangay => {
+                    const option = document.createElement('option');
+                    option.value = barangay;
+                    option.textContent = barangay;
+                    dropdown.appendChild(option);
+                });
+            };
+
+            // Populate both dropdowns
+            populateDropdown(tableBarangayFilter);
+            populateDropdown(listBarangayFilter);
+        }
+
+        function initializeFiltering() {
+            // Populate barangay filters first
+            populateBarangayFilters();
+
+            const tableNameSearch = document.getElementById('searchInputTable');
+            const tableBarangayFilter = document.getElementById('barangaySelectTable');
+
+            const listNameSearch = document.getElementById('listNameSearch');
+            const listBarangayFilter = document.getElementById('listBarangayFilter');
+            const listStatusFilter = document.getElementById('listStatusFilter');
+
+            function filterTableView() {
+                const searchTerm = tableNameSearch.value.toLowerCase();
+                const selectedBarangay = tableBarangayFilter.value;
+
+                const rows = document.querySelectorAll('#tableView tbody tr');
+
+                rows.forEach(row => {
+                    if (row.cells.length < 3) return; // Skip invalid rows
+
+                    const nameCell = row.cells[1];
+                    const barangayCell = row.cells[2];
+
+                    if (!nameCell || !barangayCell) return;
+
+                    const name = nameCell.textContent.toLowerCase();
+                    const barangay = barangayCell.textContent.trim();
+
+                    const nameMatch = name.includes(searchTerm);
+                    const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+
+                    row.style.display = nameMatch && barangayMatch ? '' : 'none';
+                });
+
+                // Reset to first page and update pagination after filtering
+                currentPage = 1;
+                updatePagination('table');
+            }
+
+            function filterListView() {
+                const searchTerm = listNameSearch.value.toLowerCase();
+                const selectedBarangay = listBarangayFilter.value;
+                const selectedStatus = listStatusFilter.value;
+
+                const rows = document.querySelectorAll('#listView tbody tr');
+
+                rows.forEach(row => {
+                    if (row.cells.length < 5) return; // Skip invalid rows
+
+                    const nameCell = row.cells[1];
+                    const barangayCell = row.cells[2];
+                    const statusCell = row.cells[4];
+
+                    if (!nameCell || !barangayCell || !statusCell) return;
+
+                    const name = nameCell.textContent.toLowerCase();
+                    const barangay = barangayCell.textContent.trim();
+                    const status = statusCell.textContent.trim();
+
+                    const nameMatch = name.includes(searchTerm);
+                    const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+                    const statusMatch = !selectedStatus || status.toLowerCase() === selectedStatus.toLowerCase();
+
+                    row.style.display = nameMatch && barangayMatch && statusMatch ? '' : 'none';
+                });
+            }
+
+            // Add event listeners
+            if (tableNameSearch) {
+                tableNameSearch.addEventListener('input', filterTableView);
+            }
+            if (tableBarangayFilter) {
+                tableBarangayFilter.addEventListener('change', filterTableView);
+            }
+
+
+
+            if (listNameSearch) {
+                listNameSearch.addEventListener('input', filterListView);
+            }
+            if (listBarangayFilter) {
+                listBarangayFilter.addEventListener('change', filterListView);
+            }
+            if (listStatusFilter) {
+                listStatusFilter.addEventListener('change', filterListView);
+            }
+        }
+        // Initialize modal events
+        function initializeModalEvents() {
+            // View intake sheet buttons
+            document.querySelectorAll('.view-intake-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const name = this.getAttribute('data-name');
+                    openIntakeSheetModal(id, name);
+                });
+            });
+
+            // Approve and reject buttons
+            document.getElementById('approveBtn').addEventListener('click', function() {
+                if (currentApplicationId) {
+                    approveApplication(currentApplicationId, currentApplicationName);
+                }
+            });
+
+            document.getElementById('rejectBtn').addEventListener('click', function() {
+                if (currentApplicationId) {
+                    rejectApplication(currentApplicationId, currentApplicationName);
+                }
+            });
+        }
+
+        // Initialize notification dropdown
+        function initializeNotificationDropdown() {
+            const notifBell = document.getElementById('notifBell');
+            const notifDropdown = document.getElementById('notifDropdown');
+
+            if (notifBell && notifDropdown) {
+                notifBell.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    notifDropdown.classList.toggle('hidden');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function() {
+                    notifDropdown.classList.add('hidden');
+                });
+            }
+        }
+
+        // Initialize sidebar dropdown state
+        function initializeSidebarDropdown() {
+            // Since we're on the status page, show the scholarMenu
+            const scholarMenu = document.getElementById('scholarMenu');
+            if (scholarMenu) {
+                scholarMenu.classList.remove('hidden');
+            }
+        }
+
+
+
+
+        // Replace the updatePagination function
 function updatePagination(viewType) {
-    const state = paginationState[viewType];
-    const tableId = viewType === 'table' ? 'tableView' : 'listView';
-    const tableBody = document.querySelector(`#${tableId} tbody`);
-    
-    if (!tableBody) return;
-    
-    // Hide all rows first
-    state.filteredRows.forEach(row => {
-        row.style.display = 'none';
-    });
-    
-    // Calculate pagination
-    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
-    const endIndex = startIndex + state.rowsPerPage;
-    const pageRows = state.filteredRows.slice(startIndex, endIndex);
-    
-    // Show rows for current page
-    pageRows.forEach(row => {
-        row.style.display = '';
-    });
-    
-    // Update pagination controls
-    updatePaginationControls(viewType);
-}
+    const containerId = viewType === 'table' ? 'tablePagination' : 'listPagination';
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-// Update pagination controls
-function updatePaginationControls(viewType) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    // Create or update pagination container
-    let paginationContainer = document.querySelector(`#${viewType === 'table' ? 'tableView' : 'listView'} .pagination-container`);
-    
-    if (!paginationContainer) {
-        paginationContainer = document.createElement('div');
-        paginationContainer.className = 'pagination-container';
-        
-        const tableContainer = document.querySelector(`#${viewType === 'table' ? 'tableView' : 'listView'}`);
-        tableContainer.appendChild(paginationContainer);
+    const rows = viewType === 'table' ?
+        Array.from(document.querySelectorAll('#tableView tbody tr')) :
+        Array.from(document.querySelectorAll('#listView tbody tr'));
+
+    // Get all visible rows before pagination
+    const visibleRows = rows.filter(row =>
+        !row.hasAttribute('style') ||
+        !row.style.display ||
+        row.style.display !== 'none'
+    );
+
+    // Hide all rows first
+    rows.forEach(row => row.style.display = 'none');
+
+    // Calculate start and end indexes for current page
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = Math.min(startIndex + rowsPerPage, visibleRows.length);
+
+    // Show only rows for current page
+    for (let i = startIndex; i < endIndex; i++) {
+        if (visibleRows[i]) {
+            visibleRows[i].style.display = '';
+        }
     }
-    
-    // Update pagination HTML
-    paginationContainer.innerHTML = `
+
+    // Update pagination info
+    const totalRows = visibleRows.length;
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+    // Ensure current page is within valid range
+    if (currentPage > totalPages) {
+        currentPage = totalPages;
+    }
+    if (currentPage < 1) {
+        currentPage = 1;
+    }
+
+    // Generate pagination HTML
+    let paginationHTML = `
         <div class="pagination-info">
-            Showing ${Math.min(state.filteredRows.length, (state.currentPage - 1) * state.rowsPerPage + 1)}-${Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length)} of ${state.filteredRows.length} entries
+            Showing ${Math.min((currentPage - 1) * rowsPerPage + 1, totalRows)} to ${Math.min(currentPage * rowsPerPage, totalRows)} of ${totalRows} entries
         </div>
         <div class="pagination-buttons">
-            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
-                First
+            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${currentPage === 1 ? 'disabled' : ''}>
+                <i class="fas fa-angle-double-left"></i>
             </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
-                Previous
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                <i class="fas fa-angle-left"></i>
             </button>
             <div class="pagination-page-info">
-                Page 
-                <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)">
-                of ${totalPages}
+                Page <input type="number" class="pagination-page-input" value="${currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)"> of ${totalPages}
             </div>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Next
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                <i class="fas fa-angle-right"></i>
             </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Last
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>
+                <i class="fas fa-angle-double-right"></i>
             </button>
         </div>
     `;
+
+    container.innerHTML = paginationHTML;
 }
 
-// Change page
+        // Update the changePage function:
 function changePage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
+    const rows = viewType === 'table' ?
+        Array.from(document.querySelectorAll('#tableView tbody tr')) :
+        Array.from(document.querySelectorAll('#listView tbody tr'));
+
+    const visibleRows = rows.filter(row =>
+        !row.hasAttribute('style') ||
+        !row.style.display ||
+        row.style.display !== 'none'
+    );
+
+    const totalPages = Math.ceil(visibleRows.length / rowsPerPage);
+
+    // Ensure page is within valid range
     if (page < 1) page = 1;
     if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
+
+    currentPage = page;
     updatePagination(viewType);
 }
 
-// Go to specific page
-function goToPage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    page = parseInt(page);
-    if (isNaN(page) || page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
+        // Go to specific page
+        function goToPage(viewType, page) {
+            const rows = viewType === 'table' ?
+                Array.from(document.querySelectorAll('#tableView tbody tr')).filter(row =>
+                    !row.hasAttribute('style') || !row.style.display || row.style.display !== 'none'
+                ) :
+                Array.from(document.querySelectorAll('#listView tbody tr')).filter(row =>
+                    !row.hasAttribute('style') || !row.style.display || row.style.display !== 'none'
+                );
+
+            const totalRows = rows.length;
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+            page = parseInt(page);
+            if (isNaN(page) || page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
+            currentPage = page;
+            updatePagination(viewType);
+        }
+
+        // Replace the updateVisibleRows function with this:
+function updateVisibleRows(viewType) {
+    const rows = viewType === 'table' ?
+        Array.from(document.querySelectorAll('#tableView tbody tr')) :
+        Array.from(document.querySelectorAll('#listView tbody tr'));
+
+    // Get all visible rows before pagination
+    const visibleRows = rows.filter(row =>
+        !row.hasAttribute('style') ||
+        !row.style.display ||
+        row.style.display !== 'none'
+    );
+
+    // Hide all rows first
+    rows.forEach(row => row.style.display = 'none');
+
+    // Calculate start and end indexes for current page
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = Math.min(startIndex + rowsPerPage, visibleRows.length);
+
+    // Show only rows for current page
+    for (let i = startIndex; i < endIndex; i++) {
+        if (visibleRows[i]) {
+            visibleRows[i].style.display = '';
+        }
+    }
+
+    // Update pagination info
+    const totalRows = visibleRows.length;
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+    // Enable/disable next buttons based on current page
+    const nextBtn = document.querySelector(`#${viewType}Pagination .pagination-btn[onclick*="changePage('${viewType}', ${currentPage + 1})"]`);
+    const lastBtn = document.querySelector(`#${viewType}Pagination .pagination-btn[onclick*="changePage('${viewType}', ${totalPages})"]`);
+
+    if (nextBtn) {
+        nextBtn.disabled = currentPage >= totalPages;
+    }
+    if (lastBtn) {
+        lastBtn.disabled = currentPage >= totalPages;
+    }
 }
 
-// PALITAN ang existing filterTable function:
-function filterTable() {
-    const nameSearchEl = document.getElementById('searchInputTable');
-    const barangayFilterEl = document.getElementById('barangaySelectTable');
-    const nameSearchValue = nameSearchEl ? nameSearchEl.value.toLowerCase().trim() : '';
-    const barangayFilterValue = barangayFilterEl ? barangayFilterEl.value.toLowerCase().trim() : '';
+        // Tab switching functions
+        function showTable() {
+            document.getElementById('tableView').classList.remove('hidden');
+            document.getElementById('listView').classList.add('hidden');
+            document.getElementById('tab-pending').classList.add('active');
+            document.getElementById('tab-approved-rejected').classList.remove('active');
+            currentView = 'table';
+            currentPage = 1;
+            updatePagination('table');
+        }
 
-    const allTableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
-    
-    // Filter rows based on search criteria
-    const filteredRows = allTableRows.filter(row => {
-        if (!row.cells || row.cells.length < 3) return false;
-        
-        const nameCell = (row.cells[1].textContent || '').toLowerCase();
-        const barangayCell = (row.cells[2].textContent || '').toLowerCase();
+        function showList() {
+            document.getElementById('tableView').classList.add('hidden');
+            document.getElementById('listView').classList.remove('hidden');
+            document.getElementById('tab-pending').classList.remove('active');
+            document.getElementById('tab-approved-rejected').classList.add('active');
+            currentView = 'list';
+            currentPage = 1;
+            updatePagination('list');
+        }
 
-        const matchesName = nameCell.includes(nameSearchValue);
-        const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
+        // Modal functions
+        function openIntakeSheetModal(id, name) {
+            currentApplicationId = id;
+            currentApplicationName = name;
+            
+            // Show loading
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            document.getElementById('loadingOverlay').classList.remove('fade-out');
+            
+            // Fetch intake sheet data
+            fetch(`/mayor_staff/intake-sheet/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    populateIntakeSheetModal(data);
+                    document.getElementById('intakeSheetModal').style.display = 'block';
+                    document.getElementById('loadingOverlay').classList.add('fade-out');
+                    setTimeout(() => {
+                        document.getElementById('loadingOverlay').style.display = 'none';
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.error('Error fetching intake sheet:', error);
+                    Swal.fire('Error', 'Failed to load intake sheet data.', 'error');
+                    document.getElementById('loadingOverlay').classList.add('fade-out');
+                    setTimeout(() => {
+                        document.getElementById('loadingOverlay').style.display = 'none';
+                    }, 1000);
+                });
+        }
 
-        return matchesName && matchesBarangay;
-    });
+        function closeIntakeSheetModal() {
+            document.getElementById('intakeSheetModal').style.display = 'none';
+            currentApplicationId = null;
+            currentApplicationName = null;
+        }
 
-    // Update pagination state
-    paginationState.table.filteredRows = filteredRows;
-    paginationState.table.currentPage = 1; // Reset to first page
-    updatePagination('table');
-}
+        function populateIntakeSheetModal(data) {
+            // Populate head of family section
+            document.getElementById('modal-applicant-name').textContent = data.applicant_name || '-';
+            document.getElementById('modal-applicant-gender').textContent = data.gender || '-';
+            document.getElementById('modal-remarks').textContent = data.remarks || '-';
+            document.getElementById('modal-head-dob').textContent = data.dob || '-';
+            document.getElementById('modal-head-pob').textContent = data.pob || '-';
+            document.getElementById('modal-head-address').textContent = data.address || '-';
+            document.getElementById('modal-head-zone').textContent = data.zone || '-';
+            document.getElementById('modal-head-barangay').textContent = data.barangay || '-';
+            document.getElementById('modal-head-religion').textContent = data.religion || '-';
+            document.getElementById('modal-serial-number').textContent = data.serial_number || '-';
+            document.getElementById('modal-head-4ps').textContent = data.four_ps || '-';
+            document.getElementById('modal-head-ipno').textContent = data.ip_no || '-';
+            document.getElementById('modal-head-educ').textContent = data.education || '-';
+            document.getElementById('modal-head-occ').textContent = data.occupation || '-';
 
-// PALITAN ang existing filterList function:
-function filterList() {
-    const nameSearchEl = document.getElementById('listNameSearch');
-    const barangayFilterEl = document.getElementById('listBarangayFilter');
-    const statusFilterEl = document.getElementById('listStatusFilter');
-    const nameSearchValue = nameSearchEl ? nameSearchEl.value.toLowerCase().trim() : '';
-    const barangayFilterValue = barangayFilterEl ? barangayFilterEl.value.toLowerCase().trim() : '';
-    const statusFilterValue = statusFilterEl ? statusFilterEl.value.toLowerCase().trim() : '';
+            // Populate household information
+            document.getElementById('modal-house-total-income').textContent = data.total_income || '-';
+            document.getElementById('modal-house-net-income').textContent = data.net_income || '-';
+            document.getElementById('modal-other-income').textContent = data.other_income || '-';
+            document.getElementById('modal-house-house').textContent = data.house || '-';
+            document.getElementById('modal-house-lot').textContent = data.lot || '-';
+            document.getElementById('modal-house-electric').textContent = data.electricity || '-';
+            document.getElementById('modal-house-water').textContent = data.water || '-';
 
-    const allListRows = Array.from(document.querySelectorAll('#listView tbody tr'));
-    
-    // Filter rows based on search criteria
-    const filteredRows = allListRows.filter(row => {
-        if (!row.cells || row.cells.length < 4) return false;
-        
-        const nameCell = (row.cells[1].textContent || '').toLowerCase();
-        const barangayCell = (row.cells[2].textContent || '').toLowerCase();
-        const statusCell = (row.cells[4].textContent || '').toLowerCase();
+            // Populate family members
+            const familyMembersTbody = document.getElementById('modal-family-members');
+            familyMembersTbody.innerHTML = '';
+            
+            if (data.family_members && data.family_members.length > 0) {
+                data.family_members.forEach(member => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${member.name || '-'}</td>
+                        <td>${member.relation || '-'}</td>
+                        <td>${member.birthdate || '-'}</td>
+                        <td>${member.age || '-'}</td>
+                        <td>${member.gender || '-'}</td>
+                        <td>${member.civil_status || '-'}</td>
+                        <td>${member.education || '-'}</td>
+                        <td>${member.occupation || '-'}</td>
+                        <td>${member.income || '-'}</td>
+                        <td>${member.remarks || '-'}</td>
+                    `;
+                    familyMembersTbody.appendChild(row);
+                });
+            } else {
+                familyMembersTbody.innerHTML = '<tr><td colspan="10" class="text-center py-4">No family members found</td></tr>';
+            }
 
-        const matchesName = nameCell.includes(nameSearchValue);
-        const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
-        const matchesStatus = statusFilterValue === '' || statusCell.includes(statusFilterValue);
+            // Populate service records
+            const serviceRecordsTbody = document.getElementById('modal-service-records');
+            serviceRecordsTbody.innerHTML = '';
+            
+            if (data.service_records && data.service_records.length > 0) {
+                data.service_records.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${record.date || '-'}</td>
+                        <td>${record.problem || '-'}</td>
+                        <td>${record.action || '-'}</td>
+                        <td>${record.remarks || '-'}</td>
+                    `;
+                    serviceRecordsTbody.appendChild(row);
+                });
+            } else {
+                serviceRecordsTbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">No service records found</td></tr>';
+            }
 
-        return matchesName && matchesBarangay && matchesStatus;
-    });
+            // Populate documents
+            document.getElementById('modal-doc-brgy-clearance').textContent = data.brgy_clearance || '-';
+            document.getElementById('modal-doc-cert-indigency').textContent = data.cert_indigency || '-';
+            document.getElementById('modal-doc-cert-enrollment').textContent = data.cert_enrollment || '-';
+            document.getElementById('modal-doc-cert-grades').textContent = data.cert_grades || '-';
+            document.getElementById('modal-doc-birth-cert').textContent = data.birth_cert || '-';
+            document.getElementById('modal-doc-valid-id').textContent = data.valid_id || '-';
+            document.getElementById('modal-doc-picture').textContent = data.picture || '-';
 
-    // Update pagination state
-    paginationState.list.filteredRows = filteredRows;
-    paginationState.list.currentPage = 1; // Reset to first page
-    updatePagination('list');
-}
+            // Populate signatures and photos
+            document.getElementById('modal-worker-fullname').textContent = data.worker_name || '-';
+            document.getElementById('modal-officer-fullname').textContent = data.officer_name || '-';
+            document.getElementById('modal-date-entry').textContent = data.date_entry || '-';
 
-        </script>
-    
-    </body>
+            // Handle photos
+            const workerPhotoImg = document.getElementById('modal-worker-photo-img');
+            const officerPhotoImg = document.getElementById('modal-officer-photo-img');
+            
+            if (data.worker_photo) {
+                workerPhotoImg.src = data.worker_photo;
+                workerPhotoImg.style.display = 'block';
+            } else {
+                workerPhotoImg.style.display = 'none';
+            }
+            
+            if (data.officer_photo) {
+                officerPhotoImg.src = data.officer_photo;
+                officerPhotoImg.style.display = 'block';
+            } else {
+                officerPhotoImg.style.display = 'none';
+            }
+
+            // Handle signatures
+            const workerSignatureDiv = document.getElementById('modal-worker-signature');
+            const officerSignatureDiv = document.getElementById('modal-officer-signature');
+            const clientSignatureDiv = document.getElementById('modal-client-signature-large');
+            
+            workerSignatureDiv.innerHTML = data.worker_signature ? 
+                `<img src="${data.worker_signature}" alt="Worker Signature" style="max-width:180px;height:60px;object-fit:contain;">` : 
+                '<div style="height:60px;"></div>';
+                
+            officerSignatureDiv.innerHTML = data.officer_signature ? 
+                `<img src="${data.officer_signature}" alt="Officer Signature" style="max-width:180px;height:60px;object-fit:contain;">` : 
+                '<div style="height:60px;"></div>';
+                
+            clientSignatureDiv.innerHTML = data.client_signature ? 
+                `<img src="${data.client_signature}" alt="Client Signature" style="max-width:300px;height:80px;object-fit:contain;">` : 
+                '<div style="height:80px;"></div>';
+        }
+
+        // Application approval and rejection
+        function approveApplication(id, name) {
+            Swal.fire({
+                title: 'Approve Application?',
+                text: `Are you sure you want to approve ${name}'s application?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10B981',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'Yes, Approve',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    document.getElementById('loadingOverlay').style.display = 'flex';
+                    document.getElementById('loadingOverlay').classList.remove('fade-out');
+                    
+                    // Send approval request
+                    fetch(`/mayor_staff/application/${id}/approve`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('loadingOverlay').classList.add('fade-out');
+                        setTimeout(() => {
+                            document.getElementById('loadingOverlay').style.display = 'none';
+                        }, 1000);
+                        
+                        if (data.success) {
+                            Swal.fire('Approved!', `Application for ${name} has been approved.`, 'success')
+                                .then(() => {
+                                    closeIntakeSheetModal();
+                                    location.reload();
+                                });
+                        } else {
+                            Swal.fire('Error!', data.message || 'Failed to approve application.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error approving application:', error);
+                        document.getElementById('loadingOverlay').classList.add('fade-out');
+                        setTimeout(() => {
+                            document.getElementById('loadingOverlay').style.display = 'none';
+                        }, 1000);
+                        Swal.fire('Error!', 'Failed to approve application.', 'error');
+                    });
+                }
+            });
+        }
+
+        function rejectApplication(id, name) {
+            Swal.fire({
+                title: 'Reject Application?',
+                text: `Are you sure you want to reject ${name}'s application?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'Yes, Reject',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    document.getElementById('loadingOverlay').style.display = 'flex';
+                    document.getElementById('loadingOverlay').classList.remove('fade-out');
+                    
+                    // Send rejection request
+                    fetch(`/mayor_staff/application/${id}/reject`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('loadingOverlay').classList.add('fade-out');
+                        setTimeout(() => {
+                            document.getElementById('loadingOverlay').style.display = 'none';
+                        }, 1000);
+                        
+                        if (data.success) {
+                            Swal.fire('Rejected!', `Application for ${name} has been rejected.`, 'success')
+                                .then(() => {
+                                    closeIntakeSheetModal();
+                                    location.reload();
+                                });
+                        } else {
+                            Swal.fire('Error!', data.message || 'Failed to reject application.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error rejecting application:', error);
+                        document.getElementById('loadingOverlay').classList.add('fade-out');
+                        setTimeout(() => {
+                            document.getElementById('loadingOverlay').style.display = 'none';
+                        }, 1000);
+                        Swal.fire('Error!', 'Failed to reject application.', 'error');
+                    });
+                }
+            });
+        }
+
+
+    </script>
+</body>
 </html>

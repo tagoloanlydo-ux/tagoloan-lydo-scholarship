@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -12,6 +12,10 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
         <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
         <link rel="stylesheet" href="{{ asset('css/application.css') }}" />
+
+        <!-- DataTables CSS -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.tailwindcss.min.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
 
     </head>
     <body class="bg-gray-50">
@@ -162,10 +166,15 @@
             <!-- Search by Name -->
             <div>
                 <label for="searchInputTable" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
-                <input type="text" id="searchInputTable" placeholder="Enter applicant name..."
-                    style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
-                    onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                <div class="relative">
+                    <input type="text" id="searchInputTable" placeholder="Enter applicant name..."
+                        style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
+                        onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
+                        onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                    <button onclick="clearFiltersTable()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- Filter by Barangay -->
@@ -221,8 +230,6 @@
                                 <td class="px-6 py-4 text-center">
                                     <form method="POST" action="/mayor_staff/application/{{ $app->application_personnel_id }}" style="display: inline;">
                                         @csrf
-                                    <form method="POST" action="/mayor_staff/application/{{ $app->application_personnel_id }}" style="display: inline;">
-                                        @csrf
                                         @method('DELETE')
                                         <button type="button" onclick="confirmDeletePending(this)" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm">
                                             <i class="fas fa-trash mr-2"></i>Delete
@@ -245,17 +252,22 @@
                 <!-- ✅ List View (Approved and Rejected applications) -->
         <div id="listView" class="hidden overflow-x-auto">
                     <!-- Filter controls specific to List View -->
- <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+<div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
     <div class="flex gap-4 items-end">
         <!-- Left side container -->
         <div class="flex gap-4">
             <!-- Search by Name -->
             <div>
                 <label for="searchInputList" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
-                <input type="text" id="searchInputList" placeholder="Enter applicant name..."
-                    style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
-                    onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                <div class="relative">
+                    <input type="text" id="searchInputList" placeholder="Enter applicant name..."
+                        style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
+                        onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
+                        onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                    <button onclick="clearFiltersList()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- Filter by Barangay -->
@@ -523,104 +535,153 @@
             let openedDocuments = new Set();
             let previousDocumentStatus = {};
 
-            // Filtering: separate inputs for Table and List views
-            function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
-                try {
-                    const searchEl = document.getElementById(searchInputId);
-                    const barangayEl = document.getElementById(barangaySelectId);
-                    const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
-                    const barangayValue = barangayEl ? barangayEl.value : '';
-
-                    const tableBody = document.querySelector(tableBodySelector);
-                    if (!tableBody) return;
-
-                    const rows = tableBody.querySelectorAll('tr');
-
-                    rows.forEach(row => {
-                        const nameCell = row.cells[1]; // Name column
-                        const barangayCell = row.cells[2]; // Barangay column
-
-                        if (nameCell && barangayCell) {
-                            const nameText = nameCell.textContent.toLowerCase();
-                            const barangayText = barangayCell.textContent.trim();
-
-                            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
-                            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
-
-                            if (matchesSearch && matchesBarangay) {
-                                row.style.display = '';
-                            } else {
-                                row.style.display = 'none';
-                            }
-                        }
-                    });
-                } catch (e) {
-                    console.error('filterRows error', e);
-                }
+            // Tab switching functions
+            function showTable() {
+                document.getElementById('tableView').classList.remove('hidden');
+                document.getElementById('listView').classList.add('hidden');
+                document.getElementById('pendingTab').classList.add('active');
+                document.getElementById('reviewedTab').classList.remove('active');
+                localStorage.setItem('viewMode', 'table');
             }
 
-            // Attach listeners (safe: only add if elements exist)
-            const attachFilterListeners = () => {
-                const debounceDelay = 150;
-
-                const tableSearch = document.getElementById('searchInputTable');
-                const tableBrgy = document.getElementById('barangaySelectTable');
-                if (tableSearch) tableSearch.addEventListener('input', debounce(() => filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable'), debounceDelay));
-                if (tableBrgy) tableBrgy.addEventListener('change', () => filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable'));
-
-                const listSearch = document.getElementById('searchInputList');
-                const listBrgy = document.getElementById('barangaySelectList');
-                if (listSearch) listSearch.addEventListener('input', debounce(() => filterRows('#listView tbody', 'searchInputList', 'barangaySelectList'), debounceDelay));
-                if (listBrgy) listBrgy.addEventListener('change', () => filterRows('#listView tbody', 'searchInputList', 'barangaySelectList'));
-            };
-
-            // Clear filters function for table view
-            function clearFiltersTable() {
-                document.getElementById('searchInputTable').value = '';
-                document.getElementById('barangaySelectTable').value = '';
-                filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
+            function showList() {
+                document.getElementById('tableView').classList.add('hidden');
+                document.getElementById('listView').classList.remove('hidden');
+                document.getElementById('pendingTab').classList.remove('active');
+                document.getElementById('reviewedTab').classList.add('active');
+                localStorage.setItem('viewMode', 'list');
             }
 
-function showTable() {
-    document.getElementById("tableView").classList.remove("hidden");
-    document.getElementById("listView").classList.add("hidden");
-    document.querySelector('.tab.active').classList.remove('active');
-    document.querySelectorAll('.tab')[0].classList.add('active');
-    localStorage.setItem("viewMode", "table");
-    
-    // Update pagination for table view
-    updatePagination('table');
+// Replace the existing filterRows function with this improved version:
+function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
+    try {
+        const searchEl = document.getElementById(searchInputId);
+        const barangayEl = document.getElementById(barangaySelectId);
+        const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
+        const barangayValue = barangayEl ? barangayEl.value : '';
+
+        const tableBody = document.querySelector(tableBodySelector);
+        if (!tableBody) return;
+
+        const rows = Array.from(tableBody.querySelectorAll('tr'));
+        const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
+
+        // Filter rows based on search criteria
+        const filteredRows = rows.filter(row => {
+            // Skip header row or rows without enough cells
+            if (!row.cells || row.cells.length < 3 || row.querySelector('td[colspan]')) {
+                return false;
+            }
+
+            const nameCell = row.cells[1];
+            const barangayCell = row.cells[2];
+
+            if (!nameCell || !barangayCell) return false;
+
+            const nameText = nameCell.textContent.toLowerCase();
+            const barangayText = barangayCell.textContent.trim();
+
+            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
+            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
+
+            return matchesSearch && matchesBarangay;
+        });
+
+        // Update pagination state
+        paginationState[viewType].filteredRows = filteredRows;
+        paginationState[viewType].currentPage = 1; // Reset to first page
+        updatePagination(viewType);
+
+        // Show/hide rows based on filter
+        rows.forEach(row => {
+            if (!row.querySelector('td[colspan]')) { // Skip "no data" rows
+                row.style.display = 'none'; // Hide all rows initially
+            }
+        });
+
+        // Show only filtered rows for current page
+        const startIndex = 0;
+        const endIndex = paginationState[viewType].rowsPerPage;
+        filteredRows.slice(startIndex, endIndex).forEach(row => {
+            row.style.display = ''; // Show filtered rows
+        });
+
+        // Show "no results" message if no matches found
+        const noDataRow = tableBody.querySelector('tr td[colspan]')?.parentElement;
+        if (noDataRow) {
+            if (filteredRows.length === 0) {
+                noDataRow.style.display = '';
+            } else {
+                noDataRow.style.display = 'none';
+            }
+        }
+
+    } catch (e) {
+        console.error('filterRows error:', e);
+    }
 }
 
-function showList() {
-    document.getElementById("listView").classList.remove("hidden");
-    document.getElementById("tableView").classList.add("hidden");
-    document.querySelector('.tab.active').classList.remove('active');
-    document.querySelectorAll('.tab')[1].classList.add('active');
-    localStorage.setItem("viewMode", "list");
-    
-    // Update pagination for list view
-    updatePagination('list');
-}
+// Add event listeners for both views
+function attachFilterListeners() {
+    const debounceDelay = 300; // Increased debounce delay for better performance
 
-            // ✅ Kapag nag-load ang page, i-apply yung last view
-document.addEventListener("DOMContentLoaded", function() {
-    let viewMode = localStorage.getItem("viewMode") || "table";
-    if(viewMode === "list") {
-        showList();
-    } else {
-        showTable();
+    // Table View listeners
+    const tableSearch = document.getElementById('searchInputTable');
+    const tableBrgy = document.getElementById('barangaySelectTable');
+    
+    if (tableSearch) {
+        tableSearch.addEventListener('input', debounce(() => {
+            filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
+        }, debounceDelay));
     }
     
-    // Attach filter listeners for both views and run initial filters
-    attachFilterListeners();
+    if (tableBrgy) {
+        tableBrgy.addEventListener('change', () => {
+            filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
+        });
+    }
+
+    // List View listeners
+    const listSearch = document.getElementById('searchInputList');
+    const listBrgy = document.getElementById('barangaySelectList');
     
-    // Initialize pagination after page loads
-    initializePagination();
+    if (listSearch) {
+        listSearch.addEventListener('input', debounce(() => {
+            filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
+        }, debounceDelay));
+    }
+    
+    if (listBrgy) {
+        listBrgy.addEventListener('change', () => {
+            filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
+        });
+    }
+}
+
+// Clear filters functions
+function clearFiltersTable() {
+    document.getElementById('searchInputTable').value = '';
+    document.getElementById('barangaySelectTable').value = '';
+    filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
+}
+
+function clearFiltersList() {
+    document.getElementById('searchInputList').value = '';
+    document.getElementById('barangaySelectList').value = '';
+    filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Attach filter listeners
+    attachFilterListeners();
     
     // Run initial filters
     filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
     filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
+    
+    // Initialize pagination
+    initializePagination();
 });
             // Hide loading spinner when page is fully loaded
             window.addEventListener('load', function() {
@@ -2103,40 +2164,8 @@ function goToPage(viewType, page) {
     updatePagination(viewType);
 }
 
-// PALITAN ang existing filterRows function:
-function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
-    try {
-        const searchEl = document.getElementById(searchInputId);
-        const barangayEl = document.getElementById(barangaySelectId);
-        const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
-        const barangayValue = barangayEl ? barangayEl.value : '';
 
-        const allRows = Array.from(document.querySelectorAll(`${tableBodySelector} tr`));
-        
-        // Filter rows based on search criteria
-        const filteredRows = allRows.filter(row => {
-            if (!row.cells || row.cells.length < 3) return false;
-            
-            const nameCell = (row.cells[1].textContent || '').toLowerCase();
-            const barangayCell = (row.cells[2].textContent || '').toLowerCase();
 
-            const matchesSearch = searchValue === '' || nameCell.includes(searchValue);
-            const matchesBarangay = barangayValue === '' || barangayCell.includes(barangayValue);
-
-            return matchesSearch && matchesBarangay;
-        });
-
-        // Update pagination state based on which view we're in
-        const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
-        paginationState[viewType].filteredRows = filteredRows;
-        paginationState[viewType].currentPage = 1; // Reset to first page
-        updatePagination(viewType);
-    } catch (e) {
-        console.error('filterRows error', e);
-    }
-}
-
-// ========== PAGINATION CODE END ========== //
 </script>
 
     </body>
