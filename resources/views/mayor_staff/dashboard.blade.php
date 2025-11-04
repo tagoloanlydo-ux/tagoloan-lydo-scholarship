@@ -15,124 +15,87 @@
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <audio id="notificationSound" src="{{ asset('notification/blade.wav') }}" preload="auto"></audio>
+
     <style>
-        /* Loading Spinner Styles */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            opacity: 1;
-            animation: fadeIn 1s ease forwards;
-        }
+ .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 1s ease forwards;
+}
 
-        .loading-container {
-            text-align: center;
-            max-width: 600px;
-            padding: 2rem;
-        }
+.spinner {
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
 
-        .spinner {
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
-            margin: 0 auto 2rem;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+.spinner img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
 
-        .spinner img {
-            width: 80%;
-            height: 100%;
-            border-radius: 50%;
-        }
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 
-        .text-line {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: slideUp 1s ease forwards 0.5s both;
-            color: white;
-        }
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
 
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
-        }
+.fade-out {
+    animation: fadeOut 1s ease forwards;
+}
 
-        @keyframes slideUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
 
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
+/* Responsive spinner size */
+@media (max-width: 768px) {
+    .spinner {
+        width: 80px;
+        height: 80px;
+    }
+}
 
-        .fade-out {
-            animation: fadeOut 1s ease forwards;
-        }
-
-        @keyframes fadeOut {
-            to {
-                opacity: 0;
-                visibility: hidden;
-            }
-        }
-
-        /* Responsive design for spinner */
-        @media (max-width: 768px) {
-            .text-line {
-                font-size: 1.8rem;
-            }
-            .spinner {
-                width: 80px;
-                height: 80px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .text-line {
-                font-size: 1.5rem;
-            }
-            .spinner {
-                width: 60px;
-                height: 60px;
-            }
-        }
+@media (max-width: 480px) {
+    .spinner {
+        width: 60px;
+        height: 60px;
+    }
+}
+   
     </style>
 </head>
 
 <body class="bg-gray-50">
     <!-- Loading Spinner Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-container">
-            <div class="spinner">
-                <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
-            </div>
-            <div class="text-line">Loading...</div>
-        </div>
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner">
+                            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
     </div>
+</div>
+
     <div class="dashboard-grid">
         <!-- Header -->
         <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
@@ -773,14 +736,17 @@
  <script src="{{ asset('js/logout.js') }}"></script>
 
 <script>
-    // Hide loading spinner when page is fully loaded
+    // Hide loading spinner when page is fully loaded, with minimum display time
     window.addEventListener('load', function() {
         const loadingOverlay = document.getElementById('loadingOverlay');
         if (loadingOverlay) {
-            loadingOverlay.classList.add('fade-out');
+            // Ensure spinner shows for at least 2 seconds
             setTimeout(() => {
-                loadingOverlay.style.display = 'none';
-            }, 1000); // Match the fade-out animation duration
+                loadingOverlay.classList.add('fade-out');
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 1000); // Match the fade-out animation duration
+            }, 2000);
         }
     });
 </script>

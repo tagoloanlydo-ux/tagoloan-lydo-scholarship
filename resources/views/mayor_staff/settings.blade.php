@@ -12,9 +12,93 @@
     <link rel="icon" type="image/x-icon" href="/img/LYDO.png">
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Loading Spinner Styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        .spinner {
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .spinner img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 1s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .spinner {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .spinner {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50">
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner">
+            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+        </div>
+    </div>
     <div class="dashboard-grid">
         <!-- Header -->
         <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
@@ -375,7 +459,24 @@ btnPassword.addEventListener("click", () => {
         });
     });
 </script>
- <script src="{{ asset('js/logout.js') }}"></script>
+<script>
+document.getElementById("logoutForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    Swal.fire({
+        title: "Are you sure you want to logout?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, logout",
+        cancelButtonText: "Cancel",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            e.target.submit();
+        }
+    });
+});
+</script>
  <script>
   const profileImage = document.getElementById("profileImage");
   const fileInput = document.getElementById("fileInput");
@@ -409,6 +510,37 @@ btnPassword.addEventListener("click", () => {
       }
     });
   }
+</script>
+<script>
+    // Hide loading spinner when page is fully loaded, with minimum display time
+    window.addEventListener('load', function() {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            // Ensure spinner shows for at least 2 seconds
+            setTimeout(() => {
+                loadingOverlay.classList.add('fade-out');
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 1000); // Match the fade-out animation duration
+            }, 2000);
+        }
+    });
+
+    // Show loading spinner during form submissions (exclude logout form)
+    document.addEventListener('DOMContentLoaded', function() {
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function() {
+                // Skip spinner for logout form
+                if (form.id === 'logoutForm') return;
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'flex';
+                    loadingOverlay.classList.remove('fade-out');
+                }
+            });
+        });
+    });
 </script>
 </body>
 

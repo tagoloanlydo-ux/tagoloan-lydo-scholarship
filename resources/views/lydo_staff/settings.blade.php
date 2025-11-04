@@ -10,6 +10,8 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="{{ asset('css/staff.css') }}" />
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="bg-gray-50">
@@ -322,7 +324,24 @@ function closeEditRemarksModal() {
     document.getElementById("editRemarksModal").classList.add("hidden");
 }
 </script>
- <script src="{{ asset('js/logout.js') }}"></script>
+<script>
+document.getElementById("logoutForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    Swal.fire({
+        title: "Are you sure you want to logout?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, logout",
+        cancelButtonText: "Cancel",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            e.target.submit();
+        }
+    });
+});
+</script>
 </body>
 
 </html>

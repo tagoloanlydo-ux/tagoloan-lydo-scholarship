@@ -35,60 +35,37 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px); 
+            backdrop-filter: blur(4px);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            opacity: 1;
             animation: fadeIn 1s ease forwards;
-        }
-
-        .loading-container {
-            text-align: center;
-            max-width: 600px;
-            padding: 2rem;
         }
 
         .spinner {
             width: 120px;
             height: 120px;
             animation: spin 2s linear infinite;
-            margin: 0 auto 2rem;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
             border-radius: 50%;
-             background: rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: center;
             align-items: center;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
         }
 
-
         .spinner img {
-            width: 80%;
+            width: 100%;
             height: 100%;
             border-radius: 50%;
         }
 
-        .text-line {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: slideUp 1s ease forwards 0.5s both;
-            color: white;
-        }
-
         @keyframes fadeIn {
-            to {
-                opacity: 1;
+            from {
+                opacity: 0;
             }
-        }
-
-        @keyframes slideUp {
             to {
                 opacity: 1;
-                transform: translateY(0);
             }
         }
 
@@ -114,9 +91,6 @@
 
         /* Responsive design */
         @media (max-width: 768px) {
-            .text-line {
-                font-size: 1.8rem;
-            }
             .spinner {
                 width: 80px;
                 height: 80px;
@@ -124,9 +98,6 @@
         }
 
         @media (max-width: 480px) {
-            .text-line {
-                font-size: 1.5rem;
-            }
             .spinner {
                 width: 60px;
                 height: 60px;
@@ -358,6 +329,14 @@
     </style>
 </head>
 <body class="bg-gray-50">
+    <!-- Add this loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner">
+            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+        </div>
+    </div>
+    <!-- Rest of your content -->
+
     @php
         // normalize variables
         // controller provides the paginator as $tableApplicants — prefer that if $applications is not set
@@ -440,7 +419,7 @@
         <!-- Main Content -->
         <div class="flex flex-1 overflow-hidden">
             <!-- Sidebar (fixed) -->
-<div class="sidebar-fixed w-90 bg-white shadow-md flex flex-col transition-all duration-300">
+   <div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
                 <nav class="flex-1 p-2 md:p-4  space-y-1">
                     <ul class="side-menu top space-y-4">
                         <li>
@@ -499,7 +478,7 @@
             
             <!-- Main content (fixed, scrollable area) -->
             <div class="main-content-fixed text-[16px]">
-                <div class="p-10 bg-gray-50 min-h-screen rounded-lg shadow">
+                <div class="p-20 bg-gray-50 min-h-screen rounded-lg shadow">
                     <div class="flex justify-between items-center mb-6">
                         <h5 class="text-3xl font-bold text-gray-800">Applicant Status Management</h5>
                     </div>
@@ -870,16 +849,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
-        <div class="loading-container">
-            <div class="spinner">
-                <img src="{{ asset('images/LYDO.png') }}" alt="Loading...">
-            </div>
-            <div class="text-line">Loading, please wait...</div>
         </div>
     </div>
 
@@ -1296,6 +1265,17 @@ function updateVisibleRows(viewType) {
 
         // Tab switching functions
         function showTable() {
+            // Show loading spinner
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            document.getElementById('loadingOverlay').classList.remove('fade-out');
+
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').classList.add('fade-out');
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                }, 1000);
+            }, 300);
+
             document.getElementById('tableView').classList.remove('hidden');
             document.getElementById('listView').classList.add('hidden');
             document.getElementById('tab-pending').classList.add('active');
@@ -1306,6 +1286,17 @@ function updateVisibleRows(viewType) {
         }
 
         function showList() {
+            // Show loading spinner
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            document.getElementById('loadingOverlay').classList.remove('fade-out');
+
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').classList.add('fade-out');
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                }, 1000);
+            }, 300);
+
             document.getElementById('tableView').classList.add('hidden');
             document.getElementById('listView').classList.remove('hidden');
             document.getElementById('tab-pending').classList.remove('active');
@@ -1580,5 +1571,39 @@ function updateVisibleRows(viewType) {
 
 
     </script>
+
+<script>
+    // Hide loading spinner when page is fully loaded, with minimum display time
+    window.addEventListener('load', function() {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            // Ensure spinner shows for at least 2 seconds
+            setTimeout(() => {
+                loadingOverlay.classList.add('fade-out');
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 1000); // Match the fade-out animation duration
+            }, 2000);
+        }
+    });
+</script>
+<script>
+document.getElementById("logoutForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    Swal.fire({
+        title: "Are you sure you want to logout?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, logout",
+        cancelButtonText: "Cancel",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            e.target.submit();
+        }
+    });
+});
+</script>
 </body>
 </html>
