@@ -615,24 +615,27 @@ function checkAllRenewalDocumentsRated() {
 // Update action buttons based on document ratings
 function updateRenewalActionButtons(goodCount, badCount) {
     console.log(`Good: ${goodCount}, Bad: ${badCount}`);
-    
+
     // Show action buttons
     const actionButtons = document.getElementById('actionButtons');
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
     const approveBtn = document.getElementById('approveBtn');
     const rejectBtn = document.getElementById('rejectBtn');
-    
+
     actionButtons.style.display = 'flex';
-    
-    // NEW LOGIC: If there are bad documents, hide approve button and show reject only
+
+    // NEW LOGIC: If there are bad documents, show send email button and reject only
     if (badCount > 0) {
+        sendEmailBtn.style.display = 'flex';
         approveBtn.style.display = 'none';
         rejectBtn.style.display = 'flex';
-        console.log('Bad documents found - showing Reject button only');
+        console.log('Bad documents found - showing Send Email and Reject buttons');
     } else {
-        // If all documents are good, show both buttons
+        // If all documents are good, show approve and reject buttons
+        sendEmailBtn.style.display = 'none';
         approveBtn.style.display = 'flex';
         rejectBtn.style.display = 'flex';
-        console.log('All documents good - showing both Approve and Reject buttons');
+        console.log('All documents good - showing Approve and Reject buttons');
     }
 }
 
@@ -938,18 +941,76 @@ function handleDocumentStatusChange(documentType, status) {
     checkAllRenewalDocumentsRated();
 }
 
+// Function to send email for bad documents
+function sendEmailForBadDocuments() {
+    // Show loading
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
+    const sendEmailText = document.getElementById('sendEmailText');
+    const sendEmailSpinner = document.getElementById('sendEmailSpinner');
+
+    sendEmailText.classList.add('hidden');
+    sendEmailSpinner.classList.remove('hidden');
+    sendEmailBtn.disabled = true;
+
+    // Get bad documents
+    const badDocuments = [];
+    const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
+
+    documentTypes.forEach(docType => {
+        if (renewalDocumentStatuses[docType] === 'bad') {
+            badDocuments.push(docType);
+        }
+    });
+
+    // Send request
+    fetch('/lydo_staff/send-email-for-bad-documents', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+        },
+        body: JSON.stringify({
+            renewal_id: selectedRenewalId,
+            bad_documents: badDocuments
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Email sent to applicant regarding bad documents.',
+                icon: 'success',
+                confirmButtonColor: '#10b981'
+            });
+        } else {
+            Swal.fire('Error', data.message || 'Failed to send email', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error sending email:', error);
+        Swal.fire('Error', 'Failed to send email', 'error');
+    })
+    .finally(() => {
+        // Reset button
+        sendEmailText.classList.remove('hidden');
+        sendEmailSpinner.classList.add('hidden');
+        sendEmailBtn.disabled = false;
+    });
+}
+
 // Initialize everything when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     initializeDocumentUpdateTracker();
     restoreModalState();
     initializePersistentRatings();
-    
+
     // Override the openRenewalModal to ensure ratings persist
     const originalOpenRenewalModal = window.openRenewalModal;
     window.openRenewalModal = function(scholarId) {
         restoreModalState();
         originalOpenRenewalModal(scholarId);
-        
+
         // Load document comments for this renewal
         if (selectedRenewalId) {
             loadDocumentComments(selectedRenewalId);

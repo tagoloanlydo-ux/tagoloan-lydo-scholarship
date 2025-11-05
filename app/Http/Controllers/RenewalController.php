@@ -50,81 +50,130 @@ class RenewalController extends Controller
 
  public function updateRenewalStatus(Request $request, $id)
     {
-        $request->validate([
-            "renewal_status" => "required|in:Approved,Rejected",
-            "reason" => "nullable|string|max:500",
-        ]);
+        try {
+            \Log::info("Starting updateRenewalStatus for renewal_id: {$id}", [
+                'renewal_status' => $request->renewal_status,
+                'reason' => $request->reason
+            ]);
 
+            $request->validate([
+                "renewal_status" => "required|in:Approved,Rejected",
+                "reason" => "nullable|string|max:500",
+            ]);
 
-        $updateData = [
-            "renewal_status" => $request->renewal_status,
-            "updated_at" => now(),
-        ];
+            $updateData = [
+                "renewal_status" => $request->renewal_status,
+                "updated_at" => now(),
+            ];
 
-        if ($request->renewal_status === "Rejected" && $request->filled('reason')) {
-            $updateData["rejection_reason"] = $request->reason;
-        }
+            if ($request->renewal_status === "Rejected" && $request->filled('reason')) {
+                $updateData["rejection_reason"] = $request->reason;
+            }
 
-        DB::table("tbl_renewal")
-            ->where("renewal_id", $id)
-            ->update($updateData);
+            $updatedRows = DB::table("tbl_renewal")
+                ->where("renewal_id", $id)
+                ->update($updateData);
 
-        // Broadcast update
-        $currentAcadYear = DB::table("tbl_applicant")
-            ->select("applicant_acad_year")
-            ->orderBy("applicant_acad_year", "desc")
-            ->value("applicant_acad_year");
+            \Log::info("Database update result for renewal_id {$id}: {$updatedRows} rows affected");
 
-        $approvedRenewals = DB::table("tbl_renewal")
-            ->where("renewal_status", "Approved")
-            ->where("renewal_acad_year", $currentAcadYear)
-            ->count();
+            if ($updatedRows === 0) {
+                \Log::error("No renewal record found with id: {$id}");
+                return response()->json(["success" => false, "message" => "Renewal not found"], 404);
+            }
 
-        $pendingRenewals = DB::table("tbl_renewal")
-            ->where("renewal_status", "Pending")
-            ->where("renewal_acad_year", $currentAcadYear)
-            ->count();
+            // Broadcast update
+            $currentAcadYear = DB::table("tbl_applicant")
+                ->select("applicant_acad_year")
+                ->orderBy("applicant_acad_year", "desc")
+                ->value("applicant_acad_year");
 
-        broadcast(new RenewalUpdated('approved_renewals', $approvedRenewals))->toOthers();
-        broadcast(new RenewalUpdated('pending_renewals', $pendingRenewals))->toOthers();
+            $approvedRenewals = DB::table("tbl_renewal")
+                ->where("renewal_status", "Approved")
+                ->where("renewal_acad_year", $currentAcadYear)
+                ->count();
 
-        $scholarId = DB::table("tbl_renewal")
-            ->where("renewal_id", $id)
-            ->value("scholar_id"); // kuha scholar id
+            $pendingRenewals = DB::table("tbl_renewal")
+                ->where("renewal_status", "Pending")
+                ->where("renewal_acad_year", $currentAcadYear)
+                ->count();
 
-        if ($scholarId) {
-            $applicant = DB::table("tbl_scholar")
-                ->join("tbl_application", "tbl_scholar.application_id", "=", "tbl_application.application_id")
-                ->join("tbl_applicant", "tbl_application.applicant_id", "=", "tbl_applicant.applicant_id")
-                ->where("tbl_scholar.scholar_id", $scholarId)
-                ->select("tbl_applicant.applicant_email", "tbl_applicant.applicant_fname", "tbl_applicant.applicant_lname")
-                ->first();
+            broadcast(new RenewalUpdated('approved_renewals', $approvedRenewals))->toOthers();
+            broadcast(new RenewalUpdated('pending_renewals', $pendingRenewals))->toOthers();
 
-            if ($applicant) {
-                $emailService = new EmailService();
-                if ($request->renewal_status === "Rejected") {
-                    DB::table("tbl_scholar")
-                        ->where("scholar_id", $scholarId)
-                        ->update([
-                            "scholar_status" => "Inactive",
-                            "updated_at" => now(),
+            $scholarId = DB::table("tbl_renewal")
+                ->where("renewal_id", $id)
+                ->value("scholar_id");
+
+            \Log::info("Retrieved scholar_id: {$scholarId} for renewal_id: {$id}");
+
+            if ($scholarId) {
+                $applicant = DB::table("tbl_scholar")
+                    ->join("tbl_application", "tbl_scholar.application_id", "=", "tbl_application.application_id")
+                    ->join("tbl_applicant", "tbl_application.applicant_id", "=", "tbl_applicant.applicant_id")
+                    ->where("tbl_scholar.scholar_id", $scholarId)
+                    ->select("tbl_applicant.applicant_email", "tbl_applicant.applicant_fname", "tbl_applicant.applicant_lname")
+                    ->first();
+
+                \Log::info("Applicant query result for scholar_id {$scholarId}:", [
+                    'found' => $applicant ? true : false,
+                    'email' => $applicant ? $applicant->applicant_email : null
+                ]);
+
+                if ($applicant && $applicant->applicant_email) {
+                    $emailService = new EmailService();
+
+                    if ($request->renewal_status === "Rejected") {
+                        \Log::info("Processing rejection for scholar_id: {$scholarId}");
+
+                        $scholarUpdateResult = DB::table("tbl_scholar")
+                            ->where("scholar_id", $scholarId)
+                            ->update([
+                                "scholar_status" => "Inactive",
+                                "updated_at" => now(),
+                            ]);
+
+                        \Log::info("Scholar status update result: {$scholarUpdateResult} rows affected");
+
+                        $emailResult = $emailService->sendRejectionEmail($applicant->applicant_email, [
+                            'applicant_fname' => $applicant->applicant_fname,
+                            'applicant_lname' => $applicant->applicant_lname,
+                            'reason' => $request->reason,
                         ]);
 
-                    $emailService->sendRejectionEmail($applicant->applicant_email, [
-                        'applicant_fname' => $applicant->applicant_fname,
-                        'applicant_lname' => $applicant->applicant_lname,
-                        'reason' => $request->reason,
-                    ]);
-                } elseif ($request->renewal_status === "Approved") {
-                    $emailService->sendApprovalEmail($applicant->applicant_email, [
-                        'applicant_fname' => $applicant->applicant_fname,
-                        'applicant_lname' => $applicant->applicant_lname,
-                    ]);
-                }
-            }
-        }
+                        \Log::info("Rejection email sent result: " . ($emailResult ? 'success' : 'failed'));
 
-        return response()->json(["success" => true]);
+                    } elseif ($request->renewal_status === "Approved") {
+                        \Log::info("Processing approval for scholar_id: {$scholarId}");
+
+                        $emailResult = $emailService->sendRenewalApprovalEmail($applicant->applicant_email, [
+                            'applicant_fname' => $applicant->applicant_fname,
+                            'applicant_lname' => $applicant->applicant_lname,
+                        ]);
+
+                        \Log::info("Renewal approval email sent result: " . ($emailResult ? 'success' : 'failed'));
+                    }
+                } else {
+                    \Log::warning("No applicant found or no email for scholar_id: {$scholarId}");
+                }
+            } else {
+                \Log::warning("No scholar_id found for renewal_id: {$id}");
+            }
+
+            \Log::info("updateRenewalStatus completed successfully for renewal_id: {$id}");
+            return response()->json(["success" => true]);
+
+        } catch (\Exception $e) {
+            \Log::error("Exception in updateRenewalStatus for renewal_id {$id}: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                "success" => false,
+                "message" => "An error occurred while updating renewal status",
+                "error" => $e->getMessage()
+            ], 500);
+        }
     }
 
 
@@ -580,7 +629,103 @@ private function getDocumentTypeName($documentType)
         'grade_slip' => 'Grade Slip',
         'brgy_indigency' => 'Barangay Indigency'
     ];
-    
+
     return $names[$documentType] ?? 'Document';
+}
+
+public function sendEmailForBadDocuments(Request $request)
+{
+    try {
+        // Get current academic year
+        $currentAcadYear = DB::table("tbl_applicant")
+            ->select("applicant_acad_year")
+            ->orderBy("applicant_acad_year", "desc")
+            ->value("applicant_acad_year");
+
+        // Find all renewals with bad documents for current academic year
+        $badDocuments = DB::table('tbl_renewal as r')
+            ->join('tbl_scholar as s', 'r.scholar_id', '=', 's.scholar_id')
+            ->join('tbl_application as ap', 's.application_id', '=', 'ap.application_id')
+            ->join('tbl_applicant as a', 'ap.applicant_id', '=', 'a.applicant_id')
+            ->where('r.renewal_acad_year', $currentAcadYear)
+            ->where(function ($query) {
+                $query->where('r.cert_of_reg_status', 'bad')
+                      ->orWhere('r.grade_slip_status', 'bad')
+                      ->orWhere('r.brgy_indigency_status', 'bad');
+            })
+            ->select(
+                'r.renewal_id',
+                'a.applicant_email',
+                'a.applicant_fname',
+                'a.applicant_lname',
+                'r.cert_of_reg_status',
+                'r.grade_slip_status',
+                'r.brgy_indigency_status',
+                'r.cert_of_reg_comment',
+                'r.grade_slip_comment',
+                'r.brgy_indigency_comment'
+            )
+            ->get();
+
+        $emailService = new EmailService();
+        $sentCount = 0;
+        $errors = [];
+
+        foreach ($badDocuments as $renewal) {
+            try {
+                // Determine which documents are bad and collect their info
+                $badDocs = [];
+                if ($renewal->cert_of_reg_status === 'bad') {
+                    $badDocs[] = [
+                        'type' => 'Certificate of Registration',
+                        'comment' => $renewal->cert_of_reg_comment
+                    ];
+                }
+                if ($renewal->grade_slip_status === 'bad') {
+                    $badDocs[] = [
+                        'type' => 'Grade Slip',
+                        'comment' => $renewal->grade_slip_comment
+                    ];
+                }
+                if ($renewal->brgy_indigency_status === 'bad') {
+                    $badDocs[] = [
+                        'type' => 'Barangay Indigency',
+                        'comment' => $renewal->brgy_indigency_comment
+                    ];
+                }
+
+                // Send email for each bad document
+                foreach ($badDocs as $doc) {
+                    $emailService->sendDocumentUpdateRequest(
+                        $renewal->applicant_email,
+                        [
+                            'applicant_fname' => $renewal->applicant_fname,
+                            'applicant_lname' => $renewal->applicant_lname,
+                            'document_type' => $doc['type'],
+                            'comment' => $doc['comment'] ?? 'Document requires update'
+                        ]
+                    );
+                }
+
+                $sentCount++;
+            } catch (\Exception $e) {
+                $errors[] = "Failed to send email to {$renewal->applicant_email}: " . $e->getMessage();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Emails sent successfully to {$sentCount} scholars",
+            'sent_count' => $sentCount,
+            'errors' => $errors
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Send email for bad documents error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to send emails: ' . $e->getMessage()
+        ], 500);
+    }
 }
 }

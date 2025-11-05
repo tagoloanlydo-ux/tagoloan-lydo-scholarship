@@ -9,159 +9,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="{{ asset('css/renewal.css') }}" />
-    <style>
-        :root {
-            --primary-color: #7c3aed;
-            --primary-dark: #6d28d9;
-            --primary-light: #a78bfa;
-            --text-secondary: #64748b;
-        }
 
-        .tab {
-            cursor: pointer;
-            padding: 14px 28px;
-            border-radius: 16px;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            background: linear-gradient(145deg, #ffffff, #f8fafc);
-            color: var(--text-secondary);
-            border: 2px solid transparent;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 14px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .tab::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transition: left 0.5s;
-        }
-
-        .tab:hover::before {
-            left: 100%;
-        }
-
-        .tab.active {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-            border-color: var(--primary-color);
-            box-shadow: 0 4px 20px rgba(30, 64, 175, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px) scale(1.02);
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        .tab.tab-green.active {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border-color: #10b981;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px) scale(1.02);
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        .tab:hover:not(.active) {
-            background: linear-gradient(145deg, #f1f5f9, #e2e8f0);
-            border-color: var(--primary-light);
-            color: var(--primary-color);
-            transform: translateY(-1px) scale(1.01);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-        }
-
-        .tab.tab-green:hover:not(.active) {
-            background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-            border-color: #10b981;
-            color: #065f46;
-            transform: translateY(-1px) scale(1.01);
-            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-        }
-
-        .tab:active {
-            transform: translateY(0) scale(0.98);
-            transition: all 0.1s ease;
-        }
-
-        /* Document Status Badges */
-        .document-item-wrapper {
-            position: relative;
-        }
-
-        .document-status-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            color: white;
-        }
-
-        .badge-good {
-            background-color: #10b981;
-        }
-
-        .badge-bad {
-            background-color: #ef4444;
-        }
-
-        .badge-new {
-            background-color: #8b5cf6;
-            font-size: 8px;
-            padding: 2px;
-        }
-
-        .badge-updated {
-            background-color: #f59e0b;
-            font-size: 8px;
-            padding: 2px;
-        }
-
-        /* Status badges for list view */
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-approved {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-
-        .status-rejected {
-            background-color: #fee2e2;
-            color: #dc2626;
-        }
-
-        .status-pending {
-            background-color: #fef3c7;
-            color: #d97706;
-        }
-
-        /* Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.3s ease-out;
-        }
-    </style>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
@@ -169,7 +17,84 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <style>
+ .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    display: none;
+    transition: opacity 0.3s ease;
+    animation: fadeIn 1s ease forwards;
+}
+
+.spinner {
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.spinner img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-out {
+    animation: fadeOut 1s ease forwards;
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+/* Responsive spinner size */
+@media (max-width: 768px) {
+    .spinner {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .spinner {
+        width: 60px;
+        height: 60px;
+    }
+}
+   
+    </style>
+
 </head>
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner">
+                            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+    </div>
+</div>
 <body class="bg-gray-50">
     <div class="dashboard-grid">
         <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
@@ -343,7 +268,7 @@
                         </div>
 
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
-                            <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase text-sm">
+                            <thead class="bg-violet-600 to-purple-600 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-4 py-3 border border-gray-200 text-center">#</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Name</th>
@@ -374,6 +299,8 @@
                                 @endforelse
                             </tbody>
                         </table>
+                        <!-- Pagination for Table View -->
+                        <div class="pagination-container" id="tablePagination"></div>
                     </div>
 
                     <!-- List View (Processed Renewals) -->
@@ -420,7 +347,7 @@
                         </div>
 
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
-                            <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
+                            <thead class="bg-green-600 to-teal-600 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-4 py-3 border border-gray-200 text-center">#</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Name</th>
@@ -468,9 +395,8 @@
                                 @endforelse
                             </tbody>
                         </table>
-                        <div class="mt-4">
-                            {{ $listView->links() }}
-                        </div>
+                        <!-- Pagination for List View -->
+                        <div class="pagination-container" id="listPagination"></div>
                     </div>
                 </div>
             </div>
@@ -503,6 +429,19 @@
                 </button>
 
                 <div class="flex gap-3" id="actionButtons" style="display: none;">
+                    <button onclick="sendEmailForBadDocuments()"
+                            class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-2"
+                            id="sendEmailBtn" style="display: none;">
+                        <i class="fas fa-envelope"></i>
+                        <span id="sendEmailText">Send Email</span>
+                        <div id="sendEmailSpinner" class="hidden">
+                            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    </button>
+
                     <button onclick="updateRenewalStatus(selectedRenewalId, 'Approved')"
                             class="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2"
                             id="approveBtn">
@@ -652,6 +591,8 @@
     <!-- I-include ang modal.js -->
         
         <script src="{{ asset('js/renewal.js') }}"></script>
+        <script src="{{ asset('js/spinner.js') }}"></script>
+        <script src="{{ asset('js/renewal_paginate.js') }}"></script>
         <script src="{{ asset('js/logout.js') }}"></script>
 </body>
 </html>
