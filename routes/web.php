@@ -16,7 +16,7 @@ Route::get('/registration', [LydopersController::class, 'showregistrationForm'])
 Route::post('/register-personnel', [LydopersController::class, 'store'])->name('lydopers.register');
 Route::get('/applicant-registration', [ScholarController::class, 'showApplicantsRegForm'])->name('applicants.registration');
 Route::post('/register-applicant', [ScholarController::class, 'storeApplicantsReg'])->name('applicants.register');
-Route::get('/check-applicant-email', [ScholarController::class, 'checkEmail'])->name('check.applicant.email');
+Route::post('/check-applicant-email', [ScholarController::class, 'checkEmail']);
 Route::post('/check-scholar-username', [ScholarController::class, 'checkUsername'])->name('check.scholar.username');
 Route::post('/check-scholar-id', [ScholarController::class, 'checkScholarId'])->name('check.scholar.id');
 Route::post('/login', [LydopersController::class, 'login'])->name('login.submit');
@@ -86,9 +86,7 @@ Route::put('/lydo_admin/announcement/{id}', [LydoAdminController::class, 'update
     Route::get('/lydo_admin/get-scholars-by-barangay', [LydoAdminController::class, 'getScholarsByBarangay'])->name('LydoAdmin.getScholarsByBarangay');
     Route::get('/lydo_admin/get-scholars-with-disbursement', [LydoAdminController::class, 'getScholarsWithDisbursement'])->name('LydoAdmin.getScholarsWithDisbursement');
     Route::get('/lydo_admin/disbursement-pdf', [LydoAdminController::class, 'generateDisbursementPdf'])->name('LydoAdmin.disbursement.pdf');
-
-
-
+    Route::get('/lydo_admin/get-scholars-without-disbursement', [LydoAdminController::class, 'getScholarsWithoutDisbursement'])->name('LydoAdmin.getScholarsWithoutDisbursement');
 });
 
 Route::middleware(['role:lydo_staff'])->group(function () {

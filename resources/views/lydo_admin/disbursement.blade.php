@@ -308,8 +308,8 @@
 
             <!-- Amount -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                <input type="number" name="amount" step="0.01" min="0" placeholder="Enter amount" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Amount (₱)</label>
+                <input type="number" name="amount" step="0.01" min="0" value="2500" placeholder="2,500" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
             </div>
 
             <!-- Disbursement Date -->
@@ -341,84 +341,75 @@
             </div>
 
             <!-- Scholar Selection -->
-            <div class="col-span-full md:col-span-2 lg:col-span-3">
-                <label class="block text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <i class="fas fa-users text-violet-600"></i>
-                    Select Scholar(s)
-                    <span id="selectedCount" class="text-xs bg-violet-100 text-violet-700 px-2 py-1 rounded-full font-medium">0 selected</span>
-                </label>
 
-                <!-- Search and Action Bar -->
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
-                    <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                        <!-- Search Input -->
-                        <div class="flex-1 max-w-md">
-                            <div class="relative">
-                                <input type="text" id="scholarSearch" placeholder="Search scholars..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-sm">
-                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            </div>
-                        </div>
+        <div class="col-span-full md:col-span-2 lg:col-span-3">
+            <label class="block text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-users text-violet-600"></i>
+                Select Scholar(s)
+                <span id="selectedCount" class="text-xs bg-violet-100 text-violet-700 px-2 py-1 rounded-full font-medium">0 selected</span>
+            </label>
 
-                        <!-- Action Buttons -->
-                        <div class="flex gap-2">
-                            <button type="button" id="selectAllScholars" class="flex items-center gap-2 px-4 py-2 text-sm bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium">
-                                <i class="fas fa-check-square"></i>
-                                Select All
-                            </button>
-                            <button type="button" id="clearAllScholars" class="flex items-center gap-2 px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium">
-                                <i class="fas fa-times-circle"></i>
-                                Clear All
-                            </button>
+            <!-- Search and Action Bar -->
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+                    <!-- Search Input -->
+                    <div class="flex-1 max-w-md">
+                        <div class="relative">
+                            <input type="text" id="scholarSearch" placeholder="Search scholars..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-sm">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         </div>
                     </div>
-                </div>
 
-                <!-- Scholar Select Container -->
-                <div class="relative">
-                    <select name="scholar_ids[]" multiple id="scholarSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 shadow-sm hover:shadow-md transition-all duration-200 bg-white" style="height: 280px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a78bfa #f3f4f6;" required>
-                        @foreach($scholars as $scholar)
-                            <option value="{{ $scholar->scholar_id }}" class="py-2 px-3 hover:bg-violet-50">{{ $scholar->full_name }}</option>
-                        @endforeach
-                    </select>
-
-                    <!-- Custom scrollbar styling -->
-                    <style>
-                        #scholarSelect::-webkit-scrollbar {
-                            width: 6px;
-                        }
-                        #scholarSelect::-webkit-scrollbar-track {
-                            background: #f3f4f6;
-                            border-radius: 3px;
-                        }
-                        #scholarSelect::-webkit-scrollbar-thumb {
-                            background: #a78bfa;
-                            border-radius: 3px;
-                        }
-                        #scholarSelect::-webkit-scrollbar-thumb:hover {
-                            background: #8b5cf6;
-                        }
-                        #scholarSelect option {
-                            padding: 8px 12px;
-                            border-bottom: 1px solid #f3f4f6;
-                        }
-                        #scholarSelect option:hover {
-                            background-color: #faf5ff !important;
-                        }
-                        #scholarSelect option:checked {
-                            background-color: #ddd6fe !important;
-                            font-weight: 500;
-                        }
-                    </style>
-                </div>
-
-                <!-- Help Text -->
-                <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p class="text-xs text-blue-700 flex items-center gap-2">
-                        <i class="fas fa-info-circle text-blue-500"></i>
-                        <span><strong>Instructions:</strong> Hold Ctrl (or Cmd on Mac) to select multiple scholars. Use the search box above to filter the list.</span>
-                    </p>
+                    <!-- Action Buttons -->
+                    <div class="flex gap-2">
+                        <button type="button" id="selectAllScholars" class="flex items-center gap-2 px-4 py-2 text-sm bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium">
+                            <i class="fas fa-check-square"></i>
+                            Select All
+                        </button>
+                        <button type="button" id="clearAllScholars" class="flex items-center gap-2 px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium">
+                            <i class="fas fa-times-circle"></i>
+                            Clear All
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            <!-- Scholar Table Container -->
+            <div class="relative">
+                <div class="border border-gray-300 rounded-lg bg-white shadow-sm" style="height: 280px; overflow-y: auto;">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="w-8 px-4 py-2">
+                                    <input type="checkbox" id="selectAllCheckbox" class="rounded border-gray-300 text-violet-600 focus:ring-violet-500">
+                                </th>
+                                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Name</th>
+                                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Barangay</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scholarTableBody" class="divide-y divide-gray-200">
+                            @foreach($scholars as $scholar)
+                                <tr class="hover:bg-gray-50 scholar-row" data-scholar-id="{{ $scholar->scholar_id }}">
+                                    <td class="px-4 py-2">
+                                        <input type="checkbox" name="scholar_ids[]" value="{{ $scholar->scholar_id }}" class="scholar-checkbox rounded border-gray-300 text-violet-600 focus:ring-violet-500">
+                                    </td>
+                                    <td class="px-4 py-2 text-sm text-gray-900">{{ $scholar->full_name }}</td>
+                                    <td class="px-4 py-2 text-sm text-gray-500">{{ $scholar->applicant_brgy }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Help Text -->
+            <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-xs text-blue-700 flex items-center gap-2">
+                    <i class="fas fa-info-circle text-blue-500"></i>
+                    <span><strong>Instructions:</strong> Only scholars without existing disbursements for the selected semester and academic year are shown. Use the search box to filter the list.</span>
+                </p>
+            </div>
+        </div>
 
             <!-- Submit Button -->
 <div class="col-span-full flex justify-center mt-4">
@@ -536,9 +527,8 @@
             </div>
 
             <!-- Pagination -->
-            <div class="mt-6">
-                {{ $disbursements->appends(request()->except('page'))->links() }}
-            </div>
+         
+        <div class="mt-6" id="disbursementPaginationContainer"></div>
         @else
             <div class="text-center py-8">
                 <p class="text-gray-500 text-lg">No disbursement records found matching your criteria.</p>
@@ -650,11 +640,7 @@
                     </table>
                 </div>
             </div>
-
-            <!-- Pagination -->
-            <div class="mt-6">
-                {{ $signedDisbursements->links() }}
-            </div>
+            <div class="mt-6" id="signedDisbursementPaginationContainer"></div>
         @else
             <div class="text-center py-8">
                 <p class="text-gray-500 text-lg">No signed disbursement records found.</p>
@@ -667,66 +653,131 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const filterForm = document.getElementById("filterForm");
-    const tableBody = document.getElementById("disbursementTableBody");
+    const scholarTableBody = document.getElementById('scholarTableBody');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const scholarCheckboxes = document.querySelectorAll('.scholar-checkbox');
+    const academicYearInput = document.querySelector('input[name="academic_year"]');
+    const semesterSelect = document.querySelector('select[name="semester"]');
 
-    // debounce function para hindi sobrang dami ng request habang nagta-type
-    function debounce(func, delay) {
-        let timeout;
-        return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), delay);
-        };
+    // Function to filter scholars based on academic year and semester
+    function filterScholars() {
+        const academicYear = academicYearInput.value.trim();
+        const semester = semesterSelect.value;
+
+        if (!academicYear || !semester) {
+            return; // Don't filter if either field is empty
+        }
+
+        // Show loading state
+        scholarTableBody.innerHTML = '<tr><td colspan="3" class="px-4 py-4 text-center text-gray-500">Loading scholars...</td></tr>';
+
+        // Fetch scholars without disbursements for the selected academic year and semester
+        fetch(`/lydo_admin/get-scholars-without-disbursement?academic_year=${encodeURIComponent(academicYear)}&semester=${encodeURIComponent(semester)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    scholarTableBody.innerHTML = '';
+
+                    if (data.scholars.length > 0) {
+                        data.scholars.forEach(scholar => {
+                            const row = document.createElement('tr');
+                            row.className = 'hover:bg-gray-50 scholar-row';
+                            row.setAttribute('data-scholar-id', scholar.scholar_id);
+                            row.innerHTML = `
+                                <td class="px-4 py-2">
+                                    <input type="checkbox" name="scholar_ids[]" value="${scholar.scholar_id}" class="scholar-checkbox rounded border-gray-300 text-violet-600 focus:ring-violet-500">
+                                </td>
+                                <td class="px-4 py-2 text-sm text-gray-900">${scholar.full_name}</td>
+                                <td class="px-4 py-2 text-sm text-gray-500">${scholar.applicant_brgy}</td>
+                            `;
+                            scholarTableBody.appendChild(row);
+                        });
+
+                        // Re-attach event listeners to new checkboxes
+                        attachCheckboxListeners();
+                        updateSelectedCount();
+                    } else {
+                        scholarTableBody.innerHTML = '<tr><td colspan="3" class="px-4 py-4 text-center text-gray-500">No scholars available for the selected semester and academic year.</td></tr>';
+                    }
+                } else {
+                    scholarTableBody.innerHTML = '<tr><td colspan="3" class="px-4 py-4 text-center text-red-500">Error loading scholars.</td></tr>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching scholars:', error);
+                scholarTableBody.innerHTML = '<tr><td colspan="3" class="px-4 py-4 text-center text-red-500">Error loading scholars.</td></tr>';
+            });
     }
 
-    // function para mag-load ng filtered records
-    function loadDisbursements() {
-        const formData = new FormData(filterForm);
-        const params = new URLSearchParams(formData);
-
-        fetch(`/lydo_admin/disbursement?${params.toString()}`, {
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        })
-        .then(res => res.json())
-        .then(data => {
-            tableBody.innerHTML = "";
-
-            if (data.length > 0) {
-                data.forEach(row => {
-                    tableBody.innerHTML += `
-                        <tr class="hover:bg-gray-50 border-b">
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.full_name}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.applicant_brgy}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.disburse_semester}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.disburse_acad_year}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">₱${parseFloat(row.disburse_amount).toFixed(2)}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.disburse_date}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center text-gray-500 py-4">
-                            No disbursement records found.
-                        </td>
-                    </tr>
-                `;
-            }
-        })
-        .catch(err => {
-            console.error("Error fetching disbursements:", err);
+    // Function to attach event listeners to checkboxes
+    function attachCheckboxListeners() {
+        const checkboxes = document.querySelectorAll('.scholar-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectedCount);
         });
     }
 
-    // auto filter habang nagta-type o nagbabago ang select
-    filterForm.querySelectorAll("input, select").forEach(input => {
-        if (input.type === "text") {
-            input.addEventListener("input", debounce(loadDisbursements, 400));
+    // Update selected count
+    function updateSelectedCount() {
+        const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+        const count = selectedCheckboxes.length;
+        const selectedCountElement = document.getElementById('selectedCount');
+
+        selectedCountElement.textContent = count + ' selected';
+
+        // Change badge color based on count
+        if (count === 0) {
+            selectedCountElement.className = 'text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-medium';
+        } else if (count < 5) {
+            selectedCountElement.className = 'text-xs bg-violet-100 text-violet-700 px-2 py-1 rounded-full font-medium';
         } else {
-            input.addEventListener("change", loadDisbursements);
+            selectedCountElement.className = 'text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium';
         }
+    }
+
+    // Select All functionality
+    selectAllCheckbox.addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('.scholar-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateSelectedCount();
     });
+
+    // Clear All functionality
+    document.getElementById('clearAllScholars').addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('.scholar-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        selectAllCheckbox.checked = false;
+        updateSelectedCount();
+    });
+
+    // Scholar search functionality
+    document.getElementById('scholarSearch').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.scholar-row');
+
+        rows.forEach(row => {
+            const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+            const barangay = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+            
+            if (name.includes(searchTerm) || barangay.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Filter scholars when academic year or semester changes
+    academicYearInput.addEventListener('input', filterScholars);
+    semesterSelect.addEventListener('change', filterScholars);
+
+    // Initial attachment of checkbox listeners
+    attachCheckboxListeners();
+    updateSelectedCount();
 });
 </script>
 
@@ -889,157 +940,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Disbursement date validation
-function validateDisbursementDate() {
-    const dateInput = document.getElementById('disbursement_date');
-    const errorElement = dateInput.nextElementSibling;
-    const submitBtn = document.getElementById('submitBtn');
-    const value = dateInput.value;
-
-    if (value) {
-        const date = new Date(value);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        // Extract the year part
-        const year = value.split('-')[0];
-
-        if (isNaN(date.getTime())) {
-            errorElement.textContent = "Invalid date";
-            dateInput.classList.add('error');
-            submitBtn.disabled = true;
-        } 
-        else if (!/^\d{4}$/.test(year)) {
-            errorElement.textContent = "Year must be 4 digits (e.g., 2025)";
-            dateInput.classList.add('error');
-            submitBtn.disabled = true;
-        }
-        else if (date <= today) {
-            errorElement.textContent = "Disbursement date must be in the future";
-            dateInput.classList.add('error');
-            submitBtn.disabled = true;
-        } 
-        else {
-            errorElement.textContent = "";
-            dateInput.classList.remove('error');
-            toggleButton();
-        }
-    } else {
-        errorElement.textContent = "";
-        dateInput.classList.remove('error');
-        toggleButton();
-    }
-}
-
-
-    function toggleButton() {
-        const submitBtn = document.getElementById('submitBtn');
-        const errorElements = document.querySelectorAll('.error-message');
-
-        let hasErrors = false;
-        errorElements.forEach(element => {
-            if (element.textContent.trim() !== '') {
-                hasErrors = true;
-            }
-        });
-
-        submitBtn.disabled = hasErrors;
-    }
-
-    // Add event listeners for disbursement date validation
-    document.getElementById('disbursement_date').addEventListener('blur', validateDisbursementDate);
-    document.getElementById('disbursement_date').addEventListener('input', validateDisbursementDate);
-
-    // Function to filter out scholars with existing disbursements
-    function filterScholarsWithDisbursements() {
-        const academicYearInput = document.querySelector('input[name="academic_year"]');
-        const semesterSelect = document.querySelector('select[name="semester"]');
-        const scholarSelect = document.getElementById('scholarSelect');
-
-        const academicYear = academicYearInput.value.trim();
-        const semester = semesterSelect.value;
-
-        if (!academicYear || !semester) {
-            return; // Don't filter if either field is empty
-        }
-
-        // Fetch scholars who already have disbursements for this academic year and semester
-        fetch(`/lydo_admin/get-scholars-with-disbursement?academic_year=${encodeURIComponent(academicYear)}&semester=${encodeURIComponent(semester)}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const scholarsWithDisbursements = data.scholar_ids;
-                    const options = scholarSelect.options;
-
-                    // Unselect scholars who already have disbursements
-                    for (let i = 0; i < options.length; i++) {
-                        const option = options[i];
-                        if (scholarsWithDisbursements.includes(option.value)) {
-                            option.selected = false;
-                        }
-                        // Note: Scholars without disbursements remain selected if they were selected before
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching scholars with disbursements:', error);
-            });
-    }
-
-    // Add event listeners for academic year and semester changes
-    document.querySelector('input[name="academic_year"]').addEventListener('input', filterScholarsWithDisbursements);
-    document.querySelector('select[name="semester"]').addEventListener('change', filterScholarsWithDisbursements);
-
-    // Scholar search functionality
-    document.getElementById('scholarSearch').addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        const scholarSelect = document.getElementById('scholarSelect');
-        const options = scholarSelect.options;
-
-        for (let i = 0; i < options.length; i++) {
-            const option = options[i];
-            const text = option.textContent.toLowerCase();
-            if (text.includes(searchTerm)) {
-                option.style.display = '';
-            } else {
-                option.style.display = 'none';
-            }
-        }
-    });
-
-    // Update selected count
-    function updateSelectedCount() {
-        const scholarSelect = document.getElementById('scholarSelect');
-        const selectedOptions = Array.from(scholarSelect.selectedOptions);
-        const count = selectedOptions.length;
-        const selectedCountElement = document.getElementById('selectedCount');
-
-        selectedCountElement.textContent = count + ' selected';
-
-        // Change badge color based on count
-        if (count === 0) {
-            selectedCountElement.className = 'text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-medium';
-        } else if (count < 5) {
-            selectedCountElement.className = 'text-xs bg-violet-100 text-violet-700 px-2 py-1 rounded-full font-medium';
-        } else {
-            selectedCountElement.className = 'text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium';
-        }
-    }
-
-    // Add event listener for scholar selection changes
-    document.getElementById('scholarSelect').addEventListener('change', updateSelectedCount);
-
-    // Update count on page load and after any selection changes
-    updateSelectedCount();
-
-    // Update count after select all/clear all actions
-    document.getElementById('selectAllScholars').addEventListener('click', function() {
-        setTimeout(updateSelectedCount, 10);
-    });
-
-    document.getElementById('clearAllScholars').addEventListener('click', function() {
-        setTimeout(updateSelectedCount, 10);
-    });
 </script>
 
 <script>
@@ -1106,7 +1006,7 @@ function validateDisbursementDate() {
         @endif
     });
 </script>
-
+<script src="{{ asset('js/disburse_paginate.js') }}"></script>
 </body>
 
 </html>

@@ -947,107 +947,20 @@ class LydoAdminController extends Controller
         return redirect()->back()->with('success', 'Scholar status updated successfully!');
     }
 
-    public function disbursement(Request $request)
-    {
-        // Check if this is an AJAX request for filtering
-        if ($request->ajax()) {
-            // Get disbursement records with applicant information
-            $query = DB::table('tbl_disburse as d')
-                ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
-                ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
-                ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-                ->select(
-                    'd.disburse_semester',
-                    'd.disburse_acad_year',
-                    'd.disburse_amount',
-                    'd.disburse_date',
-                    'a.applicant_brgy',
-                    DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
-                );
-
-            // Apply search filter
-            if ($request->has('search') && !empty($request->search)) {
-                $query->where(function($q) use ($request) {
-                    $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
-                      ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%')
-                      ->orWhere('a.applicant_mname', 'like', '%' . $request->search . '%');
-                });
-            }
-
-            // Apply barangay filter
-            if ($request->has('barangay') && !empty($request->barangay)) {
-                $query->where('a.applicant_brgy', $request->barangay);
-            }
-
-            // Apply academic year filter
-            if ($request->has('academic_year') && !empty($request->academic_year)) {
-                $query->where('d.disburse_acad_year', $request->academic_year);
-            }
-
-            // Apply semester filter
-            if ($request->has('semester') && !empty($request->semester)) {
-                $query->where('d.disburse_semester', $request->semester);
-            }
-
-            $disbursements = $query->get();
-
-            // Format the data for JSON response
-            $formattedDisbursements = $disbursements->map(function ($disburse) {
-                return [
-                    'full_name' => $disburse->full_name,
-                    'applicant_brgy' => $disburse->applicant_brgy,
-                    'disburse_semester' => $disburse->disburse_semester,
-                    'disburse_acad_year' => $disburse->disburse_acad_year,
-                    'disburse_amount' => $disburse->disburse_amount,
-                    'disburse_date' => \Carbon\Carbon::parse($disburse->disburse_date)->format('F d, Y'),
-                ];
-            });
-
-            return response()->json($formattedDisbursements);
-        }
-
-        $notifications = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select(
-                'tbl_applicant.applicant_fname as name',
-                'tbl_application_personnel.status as status',
-                'tbl_application_personnel.updated_at as created_at',
-                DB::raw("'application' as type")
-            )
-            ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-
-            ->unionAll(
-                DB::table('tbl_renewal')
-                    ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                    ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                    ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                    ->select(
-                        'tbl_applicant.applicant_fname as name',
-                        'tbl_renewal.renewal_status as status',
-                        'tbl_renewal.updated_at as created_at',
-                        DB::raw("'renewal' as type")
-                    )
-                    ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-            )
-            ->orderBy('created_at', 'desc')
-            ->get();
-
+public function disbursement(Request $request)
+{
+    // Check if this is an AJAX request for filtering
+    if ($request->ajax()) {
         // Get disbursement records with applicant information
         $query = DB::table('tbl_disburse as d')
             ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
             ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
             ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
             ->select(
-                'd.disburse_id',
                 'd.disburse_semester',
                 'd.disburse_acad_year',
                 'd.disburse_amount',
                 'd.disburse_date',
-                'a.applicant_fname',
-                'a.applicant_mname',
-                'a.applicant_lname',
-                'a.applicant_suffix',
                 'a.applicant_brgy',
                 DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
             );
@@ -1076,67 +989,155 @@ class LydoAdminController extends Controller
             $query->where('d.disburse_semester', $request->semester);
         }
 
-        $disbursements = $query->paginate(15);
+        $disbursements = $query->get();
 
-        // Get distinct barangays for filter dropdown
-        $barangays = DB::table('tbl_applicant')
-            ->select('applicant_brgy')
-            ->distinct()
-            ->orderBy('applicant_brgy', 'asc')
-            ->pluck('applicant_brgy');
+        // Format the data for JSON response
+        $formattedDisbursements = $disbursements->map(function ($disburse) {
+            return [
+                'full_name' => $disburse->full_name,
+                'applicant_brgy' => $disburse->applicant_brgy,
+                'disburse_semester' => $disburse->disburse_semester,
+                'disburse_acad_year' => $disburse->disburse_acad_year,
+                'disburse_amount' => $disburse->disburse_amount,
+                'disburse_date' => \Carbon\Carbon::parse($disburse->disburse_date)->format('F d, Y'),
+            ];
+        });
 
-        // Get distinct academic years for filter dropdown
-        $academicYears = DB::table('tbl_disburse')
-            ->select('disburse_acad_year')
-            ->distinct()
-            ->orderBy('disburse_acad_year', 'desc')
-            ->pluck('disburse_acad_year');
-
-        // Get distinct semesters for filter dropdown
-        $semesters = DB::table('tbl_disburse')
-            ->select('disburse_semester')
-            ->distinct()
-            ->orderBy('disburse_semester', 'asc')
-            ->pluck('disburse_semester');
-
-        // Get scholars for the create form dropdown
-        $scholars = DB::table('tbl_scholar as s')
-            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
-            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-            ->select(
-                's.scholar_id',
-                'a.applicant_fname',
-                'a.applicant_mname',
-                'a.applicant_lname',
-                'a.applicant_suffix',
-                DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
-            )
-            ->where('s.scholar_status', 'active')
-            ->get();
-
-        // Get signed disbursements
-        $signedDisbursements = DB::table('tbl_disburse as d')
-            ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
-            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
-            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-            ->select(
-                'd.disburse_id',
-                'd.disburse_semester',
-                'd.disburse_acad_year',
-                'd.disburse_amount',
-                'd.disburse_date',
-                'a.applicant_fname',
-                'a.applicant_mname',
-                'a.applicant_lname',
-                'a.applicant_suffix',
-                'a.applicant_brgy',
-                DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
-            )
-            ->whereNotNull('d.disburse_signature')
-            ->paginate(15);
-
-        return view('lydo_admin.disbursement', compact('notifications', 'disbursements', 'barangays', 'academicYears', 'semesters', 'scholars', 'signedDisbursements'));
+        return response()->json($formattedDisbursements);
     }
+
+    $notifications = DB::table('tbl_application_personnel')
+        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
+        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+        ->select(
+            'tbl_applicant.applicant_fname as name',
+            'tbl_application_personnel.status as status',
+            'tbl_application_personnel.updated_at as created_at',
+            DB::raw("'application' as type")
+        )
+        ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
+
+        ->unionAll(
+            DB::table('tbl_renewal')
+                ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
+                ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
+                ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+                ->select(
+                    'tbl_applicant.applicant_fname as name',
+                    'tbl_renewal.renewal_status as status',
+                    'tbl_renewal.updated_at as created_at',
+                    DB::raw("'renewal' as type")
+                )
+                ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
+        )
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    // Get scholars for the create form dropdown - FIXED QUERY
+    $scholars = DB::table('tbl_scholar as s')
+        ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+        ->select(
+            's.scholar_id',
+            'a.applicant_fname',
+            'a.applicant_mname',
+            'a.applicant_lname',
+            'a.applicant_suffix',
+            'a.applicant_brgy', // ADD THIS LINE
+            DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+        )
+        ->where('s.scholar_status', 'active')
+        ->get();
+
+    // Get disbursement records with applicant information
+    $query = DB::table('tbl_disburse as d')
+        ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
+        ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+        ->select(
+            'd.disburse_id',
+            'd.disburse_semester',
+            'd.disburse_acad_year',
+            'd.disburse_amount',
+            'd.disburse_date',
+            'a.applicant_fname',
+            'a.applicant_mname',
+            'a.applicant_lname',
+            'a.applicant_suffix',
+            'a.applicant_brgy',
+            DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+        );
+
+    // Apply search filter
+    if ($request->has('search') && !empty($request->search)) {
+        $query->where(function($q) use ($request) {
+            $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
+              ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%')
+              ->orWhere('a.applicant_mname', 'like', '%' . $request->search . '%');
+        });
+    }
+
+    // Apply barangay filter
+    if ($request->has('barangay') && !empty($request->barangay)) {
+        $query->where('a.applicant_brgy', $request->barangay);
+    }
+
+    // Apply academic year filter
+    if ($request->has('academic_year') && !empty($request->academic_year)) {
+        $query->where('d.disburse_acad_year', $request->academic_year);
+    }
+
+    // Apply semester filter
+    if ($request->has('semester') && !empty($request->semester)) {
+        $query->where('d.disburse_semester', $request->semester);
+    }
+
+    $disbursements = $query->paginate(15);
+
+    // Get distinct barangays for filter dropdown
+    $barangays = DB::table('tbl_applicant')
+        ->select('applicant_brgy')
+        ->distinct()
+        ->orderBy('applicant_brgy', 'asc')
+        ->pluck('applicant_brgy');
+
+    // Get distinct academic years for filter dropdown
+    $academicYears = DB::table('tbl_disburse')
+        ->select('disburse_acad_year')
+        ->distinct()
+        ->orderBy('disburse_acad_year', 'desc')
+        ->pluck('disburse_acad_year');
+
+    // Get distinct semesters for filter dropdown
+    $semesters = DB::table('tbl_disburse')
+        ->select('disburse_semester')
+        ->distinct()
+        ->orderBy('disburse_semester', 'asc')
+        ->pluck('disburse_semester');
+
+    // Get signed disbursements
+    $signedDisbursements = DB::table('tbl_disburse as d')
+        ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
+        ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+        ->select(
+            'd.disburse_id',
+            'd.disburse_semester',
+            'd.disburse_acad_year',
+            'd.disburse_amount',
+            'd.disburse_date',
+            'a.applicant_fname',
+            'a.applicant_mname',
+            'a.applicant_lname',
+            'a.applicant_suffix',
+            'a.applicant_brgy',
+            DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+        )
+        ->whereNotNull('d.disburse_signature')
+        ->paginate(15);
+
+    return view('lydo_admin.disbursement', compact('notifications', 'disbursements', 'barangays', 'academicYears', 'semesters', 'scholars', 'signedDisbursements'));
+}
     public function settings()
     {
         $notifications = DB::table('tbl_application_personnel')
@@ -1984,4 +1985,48 @@ class LydoAdminController extends Controller
 
         return view('pdf.disbursement-print', compact('disbursements', 'filters'));
     }
+public function getScholarsWithoutDisbursement(Request $request)
+{
+    try {
+        $request->validate([
+            'academic_year' => 'required|string',
+            'semester' => 'required|string|in:1st Semester,2nd Semester,Summer'
+        ]);
+
+        // Get scholars who don't have disbursements for the selected academic year and semester
+        $scholars = DB::table('tbl_scholar as s')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->leftJoin('tbl_disburse as d', function($join) use ($request) {
+                $join->on('s.scholar_id', '=', 'd.scholar_id')
+                     ->where('d.disburse_acad_year', $request->academic_year)
+                     ->where('d.disburse_semester', $request->semester);
+            })
+            ->select(
+                's.scholar_id',
+                'a.applicant_fname',
+                'a.applicant_mname',
+                'a.applicant_lname',
+                'a.applicant_suffix',
+                'a.applicant_brgy',
+                'a.applicant_email',
+                DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+            )
+            ->where('s.scholar_status', 'active')
+            ->whereNull('d.disburse_id') // Only scholars without disbursement for this year/semester
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'scholars' => $scholars
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Error in getScholarsWithoutDisbursement: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error loading scholars: ' . $e->getMessage()
+        ], 500);
+    }
+}
 }

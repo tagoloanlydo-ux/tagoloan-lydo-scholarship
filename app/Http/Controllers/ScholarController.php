@@ -89,11 +89,18 @@ class ScholarController extends Controller
     }
 
 
-    public function checkEmail(Request $request)
-    {
-        $exists = Applicant::where('applicant_email', $request->email)->exists();
-        return response()->json(['exists' => $exists]);
-    }
+        public function checkEmail(Request $request)
+        {
+            \Log::info('=== APPLICANT EMAIL CHECK ===');
+            \Log::info('Email being checked: ' . $request->email);
+            
+            $exists = Applicant::where('applicant_email', $request->email)->exists();
+            
+            \Log::info('Exists in applicants table: ' . ($exists ? 'YES' : 'NO'));
+            \Log::info('============================');
+            
+            return response()->json(['exists' => $exists]);
+        }
 
     public function showLoginForm()
     {

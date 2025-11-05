@@ -28,9 +28,84 @@
     color: rgb(0, 0, 0);
     font-size: 50px;
     cursor: pointer;
+}   
+ .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    display: none;
+    transition: opacity 0.3s ease;
+    animation: fadeIn 1s ease forwards;
 }
-  </style>
+
+.spinner {
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.spinner img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-out {
+    animation: fadeOut 1s ease forwards;
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+/* Responsive spinner size */
+@media (max-width: 768px) {
+    .spinner {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .spinner {
+        width: 60px;
+        height: 60px;
+    }
+}
+   
+    </style>
+
   <body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner">
+                            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+    </div>
+</div>
     <div class="banner-grad flex items-center justify-center md:justify-between w-full px-4 md:px-6 text-white">
       <div class="flex items-center">
         <img src="/images/LYDO.png" alt="LYDO Logo" class="h-8 md:h-10 mr-2 md:mr-4"/>
@@ -176,278 +251,314 @@
       </div>
     </form>
 
-    <script>
-      const registrationForm = document.getElementById("registrationForm");
-      const submitBtn = registrationForm.querySelector(".login-btn");
+<script>
+  const registrationForm = document.getElementById("registrationForm");
+  const submitBtn = registrationForm.querySelector(".login-btn");
 
-      const rules = {
-        name: /^[A-Za-z\s]+$/,
-        username: /^[a-zA-Z0-9._]*$/,
-        contact: /^(09\d{9}|\+639\d{9})$/,
-        password: {
-          regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
-          rules: [
-            { regex: /.{8,}/, message: "At least 8 characters" },
-            { regex: /[A-Z]/, message: "At least 1 uppercase letter" },
-            { regex: /[a-z]/, message: "At least 1 lowercase letter" },
-            { regex: /\d/, message: "At least 1 number" },
-            { regex: /[@$!%*?&]/, message: "At least 1 special character" },
-          ],
-        },
-      };
+  const rules = {
+    name: /^[A-Za-z\s]+$/,
+    username: /^[a-zA-Z0-9._]*$/,
+    contact: /^(09\d{9}|\+639\d{9})$/,
+    password: {
+      regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
+      rules: [
+        { regex: /.{8,}/, message: "At least 8 characters" },
+        { regex: /[A-Z]/, message: "At least 1 uppercase letter" },
+        { regex: /[a-z]/, message: "At least 1 lowercase letter" },
+        { regex: /\d/, message: "At least 1 number" },
+        { regex: /[@$!%*?&]/, message: "At least 1 special character" },
+      ],
+    },
+  };
 
-      function validateInput(input) {
-        const id = input.id;
-        const value = input.value.trim();
-        // Find error message element - for password fields, it's after the relative container
-        let errorEl = input.nextElementSibling;
-        if (input.closest('.password-group')) {
-          // For password fields, error message is after the relative div
-          const relativeDiv = input.closest('.relative');
-          errorEl = relativeDiv.nextElementSibling;
-        }
-        let errorMsg = "";
-        let valid = true;
+  function validateInput(input) {
+    const id = input.id;
+    const value = input.value.trim();
+    
+    // Find error message element
+    let errorEl = input.nextElementSibling;
+    if (input.closest('.password-group')) {
+      const relativeDiv = input.closest('.relative');
+      errorEl = relativeDiv.nextElementSibling;
+    }
+    
+    let errorMsg = "";
+    let valid = true;
 
-        if (input.hasAttribute("required") && !value) {
-          errorMsg = "This field cannot be empty";
-          valid = false;
-        }
-
-        if (valid && ["fname", "mname", "lname"].includes(id)) {
-          if (value && !rules.name.test(value)) {
-            errorMsg = "Cannot accept numbers or symbols";
-            valid = false;
-          }
-        }
-
-        if (valid && id === "username") {
-          if (value && !rules.username.test(value)) {
-            errorMsg = "Only letters and numbers are accepted, no spaces or symbols";
-            valid = false;
-          }
-        }
-
-        if (valid && id === "contact") {
-          if (value && !rules.contact.test(value)) {
-            errorMsg = "Format: 09XXXXXXXXX or +639XXXXXXXXX";
-            valid = false;
-          }
-        }
-
-        if (valid && id === "bdate") {
-          const date = new Date(value);
-          const today = new Date();
-          if (isNaN(date.getTime())) {
-            errorMsg = "Invalid date";
-            valid = false;
-          } else if (date > today) {
-            errorMsg = "Birth date cannot be in the future";
-            valid = false;
-          }
-        }
-  if (valid && id === "email") {
-    if (!value.endsWith("@gmail.com")) {
-      errorMsg = "Email must end with @gmail.com";
+    if (input.hasAttribute("required") && !value) {
+      errorMsg = "This field cannot be empty";
       valid = false;
     }
+
+    if (valid && ["fname", "mname", "lname"].includes(id)) {
+      if (value && !rules.name.test(value)) {
+        errorMsg = "Cannot accept numbers or symbols";
+        valid = false;
+      }
+    }
+
+    if (valid && id === "username") {
+      if (value && !rules.username.test(value)) {
+        errorMsg = "Only letters and numbers are accepted, no spaces or symbols";
+        valid = false;
+      }
+    }
+
+    if (valid && id === "contact") {
+      if (value && !rules.contact.test(value)) {
+        errorMsg = "Format: 09XXXXXXXXX or +639XXXXXXXXX";
+        valid = false;
+      }
+    }
+
+    if (valid && id === "bdate") {
+      const date = new Date(value);
+      const today = new Date();
+      if (isNaN(date.getTime())) {
+        errorMsg = "Invalid date";
+        valid = false;
+      } else if (date > today) {
+        errorMsg = "Birth date cannot be in the future";
+        valid = false;
+      }
+    }
+
+    if (valid && id === "email") {
+      if (!value.endsWith("@gmail.com")) {
+        errorMsg = "Email must end with @gmail.com";
+        valid = false;
+      }
+    }
+
+    if (valid && id === "pass") {
+      let unmet = rules.password.rules
+        .filter((r) => !r.regex.test(value))
+        .map((r) => r.message);
+      if (unmet.length > 0) {
+        errorMsg = "Password must have: " + unmet.join(", ");
+        valid = false;
+      }
+    }
+
+    if (valid && id === "confirm_pass") {
+      const pass = document.getElementById("pass").value;
+      if (value !== pass) {
+        errorMsg = "Must match the entered password";
+        valid = false;
+      }
+    }
+
+    if (!valid) {
+      input.classList.add("error");
+      input.classList.remove("valid");
+      errorEl.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i>${errorMsg}`;
+    } else {
+      input.classList.remove("error");
+      input.classList.add("valid");
+      errorEl.innerHTML = "";
+    }
+
+    return valid;
   }
-        if (valid && id === "pass") {
-          let unmet = rules.password.rules
-            .filter((r) => !r.regex.test(value))
-            .map((r) => r.message);
-          if (unmet.length > 0) {
-            errorMsg = "Password must have: " + unmet.join(", ");
-            valid = false;
-          }
-        }
 
-        if (valid && id === "confirm_pass") {
-          const pass = document.getElementById("pass").value;
-          if (value !== pass) {
-            errorMsg = "Must match the entered password";
-            valid = false;
-          }
-        }
+  let debounceTimers = {};
 
-        if (!valid) {
+  function checkDuplicate(input) {
+    const id = input.id;
+    const value = input.value.trim();
+
+    // Find the correct error message element
+    let errorEl = input.nextElementSibling;
+    if (input.closest('.password-group')) {
+      const relativeDiv = input.closest('.relative');
+      errorEl = relativeDiv.nextElementSibling;
+    }
+    
+    // Clear previous timer for this specific field
+    if (debounceTimers[id]) {
+      clearTimeout(debounceTimers[id]);
+    }
+    
+    // Immediately clear error if empty
+    if (!value) {
+      input.classList.remove("error");
+      input.classList.remove("valid");
+      errorEl.innerHTML = "";
+      toggleButton();
+      return;
+    }
+
+    // Only check duplicates for email and username
+    if (id !== 'email' && id !== 'username') {
+      return;
+    }
+
+    // First validate format
+    const formatValid = validateInput(input);
+    if (!formatValid) {
+      toggleButton();
+      return;
+    }
+
+    // Debounce duplicate check
+    debounceTimers[id] = setTimeout(() => {
+      const route = id === 'email' ? '/check-email' : '/check-username';
+
+      fetch(route, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ value: value })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (!data.available) {
+          // AUTOMATIC ERROR DISPLAY - Duplicate found
           input.classList.add("error");
           input.classList.remove("valid");
-          errorEl.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i>${errorMsg}`;
+          errorEl.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i>${
+            id === 'email' 
+              ? "This email is already registered. Please use a different email." 
+              : "This username is already taken. Please choose another one."
+          }`;
         } else {
+          // No duplicate - mark as valid
           input.classList.remove("error");
           input.classList.add("valid");
           errorEl.innerHTML = "";
         }
-
-        return valid;
-      }
-
-let debounceTimer;
-function checkDuplicate(input) {
-  const id = input.id;
-  const value = input.value.trim();
-
-  // Find the correct error message element
-  let errorEl = input.nextElementSibling;
-  if (input.closest('.password-group')) {
-    const relativeDiv = input.closest('.relative');
-    errorEl = relativeDiv.nextElementSibling;
+        toggleButton();
+      })
+      .catch(error => {
+        console.error('Error checking duplicate:', error);
+        toggleButton();
+      });
+    }, 800); // Slightly longer debounce for duplicate checks
   }
-  if (!value) return;
 
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
-    const route = id === 'email' ? '/check-email' : '/check-username';
-
-    fetch(route, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-      },
-      body: JSON.stringify({ value })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (!data.available) {
-        // Show inline error immediately
-        input.classList.add("error");
-        input.classList.remove("valid");
-        errorEl.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i>${id === 'email'
-          ? "This email is already used. Please try another one."
-          : "This username is already taken. Please choose another one."}`;
-      } else {
-        // Clear the error if now available
-        input.classList.remove("error");
-        input.classList.add("valid");
-        errorEl.innerHTML = "";
+  function toggleButton() {
+    const requiredInputs = registrationForm.querySelectorAll("input[required], select[required]");
+    let allValid = true;
+    
+    requiredInputs.forEach(input => {
+      const hasValue = input.value.trim();
+      const hasError = input.classList.contains("error");
+      const hasValid = input.classList.contains("valid");
+      
+      if (!hasValue || hasError || !hasValid) {
+        allValid = false;
       }
-      toggleButton();
-    })
-    .catch(error => {
-      console.error('Error:', error);
     });
-  }, 500); // debounce to avoid rapid calls
-}
 
+    // Additional check for password confirmation
+    const password = document.getElementById('pass');
+    const confirmPassword = document.getElementById('confirm_pass');
+    if (password && confirmPassword && password.value !== confirmPassword.value) {
+      allValid = false;
+    }
 
-      function toggleButton() {
-        const requiredInputs = registrationForm.querySelectorAll("input[required], select[required]");
-        let allValid = true;
-        requiredInputs.forEach(input => {
-          if (!input.value.trim() || input.classList.contains("error")) {
-            allValid = false;
-          }
-        });
-        submitBtn.disabled = !allValid;
-        submitBtn.style.opacity = allValid ? 1 : 0.5;
-      }
+    submitBtn.disabled = !allValid;
+    submitBtn.style.opacity = allValid ? 1 : 0.5;
+    submitBtn.style.cursor = allValid ? 'pointer' : 'not-allowed';
+  }
 
-      registrationForm
-        .querySelectorAll("input[required], select[required]")
-        .forEach((input) => {
-          input.addEventListener("blur", () => {
-            validateInput(input);
-            if (input.id === 'email' || input.id === 'username') {
-              checkDuplicate(input);
-            }
-            toggleButton();
-          });
-          input.addEventListener("input", () => {
-            validateInput(input);
-            if (input.id === 'email' || input.id === 'username') {
-              checkDuplicate(input);
-            }
-            toggleButton();
-          });
-        });
-
-      registrationForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const requiredInputs = registrationForm.querySelectorAll("input[required], select[required]");
-        let hasErrors = false;
-        requiredInputs.forEach(input => {
-          if (input.classList.contains("error") || !input.value.trim()) {
-            hasErrors = true;
-          }
-        });
-        if (hasErrors) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Please fix the errors before submitting.'
-          });
-          return;
+  // Enhanced event listeners for real-time validation
+  function initializeEventListeners() {
+    const inputs = registrationForm.querySelectorAll("input, select");
+    
+    inputs.forEach(input => {
+      // Real-time validation on input
+      input.addEventListener("input", function() {
+        const id = this.id;
+        
+        // Validate format first
+        validateInput(this);
+        
+        // Check duplicates for email and username
+        if (id === 'email' || id === 'username') {
+          checkDuplicate(this);
+        } else {
+          toggleButton();
         }
-        const btn = registrationForm.querySelector(".login-btn");
-        btn.innerHTML = '<span class="loading-spinner"></span>Creating...';
-        btn.classList.add('Creating...');
-        btn.disabled = true;
-
-        Swal.fire({
-          title: 'Are you sure you want to create account?',
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Yes, create it!'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            registrationForm.submit();
-          } else {
-            btn.innerHTML = 'Submit';
-            btn.classList.remove('loading');
-            btn.disabled = false;
-          }
-        });
       });
 
-      // Password toggle functionality
-      function togglePasswordVisibility() {
-        const passwordInput = document.getElementById('pass');
-        const eyeIcon = document.getElementById('pass-eye-icon');
-
-        if (passwordInput.type === 'password') {
-          passwordInput.type = 'text';
-          eyeIcon.setAttribute('data-feather', 'eye-off');
+      // Validate on blur as well
+      input.addEventListener("blur", function() {
+        const id = this.id;
+        validateInput(this);
+        
+        if (id === 'email' || id === 'username') {
+          checkDuplicate(this);
         } else {
-          passwordInput.type = 'password';
-          eyeIcon.setAttribute('data-feather', 'eye');
+          toggleButton();
         }
-
-        // Re-render the icon
-        feather.replace();
-      }
-
-      function toggleConfirmPasswordVisibility() {
-        const confirmPasswordInput = document.getElementById('confirm_pass');
-        const eyeIcon = document.getElementById('confirm-pass-eye-icon');
-
-        if (confirmPasswordInput.type === 'password') {
-          confirmPasswordInput.type = 'text';
-          eyeIcon.setAttribute('data-feather', 'eye-off');
-        } else {
-          confirmPasswordInput.type = 'password';
-          eyeIcon.setAttribute('data-feather', 'eye');
-        }
-
-        // Re-render the icon
-        feather.replace();
-      }
-
-      // Initialize Feather icons
-      document.addEventListener('DOMContentLoaded', function() {
-        feather.replace();
       });
-    </script>
-    <script>
+
+      // Special handling for password fields
+      if (input.id === 'pass' || input.id === 'confirm_pass') {
+        input.addEventListener("input", function() {
+          validateInput(this);
+          // Validate the other password field too
+          const otherField = this.id === 'pass' ? document.getElementById('confirm_pass') : document.getElementById('pass');
+          if (otherField && otherField.value) {
+            validateInput(otherField);
+          }
+          toggleButton();
+        });
+      }
+    });
+  }
+
+  // Password toggle functionality
+  function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('pass');
+    const eyeIcon = document.getElementById('pass-eye-icon');
+
+    if (passwordInput.type === 'password') {
+      passwordInput.type = 'text';
+      eyeIcon.setAttribute('data-feather', 'eye-off');
+    } else {
+      passwordInput.type = 'password';
+      eyeIcon.setAttribute('data-feather', 'eye');
+    }
+    feather.replace();
+  }
+
+  function toggleConfirmPasswordVisibility() {
+    const confirmPasswordInput = document.getElementById('confirm_pass');
+    const eyeIcon = document.getElementById('confirm-pass-eye-icon');
+
+    if (confirmPasswordInput.type === 'password') {
+      confirmPasswordInput.type = 'text';
+      eyeIcon.setAttribute('data-feather', 'eye-off');
+    } else {
+      confirmPasswordInput.type = 'password';
+      eyeIcon.setAttribute('data-feather', 'eye');
+    }
+    feather.replace();
+  }
+
+  // Form submission handler
   registrationForm.addEventListener("submit", function (e) {
     e.preventDefault();
 
-    const requiredInputs = registrationForm.querySelectorAll("input[required], select[required]");
+    // Final validation before submission
     let hasErrors = false;
+    const requiredInputs = registrationForm.querySelectorAll("input[required], select[required]");
+    
     requiredInputs.forEach(input => {
+      validateInput(input);
+      if (input.id === 'email' || input.id === 'username') {
+        checkDuplicate(input);
+      }
+      
       if (input.classList.contains("error") || !input.value.trim()) {
         hasErrors = true;
       }
@@ -457,20 +568,20 @@ function checkDuplicate(input) {
       Swal.fire({
         icon: 'error',
         title: 'Validation Error',
-        text: 'Please fix the errors before submitting.'
+        text: 'Please fix all errors before submitting.'
       });
       return;
     }
 
-    // Button states
-    const btn = registrationForm.querySelector(".login-btn");
+    // Show loading state
     const btnText = document.getElementById("btnText");
     const btnSpinner = document.getElementById("btnSpinner");
-
-    btn.disabled = true;
+    
+    submitBtn.disabled = true;
     btnText.textContent = "Creating...";
     btnSpinner.classList.remove("hidden");
 
+    // Confirmation dialog
     Swal.fire({
       title: 'Are you sure you want to create account?',
       icon: 'question',
@@ -482,13 +593,22 @@ function checkDuplicate(input) {
       if (result.isConfirmed) {
         registrationForm.submit();
       } else {
-        // Reset button state kung nag-cancel
-        btn.disabled = false;
+        // Reset button state if cancelled
         btnText.textContent = "Submit";
         btnSpinner.classList.add("hidden");
+        toggleButton();
       }
     });
   });
+
+  // Initialize everything when page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    feather.replace();
+    initializeEventListeners();
+    toggleButton(); // Set initial button state
+  });
 </script>
+<script src="{{ asset('js/spinner.js') }}"></script>
+
   </body>
 </html>
