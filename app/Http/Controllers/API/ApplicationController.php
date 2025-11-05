@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Application;
+use App\Models\ApplicationPersonnel;
 
 class ApplicationController extends Controller
 {
@@ -16,48 +17,23 @@ class ApplicationController extends Controller
         try {
             $applications = Application::with('applicant')->get();
 
+            // Also get ApplicationPersonnel data for each application
+            $applicationsWithPersonnel = $applications->map(function ($application) {
+                $personnel = ApplicationPersonnel::where('application_id', $application->application_id)->first();
+                $application->application_personnel = $personnel;
+                return $application;
+            });
+
             return response()->json([
                 'success' => true,
                 'message' => 'Applications retrieved successfully.',
-                'data' => $applications,
-                'count' => $applications->count()
+                'data' => $applicationsWithPersonnel,
+                'count' => $applicationsWithPersonnel->count()
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve applications.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Store a new application.
-     */
-    public function store(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'applicant_id' => 'required|exists:tbl_applicant,applicant_id',
-                'application_letter' => 'nullable|string|max:255',
-                'cert_of_reg' => 'nullable|string|max:255',
-                'grade_slip' => 'nullable|string|max:255',
-                'brgy_indigency' => 'nullable|string|max:255',
-                'student_id' => 'nullable|string|max:255',
-                'date_submitted' => 'required|date',
-            ]);
-
-            $application = Application::create($validated);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Application submitted successfully.',
-                'data' => $application
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create application.',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -77,6 +53,10 @@ class ApplicationController extends Controller
                     'message' => 'Application not found.'
                 ], 404);
             }
+
+            // Get ApplicationPersonnel data for this application
+            $personnel = ApplicationPersonnel::where('application_id', $application->application_id)->first();
+            $application->application_personnel = $personnel;
 
             return response()->json([
                 'success' => true,
