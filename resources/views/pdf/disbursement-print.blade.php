@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disbursement Report - Print</title>
-    <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
+    <title>LYDO Scholarship Disbursement Report - Print</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -29,24 +28,12 @@
             text-transform: uppercase;
         }
 
-        .header .subtitle {
-            font-size: 16px;
-            margin: 5px 0;
-            font-weight: normal;
-        }
-
         .filters {
             margin-bottom: 20px;
             padding: 10px;
             background-color: #f8f9fa;
             border: 1px solid #dee2e6;
             border-radius: 5px;
-        }
-
-        .filters strong {
-            display: inline-block;
-            margin-right: 10px;
-            font-weight: bold;
         }
 
         table {
@@ -74,22 +61,9 @@
             vertical-align: middle;
         }
 
-        .text-center {
-            text-align: center;
-        }
-
-        .text-right {
-            text-align: right;
-        }
-
-        .total-row {
-            background-color: #e9ecef;
-            font-weight: bold;
-        }
-
-        .total-row td {
-            border-top: 2px solid #333;
-        }
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
 
         .footer {
             margin-top: 40px;
@@ -108,29 +82,6 @@
             font-style: italic;
         }
 
-        @media print {
-            body {
-                padding: 15px;
-            }
-
-            .header {
-                margin-bottom: 20px;
-            }
-
-            table {
-                font-size: 10px;
-            }
-
-            th, td {
-                padding: 6px 4px;
-            }
-
-            .footer {
-                margin-top: 30px;
-                page-break-inside: avoid;
-            }
-        }
-
         @page {
             margin: 0.5in;
             size: A4 landscape;
@@ -139,12 +90,12 @@
 </head>
 <body>
 
-<div class="header" style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #333; padding-bottom: 20px;">
-    <h1 style="margin: 0 0 10px 0; font-size: 24px; font-weight: bold; text-transform: uppercase;">
-        LYDO Scholarship Disbursement Report
-    </h1>
-    <div class="subtitle" style="font-size: 16px; margin: 5px 0;">Tagoloan, Misamis Oriental</div>
-    <div class="subtitle" style="font-size: 16px; margin: 5px 0;">Local Youth Development Office</div>
+<div class="header">
+    <div style="font-size: 18px; font-weight: bold; margin: 5px 0;">Republic of the Philippines</div>
+    <div style="font-size: 16px; font-weight: bold; margin: 5px 0;">Province of Misamis Oriental</div>
+    <div style="font-size: 16px; font-weight: bold; margin: 5px 0;">Municipality of Tagoloan</div>
+    <div style="font-size: 16px; font-weight: bold; margin: 5px 0;">Local Youth Development Office</div>
+    <h1>LYDO Scholarship Disbursement Report</h1>
 </div>
 
 @if(!empty($filters))
@@ -159,70 +110,46 @@
     <thead>
         <tr>
             <th style="width: 5%;">#</th>
-            <th style="width: 25%;">Scholar Name</th>
-            <th style="width: 15%;">Barangay</th>
-            <th style="width: 12%;">Academic Year</th>
-            <th style="width: 13%;">Semester</th>
-            <th style="width: 15%;">Amount</th>
-            <th style="width: 15%;">Disbursement Date</th>
-            <th style="width: 15%;">Signature</th>
+            <th style="width: 20%;">Scholar Name</th>
+            <th style="width: 12%;">Barangay</th>
+            <th style="width: 10%;">Academic Year</th>
+            <th style="width: 11%;">Semester</th>
+            <th style="width: 12%;">Amount</th>
+            <th style="width: 12%;">Disbursement Date</th>
+            <th style="width: 18%;">Signature</th>
         </tr>
     </thead>
     <tbody>
+        @php
+            $totalAmount = 0;
+        @endphp
+        
         @foreach($disbursements as $index => $disbursement)
+        @php
+            $totalAmount += $disbursement->disburse_amount;
+        @endphp
         <tr>
             <td class="text-center">{{ $index + 1 }}</td>
-            <td>{{ $disbursement->full_name }}</td>
+            <td class="text-left">{{ $disbursement->full_name }}</td>
             <td class="text-center">{{ $disbursement->applicant_brgy }}</td>
             <td class="text-center">{{ $disbursement->disburse_acad_year }}</td>
             <td class="text-center">{{ $disbursement->disburse_semester }}</td>
             <td class="text-right">₱{{ number_format($disbursement->disburse_amount, 2) }}</td>
             <td class="text-center">{{ \Carbon\Carbon::parse($disbursement->disburse_date)->format('M d, Y') }}</td>
-            <td style="padding: 15px 6px; text-align: center;">
-                <div style="border-bottom: 1px solid #ffffff; width: 120px; margin: 0 auto;"></div>
-            </td>
-        </tr>
+            <td class="text-center">{{ $disbursement->disburse_signature ? 'Signed' : 'Unsigned' }}</td>
         @endforeach
 
-        <tr class="total-row">
-            <td colspan="6" class="text-right" style="font-weight: bold; font-size: 12px;">TOTAL AMOUNT:</td>
-            <td class="text-right" style="font-weight: bold; font-size: 12px;">
-                ₱{{ number_format($disbursements->sum('disburse_amount'), 2) }}
-            </td>
-            <td class="text-center" style="font-weight: bold; font-size: 12px;">-</td>
+        <tr style="background-color: #f8f9fa; font-weight: bold;">
+            <td colspan="5" class="text-right">TOTAL AMOUNT:</td>
+            <td class="text-right">₱{{ number_format($totalAmount, 2) }}</td>
+            <td class="text-center">-</td>
         </tr>
     </tbody>
 </table>
 
-<!-- Signature Section -->
-<div class="signature-section" style="margin-top: 60px; page-break-inside: avoid;">
-    <table style="width: 100%; border: none; margin-top: 40px;">
-        <tr>
-            <td style="width: 33%; text-align: center; border: none; padding: 20px;">
-                <div style="border-bottom: 1px solid #333; width: 200px; margin: 0 auto 10px auto;"></div>
-                <p style="margin: 5px 0; font-size: 11px; font-weight: bold;">Verified By:</p>
-                <p style="margin: 5px 0; font-size: 10px;">LYDO Administrator</p>
-                <p style="margin: 5px 0; font-size: 10px;">Date: ________________</p>
-            </td>
-            <td style="width: 33%; text-align: center; border: none; padding: 20px;">
-                <div style="border-bottom: 1px solid #333; width: 200px; margin: 0 auto 10px auto;"></div>
-                <p style="margin: 5px 0; font-size: 11px; font-weight: bold;">Approved By:</p>
-                <p style="margin: 5px 0; font-size: 10px;">Municipal Mayor</p>
-                <p style="margin: 5px 0; font-size: 10px;">Date: ________________</p>
-            </td>
-        </tr>
-    </table>
-</div>
-
-<!-- ✅ ONLY the NEW footer remains -->
-<div class="footer" style="text-align: center; margin-top: 20px; font-size: 11px;">
+<div class="footer">
     <p style="margin: 5px 0; font-weight: bold;">Lydo Scholarship System</p>
-    <p style="margin: 5px 0;">
-        Generated on: {{ date('F d, Y \a\t h:i A') }}
-    </p>
-    <p style="margin: 5px 0;">
-        Page <span class="page-number"></span>
-    </p>
+    <p style="margin: 5px 0;">Generated on: {{ date('F d, Y \a\t h:i A') }}</p>
 </div>
 
 @else
@@ -235,13 +162,6 @@
 <script>
     window.onload = function() {
         window.print();
-    };
-
-    window.onbeforeprint = function() {
-        const spans = document.querySelectorAll('.page-number');
-        spans.forEach((span, index) => {
-            span.textContent = index + 1;
-        });
     };
 </script>
 

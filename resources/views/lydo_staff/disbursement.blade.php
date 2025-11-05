@@ -15,6 +15,45 @@
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 </head>
   <style>
+  /* Pagination Styles */
+.pagination-container {
+    margin-top: 1rem;
+}
+
+.pagination-container button {
+    transition: all 0.2s ease;
+}
+
+.pagination-container button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Status badges for renewal */
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.status-approved {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.status-rejected {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.status-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
  .loading-overlay {
     position: fixed;
     top: 0;
@@ -83,13 +122,63 @@
         height: 60px;
     }
 }
+
+/* Pagination Styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.pagination li {
+    margin: 0 0.25rem;
+}
+
+.pagination li a,
+.pagination li span {
+    display: block;
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    color: #374151;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.pagination li a:hover {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.pagination li.active span {
+    background-color: #7c3aed;
+    border-color: #7c3aed;
+    color: white;
+}
+
+.pagination li.disabled span {
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* Tab Styles */
+.tab-button {
+    transition: all 0.3s ease;
+}
+
+.active-tab {
+    border-color: #7c3aed !important;
+    color: #7c3aed !important;
+}
    
-    </style>
+</style>
 
 <body class="bg-gray-50">
 <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner">
-                            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+        <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
     </div>
 </div>
 @php
@@ -207,13 +296,20 @@
 
                     <!-- Search and Filter Section -->
                     <div class="bg-white p-4 rounded-lg shadow-md mb-6">
-                        <form id="filterForm" method="GET" action="{{ route('LydoStaff.disbursement') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <form id="filterForm" method="GET" action="{{ route('LydoStaff.disbursement') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                             <!-- Search Input -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
-                                <input type="text" name="search" value="{{ request('search') }}"
-                                       placeholder="Enter name..."
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500">
+                                <div class="relative">
+                                    <input type="text" name="search" value="{{ request('search') }}"
+                                           placeholder="Enter name..."
+                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500">
+                                    @if(request('search'))
+                                        <button type="button" onclick="clearFilters()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    @endif
+                                </div>
                             </div>
 
                             <!-- Barangay Filter -->
@@ -254,6 +350,13 @@
                                     @endforeach
                                 </select>
                             </div>
+
+                            <!-- Clear Filters Button -->
+                            <div class="flex items-end">
+                                <button type="button" onclick="clearFilters()" class="w-full px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                                    Clear Filters
+                                </button>
+                            </div>
                         </form>
                     </div>
 
@@ -264,16 +367,16 @@
                         <!-- Tab Navigation -->
                         <div class="border-b border-gray-200 mb-6">
                             <nav class="-mb-px flex space-x-8">
-                                <button id="unsignedTab" class="tab-button active-tab whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="unsigned">
+                                <button id="unsignedTab" class="tab-button active-tab whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-violet-500 text-violet-600">
                                     Pending Signature
                                     @if($unsignedDisbursements->count() > 0)
-                                        <span class="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ $unsignedDisbursements->total() }}</span>
+                                        <span class="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ $unsignedDisbursements->count() }}</span>
                                     @endif
                                 </button>
-                                <button id="signedTab" class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm" data-tab="signed">
+                                <button id="signedTab" class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="signed">
                                     Signed
                                     @if($signedDisbursements->count() > 0)
-                                        <span class="ml-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">{{ $signedDisbursements->total() }}</span>
+                                        <span class="ml-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">{{ $signedDisbursements->count() }}</span>
                                     @endif
                                 </button>
                             </nav>
@@ -283,7 +386,7 @@
                         <div id="unsignedTabContent" class="tab-content">
                             @if($unsignedDisbursements->count() > 0)
                                 <div class="overflow-hidden border border-gray-200 shadow-lg">
-                                    <div class="max-h-96 overflow-y-auto">
+                                    <div class="overflow-y-auto">
                                         <table class="w-full table-fixed border-collapse text-[17px]">
                                             <thead class="bg-gradient-to-r from-red-600 to-orange-600 text-white uppercase text-sm sticky top-0 z-10">
                                                 <tr>
@@ -313,12 +416,10 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
+                                        <div class="pagination-container" id="tablePagination"></div>
                                     </div>
                                 </div>
-                                <!-- Pagination for Unsigned -->
-                                <div class="mt-6">
-                                    {{ $unsignedDisbursements->appends(request()->except(['unsigned_page', 'signed_page']))->links() }}
-                                </div>
+
                             @else
                                 <div class="text-center py-8">
                                     <p class="text-gray-500 text-lg">No unsigned disbursement records found.</p>
@@ -330,7 +431,7 @@
                         <div id="signedTabContent" class="tab-content" style="display: none;">
                             @if($signedDisbursements->count() > 0)
                                 <div class="overflow-hidden border border-gray-200 shadow-lg">
-                                    <div class="max-h-96 overflow-y-auto">
+                                    <div class="overflow-y-auto">
                                         <table class="w-full table-fixed border-collapse text-[17px]">
                                             <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm sticky top-0 z-10">
                                                 <tr>
@@ -359,12 +460,10 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
+                                        <div class="pagination-container" id="listPagination"></div>
                                     </div>
                                 </div>
-                                <!-- Pagination for Signed -->
-                                <div class="mt-6">
-                                    {{ $signedDisbursements->appends(request()->except(['unsigned_page', 'signed_page']))->links() }}
-                                </div>
+
                             @else
                                 <div class="text-center py-8">
                                     <p class="text-gray-500 text-lg">No signed disbursement records found.</p>
@@ -406,6 +505,37 @@
                 document.getElementById(tabId + 'TabContent').style.display = 'block';
             });
         });
+
+        // Auto-filter functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterInputs = document.querySelectorAll('#filterForm input, #filterForm select');
+            
+            filterInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    document.getElementById('filterForm').submit();
+                });
+                
+                input.addEventListener('change', function() {
+                    document.getElementById('filterForm').submit();
+                });
+            });
+        });
+
+        // Clear filters function
+        function clearFilters() {
+            const form = document.getElementById('filterForm');
+            const inputs = form.querySelectorAll('input, select');
+            
+            inputs.forEach(input => {
+                if (input.type === 'text' || input.type === 'search') {
+                    input.value = '';
+                } else if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0;
+                }
+            });
+            
+            form.submit();
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             if (localStorage.getItem('notificationsViewed') === 'true') {
@@ -567,9 +697,306 @@
                             notifCount.remove();
                         }
                     });
+                    // Pagination functionality for renewal page
+class RenewalPagination {
+    constructor() {
+        this.tableCurrentPage = 1;
+        this.listCurrentPage = 1;
+        this.rowsPerPage = 10;
+        this.tableData = [];
+        this.listData = [];
+        
+        this.init();
+    }
+
+    init() {
+        // Get data from the table
+        this.loadTableData();
+        this.loadListData();
+        this.setupEventListeners();
+    }
+
+    loadTableData() {
+        const rows = document.querySelectorAll('#tableView tbody tr');
+        this.tableData = Array.from(rows).map(row => {
+            return {
+                element: row,
+                name: row.cells[1].textContent.trim(),
+                barangay: row.cells[2].textContent.trim(),
+                isVisible: true
+            };
+        });
+        this.renderTablePage();
+    }
+
+    loadListData() {
+        const rows = document.querySelectorAll('#listView tbody tr');
+        this.listData = Array.from(rows).map(row => {
+            return {
+                element: row,
+                name: row.cells[1].textContent.trim(),
+                barangay: row.cells[2].textContent.trim(),
+                isVisible: true
+            };
+        });
+        this.renderListPage();
+    }
+
+    setupEventListeners() {
+        // Search functionality for table view
+        const nameSearch = document.getElementById('nameSearch');
+        const barangayFilter = document.getElementById('barangayFilter');
+
+        if (nameSearch) {
+            nameSearch.addEventListener('input', () => this.filterTableData());
+        }
+
+        if (barangayFilter) {
+            barangayFilter.addEventListener('change', () => this.filterTableData());
+        }
+
+        // Search functionality for list view
+        const listNameSearch = document.getElementById('listNameSearch');
+        const listBarangayFilter = document.getElementById('listBarangayFilter');
+
+        if (listNameSearch) {
+            listNameSearch.addEventListener('input', () => this.filterListData());
+        }
+
+        if (listBarangayFilter) {
+            listBarangayFilter.addEventListener('change', () => this.filterListData());
+        }
+    }
+
+    filterTableData() {
+        const nameSearch = document.getElementById('nameSearch').value.toLowerCase();
+        const barangayFilter = document.getElementById('barangayFilter').value;
+
+        this.tableData.forEach(item => {
+            const matchesName = item.name.toLowerCase().includes(nameSearch);
+            const matchesBarangay = !barangayFilter || item.barangay === barangayFilter;
+            
+            item.isVisible = matchesName && matchesBarangay;
+        });
+
+        this.tableCurrentPage = 1;
+        this.renderTablePage();
+    }
+
+    filterListData() {
+        const nameSearch = document.getElementById('listNameSearch').value.toLowerCase();
+        const barangayFilter = document.getElementById('listBarangayFilter').value;
+
+        this.listData.forEach(item => {
+            const matchesName = item.name.toLowerCase().includes(nameSearch);
+            const matchesBarangay = !barangayFilter || item.barangay === barangangayFilter;
+            
+            item.isVisible = matchesName && matchesBarangay;
+        });
+
+        this.listCurrentPage = 1;
+        this.renderListPage();
+    }
+
+    renderTablePage() {
+        const visibleData = this.tableData.filter(item => item.isVisible);
+        const startIndex = (this.tableCurrentPage - 1) * this.rowsPerPage;
+        const endIndex = startIndex + this.rowsPerPage;
+        const pageData = visibleData.slice(startIndex, endIndex);
+
+        // Hide all rows
+        this.tableData.forEach(item => {
+            item.element.style.display = 'none';
+        });
+
+        // Show only current page rows
+        pageData.forEach(item => {
+            item.element.style.display = '';
+        });
+
+        this.renderTablePagination(visibleData.length);
+    }
+
+    renderListPage() {
+        const visibleData = this.listData.filter(item => item.isVisible);
+        const startIndex = (this.listCurrentPage - 1) * this.rowsPerPage;
+        const endIndex = startIndex + this.rowsPerPage;
+        const pageData = visibleData.slice(startIndex, endIndex);
+
+        // Hide all rows
+        this.listData.forEach(item => {
+            item.element.style.display = 'none';
+        });
+
+        // Show only current page rows
+        pageData.forEach(item => {
+            item.element.style.display = '';
+        });
+
+        this.renderListPagination(visibleData.length);
+    }
+
+    renderTablePagination(totalItems) {
+        const totalPages = Math.ceil(totalItems / this.rowsPerPage);
+        const container = document.getElementById('tablePagination');
+        
+        if (totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let paginationHTML = `
+            <div class="flex justify-center items-center space-x-2 mt-4">
+                <button onclick="renewalPagination.prevTablePage()" 
+                        ${this.tableCurrentPage === 1 ? 'disabled' : ''}
+                        class="px-3 py-1 rounded border ${this.tableCurrentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}">
+                    Previous
+                </button>
+        `;
+
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === this.tableCurrentPage) {
+                paginationHTML += `
+                    <button class="px-3 py-1 rounded border bg-violet-600 text-white">
+                        ${i}
+                    </button>
+                `;
+            } else {
+                paginationHTML += `
+                    <button onclick="renewalPagination.goToTablePage(${i})" 
+                            class="px-3 py-1 rounded border bg-white text-gray-700 hover:bg-gray-50">
+                        ${i}
+                    </button>
+                `;
+            }
+        }
+
+        paginationHTML += `
+                <button onclick="renewalPagination.nextTablePage()" 
+                        ${this.tableCurrentPage === totalPages ? 'disabled' : ''}
+                        class="px-3 py-1 rounded border ${this.tableCurrentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}">
+                    Next
+                </button>
+            </div>
+            <div class="text-center text-sm text-gray-600 mt-2">
+                Showing ${Math.min((this.tableCurrentPage - 1) * this.rowsPerPage + 1, totalItems)} to ${Math.min(this.tableCurrentPage * this.rowsPerPage, totalItems)} of ${totalItems} entries
+            </div>
+        `;
+
+        container.innerHTML = paginationHTML;
+    }
+
+    renderListPagination(totalItems) {
+        const totalPages = Math.ceil(totalItems / this.rowsPerPage);
+        const container = document.getElementById('listPagination');
+        
+        if (totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let paginationHTML = `
+            <div class="flex justify-center items-center space-x-2 mt-4">
+                <button onclick="renewalPagination.prevListPage()" 
+                        ${this.listCurrentPage === 1 ? 'disabled' : ''}
+                        class="px-3 py-1 rounded border ${this.listCurrentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}">
+                    Previous
+                </button>
+        `;
+
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === this.listCurrentPage) {
+                paginationHTML += `
+                    <button class="px-3 py-1 rounded border bg-green-600 text-white">
+                        ${i}
+                    </button>
+                `;
+            } else {
+                paginationHTML += `
+                    <button onclick="renewalPagination.goToListPage(${i})" 
+                            class="px-3 py-1 rounded border bg-white text-gray-700 hover:bg-gray-50">
+                        ${i}
+                    </button>
+                `;
+            }
+        }
+
+        paginationHTML += `
+                <button onclick="renewalPagination.nextListPage()" 
+                        ${this.listCurrentPage === totalPages ? 'disabled' : ''}
+                        class="px-3 py-1 rounded border ${this.listCurrentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}">
+                    Next
+                </button>
+            </div>
+            <div class="text-center text-sm text-gray-600 mt-2">
+                Showing ${Math.min((this.listCurrentPage - 1) * this.rowsPerPage + 1, totalItems)} to ${Math.min(this.listCurrentPage * this.rowsPerPage, totalItems)} of ${totalItems} entries
+            </div>
+        `;
+
+        container.innerHTML = paginationHTML;
+    }
+
+    prevTablePage() {
+        if (this.tableCurrentPage > 1) {
+            this.tableCurrentPage--;
+            this.renderTablePage();
+        }
+    }
+
+    nextTablePage() {
+        const totalPages = Math.ceil(this.tableData.filter(item => item.isVisible).length / this.rowsPerPage);
+        if (this.tableCurrentPage < totalPages) {
+            this.tableCurrentPage++;
+            this.renderTablePage();
+        }
+    }
+
+    goToTablePage(page) {
+        this.tableCurrentPage = page;
+        this.renderTablePage();
+    }
+
+    prevListPage() {
+        if (this.listCurrentPage > 1) {
+            this.listCurrentPage--;
+            this.renderListPage();
+        }
+    }
+
+    nextListPage() {
+        const totalPages = Math.ceil(this.listData.filter(item => item.isVisible).length / this.rowsPerPage);
+        if (this.listCurrentPage < totalPages) {
+            this.listCurrentPage++;
+            this.renderListPage();
+        }
+    }
+
+    goToListPage(page) {
+        this.listCurrentPage = page;
+        this.renderListPage();
+    }
+}
+
+// Initialize pagination
+const renewalPagination = new RenewalPagination();
+
+// Clear filters functions
+function clearFiltersTable() {
+    document.getElementById('nameSearch').value = '';
+    document.getElementById('barangayFilter').value = '';
+    renewalPagination.filterTableData();
+}
+
+function clearFiltersList() {
+    document.getElementById('listNameSearch').value = '';
+    document.getElementById('listBarangayFilter').value = '';
+    renewalPagination.filterListData();
+}
                 </script>
     <script src="{{ asset('js/logout.js') }}"></script>
     <script src="{{ asset('js/spinner.js') }}"></script>
+    <script src="{{ asset('js/disbursement_filter.js') }}"></script>
+
 
 </body>
 

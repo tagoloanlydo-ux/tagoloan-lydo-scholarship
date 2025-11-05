@@ -737,176 +737,166 @@ public function updateRemarks(Request $request, $id)
     return back()->with('success', 'Remarks updated and new record added successfully.');
 }
 
-    public function disbursement(Request $request)
-    {
-        $notifications = DB::table("tbl_application_personnel")
-            ->join(
-                "tbl_application",
-                "tbl_application_personnel.application_id",
-                "=",
-                "tbl_application.application_id",
-            )
-            ->join(
-                "tbl_applicant",
-                "tbl_application.applicant_id",
-                "=",
-                "tbl_applicant.applicant_id",
-            )
-            ->select(
-                "tbl_application_personnel.*",
-                DB::raw("CONCAT(
-            tbl_applicant.applicant_fname, ' ',
-            COALESCE(tbl_applicant.applicant_mname, ''), ' ',
-            tbl_applicant.applicant_lname,
-            IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')
-        ) as name"),
-            )
-            ->where(function ($q) {
-                $q->where(
-                    "tbl_application_personnel.initial_screening",
-                    "Approved",
-                )->orWhere("tbl_application_personnel.status", "Renewed");
-            })
-            ->orderBy("tbl_application_personnel.created_at", "desc")
-            ->limit(5)
-            ->get();
+public function disbursement(Request $request)
+{
+    $notifications = DB::table("tbl_application_personnel")
+        ->join(
+            "tbl_application",
+            "tbl_application_personnel.application_id",
+            "=",
+            "tbl_application.application_id",
+        )
+        ->join(
+            "tbl_applicant",
+            "tbl_application.applicant_id",
+            "=",
+            "tbl_applicant.applicant_id",
+        )
+        ->select(
+            "tbl_application_personnel.*",
+            DB::raw("CONCAT(
+        tbl_applicant.applicant_fname, ' ',
+        COALESCE(tbl_applicant.applicant_mname, ''), ' ',
+        tbl_applicant.applicant_lname,
+        IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')
+    ) as name"),
+        )
+        ->where(function ($q) {
+            $q->where(
+                "tbl_application_personnel.initial_screening",
+                "Approved",
+            )->orWhere("tbl_application_personnel.status", "Renewed");
+        })
+        ->orderBy("tbl_application_personnel.created_at", "desc")
+        ->limit(5)
+        ->get();
 
-        $currentAcadYear = DB::table("tbl_applicant")
-            ->select("applicant_acad_year")
-            ->orderBy("applicant_acad_year", "desc")
-            ->value("applicant_acad_year");
+    $currentAcadYear = DB::table("tbl_applicant")
+        ->select("applicant_acad_year")
+        ->orderBy("applicant_acad_year", "desc")
+        ->value("applicant_acad_year");
 
-$pendingScreening = DB::table("tbl_application_personnel")
-    ->join(
-        "tbl_application",
-        "tbl_application_personnel.application_id",
-        "=",
-        "tbl_application.application_id",
-    )
-    ->join(
-        "tbl_applicant",
-        "tbl_application.applicant_id",
-        "=",
-        "tbl_applicant.applicant_id",
-    )
-    ->leftJoin(
-        "family_intake_sheets", 
-        "tbl_application_personnel.application_personnel_id", 
-        "=", 
-        "family_intake_sheets.application_personnel_id"
-    )
-    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-    ->where("tbl_application_personnel.remarks", "Waiting")
-    ->whereNotNull("family_intake_sheets.application_personnel_id")
-    ->count();
+    $pendingScreening = DB::table("tbl_application_personnel")
+        ->join(
+            "tbl_application",
+            "tbl_application_personnel.application_id",
+            "=",
+            "tbl_application.application_id",
+        )
+        ->join(
+            "tbl_applicant",
+            "tbl_application.applicant_id",
+            "=",
+            "tbl_applicant.applicant_id",
+        )
+        ->leftJoin(
+            "family_intake_sheets", 
+            "tbl_application_personnel.application_personnel_id", 
+            "=", 
+            "family_intake_sheets.application_personnel_id"
+        )
+        ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+        ->where("tbl_application_personnel.remarks", "Waiting")
+        ->whereNotNull("family_intake_sheets.application_personnel_id")
+        ->count();
 
-        $pendingRenewals = DB::table("tbl_renewal")
-            ->where("renewal_status", "Pending")
-            ->count();
+    $pendingRenewals = DB::table("tbl_renewal")
+        ->where("renewal_status", "Pending")
+        ->count();
 
-        // Fetch unsigned disbursements
-        $unsignedQuery = DB::table("tbl_disburse")
-            ->join("tbl_scholar", "tbl_disburse.scholar_id", "=", "tbl_scholar.scholar_id")
-            ->join("tbl_application", "tbl_scholar.application_id", "=", "tbl_application.application_id")
-            ->join("tbl_applicant", "tbl_application.applicant_id", "=", "tbl_applicant.applicant_id")
-            ->select(
-                "tbl_disburse.*",
-                DB::raw("CONCAT(tbl_applicant.applicant_fname, ' ', COALESCE(tbl_applicant.applicant_mname, ''), ' ', tbl_applicant.applicant_lname, IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')) as full_name"),
-                "tbl_applicant.applicant_brgy"
-            )
-            ->whereNull("tbl_disburse.disburse_signature")
-            ->when($request->search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where("tbl_applicant.applicant_fname", "like", "%$search%")
-                      ->orWhere("tbl_applicant.applicant_lname", "like", "%$search%");
-                });
-            })
-            ->when($request->barangay, function ($query, $barangay) {
-                $query->where("tbl_applicant.applicant_brgy", $barangay);
-            })
-            ->when($request->academic_year, function ($query, $academic_year) {
-                $query->where("tbl_disburse.disburse_acad_year", $academic_year);
-            })
-            ->when($request->semester, function ($query, $semester) {
-                $query->where("tbl_disburse.disburse_semester", $semester);
+    // Get filter parameters
+    $search = $request->input('search');
+    $barangay = $request->input('barangay');
+    $academicYear = $request->input('academic_year');
+    $semester = $request->input('semester');
+
+    // Fetch unsigned disbursements with pagination and filtering
+    $unsignedQuery = DB::table("tbl_disburse")
+        ->join("tbl_scholar", "tbl_disburse.scholar_id", "=", "tbl_scholar.scholar_id")
+        ->join("tbl_application", "tbl_scholar.application_id", "=", "tbl_application.application_id")
+        ->join("tbl_applicant", "tbl_application.applicant_id", "=", "tbl_applicant.applicant_id")
+        ->select(
+            "tbl_disburse.*",
+            DB::raw("CONCAT(tbl_applicant.applicant_fname, ' ', COALESCE(tbl_applicant.applicant_mname, ''), ' ', tbl_applicant.applicant_lname, IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')) as full_name"),
+            "tbl_applicant.applicant_brgy"
+        )
+        ->whereNull("tbl_disburse.disburse_signature")
+        ->when($search, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $q->where("tbl_applicant.applicant_fname", "like", "%$search%")
+                  ->orWhere("tbl_applicant.applicant_lname", "like", "%$search%");
             });
+        })
+        ->when($barangay, function ($query, $barangay) {
+            $query->where("tbl_applicant.applicant_brgy", $barangay);
+        })
+        ->when($academicYear, function ($query, $academicYear) {
+            $query->where("tbl_disburse.disburse_acad_year", $academicYear);
+        })
+        ->when($semester, function ($query, $semester) {
+            $query->where("tbl_disburse.disburse_semester", $semester);
+        });
 
-        $unsignedDisbursements = $unsignedQuery->paginate(15, ['*'], 'unsigned_page');
+    $unsignedDisbursements = $unsignedQuery->get();
 
-        // Fetch signed disbursements
-        $signedQuery = DB::table("tbl_disburse")
-            ->join("tbl_scholar", "tbl_disburse.scholar_id", "=", "tbl_scholar.scholar_id")
-            ->join("tbl_application", "tbl_scholar.application_id", "=", "tbl_application.application_id")
-            ->join("tbl_applicant", "tbl_application.applicant_id", "=", "tbl_applicant.applicant_id")
-            ->select(
-                "tbl_disburse.*",
-                DB::raw("CONCAT(tbl_applicant.applicant_fname, ' ', COALESCE(tbl_applicant.applicant_mname, ''), ' ', tbl_applicant.applicant_lname, IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')) as full_name"),
-                "tbl_applicant.applicant_brgy"
-            )
-            ->whereNotNull("tbl_disburse.disburse_signature")
-            ->when($request->search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where("tbl_applicant.applicant_fname", "like", "%$search%")
-                      ->orWhere("tbl_applicant.applicant_lname", "like", "%$search%");
-                });
-            })
-            ->when($request->barangay, function ($query, $barangay) {
-                $query->where("tbl_applicant.applicant_brgy", $barangay);
-            })
-            ->when($request->academic_year, function ($query, $academic_year) {
-                $query->where("tbl_disburse.disburse_acad_year", $academic_year);
-            })
-            ->when($request->semester, function ($query, $semester) {
-                $query->where("tbl_disburse.disburse_semester", $semester);
+    // Fetch signed disbursements with pagination and filtering
+    $signedQuery = DB::table("tbl_disburse")
+        ->join("tbl_scholar", "tbl_disburse.scholar_id", "=", "tbl_scholar.scholar_id")
+        ->join("tbl_application", "tbl_scholar.application_id", "=", "tbl_application.application_id")
+        ->join("tbl_applicant", "tbl_application.applicant_id", "=", "tbl_applicant.applicant_id")
+        ->select(
+            "tbl_disburse.*",
+            DB::raw("CONCAT(tbl_applicant.applicant_fname, ' ', COALESCE(tbl_applicant.applicant_mname, ''), ' ', tbl_applicant.applicant_lname, IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')) as full_name"),
+            "tbl_applicant.applicant_brgy"
+        )
+        ->whereNotNull("tbl_disburse.disburse_signature")
+        ->when($search, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $q->where("tbl_applicant.applicant_fname", "like", "%$search%")
+                  ->orWhere("tbl_applicant.applicant_lname", "like", "%$search%");
             });
+        })
+        ->when($barangay, function ($query, $barangay) {
+            $query->where("tbl_applicant.applicant_brgy", $barangay);
+        })
+        ->when($academicYear, function ($query, $academicYear) {
+            $query->where("tbl_disburse.disburse_acad_year", $academicYear);
+        })
+        ->when($semester, function ($query, $semester) {
+            $query->where("tbl_disburse.disburse_semester", $semester);
+        });
 
-        $signedDisbursements = $signedQuery->paginate(15, ['*'], 'signed_page');
+    $signedDisbursements = $signedQuery->get();
 
-        $barangays = DB::table("tbl_applicant")
-            ->select("applicant_brgy")
-            ->distinct()
-            ->pluck("applicant_brgy");
+    $barangays = DB::table("tbl_applicant")
+        ->select("applicant_brgy")
+        ->distinct()
+        ->pluck("applicant_brgy");
 
-        $academicYears = DB::table("tbl_disburse")
-            ->select("disburse_acad_year")
-            ->distinct()
-            ->orderBy("disburse_acad_year", "desc")
-            ->pluck("disburse_acad_year");
+    $academicYears = DB::table("tbl_disburse")
+        ->select("disburse_acad_year")
+        ->distinct()
+        ->orderBy("disburse_acad_year", "desc")
+        ->pluck("disburse_acad_year");
 
-        $semesters = DB::table("tbl_disburse")
-            ->select("disburse_semester")
-            ->distinct()
-            ->orderBy("disburse_semester")
-            ->pluck("disburse_semester");
+    $semesters = DB::table("tbl_disburse")
+        ->select("disburse_semester")
+        ->distinct()
+        ->orderBy("disburse_semester")
+        ->pluck("disburse_semester");
 
-        return view("lydo_staff.disbursement", compact(
-            "notifications",
-            "pendingScreening",
-            "pendingRenewals",
-            "unsignedDisbursements",
-            "signedDisbursements",
-            "barangays",
-            "academicYears",
-            "semesters",
-            "currentAcadYear"
-        ));
-    }
-
-    public function signDisbursement(Request $request, $disburseId)
-    {
-        $request->validate([
-            'signature' => 'required|string',
-        ]);
-
-        DB::table('tbl_disburse')
-            ->where('disburse_id', $disburseId)
-            ->update([
-                'disburse_signature' => $request->signature,
-                'updated_at' => now(),
-            ]);
-
-        return redirect()->back()->with('success', 'Disbursement signed successfully.');
-    }
+    return view("lydo_staff.disbursement", compact(
+        "notifications",
+        "pendingScreening",
+        "pendingRenewals",
+        "unsignedDisbursements",
+        "signedDisbursements",
+        "barangays",
+        "academicYears",
+        "semesters",
+        "currentAcadYear"
+    ));
+}
 
     public function settings(Request $request)
     {
@@ -947,40 +937,74 @@ $pendingScreening = DB::table("tbl_application_personnel")
             ->orderBy("applicant_acad_year", "desc")
             ->value("applicant_acad_year");
 
-$pendingScreening = DB::table("tbl_application_personnel")
-    ->join(
-        "tbl_application",
-        "tbl_application_personnel.application_id",
-        "=",
-        "tbl_application.application_id",
-    )
-    ->join(
-        "tbl_applicant",
-        "tbl_application.applicant_id",
-        "=",
-        "tbl_applicant.applicant_id",
-    )
-    ->leftJoin(
-        "family_intake_sheets", 
-        "tbl_application_personnel.application_personnel_id", 
-        "=", 
-        "family_intake_sheets.application_personnel_id"
-    )
-    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-    ->where("tbl_application_personnel.remarks", "Waiting")
-    ->whereNotNull("family_intake_sheets.application_personnel_id")
-    ->count();
+        $pendingScreening = DB::table("tbl_application_personnel")
+            ->join(
+                "tbl_application",
+                "tbl_application_personnel.application_id",
+                "=",
+                "tbl_application.application_id",
+            )
+            ->join(
+                "tbl_applicant",
+                "tbl_application.applicant_id",
+                "=",
+                "tbl_applicant.applicant_id",
+            )
+            ->leftJoin(
+                "family_intake_sheets",
+                "tbl_application_personnel.application_personnel_id",
+                "=",
+                "family_intake_sheets.application_personnel_id"
+            )
+            ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+            ->where("tbl_application_personnel.remarks", "Waiting")
+            ->whereNotNull("family_intake_sheets.application_personnel_id")
+            ->count();
 
         $pendingRenewals = DB::table("tbl_renewal")
             ->where("renewal_status", "Pending")
             ->count();
 
-        return view("lydo_staff.settings", compact(
-            "notifications",
-            "pendingScreening",
-            "pendingRenewals",
-            "currentAcadYear"
-        ));
+        return view(
+            "lydo_staff.settings",
+            compact(
+                "notifications",
+                "pendingScreening",
+                "pendingRenewals",
+            ),
+        );
+    }
+
+    public function updateStaff(Request $request, $id)
+    {
+        $request->validate([
+            'lydopers_fname' => 'required|string|max:50',
+            'lydopers_lname' => 'required|string|max:50',
+            'lydopers_suffix' => 'nullable|string|max:10',
+            'lydopers_email' => 'required|email',
+            'lydopers_address' => 'required|string',
+            'lydopers_contact_number' => 'required|string|max:20',
+            'lydopers_bdate' => 'required|date',
+        ]);
+
+        DB::table('tbl_lydopers')
+            ->where('lydopers_id', $id)
+            ->update([
+                'lydopers_fname' => $request->lydopers_fname,
+                'lydopers_lname' => $request->lydopers_lname,
+                'lydopers_suffix' => $request->lydopers_suffix,
+                'lydopers_email' => $request->lydopers_email,
+                'lydopers_address' => $request->lydopers_address,
+                'lydopers_contact_number' => $request->lydopers_contact_number,
+                'lydopers_bdate' => $request->lydopers_bdate,
+                'updated_at' => now(),
+            ]);
+
+        // Update session data
+        $updatedUser = DB::table('tbl_lydopers')->where('lydopers_id', $id)->first();
+        session(['lydopers' => $updatedUser]);
+
+        return back()->with('success', 'Personal information updated successfully.');
     }
 
     public function logout(Request $request)

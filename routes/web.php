@@ -85,8 +85,7 @@ Route::put('/lydo_admin/announcement/{id}', [LydoAdminController::class, 'update
     Route::get('/lydo_admin/report/pdf/summary', [LydoAdminController::class, 'generateSummaryPdf'])->name('LydoAdmin.report.pdf.summary');
     Route::get('/lydo_admin/get-scholars-by-barangay', [LydoAdminController::class, 'getScholarsByBarangay'])->name('LydoAdmin.getScholarsByBarangay');
     Route::get('/lydo_admin/get-scholars-with-disbursement', [LydoAdminController::class, 'getScholarsWithDisbursement'])->name('LydoAdmin.getScholarsWithDisbursement');
-    Route::get('/lydo_admin/disbursement-pdf', [LydoAdminController::class, 'generateDisbursementPdf'])->name('LydoAdmin.disbursement.pdf');
-    Route::get('/lydo_admin/get-scholars-without-disbursement', [LydoAdminController::class, 'getScholarsWithoutDisbursement'])->name('LydoAdmin.getScholarsWithoutDisbursement');
+Route::get('/lydo_admin/disbursement-pdf', [LydoAdminController::class, 'generateDisbursementPdf'])->name('LydoAdmin.disbursementPdf');    Route::get('/lydo_admin/get-scholars-without-disbursement', [LydoAdminController::class, 'getScholarsWithoutDisbursement'])->name('LydoAdmin.getScholarsWithoutDisbursement');
 });
 
 Route::middleware(['role:lydo_staff'])->group(function () {

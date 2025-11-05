@@ -340,35 +340,42 @@ class ScholarController extends Controller
         return view('scholar.scholar_dash', compact('announcements'));
     }
 
-    public function showRenewalApp()
-    {
-        $scholar = session('scholar');
-        $renewal = null;
-        $settings = \App\Models\Settings::first();
+public function showRenewalApp()
+{
+    $scholar = session('scholar');
+    $renewal = null;
+    $approvedRenewalExists = false;
+    $settings = \App\Models\Settings::first();
 
-        if ($scholar) {
-            // Ensure applicant relationship is loaded
-            if (!$scholar->relationLoaded('applicant')) {
-                $scholar->load('applicant');
-            }
-
-            // Get current academic year
-            $now = now();
-            $currentYear = $now->year;
-            $currentMonth = $now->month;
-
-            $academicYear = $currentMonth >= 6
-                ? $currentYear . '-' . ($currentYear + 1)
-                : ($currentYear - 1) . '-' . $currentYear;
-
-            // Check if renewal exists for current academic year
-            $renewal = \App\Models\Renewal::where('scholar_id', $scholar->scholar_id)
-                ->where('renewal_acad_year', $academicYear)
-                ->first();
+    if ($scholar) {
+        // Ensure applicant relationship is loaded
+        if (!$scholar->relationLoaded('applicant')) {
+            $scholar->load('applicant');
         }
 
-        return view('scholar.renewal_app', compact('renewal', 'settings'));
+        // Get current academic year
+        $now = now();
+        $currentYear = $now->year;
+        $currentMonth = $now->month;
+
+        $academicYear = $currentMonth >= 6
+            ? $currentYear . '-' . ($currentYear + 1)
+            : ($currentYear - 1) . '-' . $currentYear;
+
+        // Check if renewal exists for current academic year
+        $renewal = \App\Models\Renewal::where('scholar_id', $scholar->scholar_id)
+            ->where('renewal_acad_year', $academicYear)
+            ->first();
+
+        // Check if there's an APPROVED renewal for current academic year
+        $approvedRenewalExists = \App\Models\Renewal::where('scholar_id', $scholar->scholar_id)
+            ->where('renewal_acad_year', $academicYear)
+            ->where('renewal_status', 'Approved')
+            ->exists();
     }
+
+    return view('scholar.renewal_app', compact('renewal', 'settings', 'approvedRenewalExists'));
+}
 public function submitRenewal(Request $request)
 {
     // Check if this is an update or new submission
@@ -470,6 +477,9 @@ public function submitRenewal(Request $request)
     return redirect()->back()->with('success', $message);
 }
 
+/**
+ * Move uploaded files into storage/renewals/
+ */
 /**
  * Move uploaded files into storage/renewals/
  */
@@ -829,6 +839,15 @@ public function updateApplication(Request $request, $applicant_id)
 /**
  * Move uploaded files into storage/documents/
  */
+private function getCurrentAcademicYear()
+{
+    $now = now();
+    $currentYear = $now->year;
+    $currentMonth = $now->month;
 
+    return $currentMonth >= 6
+        ? $currentYear . '-' . ($currentYear + 1)
+        : ($currentYear - 1) . '-' . $currentYear;
+}
 
 }
