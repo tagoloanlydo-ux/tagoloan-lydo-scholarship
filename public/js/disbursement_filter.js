@@ -1,4 +1,4 @@
-// Enhanced filtering for disbursement page
+// Enhanced filtering for disbursement page - Pure Client Side
 class DisbursementFilter {
     constructor() {
         this.unsignedCurrentPage = 1;
@@ -11,10 +11,22 @@ class DisbursementFilter {
     }
 
     init() {
+        this.preventFormSubmission();
         this.loadUnsignedData();
         this.loadSignedData();
         this.setupEventListeners();
-        this.setupAutoFilter();
+    }
+
+    preventFormSubmission() {
+        const filterForm = document.getElementById('filterForm');
+        if (filterForm) {
+            filterForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.filterData();
+                return false;
+            });
+        }
     }
 
     loadUnsignedData() {
@@ -48,41 +60,60 @@ class DisbursementFilter {
     }
 
     setupEventListeners() {
-        // Search input clear button
+        // Remove any existing event listeners and add new ones
+        this.removeExistingListeners();
+        
+        // Search input
         const searchInput = document.querySelector('input[name="search"]');
         if (searchInput) {
-            searchInput.addEventListener('input', () => this.filterData());
+            searchInput.addEventListener('input', () => {
+                this.filterData();
+            });
         }
 
         // Filter select elements
-        const barangayFilter = document.querySelector('select[name="barangay"]');
-        const academicYearFilter = document.querySelector('select[name="academic_year"]');
-        const semesterFilter = document.querySelector('select[name="semester"]');
+        const filters = [
+            'select[name="barangay"]',
+            'select[name="academic_year"]', 
+            'select[name="semester"]'
+        ];
 
-        if (barangayFilter) {
-            barangayFilter.addEventListener('change', () => this.filterData());
-        }
-        if (academicYearFilter) {
-            academicYearFilter.addEventListener('change', () => this.filterData());
-        }
-        if (semesterFilter) {
-            semesterFilter.addEventListener('change', () => this.filterData());
+        filters.forEach(selector => {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.addEventListener('change', () => {
+                    this.filterData();
+                });
+            }
+        });
+
+        // Clear filters button
+        const clearButton = document.querySelector('button[onclick="clearFilters()"]');
+        if (clearButton) {
+            // Remove existing onclick and replace with new one
+            clearButton.removeAttribute('onclick');
+            clearButton.addEventListener('click', () => {
+                this.clearAllFilters();
+            });
         }
     }
 
-    setupAutoFilter() {
-        // Real-time filtering without form submission
+    removeExistingListeners() {
+        // Remove any auto-submit behavior from the original code
         const filterInputs = document.querySelectorAll('#filterForm input, #filterForm select');
-        
         filterInputs.forEach(input => {
-            input.addEventListener('input', () => {
-                this.filterData();
-            });
-            
-            input.addEventListener('change', () => {
-                this.filterData();
-            });
+            const newInput = input.cloneNode(true);
+            input.parentNode.replaceChild(newInput, input);
         });
+    }
+
+    clearAllFilters() {
+        document.querySelector('input[name="search"]').value = '';
+        document.querySelector('select[name="barangay"]').value = '';
+        document.querySelector('select[name="academic_year"]').value = '';
+        document.querySelector('select[name="semester"]').value = '';
+        
+        this.filterData();
     }
 
     filterData() {
@@ -90,6 +121,8 @@ class DisbursementFilter {
         const barangayFilter = document.querySelector('select[name="barangay"]').value;
         const academicYearFilter = document.querySelector('select[name="academic_year"]').value;
         const semesterFilter = document.querySelector('select[name="semester"]').value;
+
+        console.log('Filtering with:', { searchTerm, barangayFilter, academicYearFilter, semesterFilter });
 
         // Filter unsigned data
         this.unsignedData.forEach(item => {
@@ -123,6 +156,8 @@ class DisbursementFilter {
         const endIndex = startIndex + this.rowsPerPage;
         const pageData = visibleData.slice(startIndex, endIndex);
 
+        console.log(`Unsigned: Showing ${pageData.length} of ${visibleData.length} items`);
+
         // Hide all rows
         this.unsignedData.forEach(item => {
             item.element.style.display = 'none';
@@ -134,6 +169,9 @@ class DisbursementFilter {
         });
 
         this.renderUnsignedPagination(visibleData.length);
+        
+        // Update the count badge if it exists
+        this.updateUnsignedCount(visibleData.length);
     }
 
     renderSignedPage() {
@@ -141,6 +179,8 @@ class DisbursementFilter {
         const startIndex = (this.signedCurrentPage - 1) * this.rowsPerPage;
         const endIndex = startIndex + this.rowsPerPage;
         const pageData = visibleData.slice(startIndex, endIndex);
+
+        console.log(`Signed: Showing ${pageData.length} of ${visibleData.length} items`);
 
         // Hide all rows
         this.signedData.forEach(item => {
@@ -153,14 +193,40 @@ class DisbursementFilter {
         });
 
         this.renderSignedPagination(visibleData.length);
+        
+        // Update the count badge if it exists
+        this.updateSignedCount(visibleData.length);
+    }
+
+    updateUnsignedCount(count) {
+        const badge = document.querySelector('#unsignedTab .bg-red-500');
+        if (badge) {
+            badge.textContent = count;
+        }
+    }
+
+    updateSignedCount(count) {
+        const badge = document.querySelector('#signedTab .bg-green-500');
+        if (badge) {
+            badge.textContent = count;
+        }
     }
 
     renderUnsignedPagination(totalItems) {
         const totalPages = Math.ceil(totalItems / this.rowsPerPage);
         const container = document.getElementById('unsignedPagination') || this.createPaginationContainer('unsigned');
         
+        if (totalItems === 0) {
+            container.innerHTML = '<div class="text-center text-gray-500 py-4">No records found</div>';
+            return;
+        }
+
         if (totalPages <= 1) {
-            container.innerHTML = '';
+            container.innerHTML = `
+                <div class="text-center text-sm text-gray-600 mt-2">
+                    Showing ${totalItems} of ${totalItems} entries
+                </div>
+            `;
             return;
         }
 
@@ -169,14 +235,33 @@ class DisbursementFilter {
                 <button onclick="disbursementFilter.prevUnsignedPage()" 
                         ${this.unsignedCurrentPage === 1 ? 'disabled' : ''}
                         class="px-3 py-1 rounded border ${this.unsignedCurrentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}">
-                    Previous
+                    <i class="fas fa-chevron-left mr-1"></i> Previous
                 </button>
         `;
 
-        for (let i = 1; i <= totalPages; i++) {
+        // Show page numbers
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, this.unsignedCurrentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        if (startPage > 1) {
+            paginationHTML += `
+                <button onclick="disbursementFilter.goToUnsignedPage(1)" 
+                        class="px-3 py-1 rounded border bg-white text-gray-700 hover:bg-gray-50">
+                    1
+                </button>
+                ${startPage > 2 ? '<span class="px-2">...</span>' : ''}
+            `;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
             if (i === this.unsignedCurrentPage) {
                 paginationHTML += `
-                    <button class="px-3 py-1 rounded border bg-red-600 text-white">
+                    <button class="px-3 py-1 rounded border bg-red-600 text-white font-semibold">
                         ${i}
                     </button>
                 `;
@@ -190,11 +275,21 @@ class DisbursementFilter {
             }
         }
 
+        if (endPage < totalPages) {
+            paginationHTML += `
+                ${endPage < totalPages - 1 ? '<span class="px-2">...</span>' : ''}
+                <button onclick="disbursementFilter.goToUnsignedPage(${totalPages})" 
+                        class="px-3 py-1 rounded border bg-white text-gray-700 hover:bg-gray-50">
+                    ${totalPages}
+                </button>
+            `;
+        }
+
         paginationHTML += `
                 <button onclick="disbursementFilter.nextUnsignedPage()" 
                         ${this.unsignedCurrentPage === totalPages ? 'disabled' : ''}
                         class="px-3 py-1 rounded border ${this.unsignedCurrentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}">
-                    Next
+                    Next <i class="fas fa-chevron-right ml-1"></i>
                 </button>
             </div>
             <div class="text-center text-sm text-gray-600 mt-2">
@@ -209,8 +304,17 @@ class DisbursementFilter {
         const totalPages = Math.ceil(totalItems / this.rowsPerPage);
         const container = document.getElementById('signedPagination') || this.createPaginationContainer('signed');
         
+        if (totalItems === 0) {
+            container.innerHTML = '<div class="text-center text-gray-500 py-4">No records found</div>';
+            return;
+        }
+
         if (totalPages <= 1) {
-            container.innerHTML = '';
+            container.innerHTML = `
+                <div class="text-center text-sm text-gray-600 mt-2">
+                    Showing ${totalItems} of ${totalItems} entries
+                </div>
+            `;
             return;
         }
 
@@ -219,14 +323,33 @@ class DisbursementFilter {
                 <button onclick="disbursementFilter.prevSignedPage()" 
                         ${this.signedCurrentPage === 1 ? 'disabled' : ''}
                         class="px-3 py-1 rounded border ${this.signedCurrentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}">
-                    Previous
+                    <i class="fas fa-chevron-left mr-1"></i> Previous
                 </button>
         `;
 
-        for (let i = 1; i <= totalPages; i++) {
+        // Show page numbers
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, this.signedCurrentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        if (startPage > 1) {
+            paginationHTML += `
+                <button onclick="disbursementFilter.goToSignedPage(1)" 
+                        class="px-3 py-1 rounded border bg-white text-gray-700 hover:bg-gray-50">
+                    1
+                </button>
+                ${startPage > 2 ? '<span class="px-2">...</span>' : ''}
+            `;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
             if (i === this.signedCurrentPage) {
                 paginationHTML += `
-                    <button class="px-3 py-1 rounded border bg-green-600 text-white">
+                    <button class="px-3 py-1 rounded border bg-green-600 text-white font-semibold">
                         ${i}
                     </button>
                 `;
@@ -240,11 +363,21 @@ class DisbursementFilter {
             }
         }
 
+        if (endPage < totalPages) {
+            paginationHTML += `
+                ${endPage < totalPages - 1 ? '<span class="px-2">...</span>' : ''}
+                <button onclick="disbursementFilter.goToSignedPage(${totalPages})" 
+                        class="px-3 py-1 rounded border bg-white text-gray-700 hover:bg-gray-50">
+                    ${totalPages}
+                </button>
+            `;
+        }
+
         paginationHTML += `
                 <button onclick="disbursementFilter.nextSignedPage()" 
                         ${this.signedCurrentPage === totalPages ? 'disabled' : ''}
                         class="px-3 py-1 rounded border ${this.signedCurrentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}">
-                    Next
+                    Next <i class="fas fa-chevron-right ml-1"></i>
                 </button>
             </div>
             <div class="text-center text-sm text-gray-600 mt-2">
@@ -262,7 +395,12 @@ class DisbursementFilter {
         
         const tabContent = document.getElementById(`${type}TabContent`);
         if (tabContent) {
-            tabContent.appendChild(container);
+            const table = tabContent.querySelector('table');
+            if (table) {
+                table.parentNode.insertBefore(container, table.nextSibling);
+            } else {
+                tabContent.appendChild(container);
+            }
         }
         
         return container;
@@ -311,27 +449,25 @@ class DisbursementFilter {
     }
 }
 
-// Initialize disbursement filter
-const disbursementFilter = new DisbursementFilter();
-
-// Modified clearFilters function for disbursement
-function clearFilters() {
-    document.querySelector('input[name="search"]').value = '';
-    document.querySelector('select[name="barangay"]').value = '';
-    document.querySelector('select[name="academic_year"]').value = '';
-    document.querySelector('select[name="semester"]').value = '';
-    
-    disbursementFilter.filterData();
-}
-
-// Remove the old auto-filter functionality and replace with:
+// Initialize disbursement filter when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Remove the old form submission behavior
-    const filterForm = document.getElementById('filterForm');
-    if (filterForm) {
-        filterForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            disbursementFilter.filterData();
-        });
-    }
+    window.disbursementFilter = new DisbursementFilter();
+    
+    // Replace the global clearFilters function
+    window.clearFilters = function() {
+        if (window.disbursementFilter) {
+            window.disbursementFilter.clearAllFilters();
+        }
+    };
 });
+
+// Fallback initialization
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!window.disbursementFilter) {
+            window.disbursementFilter = new DisbursementFilter();
+        }
+    });
+} else {
+    window.disbursementFilter = new DisbursementFilter();
+}

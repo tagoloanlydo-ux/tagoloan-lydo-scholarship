@@ -15,20 +15,30 @@
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 </head>
   <style>
-  /* Pagination Styles */
+/* Pagination Styles */
 .pagination-container {
-    margin-top: 1rem;
+    margin-top: 1px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
 }
 
 .pagination-container button {
     transition: all 0.2s ease;
+    margin: 0 0.25rem;
+    border: 1px solid #d1d5db;
 }
 
-.pagination-container button:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
+.pagination-container button:hover {
+    background-color: #e5e7eb;
+    border-color: #9ca3af;
 }
 
+.pagination-container .active {
+    background-color: #7c3aed !important;
+    color: white !important;
+    border-color: #7c3aed !important;
+}
 /* Status badges for renewal */
 .status-badge {
     padding: 0.25rem 0.75rem;
@@ -172,6 +182,62 @@
     border-color: #7c3aed !important;
     color: #7c3aed !important;
 }
+
+/* Custom Tab Styles */
+.tab {
+    cursor: pointer;
+    padding: 14px 28px;
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background: linear-gradient(145deg, #ffffff, #f8fafc);
+    color: #64748b;
+    border: 2px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    position: relative;
+    overflow: hidden;
+}
+
+.tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.tab:hover::before {
+    left: 100%;
+}
+
+.tab.active {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: white;
+    border-color: #7c3aed;
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px) scale(1.02);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.tab:hover:not(.active) {
+    background: linear-gradient(145deg, #f1f5f9, #e2e8f0);
+    border-color: #a78bfa;
+    color: #7c3aed;
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.tab:active {
+    transform: translateY(0) scale(0.98);
+    transition: all 0.1s ease;
+}
    
 </style>
 
@@ -294,101 +360,68 @@
                         <h2 class="text-3xl font-bold text-gray-800">Disbursement Records</h2>
                     </div>
 
-                    <!-- Search and Filter Section -->
-                    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
-                        <form id="filterForm" method="GET" action="{{ route('LydoStaff.disbursement') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                            <!-- Search Input -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
-                                <div class="relative">
-                                    <input type="text" name="search" value="{{ request('search') }}"
-                                           placeholder="Enter name..."
-                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500">
-                                    @if(request('search'))
-                                        <button type="button" onclick="clearFilters()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <!-- Barangay Filter -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                                <select name="barangay" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500">
-                                    <option value="">All Barangays</option>
-                                    @foreach($barangays as $barangay)
-                                        <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
-                                            {{ $barangay }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Academic Year Filter -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Academic Year</label>
-                                <select name="academic_year" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500">
-                                    <option value="">All Academic Years</option>
-                                    @foreach($academicYears as $year)
-                                        <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
-                                            {{ $year }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Semester Filter -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Semester</label>
-                                <select name="semester" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500">
-                                    <option value="">All Semesters</option>
-                                    @foreach($semesters as $semester)
-                                        <option value="{{ $semester }}" {{ request('semester') == $semester ? 'selected' : '' }}>
-                                            {{ $semester }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Clear Filters Button -->
-                            <div class="flex items-end">
-                                <button type="button" onclick="clearFilters()" class="w-full px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
-                                    Clear Filters
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
                     <!-- Disbursement Tabs -->
                     <div class="bg-white p-6 rounded-lg shadow-md">
                         <h2 class="text-2xl font-semibold mb-4 text-gray-800">Disbursement Records</h2>
 
                         <!-- Tab Navigation -->
-                        <div class="border-b border-gray-200 mb-6">
-                            <nav class="-mb-px flex space-x-8">
-                                <button id="unsignedTab" class="tab-button active-tab whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-violet-500 text-violet-600">
-                                    Pending Signature
-                                    @if($unsignedDisbursements->count() > 0)
-                                        <span class="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ $unsignedDisbursements->count() }}</span>
-                                    @endif
-                                </button>
-                                <button id="signedTab" class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="signed">
-                                    Signed
-                                    @if($signedDisbursements->count() > 0)
-                                        <span class="ml-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">{{ $signedDisbursements->count() }}</span>
-                                    @endif
-                                </button>
-                            </nav>
+                        <div class="flex gap-2 mb-6">
+                            <div onclick="showUnsignedTab()" class="tab active" id="tab-unsigned">
+                                <i class="fas fa-table mr-1"></i> Pending Signature
+                                @if($unsignedDisbursements->count() > 0)
+                                    <span class="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ $unsignedDisbursements->count() }}</span>
+                                @endif
+                            </div>
+                            <div onclick="showSignedTab()" class="tab" id="tab-signed">
+                                <i class="fas fa-list mr-1"></i> Signed
+                                @if($signedDisbursements->count() > 0)
+                                    <span class="ml-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">{{ $signedDisbursements->count() }}</span>
+                                @endif
+                            </div>
                         </div>
 
                         <!-- Pending Signature Tab -->
                         <div id="unsignedTabContent" class="tab-content">
+                            <!-- Search and Filter Section for Unsigned Tab -->
+                            <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+                                <div class="flex gap-4 items-end">
+                                    <div class="flex gap-4">
+                                        <!-- Search by Name -->
+                                        <div>
+                                            <label for="unsignedNameSearch" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
+                                            <div class="relative">
+                                                <input type="text" id="unsignedNameSearch" placeholder="Enter name..."
+                                                    style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
+                                                    onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
+                                                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                                                <button onclick="clearUnsignedFilters()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Filter by Barangay -->
+                                        <div>
+                                            <label for="unsignedBarangayFilter" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
+                                            <select id="unsignedBarangayFilter"
+                                                style="padding: 0.75rem 2.5rem; width: 16rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white; appearance: none; background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"
+                                                onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
+                                                onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                                                <option value="">All Barangays</option>
+                                                @foreach($barangays as $barangay)
+                                                    <option value="{{ $barangay }}">{{ $barangay }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             @if($unsignedDisbursements->count() > 0)
                                 <div class="overflow-hidden border border-gray-200 shadow-lg">
                                     <div class="overflow-y-auto">
                                         <table class="w-full table-fixed border-collapse text-[17px]">
-                                            <thead class="bg-gradient-to-r from-red-600 to-orange-600 text-white uppercase text-sm sticky top-0 z-10">
+                                            <thead class="bg-violet-600 text-white uppercase text-sm sticky top-0 z-10">
                                                 <tr>
                                                     <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Full Name</th>
                                                     <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Barangay</th>
@@ -416,7 +449,7 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
-                                        <div class="pagination-container" id="tablePagination"></div>
+                                        <div class="pagination-container" id="unsignedPagination"></div>
                                     </div>
                                 </div>
 
@@ -428,124 +461,141 @@
                         </div>
 
                         <!-- Signed Tab -->
-                        <div id="signedTabContent" class="tab-content" style="display: none;">
-                            @if($signedDisbursements->count() > 0)
-                                <div class="overflow-hidden border border-gray-200 shadow-lg">
-                                    <div class="overflow-y-auto">
-                                        <table class="w-full table-fixed border-collapse text-[17px]">
-                                            <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm sticky top-0 z-10">
-                                                <tr>
-                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Full Name</th>
-                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Barangay</th>
-                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Semester</th>
-                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Academic Year</th>
-                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Amount</th>
-                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($signedDisbursements as $disburse)
-                                                    <tr class="hover:bg-gray-50 border-b">
-                                                        <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">{{ $disburse->full_name }}</td>
-                                                        <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">{{ $disburse->applicant_brgy }}</td>
-                                                        <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">{{ $disburse->disburse_semester }}</td>
-                                                        <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">{{ $disburse->disburse_acad_year }}</td>
-                                                        <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">₱{{ number_format($disburse->disburse_amount, 2) }}</td>
-                                                        <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">
-                                                            <button class="view-sig-btn bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm" data-signature="{{ $disburse->disburse_signature }}">
-                                                                View Signature
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                        <div class="pagination-container" id="listPagination"></div>
+                    <div id="signedTabContent" class="tab-content" style="display: none;">
+                        <!-- Search and Filter Section for Signed Tab -->
+                        <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+                            <div class="flex gap-4 items-end">
+                                <div class="flex gap-4">
+                                    <!-- Search by Name -->
+                                    <div>
+                                        <label for="signedNameSearch" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
+                                        <div class="relative">
+                                            <input type="text" id="signedNameSearch" placeholder="Enter name..."
+                                                style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
+                                                onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
+                                                onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                                            <button onclick="clearSignedFilters()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Filter by Barangay -->
+                                    <div>
+                                        <label for="signedBarangayFilter" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
+                                        <select id="signedBarangayFilter"
+                                            style="padding: 0.75rem 2.5rem; width: 16rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white; appearance: none; background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"
+                                            onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
+                                            onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                                            <option value="">All Barangays</option>
+                                            @foreach($barangays as $barangay)
+                                                <option value="{{ $barangay }}">{{ $barangay }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
-
-                            @else
-                                <div class="text-center py-8">
-                                    <p class="text-gray-500 text-lg">No signed disbursement records found.</p>
-                                </div>
-                            @endif
+                            </div>
                         </div>
+
+                        @if($signedDisbursements->count() > 0)
+                            <div class="overflow-hidden border border-gray-200 shadow-lg">
+                                <div class="overflow-y-auto">
+                                    <table class="w-full table-fixed border-collapse text-[17px]">
+                                        <thead class="bg-green-600 to-teal-600 text-white uppercase text-sm sticky top-0 z-10">
+                                            <tr>
+                                                <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Full Name</th>
+                                                <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Barangay</th>
+                                                <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Semester</th>
+                                                <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Academic Year</th>
+                                                <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Amount</th>
+                                                <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Signature</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($signedDisbursements as $disburse)
+                                                <tr class="hover:bg-gray-50 border-b">
+                                                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">{{ $disburse->full_name }}</td>
+                                                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">{{ $disburse->applicant_brgy }}</td>
+                                                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">{{ $disburse->disburse_semester }}</td>
+                                                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">{{ $disburse->disburse_acad_year }}</td>
+                                                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">₱{{ number_format($disburse->disburse_amount, 2) }}</td>
+                                                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">
+                                                        @if($disburse->disburse_signature)
+                                                            <img src="{{ $disburse->disburse_signature }}" 
+                                                                alt="Signature" 
+                                                                class="max-w-20 max-h-12 mx-auto border border-gray-300 rounded">
+                                                        @else
+                                                            <span class="text-gray-400 text-sm">No signature</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    <div class="pagination-container" id="signedPagination"></div>
+                                </div>
+                            </div>
+                        @else
+                            <div class="text-center py-8">
+                                <p class="text-gray-500 text-lg">No signed disbursement records found.</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Tab switching functionality
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
+<script>
+    // Tab switching functionality
+    function showUnsignedTab() {
+        document.getElementById('tab-unsigned').classList.add('active');
+        document.getElementById('tab-signed').classList.remove('active');
+        document.getElementById('unsignedTabContent').style.display = 'block';
+        document.getElementById('signedTabContent').style.display = 'none';
+        disbursementPagination.renderUnsignedPage();
+    }
 
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                // Remove active class from all buttons
-                tabButtons.forEach(btn => {
-                    btn.classList.remove('active-tab');
-                    btn.classList.remove('border-violet-500', 'text-violet-600');
-                    btn.classList.add('border-transparent', 'text-gray-500');
-                });
+    function showSignedTab() {
+        document.getElementById('tab-signed').classList.add('active');
+        document.getElementById('tab-unsigned').classList.remove('active');
+        document.getElementById('signedTabContent').style.display = 'block';
+        document.getElementById('unsignedTabContent').style.display = 'none';
+        disbursementPagination.renderSignedPage();
+    }
 
-                // Hide all tab contents
-                tabContents.forEach(content => {
-                    content.style.display = 'none';
-                });
+    // Filter functions
+    function clearUnsignedFilters() {
+        document.getElementById('unsignedNameSearch').value = '';
+        document.getElementById('unsignedBarangayFilter').value = '';
+        disbursementPagination.filterUnsignedData();
+    }
 
-                // Add active class to clicked button
-                button.classList.add('active-tab');
-                button.classList.remove('border-transparent', 'text-gray-500');
-                button.classList.add('border-violet-500', 'text-violet-600');
+    function clearSignedFilters() {
+        document.getElementById('signedNameSearch').value = '';
+        document.getElementById('signedBarangayFilter').value = '';
+        disbursementPagination.filterSignedData();
+    }
 
-                // Show corresponding tab content
-                const tabId = button.getAttribute('data-tab');
-                document.getElementById(tabId + 'TabContent').style.display = 'block';
-            });
+    // Initialize filter event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('unsignedNameSearch').addEventListener('input', function() {
+            disbursementPagination.filterUnsignedData();
         });
 
-        // Auto-filter functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const filterInputs = document.querySelectorAll('#filterForm input, #filterForm select');
-            
-            filterInputs.forEach(input => {
-                input.addEventListener('input', function() {
-                    document.getElementById('filterForm').submit();
-                });
-                
-                input.addEventListener('change', function() {
-                    document.getElementById('filterForm').submit();
-                });
-            });
+        document.getElementById('unsignedBarangayFilter').addEventListener('change', function() {
+            disbursementPagination.filterUnsignedData();
         });
 
-        // Clear filters function
-        function clearFilters() {
-            const form = document.getElementById('filterForm');
-            const inputs = form.querySelectorAll('input, select');
-            
-            inputs.forEach(input => {
-                if (input.type === 'text' || input.type === 'search') {
-                    input.value = '';
-                } else if (input.tagName === 'SELECT') {
-                    input.selectedIndex = 0;
-                }
-            });
-            
-            form.submit();
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('notificationsViewed') === 'true') {
-                let notifCount = document.getElementById("notifCount");
-                if (notifCount) {
-                    notifCount.style.display = 'none';
-                }
-            }
+        document.getElementById('signedNameSearch').addEventListener('input', function() {
+            disbursementPagination.filterSignedData();
         });
-    </script>
+
+        document.getElementById('signedBarangayFilter').addEventListener('change', function() {
+            disbursementPagination.filterSignedData();
+        });
+    });
+</script>
 
 @if($notifications->where('initial_screening', 'Approved')->count() > 0 && $pendingRenewals > 0)
 <script>
@@ -577,14 +627,14 @@
 @endif
 
     <!-- Signature Modal -->
-    <div id="signatureModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
+    <div id="signatureModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md max-h-full overflow-y-auto">
+            <div class="p-5">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Sign Application</h3>
-                <div class="border-2 border-gray-300 rounded-lg p-4">
-                    <canvas id="signatureCanvas" width="491" height="404" class="border border-gray-300 w-full"></canvas>
+                <div class="border-2 border-gray-300 rounded-lg p-4 mb-4">
+                    <canvas id="signatureCanvas" width="400" height="300" class="border border-gray-300 w-full"></canvas>
                 </div>
-                <div class="flex justify-between mt-4">
+                <div class="flex justify-between">
                     <button id="clearSignature" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Clear</button>
                     <div>
                         <button id="cancelSignature" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 mr-2">Cancel</button>
@@ -650,11 +700,11 @@
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]');
             if (csrfToken) {
-                const csrfInput = document.createElement('input');
+                const csrfInput = document.createElement('input'); // ✅ Fixed variable name
                 csrfInput.type = 'hidden';
                 csrfInput.name = '_token';
                 csrfInput.value = csrfToken.getAttribute('content');
-                form.appendChild(csrfInput);
+                form.appendChild(csrfInput); // ✅ Fixed variable name
             }
 
             const signatureInput = document.createElement('input');
@@ -664,6 +714,13 @@
             form.appendChild(signatureInput);
 
             document.body.appendChild(form);
+            
+            // Show loading state
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'flex';
+            }
+            
             form.submit();
         });
     </script>
@@ -684,320 +741,347 @@
         });
     });
 
-    // Close modal
+    // Close the view signature modal
     document.getElementById('closeViewSignature').addEventListener('click', function () {
         document.getElementById('viewSignatureModal').classList.add('hidden');
     });
 </script>
-                <script>
-                    document.getElementById("notifBell").addEventListener("click", function() {
-                        document.getElementById("notifDropdown").classList.toggle("hidden");
-                        let notifCount = document.getElementById("notifCount");
-                        if (notifCount) {
-                            notifCount.remove();
-                        }
-                    });
-                    // Pagination functionality for renewal page
-class RenewalPagination {
-    constructor() {
-        this.tableCurrentPage = 1;
-        this.listCurrentPage = 1;
-        this.rowsPerPage = 10;
-        this.tableData = [];
-        this.listData = [];
-        
-        this.init();
-    }
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const notifBell = document.getElementById('notifBell');
+        const notifDropdown = document.getElementById('notifDropdown');
+
+        notifBell.addEventListener('click', function() {
+            notifDropdown.classList.toggle('hidden');
+            localStorage.setItem('notificationsViewed', 'true');
+            let notifCount = document.getElementById("notifCount");
+            if (notifCount) {
+                notifCount.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!notifBell.contains(event.target) && !notifDropdown.contains(event.target)) {
+                notifDropdown.classList.add('hidden');
+            }
+        });
+    });
+</script>
+<script>
+    document.getElementById('logoutForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Are you sure you want to logout?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, logout!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.submit();
+            }
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        loadingOverlay.style.display = 'flex';
+
+        setTimeout(() => {
+            loadingOverlay.classList.add('fade-out');
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 1000);
+        }, 1000);
+    });
+</script>
+<script>
+// Pagination and Filtering for Disbursement
+const disbursementPagination = {
+    itemsPerPage: 10,
+    currentUnsignedPage: 1,
+    currentSignedPage: 1,
+    filteredUnsignedData: @json($unsignedDisbursements),
+    filteredSignedData: @json($signedDisbursements),
 
     init() {
-        // Get data from the table
-        this.loadTableData();
-        this.loadListData();
-        this.setupEventListeners();
-    }
+        this.renderUnsignedPage();
+        this.renderSignedPage();
+    },
 
-    loadTableData() {
-        const rows = document.querySelectorAll('#tableView tbody tr');
-        this.tableData = Array.from(rows).map(row => {
-            return {
-                element: row,
-                name: row.cells[1].textContent.trim(),
-                barangay: row.cells[2].textContent.trim(),
-                isVisible: true
-            };
-        });
-        this.renderTablePage();
-    }
+    // Unsigned Tab Functions
+    filterUnsignedData() {
+        const nameSearch = document.getElementById('unsignedNameSearch').value.toLowerCase();
+        const barangayFilter = document.getElementById('unsignedBarangayFilter').value;
 
-    loadListData() {
-        const rows = document.querySelectorAll('#listView tbody tr');
-        this.listData = Array.from(rows).map(row => {
-            return {
-                element: row,
-                name: row.cells[1].textContent.trim(),
-                barangay: row.cells[2].textContent.trim(),
-                isVisible: true
-            };
-        });
-        this.renderListPage();
-    }
-
-    setupEventListeners() {
-        // Search functionality for table view
-        const nameSearch = document.getElementById('nameSearch');
-        const barangayFilter = document.getElementById('barangayFilter');
-
-        if (nameSearch) {
-            nameSearch.addEventListener('input', () => this.filterTableData());
-        }
-
-        if (barangayFilter) {
-            barangayFilter.addEventListener('change', () => this.filterTableData());
-        }
-
-        // Search functionality for list view
-        const listNameSearch = document.getElementById('listNameSearch');
-        const listBarangayFilter = document.getElementById('listBarangayFilter');
-
-        if (listNameSearch) {
-            listNameSearch.addEventListener('input', () => this.filterListData());
-        }
-
-        if (listBarangayFilter) {
-            listBarangayFilter.addEventListener('change', () => this.filterListData());
-        }
-    }
-
-    filterTableData() {
-        const nameSearch = document.getElementById('nameSearch').value.toLowerCase();
-        const barangayFilter = document.getElementById('barangayFilter').value;
-
-        this.tableData.forEach(item => {
-            const matchesName = item.name.toLowerCase().includes(nameSearch);
-            const matchesBarangay = !barangayFilter || item.barangay === barangayFilter;
-            
-            item.isVisible = matchesName && matchesBarangay;
+        this.filteredUnsignedData = @json($unsignedDisbursements).filter(item => {
+            const matchesName = item.full_name.toLowerCase().includes(nameSearch);
+            const matchesBarangay = !barangayFilter || item.applicant_brgy === barangayFilter;
+            return matchesName && matchesBarangay;
         });
 
-        this.tableCurrentPage = 1;
-        this.renderTablePage();
-    }
+        this.currentUnsignedPage = 1;
+        this.renderUnsignedPage();
+    },
 
-    filterListData() {
-        const nameSearch = document.getElementById('listNameSearch').value.toLowerCase();
-        const barangayFilter = document.getElementById('listBarangayFilter').value;
-
-        this.listData.forEach(item => {
-            const matchesName = item.name.toLowerCase().includes(nameSearch);
-            const matchesBarangay = !barangayFilter || item.barangay === barangangayFilter;
-            
-            item.isVisible = matchesName && matchesBarangay;
-        });
-
-        this.listCurrentPage = 1;
-        this.renderListPage();
-    }
-
-    renderTablePage() {
-        const visibleData = this.tableData.filter(item => item.isVisible);
-        const startIndex = (this.tableCurrentPage - 1) * this.rowsPerPage;
-        const endIndex = startIndex + this.rowsPerPage;
-        const pageData = visibleData.slice(startIndex, endIndex);
-
-        // Hide all rows
-        this.tableData.forEach(item => {
-            item.element.style.display = 'none';
-        });
-
-        // Show only current page rows
-        pageData.forEach(item => {
-            item.element.style.display = '';
-        });
-
-        this.renderTablePagination(visibleData.length);
-    }
-
-    renderListPage() {
-        const visibleData = this.listData.filter(item => item.isVisible);
-        const startIndex = (this.listCurrentPage - 1) * this.rowsPerPage;
-        const endIndex = startIndex + this.rowsPerPage;
-        const pageData = visibleData.slice(startIndex, endIndex);
-
-        // Hide all rows
-        this.listData.forEach(item => {
-            item.element.style.display = 'none';
-        });
-
-        // Show only current page rows
-        pageData.forEach(item => {
-            item.element.style.display = '';
-        });
-
-        this.renderListPagination(visibleData.length);
-    }
-
-    renderTablePagination(totalItems) {
-        const totalPages = Math.ceil(totalItems / this.rowsPerPage);
-        const container = document.getElementById('tablePagination');
+    renderUnsignedPage() {
+        const startIndex = (this.currentUnsignedPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const pageData = this.filteredUnsignedData.slice(startIndex, endIndex);
         
-        if (totalPages <= 1) {
-            container.innerHTML = '';
+        this.renderUnsignedTable(pageData);
+        this.renderUnsignedPagination();
+    },
+
+    renderUnsignedTable(data) {
+        const tbody = document.querySelector('#unsignedTabContent tbody');
+        if (!tbody) return;
+
+        if (data.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 border border-gray-200 text-gray-500">
+                        No unsigned disbursement records found.
+                    </td>
+                </tr>
+            `;
             return;
         }
 
-        let paginationHTML = `
-            <div class="flex justify-center items-center space-x-2 mt-4">
-                <button onclick="renewalPagination.prevTablePage()" 
-                        ${this.tableCurrentPage === 1 ? 'disabled' : ''}
-                        class="px-3 py-1 rounded border ${this.tableCurrentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}">
-                    Previous
-                </button>
-        `;
-
-        for (let i = 1; i <= totalPages; i++) {
-            if (i === this.tableCurrentPage) {
-                paginationHTML += `
-                    <button class="px-3 py-1 rounded border bg-violet-600 text-white">
-                        ${i}
+        tbody.innerHTML = data.map((disburse, index) => `
+            <tr class="hover:bg-gray-50 border-b" data-id="${disburse.disburse_id}">
+                <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">${disburse.full_name}</td>
+                <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">${disburse.applicant_brgy}</td>
+                <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">${disburse.disburse_semester}</td>
+                <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">${disburse.disburse_acad_year}</td>
+                <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">₱${parseFloat(disburse.disburse_amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">
+                    <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm" onclick="openSignatureModal(${disburse.disburse_id})">
+                        Sign Application
                     </button>
-                `;
-            } else {
-                paginationHTML += `
-                    <button onclick="renewalPagination.goToTablePage(${i})" 
-                            class="px-3 py-1 rounded border bg-white text-gray-700 hover:bg-gray-50">
-                        ${i}
-                    </button>
-                `;
-            }
-        }
+                </td>
+            </tr>
+        `).join('');
+    },
 
-        paginationHTML += `
-                <button onclick="renewalPagination.nextTablePage()" 
-                        ${this.tableCurrentPage === totalPages ? 'disabled' : ''}
-                        class="px-3 py-1 rounded border ${this.tableCurrentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}">
-                    Next
-                </button>
-            </div>
-            <div class="text-center text-sm text-gray-600 mt-2">
-                Showing ${Math.min((this.tableCurrentPage - 1) * this.rowsPerPage + 1, totalItems)} to ${Math.min(this.tableCurrentPage * this.rowsPerPage, totalItems)} of ${totalItems} entries
-            </div>
-        `;
-
-        container.innerHTML = paginationHTML;
-    }
-
-    renderListPagination(totalItems) {
-        const totalPages = Math.ceil(totalItems / this.rowsPerPage);
-        const container = document.getElementById('listPagination');
+    renderUnsignedPagination() {
+        const totalPages = Math.ceil(this.filteredUnsignedData.length / this.itemsPerPage);
+        const container = document.getElementById('unsignedPagination');
         
-        if (totalPages <= 1) {
-            container.innerHTML = '';
+        if (!container || totalPages <= 1) {
+            if (container) container.innerHTML = '';
             return;
         }
 
-        let paginationHTML = `
-            <div class="flex justify-center items-center space-x-2 mt-4">
-                <button onclick="renewalPagination.prevListPage()" 
-                        ${this.listCurrentPage === 1 ? 'disabled' : ''}
-                        class="px-3 py-1 rounded border ${this.listCurrentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}">
-                    Previous
-                </button>
-        `;
+        container.innerHTML = this.createPaginationHTML(this.currentUnsignedPage, totalPages, 'unsigned');
+    },
 
-        for (let i = 1; i <= totalPages; i++) {
-            if (i === this.listCurrentPage) {
-                paginationHTML += `
-                    <button class="px-3 py-1 rounded border bg-green-600 text-white">
-                        ${i}
-                    </button>
+    // Signed Tab Functions
+    filterSignedData() {
+        const nameSearch = document.getElementById('signedNameSearch').value.toLowerCase();
+        const barangayFilter = document.getElementById('signedBarangayFilter').value;
+
+        this.filteredSignedData = @json($signedDisbursements).filter(item => {
+            const matchesName = item.full_name.toLowerCase().includes(nameSearch);
+            const matchesBarangay = !barangayFilter || item.applicant_brgy === barangayFilter;
+            return matchesName && matchesBarangay;
+        });
+
+        this.currentSignedPage = 1;
+        this.renderSignedPage();
+    },
+
+    renderSignedPage() {
+        const startIndex = (this.currentSignedPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const pageData = this.filteredSignedData.slice(startIndex, endIndex);
+        
+        this.renderSignedTable(pageData);
+        this.renderSignedPagination();
+    },
+
+        renderSignedTable(data) {
+            const tbody = document.querySelector('#signedTabContent tbody');
+            if (!tbody) return;
+
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-4 border border-gray-200 text-gray-500">
+                            No signed disbursement records found.
+                        </td>
+                    </tr>
                 `;
-            } else {
-                paginationHTML += `
-                    <button onclick="renewalPagination.goToListPage(${i})" 
-                            class="px-3 py-1 rounded border bg-white text-gray-700 hover:bg-gray-50">
-                        ${i}
-                    </button>
-                `;
+                return;
             }
+
+            tbody.innerHTML = data.map((disburse, index) => `
+                <tr class="hover:bg-gray-50 border-b">
+                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">${disburse.full_name}</td>
+                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">${disburse.applicant_brgy}</td>
+                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">${disburse.disburse_semester}</td>
+                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">${disburse.disburse_acad_year}</td>
+                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">₱${parseFloat(disburse.disburse_amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">
+                        ${disburse.disburse_signature ? 
+                            `<img src="${disburse.disburse_signature}" alt="Signature" class="max-w-20 max-h-12 mx-auto border border-gray-300 rounded">` : 
+                            `<span class="text-gray-400 text-sm">No signature</span>`
+                        }
+                    </td>
+                </tr>
+            `).join('');
+        },
+
+    renderSignedPagination() {
+        const totalPages = Math.ceil(this.filteredSignedData.length / this.itemsPerPage);
+        const container = document.getElementById('signedPagination');
+        
+        if (!container || totalPages <= 1) {
+            if (container) container.innerHTML = '';
+            return;
         }
 
-        paginationHTML += `
-                <button onclick="renewalPagination.nextListPage()" 
-                        ${this.listCurrentPage === totalPages ? 'disabled' : ''}
-                        class="px-3 py-1 rounded border ${this.listCurrentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}">
-                    Next
-                </button>
-            </div>
-            <div class="text-center text-sm text-gray-600 mt-2">
-                Showing ${Math.min((this.listCurrentPage - 1) * this.rowsPerPage + 1, totalItems)} to ${Math.min(this.listCurrentPage * this.rowsPerPage, totalItems)} of ${totalItems} entries
-            </div>
-        `;
+        container.innerHTML = this.createPaginationHTML(this.currentSignedPage, totalPages, 'signed');
+    },
 
-        container.innerHTML = paginationHTML;
+    // Common Pagination Functions
+ // Common Pagination Functions
+createPaginationHTML(currentPage, totalPages, type) {
+    let html = '<div class="flex justify-center items-center space-x-2 mt-4">';
+    
+    // Previous button
+    if (currentPage > 1) {
+        html += `<button onclick="disbursementPagination.goToPage(${currentPage - 1}, '${type}')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors">Previous</button>`;
     }
-
-    prevTablePage() {
-        if (this.tableCurrentPage > 1) {
-            this.tableCurrentPage--;
-            this.renderTablePage();
+    
+    // Page numbers - limit to show only 5 pages at a time
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust start page if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // Show first page and ellipsis if needed
+    if (startPage > 1) {
+        html += `<button onclick="disbursementPagination.goToPage(1, '${type}')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors">1</button>`;
+        if (startPage > 2) {
+            html += `<span class="px-2 text-gray-500">...</span>`;
         }
     }
-
-    nextTablePage() {
-        const totalPages = Math.ceil(this.tableData.filter(item => item.isVisible).length / this.rowsPerPage);
-        if (this.tableCurrentPage < totalPages) {
-            this.tableCurrentPage++;
-            this.renderTablePage();
+    
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+        if (i === currentPage) {
+            html += `<span class="px-3 py-1 bg-violet-600 text-white rounded font-semibold">${i}</span>`;
+        } else {
+            html += `<button onclick="disbursementPagination.goToPage(${i}, '${type}')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors">${i}</button>`;
         }
     }
-
-    goToTablePage(page) {
-        this.tableCurrentPage = page;
-        this.renderTablePage();
-    }
-
-    prevListPage() {
-        if (this.listCurrentPage > 1) {
-            this.listCurrentPage--;
-            this.renderListPage();
+    
+    // Show last page and ellipsis if needed
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            html += `<span class="px-2 text-gray-500">...</span>`;
         }
+        html += `<button onclick="disbursementPagination.goToPage(${totalPages}, '${type}')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors">${totalPages}</button>`;
     }
+    
+    // Next button
+    if (currentPage < totalPages) {
+        html += `<button onclick="disbursementPagination.goToPage(${currentPage + 1}, '${type}')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors">Next</button>`;
+    }
+    
+    // Add page info
+    html += `<span class="ml-4 text-sm text-gray-600">Page ${currentPage} of ${totalPages}</span>`;
+    
+    html += '</div>';
+    return html;
+},
 
-    nextListPage() {
-        const totalPages = Math.ceil(this.listData.filter(item => item.isVisible).length / this.rowsPerPage);
-        if (this.listCurrentPage < totalPages) {
-            this.listCurrentPage++;
-            this.renderListPage();
+    goToPage(page, type) {
+        if (type === 'unsigned') {
+            this.currentUnsignedPage = page;
+            this.renderUnsignedPage();
+        } else {
+            this.currentSignedPage = page;
+            this.renderSignedPage();
         }
-    }
+    },
 
-    goToListPage(page) {
-        this.listCurrentPage = page;
-        this.renderListPage();
+    attachSignatureViewListeners() {
+        document.querySelectorAll('.view-sig-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const signatureUrl = this.getAttribute('data-signature');
+                const imgElement = document.getElementById('signatureImage');
+
+                if (signatureUrl) {
+                    imgElement.src = signatureUrl;
+                } else {
+                    imgElement.src = '';
+                }
+
+                document.getElementById('viewSignatureModal').classList.remove('hidden');
+            });
+        });
     }
+};
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    disbursementPagination.init();
+    
+    // Add event listeners for filters
+    document.getElementById('unsignedNameSearch').addEventListener('input', function() {
+        disbursementPagination.filterUnsignedData();
+    });
+
+    document.getElementById('unsignedBarangayFilter').addEventListener('change', function() {
+        disbursementPagination.filterUnsignedData();
+    });
+
+    document.getElementById('signedNameSearch').addEventListener('input', function() {
+        disbursementPagination.filterSignedData();
+    });
+
+    document.getElementById('signedBarangayFilter').addEventListener('change', function() {
+        disbursementPagination.filterSignedData();
+    });
+});
+
+// Clear filter functions
+function clearUnsignedFilters() {
+    document.getElementById('unsignedNameSearch').value = '';
+    document.getElementById('unsignedBarangayFilter').value = '';
+    disbursementPagination.filterUnsignedData();
 }
 
-// Initialize pagination
-const renewalPagination = new RenewalPagination();
-
-// Clear filters functions
-function clearFiltersTable() {
-    document.getElementById('nameSearch').value = '';
-    document.getElementById('barangayFilter').value = '';
-    renewalPagination.filterTableData();
+function clearSignedFilters() {
+    document.getElementById('signedNameSearch').value = '';
+    document.getElementById('signedBarangayFilter').value = '';
+    disbursementPagination.filterSignedData();
 }
 
-function clearFiltersList() {
-    document.getElementById('listNameSearch').value = '';
-    document.getElementById('listBarangayFilter').value = '';
-    renewalPagination.filterListData();
+// Tab switching functionality
+function showUnsignedTab() {
+    document.getElementById('tab-unsigned').classList.add('active');
+    document.getElementById('tab-signed').classList.remove('active');
+    document.getElementById('unsignedTabContent').style.display = 'block';
+    document.getElementById('signedTabContent').style.display = 'none';
+    disbursementPagination.renderUnsignedPage();
 }
-                </script>
-    <script src="{{ asset('js/logout.js') }}"></script>
-    <script src="{{ asset('js/spinner.js') }}"></script>
-    <script src="{{ asset('js/disbursement_filter.js') }}"></script>
 
-
+function showSignedTab() {
+    document.getElementById('tab-signed').classList.add('active');
+    document.getElementById('tab-unsigned').classList.remove('active');
+    document.getElementById('signedTabContent').style.display = 'block';
+    document.getElementById('unsignedTabContent').style.display = 'none';
+    disbursementPagination.renderSignedPage();
+}
+</script>
 </body>
-
 </html>

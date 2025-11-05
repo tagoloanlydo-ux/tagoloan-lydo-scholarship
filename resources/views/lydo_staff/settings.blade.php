@@ -255,56 +255,241 @@
 
 
     </aside>
-    <form id="personalForm" method="POST" action="{{ route('lydo_staff.update', session('lydopers')->lydopers_id) }}" class="flex-grow bg-white rounded-2xl px-10 py-8 shadow-lg border border-gray-100">
-      @csrf
-      @method('PUT')
-                <h1 class="text-base font-semibold text-gray-800 mb-8">Update Personal Information</h1>
+<form id="personalForm" method="POST" action="{{ route('lydo_staff.update', session('lydopers')->lydopers_id) }}" class="flex-grow bg-white rounded-2xl px-10 py-8 shadow-lg border border-gray-100">
+    @csrf
+    @method('PUT')
+    <h1 class="text-base font-semibold text-gray-800 mb-8">Update Personal Information</h1>
 
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- First Name -->
         <div>
-          <label class="block text-base text-gray-600 mb-1">First Name</label>
-          <input type="text" name="lydopers_fname" value="{{ session('lydopers')->lydopers_fname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+            <label class="block text-base text-gray-600 mb-1">First Name</label>
+            <input type="text" name="lydopers_fname" value="{{ session('lydopers')->lydopers_fname }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validateName(this, 'fnameError')"/>
+            <div id="fnameError" class="text-red-500 text-sm mt-1 hidden"></div>
+            @error('lydopers_fname')
+                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+            @enderror
         </div>
-                <div>
-          <label class="block text-base text-gray-600 mb-1">Middle Name</label>
-          <input type="text" name="lydopers_mname" value="{{ session('lydopers')->lydopers_mname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-        </div>
-        <div>
-          <label class="block text-base text-gray-600 mb-1">Last Name</label>
-          <input type="text" name="lydopers_lname" value="{{ session('lydopers')->lydopers_lname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-        </div>
-        <div>
-          <label class="block text-base text-gray-600 mb-1">Suffix</label>
-          <input type="text" name="lydopers_suffix" value="{{ session('lydopers')->lydopers_suffix }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-        </div>
-        <div class="md:col-span-2">
-          <label class="block text-base text-gray-600 mb-1">Email</label>
-          <input type="email" name="lydopers_email" value="{{ session('lydopers')->lydopers_email }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-        </div>
-        <div class="md:col-span-2">
-          <label class="block text-base text-gray-600 mb-1">Address</label>
-          <input type="text" name="lydopers_address" value="{{ session('lydopers')->lydopers_address }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-        </div>
-        <div>
-          <label class="block text-base text-gray-600 mb-1">Phone Number</label>
-          <input type="tel" name="lydopers_contact_number" value="{{ session('lydopers')->lydopers_contact_number }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-        </div>
-        <div>
-          <label class="block text-base text-gray-600 mb-1">Date of Birth</label>
-          <input type="date" name="lydopers_bdate" value="{{ session('lydopers')->lydopers_bdate }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-        </div>
-      </div>
 
-      <!-- Buttons -->
-      <div class="flex justify-end gap-4">
-        <button type="reset" class="px-6 py-3 border border-violet-500 rounded-xl font-semibold text-violet-600 hover:bg-violet-50 transition">
-          Discard
+        <!-- Last Name -->
+        <div>
+            <label class="block text-base text-gray-600 mb-1">Last Name</label>
+            <input type="text" name="lydopers_lname" value="{{ session('lydopers')->lydopers_lname }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validateName(this, 'lnameError')"/>
+            <div id="lnameError" class="text-red-500 text-sm mt-1 hidden"></div>
+            @error('lydopers_lname')
+                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <!-- Email -->
+        <div class="md:col-span-2">
+            <label class="block text-base text-gray-600 mb-1">Email</label>
+            <input type="email" name="lydopers_email" value="{{ session('lydopers')->lydopers_email }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validateEmail(this)"/>
+            <div id="emailError" class="text-red-500 text-sm mt-1 hidden"></div>
+            @error('lydopers_email')
+                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <!-- Address -->
+        <div class="md:col-span-2">
+            <label class="block text-base text-gray-600 mb-1">Address</label>
+            <input type="text" name="lydopers_address" value="{{ session('lydopers')->lydopers_address }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+            @error('lydopers_address')
+                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <!-- Phone Number -->
+        <div>
+            <label class="block text-base text-gray-600 mb-1">Phone Number</label>
+            <input type="tel" name="lydopers_contact_number" value="{{ session('lydopers')->lydopers_contact_number }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validatePhone(this)"/>
+            <div id="phoneError" class="text-red-500 text-sm mt-1 hidden"></div>
+            @error('lydopers_contact_number')
+                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <!-- Date of Birth -->
+        <div>
+            <label class="block text-base text-gray-600 mb-1">Date of Birth</label>
+            <input type="date" name="lydopers_bdate" value="{{ session('lydopers')->lydopers_bdate }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+            @error('lydopers_bdate')
+                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex justify-end gap-4">
+        <button type="reset" class="px-6 py-3 border border-violet-500 rounded-xl font-semibold text-violet-600 hover:bg-violet-50 transition" onclick="resetValidation()">
+            Discard
         </button>
-        <button type="submit" class="px-6 py-3 bg-violet-500 rounded-xl font-semibold text-white hover:bg-violet-600 transition">
-          Save
+        <button type="submit" class="px-6 py-3 bg-violet-500 rounded-xl font-semibold text-white hover:bg-violet-600 transition update-personal-btn">
+            Save
         </button>
-      </div>
-    </form>
+    </div>
+</form>
+
+<script>
+// Validation functions
+function validateName(input, errorId) {
+    const value = input.value.trim();
+    const errorElement = document.getElementById(errorId);
+    const nameRegex = /^[a-zA-Z\s]*$/; // Only letters and spaces
+    
+    if (value === '') {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+    
+    if (!nameRegex.test(value)) {
+        errorElement.textContent = 'Numbers and symbols are not allowed';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+}
+
+function validateEmail(input) {
+    const value = input.value.trim();
+    const errorElement = document.getElementById('emailError');
+    
+    if (value === '') {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+        errorElement.textContent = 'Please enter a valid email address';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+}
+
+function validatePhone(input) {
+    const value = input.value.trim();
+    const errorElement = document.getElementById('phoneError');
+    
+    // More flexible Philippine mobile number regex
+    const phoneRegex = /^(9|\+?639)\d{9}$/;
+    
+    if (value === '') {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+    
+    // Remove any spaces, dashes, or other characters for validation
+    const cleanValue = value.replace(/[\s\-\(\)]/g, '');
+    
+    if (!phoneRegex.test(cleanValue)) {
+        errorElement.textContent = 'Please enter a valid Philippine mobile number (09XXXXXXXXX or +639XXXXXXXXX)';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+}
+// Reset validation on form reset
+function resetValidation() {
+    // Hide all error messages
+    const errorElements = document.querySelectorAll('[id$="Error"]');
+    errorElements.forEach(element => {
+        element.classList.add('hidden');
+    });
+    
+    // Remove red borders
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+    });
+}
+
+// Enhanced SweetAlert for Personal Information Update with validation
+document.querySelector('.update-personal-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    // Validate all fields before showing confirmation
+    const fnameValid = validateName(document.querySelector('[name="lydopers_fname"]'), 'fnameError');
+    const lnameValid = validateName(document.querySelector('[name="lydopers_lname"]'), 'lnameError');
+    const mnameValid = validateName(document.querySelector('[name="lydopers_mname"]'), 'mnameError');
+    const emailValid = validateEmail(document.querySelector('[name="lydopers_email"]'));
+    const phoneValid = validatePhone(document.querySelector('[name="lydopers_contact_number"]'));
+    
+    // Check if all validations pass
+    if (!fnameValid || !lnameValid || !mnameValid || !emailValid || !phoneValid) {
+        Swal.fire({
+            title: 'Validation Error',
+            text: 'Please fix the errors in the form before submitting.',
+            icon: 'error',
+            confirmButtonColor: '#7c3aed'
+        });
+        return;
+    }
+    
+    // If validation passes, show confirmation
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You are about to update your personal information.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#7c3aed',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, update it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('personalForm').submit();
+        }
+    });
+});
+
+// Real-time validation on page load for existing values
+document.addEventListener('DOMContentLoaded', function() {
+    // Validate existing values
+    validateName(document.querySelector('[name="lydopers_fname"]'), 'fnameError');
+    validateName(document.querySelector('[name="lydopers_mname"]'), 'mnameError');
+    validateName(document.querySelector('[name="lydopers_lname"]'), 'lnameError');
+    validateEmail(document.querySelector('[name="lydopers_email"]'));
+    validatePhone(document.querySelector('[name="lydopers_contact_number"]'));
+});
+</script>
 
     <form id="passwordForm" method="POST" action="{{ route('lydo_staff.updatePassword') }}"
       class="hidden flex-grow bg-white rounded-2xl px-10 py-8 shadow-lg border border-gray-100">

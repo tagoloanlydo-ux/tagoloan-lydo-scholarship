@@ -114,19 +114,15 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'showIntakeSheet'])->name('lydo_staff.intake_sheet.show');
     Route::post('/lydo_staff/submit-intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'submitIntakeSheet'])->name('lydo_staff.submitIntakeSheet');
     Route::get('/lydo_staff/get-applicant-details/{applicant_id}', [LydoStaffController::class, 'getApplicantDetails'])->name('lydo_staff.getApplicantDetails');
-  // Renewal Document Management Routes
-// Renewal Routes
-
-// Document Rating Routes
-Route::post('/lydo_staff/save-renewal-document-status', [RenewalController::class, 'saveRenewalDocumentStatus']);
-Route::post('/lydo_staff/save-renewal-document-comment', [RenewalController::class, 'saveRenewalDocumentComment']);
-Route::get('/lydo_staff/get-renewal-document-statuses/{renewalId}', [RenewalController::class, 'getRenewalDocumentStatuses']);
-Route::get('/lydo_staff/get-document-comments/{renewalId}', [RenewalController::class, 'getDocumentComments']);
-
-// NEW ROUTES FOR EMAIL FUNCTIONALITY
-Route::post('/lydo_staff/request-document-update/{renewalId}', [RenewalController::class, 'requestDocumentUpdate']);
-Route::post('/lydo_staff/mark-document-updated/{renewalId}', [RenewalController::class, 'markDocumentAsUpdated']);
-Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments']);});
+    Route::post('/lydo_staff/save-renewal-document-status', [RenewalController::class, 'saveRenewalDocumentStatus']);
+    Route::post('/lydo_staff/save-renewal-document-comment', [RenewalController::class, 'saveRenewalDocumentComment']);
+    Route::get('/lydo_staff/get-renewal-document-statuses/{renewalId}', [RenewalController::class, 'getRenewalDocumentStatuses']);
+    Route::get('/lydo_staff/get-document-comments/{renewalId}', [RenewalController::class, 'getDocumentComments']);
+    Route::post('/lydo_staff/request-document-update/{renewalId}', [RenewalController::class, 'requestDocumentUpdate']);
+    Route::post('/lydo_staff/mark-document-updated/{renewalId}', [RenewalController::class, 'markDocumentAsUpdated']);
+    Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments']);
+    Route::put('/lydo_staff/update-password', [LydoStaffController::class, 'updatePassword'])->name('lydo_staff.updatePassword');
+});
 
 // Mayor Staff Routes - Only accessible by mayor_staff role
 Route::middleware(['role:mayor_staff'])->group(function () {
@@ -155,21 +151,21 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::get('/mayor_staff/get-document-comments/{id}', [MayorStaffController::class, 'getDocumentComments'])->name('mayor_staff.getDocumentComments');
     Route::post('/mayor_staff/save-document-comment', [MayorStaffController::class, 'saveDocumentComment'])->name('mayor_staff.saveDocumentComment');
     Route::post('/mayor_staff/send-document-email', [MayorStaffController::class, 'sendDocumentEmail'])->name('mayor_staff.sendDocumentEmail');
-   Route::post('/mayor_staff/save-document-status', [MayorStaffController::class, 'saveDocumentStatus'])->name('mayor_staff.saveDocumentStatus');
+    Route::post('/mayor_staff/save-document-status', [MayorStaffController::class, 'saveDocumentStatus'])->name('mayor_staff.saveDocumentStatus');
     Route::post('/save-remarks', [MayorStaffController::class, 'saveRemarks'])->name('saveRemarks');
-Route::get('mayor_staff/intake-sheet/{id}', [StatusController::class, 'getIntakeSheet'])->name('mayor_staff.getIntakeSheet');
-Route::post('/mayor_staff/status/{id}', [StatusController::class, 'updateStatus'])->name('mayor_staff.update_status');
-Route::get('/mayor_staff/application/{applicationPersonnelId}/details', [MayorStaffController::class, 'getApplicationDetails'])->name('mayor_staff.application.details');
-Route::get('/mayor_staff/application/{id}/intake-sheet', [MayorStaffController::class, 'getIntakeSheet'])->name('mayor_staff.getIntakeSheet');
-Route::post('/mayor_staff/application/{id}/status', [MayorStaffController::class, 'updateApplicationStatus']);
-Route::get('/mayor_staff/intake-sheet/{id}', [StatusController::class, 'getIntakeSheet'])->name('mayor_staff.intake-sheet');
+    Route::get('mayor_staff/intake-sheet/{id}', [StatusController::class, 'getIntakeSheet'])->name('mayor_staff.getIntakeSheet');
+    Route::post('/mayor_staff/status/{id}', [StatusController::class, 'updateStatus'])->name('mayor_staff.update_status');
+    Route::get('/mayor_staff/application/{applicationPersonnelId}/details', [MayorStaffController::class, 'getApplicationDetails'])->name('mayor_staff.application.details');
+    Route::get('/mayor_staff/application/{id}/intake-sheet', [MayorStaffController::class, 'getIntakeSheet'])->name('mayor_staff.getIntakeSheet');
+    Route::post('/mayor_staff/application/{id}/status', [MayorStaffController::class, 'updateApplicationStatus']);
+    Route::get('/mayor_staff/intake-sheet/{id}', [StatusController::class, 'getIntakeSheet'])->name('mayor_staff.intake-sheet');
+    Route::put('/mayor_staff/settings/{id}', [MayorStaffController::class, 'updatePersonalInfo'])->name('MayorStaff.update');
+    Route::put('/mayor_staff/update-password', [MayorStaffController::class, 'updatePassword'])->name('MayorStaff.updatePassword');
 });
 
 // Public routes for intake sheet
 Route::get('/intake-sheet/{application_personnel_id}', [MayorStaffController::class, 'showIntakeSheet'])->name('intake_sheet.show');
-Route::get('/intake-sheet-submitted', function () {
-    return view('Applicants.intakesheet_submitted');
-})->name('intake_sheet.submitted');
+Route::get('/intake-sheet-submitted', function () {return view('Applicants.intakesheet_submitted');})->name('intake_sheet.submitted');
 Route::post('/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheetPublic'])->name('intake_sheet.submit');
 
 

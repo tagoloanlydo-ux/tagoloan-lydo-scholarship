@@ -14,6 +14,27 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        #passwordRequirements div,
+    #passwordMatchError,
+    #passwordMatchSuccess {
+        transition: all 0.3s ease;
+    }
+    
+    /* Style for requirement items */
+    .requirement-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2px;
+    }
+    
+    /* Success state colors */
+    .text-green-500 {
+        color: #10b981;
+    }
+    
+    .text-red-500 {
+        color: #ef4444;
+    }
         /* Loading Spinner Styles */
         .loading-overlay {
             position: fixed;
@@ -155,14 +176,24 @@
 
     </header>
     @if(session('success'))
-    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 mx-4">
-        {{ session('success') }}
-    </div>
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: '{{ session('success') }}',
+            confirmButtonColor: '#8b5cf6'
+        });
+    </script>
     @endif
     @if(session('error'))
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 mx-4">
-        {{ session('error') }}
-    </div>
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: '{{ session('error') }}',
+            confirmButtonColor: '#8b5cf6'
+        });
+    </script>
     @endif
         <!-- Main Content -->
         <div class="flex flex-1 overflow-hidden">
@@ -271,107 +302,237 @@
           </nav>
         </aside>
 
-        <form id="personalForm" method="POST" action="{{ route('MayorStaff.update', session('lydopers')->lydopers_id) }}" class="flex-grow bg-white rounded-2xl px-10 py-8 shadow-lg border border-gray-100">
-          @csrf
-          @method('PUT')
-                    <h1 class="text-base font-semibold text-gray-800 mb-8">Update Personal Information</h1>
+ <form id="personalForm" method="POST" action="{{ route('MayorStaff.update', session('lydopers')->lydopers_id) }}" class="flex-grow bg-white rounded-2xl px-10 py-8 shadow-lg border border-gray-100">
+    @csrf
+    @method('PUT')
+    <h1 class="text-base font-semibold text-gray-800 mb-8">Update Personal Information</h1>
 
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div>
-              <label class="block text-base text-gray-600 mb-1">First Name</label>
-              <input type="text" name="lydopers_fname" value="{{ session('lydopers')->lydopers_fname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-            </div>
-                        <div>
-              <label class="block text-base text-gray-600 mb-1">Middle Name</label>
-              <input type="text" name="lydopers_mname" value="{{ session('lydopers')->lydopers_mname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-            </div>
-            <div>
-              <label class="block text-base text-gray-600 mb-1">Last Name</label>
-              <input type="text" name="lydopers_lname" value="{{ session('lydopers')->lydopers_lname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-            </div>
-            <div>
-              <label class="block text-base text-gray-600 mb-1">Suffix</label>
-              <input type="text" name="lydopers_suffix" value="{{ session('lydopers')->lydopers_suffix }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-            </div>
-            <div class="md:col-span-2">
-              <label class="block text-base text-gray-600 mb-1">Email</label>
-              <input type="email" name="lydopers_email" value="{{ session('lydopers')->lydopers_email }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-            </div>
-            <div class="md:col-span-2">
-              <label class="block text-base text-gray-600 mb-1">Address</label>
-              <input type="text" name="lydopers_address" value="{{ session('lydopers')->lydopers_address }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-            </div>
-            <div>
-              <label class="block text-base text-gray-600 mb-1">Phone Number</label>
-              <input type="tel" name="lydopers_contact_number" value="{{ session('lydopers')->lydopers_contact_number }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-            </div>
-          <div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+            <label class="block text-base text-gray-600 mb-1">First Name</label>
+            <input type="text" name="lydopers_fname" value="{{ session('lydopers')->lydopers_fname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+            <!-- Error message will be inserted here by JavaScript -->
+        </div>
+        <div>
+            <label class="block text-base text-gray-600 mb-1">Last Name</label>
+            <input type="text" name="lydopers_lname" value="{{ session('lydopers')->lydopers_lname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+            <!-- Error message will be inserted here by JavaScript -->
+        </div>
+
+        <div class="md:col-span-2">
+            <label class="block text-base text-gray-600 mb-1">Email</label>
+            <input type="email" name="lydopers_email" value="{{ session('lydopers')->lydopers_email }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+            <!-- Error message will be inserted here by JavaScript -->
+        </div>
+        <div class="md:col-span-2">
+            <label class="block text-base text-gray-600 mb-1">Address</label>
+            <input type="text" name="lydopers_address" value="{{ session('lydopers')->lydopers_address }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+        </div>
+        <div>
+            <label class="block text-base text-gray-600 mb-1">Phone Number</label>
+            <input type="tel" name="lydopers_contact_number" value="{{ session('lydopers')->lydopers_contact_number }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+            <!-- Error message will be inserted here by JavaScript -->
+        </div>
+        <div>
             <label class="block text-base text-gray-600 mb-1">Date of Birth</label>
             <input
-              type="date"
-              name="lydopers_bdate"
-              value="{{ session('lydopers')->lydopers_bdate }}"
-              class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                type="date"
+                name="lydopers_bdate"
+                value="{{ session('lydopers')->lydopers_bdate }}"
+                class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
             />
-          </div>
-
-          </div>
-
-          <!-- Buttons -->
-          <div class="flex justify-end gap-4">
-            <button type="reset" class="px-6 py-3 border border-violet-500 rounded-xl font-semibold text-violet-600 hover:bg-violet-50 transition">
-              Discard
-            </button>
-            <button type="submit" class="px-6 py-3 bg-violet-500 rounded-xl font-semibold text-white hover:bg-violet-600 transition">
-              Save
-            </button>
-          </div>
-        </form>
-
-          <form id="passwordForm" method="POST" action="{{ route('MayorStaff.updatePassword') }}"
-            class="hidden flex-grow bg-white rounded-2xl px-10 py-8 shadow-lg border border-gray-100">
-        @csrf
-      <h1 class="text-base font-semibold text-gray-800 mb-8">Change Password</h1>
-      <p class="text-sm text-gray-500 mb-4">Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.</p>
-
-        <div class="mb-6">
-          <label class="block text-base text-gray-600 mb-1">Current Password</label>
-          <input type="password" name="current_password" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
         </div>
-        <div class="mb-6">
-          <label class="block text-base text-gray-600 mb-1">New Password</label>
-          <input type="password" name="new_password" id="new_password" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-        </div>
-        <div class="mb-6">
-          <label class="block text-base text-gray-600 mb-1">Confirm New Password</label>
-          <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-        </div>
+    </div>
 
-        <!-- Buttons -->
-        <div class="flex justify-end gap-4">
-          <button type="reset" class="px-6 py-3 border border-violet-500 rounded-xl font-semibold text-violet-600 hover:bg-violet-50 transition">
+    <!-- Buttons -->
+    <div class="flex justify-end gap-4">
+        <button type="reset" class="px-6 py-3 border border-violet-500 rounded-xl font-semibold text-violet-600 hover:bg-violet-50 transition">
+            Discard
+        </button>
+        <button type="submit" class="px-6 py-3 bg-violet-500 rounded-xl font-semibold text-white hover:bg-violet-600 transition">
+            Save
+        </button>
+    </div>
+</form>
+<script>
+// Name validation - no numbers or symbols
+function validateName(input, fieldName) {
+    const value = input.value.trim();
+    const nameRegex = /^[A-Za-z\s]+$/;
+    const errorElement = document.getElementById(`${fieldName}Error`);
+    
+    if (value && !nameRegex.test(value)) {
+        errorElement.textContent = `${fieldName.replace('_', ' ')} should not contain numbers or symbols`;
+        errorElement.classList.remove('hidden');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        return true;
+    }
+}
+
+// Email validation - check for duplicates (this would need backend integration)
+function validateEmail(input) {
+    const value = input.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const errorElement = document.getElementById('emailError');
+    
+    if (value && !emailRegex.test(value)) {
+        errorElement.textContent = 'Please enter a valid email address';
+        errorElement.classList.remove('hidden');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        // For duplicate checking, you would need to make an AJAX request to backend
+        return true;
+    }
+}
+
+// Contact number validation
+function validateContact(input) {
+    const value = input.value.trim();
+    const contactRegex = /^(9\d{9}|\+639\d{9})$/;
+    const errorElement = document.getElementById('contactError');
+    
+    if (value && !contactRegex.test(value)) {
+        errorElement.textContent = 'Please enter a valid contact number (09XXXXXXXXX or +639XXXXXXXXX)';
+        errorElement.classList.remove('hidden');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        return true;
+    }
+}
+
+// Add event listeners when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Name fields
+    const fnameInput = document.querySelector('input[name="lydopers_fname"]');
+    const mnameInput = document.querySelector('input[name="lydopers_mname"]');
+    const lnameInput = document.querySelector('input[name="lydopers_lname"]');
+    const emailInput = document.querySelector('input[name="lydopers_email"]');
+    const contactInput = document.querySelector('input[name="lydopers_contact_number"]');
+    
+    // Add error message elements after each input
+    addErrorMessage(fnameInput, 'fnameError');
+    addErrorMessage(mnameInput, 'mnameError');
+    addErrorMessage(lnameInput, 'lnameError');
+    addErrorMessage(emailInput, 'emailError');
+    addErrorMessage(contactInput, 'contactError');
+    
+    // Add event listeners
+    fnameInput.addEventListener('blur', () => validateName(fnameInput, 'First Name'));
+    mnameInput.addEventListener('blur', () => validateName(mnameInput, 'Middle Name'));
+    lnameInput.addEventListener('blur', () => validateName(lnameInput, 'Last Name'));
+    emailInput.addEventListener('blur', validateEmail);
+    contactInput.addEventListener('blur', validateContact);
+    
+    // Enhanced form submission validation
+    document.getElementById('personalForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validate all fields
+        isValid = validateName(fnameInput, 'First Name') && isValid;
+        isValid = validateName(mnameInput, 'Middle Name') && isValid;
+        isValid = validateName(lnameInput, 'Last Name') && isValid;
+        isValid = validateEmail(emailInput) && isValid;
+        isValid = validateContact(contactInput) && isValid;
+        
+        if (!isValid) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please fix the errors in the form before submitting',
+                confirmButtonColor: '#8b5cf6'
+            });
+        }
+    });
+});
+
+// Helper function to add error message elements
+function addErrorMessage(input, id) {
+    const errorElement = document.createElement('div');
+    errorElement.id = id;
+    errorElement.className = 'mt-1 text-sm text-red-500 hidden';
+    input.parentNode.appendChild(errorElement);
+}
+</script>
+
+<form id="passwordForm" method="POST" action="{{ route('MayorStaff.updatePassword') }}"
+    class="hidden flex-grow bg-white rounded-2xl px-10 py-8 shadow-lg border border-gray-100">
+    @csrf
+    @method('PUT')
+    
+    <h1 class="text-base font-semibold text-gray-800 mb-8">Change Password</h1>
+    <p class="text-sm text-gray-500 mb-4">Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.</p>
+
+    <div class="mb-6">
+        <label class="block text-base text-gray-600 mb-1">Current Password</label>
+        <input type="password" name="current_password" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+    </div>
+    
+    <div class="mb-6">
+        <label class="block text-base text-gray-600 mb-1">New Password</label>
+        <input type="password" name="new_password" id="new_password" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+        <!-- Password Requirements -->
+        <div id="passwordRequirements" class="mt-2 text-sm space-y-1 hidden">
+            <div id="lengthReq" class="flex items-center text-red-500">
+                <i class="fas fa-times mr-2"></i>
+                <span>At least 8 characters</span>
+            </div>
+            <div id="uppercaseReq" class="flex items-center text-red-500">
+                <i class="fas fa-times mr-2"></i>
+                <span>One uppercase letter (A-Z)</span>
+            </div>
+            <div id="lowercaseReq" class="flex items-center text-red-500">
+                <i class="fas fa-times mr-2"></i>
+                <span>One lowercase letter (a-z)</span>
+            </div>
+            <div id="numberReq" class="flex items-center text-red-500">
+                <i class="fas fa-times mr-2"></i>
+                <span>One number (0-9)</span>
+            </div>
+            <div id="specialReq" class="flex items-center text-red-500">
+                <i class="fas fa-times mr-2"></i>
+                <span>One special character (@$!%*?&)</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mb-6">
+        <label class="block text-base text-gray-600 mb-1">Confirm New Password</label>
+        <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+        <!-- Password Match Error -->
+        <div id="passwordMatchError" class="mt-2 text-sm text-red-500 hidden">
+            <i class="fas fa-times mr-2"></i>
+            <span>Passwords do not match</span>
+        </div>
+        <!-- Password Match Success -->
+        <div id="passwordMatchSuccess" class="mt-2 text-sm text-green-500 hidden">
+            <i class="fas fa-check mr-2"></i>
+            <span>Passwords match</span>
+        </div>
+    </div>
+
+    <!-- Overall Form Error -->
+    <div id="formError" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg hidden">
+        <div class="flex items-center text-red-700">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <span id="formErrorMessage">Please fix the errors above</span>
+        </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex justify-end gap-4">
+        <button type="reset" id="cancelBtn" class="px-6 py-3 border border-violet-500 rounded-xl font-semibold text-violet-600 hover:bg-violet-50 transition">
             Cancel
-          </button>
-          <button type="submit" class="px-6 py-3 bg-violet-500 rounded-xl font-semibold text-white hover:bg-violet-600 transition">
+        </button>
+        <button type="submit" id="submitBtn" class="px-6 py-3 bg-violet-500 rounded-xl font-semibold text-white hover:bg-violet-600 transition disabled:opacity-50 disabled:cursor-not-allowed">
             Update Password
-          </button>
-        </div>
-        <script>
-          document.getElementById('passwordForm').addEventListener('submit', function(event) {
-            const newPassword = document.getElementById('new_password').value;
-            const confirmPassword = document.getElementById('new_password_confirmation').value;
-            const passwordRequirements = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-            if (!passwordRequirements.test(newPassword)) {
-              alert('New password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.');
-              event.preventDefault();
-            } else if (newPassword !== confirmPassword) {
-              alert('New password and confirmation do not match.');
-              event.preventDefault();
-            }
-          });
-        </script>
-      </form>
+        </button>
+    </div>
+</form>
   </section>
 </div>
 
@@ -477,6 +638,42 @@ document.getElementById("logoutForm").addEventListener("submit", function (e) {
     });
 });
 </script>
+<script>
+document.getElementById("personalForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    Swal.fire({
+        title: "Are you sure you want to update your personal information?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#8b5cf6",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "Yes, update",
+        cancelButtonText: "Cancel",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            e.target.submit();
+        }
+    });
+});
+</script>
+<script>
+document.getElementById("passwordForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    Swal.fire({
+        title: "Are you sure you want to update your password?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#8b5cf6",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "Yes, update",
+        cancelButtonText: "Cancel",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            e.target.submit();
+        }
+    });
+});
+</script>
  <script>
   const profileImage = document.getElementById("profileImage");
   const fileInput = document.getElementById("fileInput");
@@ -527,6 +724,160 @@ document.getElementById("logoutForm").addEventListener("submit", function (e) {
             });
         });
     });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const newPasswordInput = document.getElementById('new_password');
+    const confirmPasswordInput = document.getElementById('new_password_confirmation');
+    const passwordRequirements = document.getElementById('passwordRequirements');
+    const passwordMatchError = document.getElementById('passwordMatchError');
+    const passwordMatchSuccess = document.getElementById('passwordMatchSuccess');
+    const formError = document.getElementById('formError');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    // Password requirement elements
+    const lengthReq = document.getElementById('lengthReq');
+    const uppercaseReq = document.getElementById('uppercaseReq');
+    const lowercaseReq = document.getElementById('lowercaseReq');
+    const numberReq = document.getElementById('numberReq');
+    const specialReq = document.getElementById('specialReq');
+
+    let isPasswordValid = false;
+    let isPasswordMatch = false;
+
+    // Real-time password validation
+    newPasswordInput.addEventListener('input', validatePassword);
+    confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+
+    // Cancel button resets the form
+    cancelBtn.addEventListener('click', function() {
+        resetValidation();
+    });
+
+    function validatePassword() {
+        const password = newPasswordInput.value;
+        
+        // Show requirements when user starts typing
+        if (password.length > 0) {
+            passwordRequirements.classList.remove('hidden');
+        } else {
+            passwordRequirements.classList.add('hidden');
+        }
+
+        // Check each requirement
+        const hasLength = password.length >= 8;
+        const hasUppercase = /[A-Z]/.test(password);
+        const hasLowercase = /[a-z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSpecial = /[@$!%*?&]/.test(password);
+
+        // Update requirement indicators
+        updateRequirement(lengthReq, hasLength);
+        updateRequirement(uppercaseReq, hasUppercase);
+        updateRequirement(lowercaseReq, hasLowercase);
+        updateRequirement(numberReq, hasNumber);
+        updateRequirement(specialReq, hasSpecial);
+
+        // Check if all requirements are met
+        isPasswordValid = hasLength && hasUppercase && hasLowercase && hasNumber && hasSpecial;
+        
+        // Re-validate password match when password changes
+        validatePasswordMatch();
+        updateSubmitButton();
+    }
+
+    function validatePasswordMatch() {
+        const password = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        if (confirmPassword.length === 0) {
+            passwordMatchError.classList.add('hidden');
+            passwordMatchSuccess.classList.add('hidden');
+            isPasswordMatch = false;
+        } else if (password === confirmPassword) {
+            passwordMatchError.classList.add('hidden');
+            passwordMatchSuccess.classList.remove('hidden');
+            isPasswordMatch = true;
+        } else {
+            passwordMatchError.classList.remove('hidden');
+            passwordMatchSuccess.classList.add('hidden');
+            isPasswordMatch = false;
+        }
+
+        updateSubmitButton();
+    }
+
+    function updateRequirement(element, isValid) {
+        if (isValid) {
+            element.classList.remove('text-red-500');
+            element.classList.add('text-green-500');
+            element.querySelector('i').className = 'fas fa-check mr-2';
+        } else {
+            element.classList.remove('text-green-500');
+            element.classList.add('text-red-500');
+            element.querySelector('i').className = 'fas fa-times mr-2';
+        }
+    }
+
+    function updateSubmitButton() {
+        if (isPasswordValid && isPasswordMatch) {
+            submitBtn.disabled = false;
+            formError.classList.add('hidden');
+        } else {
+            submitBtn.disabled = true;
+            
+            // Show form error if there are issues
+            if (newPasswordInput.value.length > 0 || confirmPasswordInput.value.length > 0) {
+                formError.classList.remove('hidden');
+                let errorMessage = 'Please fix the following: ';
+                const errors = [];
+                
+                if (!isPasswordValid) errors.push('password requirements');
+                if (!isPasswordMatch) errors.push('password mismatch');
+                
+                document.getElementById('formErrorMessage').textContent = errorMessage + errors.join(' and ');
+            } else {
+                formError.classList.add('hidden');
+            }
+        }
+    }
+
+    function resetValidation() {
+        // Reset all validation states
+        passwordRequirements.classList.add('hidden');
+        passwordMatchError.classList.add('hidden');
+        passwordMatchSuccess.classList.add('hidden');
+        formError.classList.add('hidden');
+        submitBtn.disabled = false;
+        
+        // Reset requirement indicators
+        const requirements = [lengthReq, uppercaseReq, lowercaseReq, numberReq, specialReq];
+        requirements.forEach(req => {
+            req.classList.remove('text-green-500');
+            req.classList.add('text-red-500');
+            req.querySelector('i').className = 'fas fa-times mr-2';
+        });
+        
+        isPasswordValid = false;
+        isPasswordMatch = false;
+    }
+
+    // Form submission handler
+    document.getElementById('passwordForm').addEventListener('submit', function(e) {
+        if (!isPasswordValid || !isPasswordMatch) {
+            e.preventDefault();
+            // Scroll to the first error
+            if (!isPasswordValid) {
+                newPasswordInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                newPasswordInput.focus();
+            } else if (!isPasswordMatch) {
+                confirmPasswordInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                confirmPasswordInput.focus();
+            }
+        }
+    });
+});
 </script>
 <script src="{{ asset('js/spinner.js') }}"></script>
 </body>

@@ -484,9 +484,9 @@
                 </nav>
                 
                 <div class="p-2 md:p-4 border-t">
-                    <form method="POST" action="{{ route('logout') }}" id="logoutForm"> 
-                        @csrf 
-                        <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
+                    <form method="POST" action="{{ route('logout') }}" id="logoutForm">
+                        @csrf
+                        <button type="button" onclick="confirmLogout()" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
                             <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
                             <span class="hidden md:block text-red-600">Logout</span>
                         </button>
@@ -1454,7 +1454,7 @@ function showList() {
                     // Show loading
                     document.getElementById('loadingOverlay').style.display = 'flex';
                     document.getElementById('loadingOverlay').classList.remove('fade-out');
-                    
+
                     // Send rejection request
                     fetch(`/mayor_staff/application/${id}/reject`, {
                         method: 'POST',
@@ -1469,7 +1469,7 @@ function showList() {
                         setTimeout(() => {
                             document.getElementById('loadingOverlay').style.display = 'none';
                         }, 1000);
-                        
+
                         if (data.success) {
                             Swal.fire('Rejected!', `Application for ${name} has been rejected.`, 'success')
                                 .then(() => {
@@ -1488,6 +1488,23 @@ function showList() {
                         }, 1000);
                         Swal.fire('Error!', 'Failed to reject application.', 'error');
                     });
+                }
+            });
+        }
+
+        function confirmLogout() {
+            Swal.fire({
+                title: 'Logout?',
+                text: 'Are you sure you want to logout?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'Yes, Logout',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('logoutForm').submit();
                 }
             });
         }

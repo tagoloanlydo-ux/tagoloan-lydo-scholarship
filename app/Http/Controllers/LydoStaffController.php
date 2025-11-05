@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\EmailService;
 use App\Events\ApplicantUpdated;
 use App\Events\RenewalUpdated;
+use Illuminate\Validation\Rule;
 
 class LydoStaffController extends Controller
 {
@@ -975,46 +976,114 @@ public function disbursement(Request $request)
         );
     }
 
-    public function updateStaff(Request $request, $id)
+public function updateStaff(Request $request, $id)
+{
+    $request->validate([
+        'lydopers_fname' => [
+            'required', 
+            'string', 
+            'max:50',
+            'regex:/^[a-zA-Z\s]+$/' // No numbers or symbols
+        ],
+        'lydopers_mname' => [
+            'nullable', 
+            'string', 
+            'max:50',
+            'regex:/^[a-zA-Z\s]*$/' // No numbers or symbols, can be empty
+        ],
+        'lydopers_lname' => [
+            'required', 
+            'string', 
+            'max:50',
+            'regex:/^[a-zA-Z\s]+$/' // No numbers or symbols
+        ],
+        'lydopers_suffix' => 'nullable|string|max:10',
+        'lydopers_email' => [
+            'required',
+            'email',
+            Rule::unique('tbl_lydopers')->ignore($id, 'lydopers_id')
+        ],
+        'lydopers_address' => 'required|string',
+        'lydopers_contact_number' => [
+            'required',
+            'string',
+            'max:20',
+            'regex:/^(09|\+?639)\d{9}$/' // More flexible Philippine mobile number format
+        ],
+        'lydopers_bdate' => 'required|date',
+    ], [
+        'lydopers_fname.regex' => 'First name should only contain letters and spaces.',
+        'lydopers_mname.regex' => 'Middle name should only contain letters and spaces.',
+        'lydopers_lname.regex' => 'Last name should only contain letters and spaces.',
+        'lydopers_email.unique' => 'This email is already taken.',
+        'lydopers_contact_number.regex' => 'Please enter a valid Philippine mobile number (09XXXXXXXXX or +639XXXXXXXXX).',
+    ]);
+
+    // Clean the phone number before saving (remove spaces, dashes, etc.)
+    $cleanedPhone = preg_replace('/[^0-9+]/', '', $request->lydopers_contact_number);
+
+    $updateData = [
+        'lydopers_fname' => $request->lydopers_fname,
+        'lydopers_mname' => $request->lydopers_mname,
+        'lydopers_lname' => $request->lydopers_lname,
+        'lydopers_suffix' => $request->lydopers_suffix,
+        'lydopers_email' => $request->lydopers_email,
+        'lydopers_address' => $request->lydopers_address,
+        'lydopers_contact_number' => $cleanedPhone, // Use cleaned version
+        'lydopers_bdate' => $request->lydopers_bdate,
+        'updated_at' => now(),
+    ];
+
+    DB::table('tbl_lydopers')
+        ->where('lydopers_id', $id)
+        ->update($updateData);
+
+    // Update session data
+    $updatedUser = DB::table('tbl_lydopers')->where('lydopers_id', $id)->first();
+    session(['lydopers' => $updatedUser]);
+
+    return back()->with('success', 'Personal information updated successfully.');
+}
+    public function signDisbursement(Request $request, $disburseId)
     {
         $request->validate([
-            'lydopers_fname' => 'required|string|max:50',
-            'lydopers_lname' => 'required|string|max:50',
-            'lydopers_suffix' => 'nullable|string|max:10',
-            'lydopers_email' => 'required|email',
-            'lydopers_address' => 'required|string',
-            'lydopers_contact_number' => 'required|string|max:20',
-            'lydopers_bdate' => 'required|date',
+            'signature' => 'required|string',
         ]);
 
-        DB::table('tbl_lydopers')
-            ->where('lydopers_id', $id)
+        DB::table('tbl_disburse')
+            ->where('disburse_id', $disburseId)
             ->update([
-                'lydopers_fname' => $request->lydopers_fname,
-                'lydopers_lname' => $request->lydopers_lname,
-                'lydopers_suffix' => $request->lydopers_suffix,
-                'lydopers_email' => $request->lydopers_email,
-                'lydopers_address' => $request->lydopers_address,
-                'lydopers_contact_number' => $request->lydopers_contact_number,
-                'lydopers_bdate' => $request->lydopers_bdate,
+                'disburse_signature' => $request->signature,
                 'updated_at' => now(),
             ]);
 
-        // Update session data
-        $updatedUser = DB::table('tbl_lydopers')->where('lydopers_id', $id)->first();
-        session(['lydopers' => $updatedUser]);
+        return back()->with('success', 'Disbursement signed successfully.');
+    }
+public function updatePassword(Request $request)
+{
+    $request->validate([
+        'current_password' => 'required',
+        'new_password' => 'required|min:8|confirmed|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
+    ]);
 
-        return back()->with('success', 'Personal information updated successfully.');
+    $user = DB::table('tbl_lydopers')
+        ->where('lydopers_id', session('lydopers')->lydopers_id)
+        ->first();
+
+    // Verify current password (you'll need to implement this based on your auth system)
+    if (!Hash::check($request->current_password, $user->password)) {
+        return back()->withErrors(['current_password' => 'Current password is incorrect.']);
     }
 
-    public function logout(Request $request)
-    {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+    // Update password
+    DB::table('tbl_lydopers')
+        ->where('lydopers_id', session('lydopers')->lydopers_id)
+        ->update([
+            'password' => Hash::make($request->new_password),
+            'updated_at' => now(),
+        ]);
 
-        return redirect("/login");
-    }
-
+    return back()->with('success', 'Password updated successfully.');
+}
 
 }
