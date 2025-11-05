@@ -27,7 +27,7 @@ class Lydopers extends Authenticatable
         return $this->lydopers_pass;
     }
 
-    // Specify the column name for authentication (username/email)
+    // Specify the column namek for authentication (username/email)
     public function getAuthIdentifierName()
     {
         return 'lydopers_email';
