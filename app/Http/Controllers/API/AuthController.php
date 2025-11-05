@@ -73,8 +73,8 @@ class AuthController extends Controller
         }
 
         // Fallback to Laravel's default users table
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            $user = Auth::user();
+        $user = \App\Models\User::where('email', $request->email)->first();
+        if ($user && Hash::check($request->password, $user->password)) {
             $token = $this->generateApiToken($user);
 
             return $this->successResponse([
@@ -82,7 +82,7 @@ class AuthController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'role' => $user->role,
+                    'role' => $user->role ?? 'user',
                 ],
                 'token' => $token,
                 'token_type' => 'Bearer',
