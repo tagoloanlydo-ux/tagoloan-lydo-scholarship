@@ -488,6 +488,7 @@ const validationStates = {
 };
 
 let emailDebounceTimer;
+let lastCheckedEmail = "";
 
 // FIXED EMAIL VALIDATION FUNCTION
 function validateEmailInput(input) {
