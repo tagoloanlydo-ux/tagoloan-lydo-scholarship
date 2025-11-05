@@ -32,6 +32,38 @@ class ApplicationController extends Controller
     }
 
     /**
+     * Store a new application.
+     */
+    public function store(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'applicant_id' => 'required|exists:tbl_applicant,applicant_id',
+                'application_letter' => 'nullable|string|max:255',
+                'cert_of_reg' => 'nullable|string|max:255',
+                'grade_slip' => 'nullable|string|max:255',
+                'brgy_indigency' => 'nullable|string|max:255',
+                'student_id' => 'nullable|string|max:255',
+                'date_submitted' => 'required|date',
+            ]);
+
+            $application = Application::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Application submitted successfully.',
+                'data' => $application
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create application.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Display a specific application with applicant details.
      */
     public function show($id)
