@@ -97,34 +97,14 @@ class AuthController extends Controller
      */
     private function scholarLogin(Request $request)
     {
-        // Find scholar by username or email
-        $scholar = null;
-        $applicant = null;
-
-        // First try to find by scholar username
+        // Find scholar by username from tbl_scholar
         $scholar = Scholar::where('scholar_username', $request->email)->first();
 
-        if ($scholar) {
-            // Found by username, get applicant through application
-            $applicant = $scholar->applicant;
-        } else {
-            // Try to find by applicant email
-            $applicant = Applicant::where('applicant_email', $request->email)->first();
-
-            if ($applicant) {
-                // Get scholar through application
-                $application = $applicant->application;
-                if ($application) {
-                    $scholar = Scholar::where('application_id', $application->application_id)->first();
-                }
-            }
-        }
-
-        if (!$scholar || !$applicant) {
+        if (!$scholar) {
             return $this->errorResponse('Invalid credentials', 401);
         }
 
-        // Check password
+        // Check password against scholar_pass in tbl_scholar
         if (!Hash::check($request->password, $scholar->scholar_pass)) {
             return $this->errorResponse('Invalid credentials', 401);
         }
@@ -133,6 +113,9 @@ class AuthController extends Controller
         if ($scholar->scholar_status !== 'Active') {
             return $this->errorResponse('Account is inactive', 401);
         }
+
+        // Get applicant data through application relationship
+        $applicant = $scholar->applicant;
 
         // Create token for scholar
         $token = $this->generateApiToken($scholar);
@@ -169,7 +152,12 @@ class AuthController extends Controller
             // Scholar profile
             $user->load('applicant');
             return $this->successResponse([
-                'profile' => $user,
+                'scholar' => [
+                    'scholar_id' => $user->scholar_id,
+                    'scholar_username' => $user->scholar_username,
+                    'scholar_status' => $user->scholar_status,
+                    'applicant' => $user->applicant,
+                ],
                 'type' => 'scholar'
             ]);
         } else {
