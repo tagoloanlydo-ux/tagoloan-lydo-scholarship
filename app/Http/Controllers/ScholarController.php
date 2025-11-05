@@ -812,6 +812,7 @@ public function updateApplication(Request $request, $applicant_id)
         return redirect()->route('scholar.login')->with('success', 'You have been logged out successfully.');
     }
 
+
     public function welcome(Request $request)
     {
         \Log::info("Request received: " . $request->method() . " " . $request->path());

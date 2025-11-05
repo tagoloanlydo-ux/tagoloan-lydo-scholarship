@@ -134,7 +134,15 @@
     }
 </script>
 
-
+<li>
+    <a href="/lydo_admin/applicants" 
+     class=" flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
+         <div class="flex items-center">
+            <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
+            <span class="ml-4 hidden md:block text-lg">Applicants</span>
+        </div>
+    </a>
+</li>
 
 <!-- Scholar Dropdown -->
 <li class="relative">
@@ -196,15 +204,7 @@
         });
     });
 </script>
-<li>
-    <a href="/lydo_admin/applicants" 
-     class=" flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
-         <div class="flex items-center">
-            <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Applicants</span>
-        </div>
-    </a>
-</li>
+
 <li>
     <a href="/lydo_admin/announcement"
        class=" flex items-center justify-between p-3 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
@@ -280,8 +280,8 @@
                 <div class="tab-content">
                     <!-- Summary Tab -->
                     <div id="summary-tab" class="tab-pane active">
-                        <!-- 4 Column Cards -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- 5 Column Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
                             <div class="bg-white rounded-xl shadow-sm p-5 border border-blue-300">
                                 <div class="flex justify-between items-center">
                                     <div>
@@ -457,6 +457,9 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                <div class="px-6 py-4 bg-white border-t border-gray-200">
+                             <div class="pagination-container" id="scholarsPaginationContainer"></div>
+                            </div>
                             </div>
                         </div>
                     </div>
@@ -467,47 +470,47 @@
                             <h3 class="text-lg font-semibold mb-4">Applicants by Remarks</h3>
                             <!-- Filter Section -->
                             <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="applicantsFilterForm">
-                                    <div class="flex-1">
-                                        <input type="text" id="applicantsSearchInput" placeholder="Search by name..."
-                                               value="{{ request('search') }}"
-                                               class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div class="flex-1">
+                                            <input type="text" id="applicantsSearchInput" name="search" placeholder="Search by name..."
+                                                   value="{{ request('search') }}"
+                                                   class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                        </div>
+                                        <div class="flex-1">
+                                            <select id="applicantsBarangaySelect" name="barangay" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                                <option value="">All Barangays</option>
+                                                @foreach($barangays as $barangay)
+                                                    <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
+                                                        {{ $barangay }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="flex-1">
+                                            <select id="applicantsAcademicYearSelect" name="academic_year" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                                <option value="">All Academic Years</option>
+                                                @foreach($academicYears as $year)
+                                                    <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
+                                                        {{ $year }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="flex-1">
+                                            <select id="applicantsRemarksSelect" name="remarks" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                                <option value="">All Remarks</option>
+                                                <option value="Ultra Poor" {{ request('remarks') == 'Ultra Poor' ? 'selected' : '' }}>Ultra Poor</option>
+                                                <option value="Poor" {{ request('remarks') == 'Poor' ? 'selected' : '' }}>Poor</option>
+                                                <option value="Non Poor" {{ request('remarks') == 'Non Poor' ? 'selected' : '' }}>Non Poor</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex-1">
+                                            <button type="button" id="printApplicantsPdfBtn"
+                                                class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium flex items-center justify-center" title="Generate and print applicants report">
+                                                <i class="fas fa-print mr-2"></i> Print PDF
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="flex-1">
-                                        <select id="applicantsBarangaySelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                                            <option value="">All Barangays</option>
-                                            @foreach($barangays as $barangay)
-                                                <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
-                                                    {{ $barangay }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="flex-1">
-                                        <select id="applicantsAcademicYearSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                                            <option value="">All Academic Years</option>
-                                            @foreach($academicYears as $year)
-                                                <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
-                                                    {{ $year }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                            <div class="flex-1">
-                                <select id="applicantsRemarksSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                                    <option value="">All Remarks</option>
-                                    <option value="Ultra Poor" {{ request('remarks') == 'Ultra Poor' ? 'selected' : '' }}>Ultra Poor</option>
-                                    <option value="Poor" {{ request('remarks') == 'Poor' ? 'selected' : '' }}>Poor</option>
-                                    <option value="Non Poor" {{ request('remarks') == 'Non Poor' ? 'selected' : '' }}>Non Poor</option>
-                                </select>
-                            </div>
-                            <div class="flex-1">
-                                <button type="button" id="printApplicantsPdfBtn"
-                                    class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium flex items-center justify-center" title="Generate and print applicants report">
-                                    <i class="fas fa-print mr-2"></i> Print PDF
-                                </button>
-                            </div>
-                                </div>
                             </div>
                             <div class="overflow-x-auto bg-white shadow-sm border border-gray-200">
                                 <table class="w-full">
@@ -570,9 +573,9 @@
                                         @endforeach
                                     </tbody>
                                 </table>
-                            </div>
-                            {{ $applicantsWithRemarks->links() }}
-                        </div>
+                            <div class="px-6 py-4 bg-white border-t border-gray-200">
+                           <div class="pagination-container" id="applicantsPaginationContainer"></div>
+                    </div>
                     </div>
 
                     <!-- School Demographic Tab -->
@@ -677,7 +680,7 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
-                                                    <span class="text-2xl font-bold text-orange-600 mr-2">{{ $barangay->total }}</span>
+                                                    <span class="text-2xl font-bold text-green-600 mr-2">{{ $barangay->total }}</span>
                                                     <span class="text-sm text-gray-500">applicants</span>
                                                 </div>
                                             </td>
@@ -697,6 +700,9 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                <div class="px-6 py-4 bg-white border-t border-gray-200">
+                                 <div class="pagination-container" id="barangayPaginationContainer"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -704,7 +710,7 @@
                     <!-- Renewal Tab -->
                     <div id="renewal-tab" class="tab-pane hidden">
                         <div class="bg-white rounded-lg shadow-sm p-6">
-                            <h3 class="text-lg font-semibold mb-4">Approved Renewal Applications</h3>
+                            <h3 class="text-lg font-semibold mb-4">Renewal Applications</h3>
                             <!-- Filter Section -->
                             <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
                                 <div class="flex flex-col md:flex-row gap-4" id="renewalFilterForm">
@@ -806,10 +812,22 @@
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                                    <i class="fas fa-check-circle mr-1"></i>
-                                                    {{ $renewal->renewal_status }}
-                                                </span>
+                                                @if($renewal->renewal_status === 'Approved')
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                        <i class="fas fa-check-circle mr-1"></i>
+                                                        {{ $renewal->renewal_status }}
+                                                    </span>
+                                                @elseif($renewal->renewal_status === 'Rejected')
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                                                        <i class="fas fa-times-circle mr-1"></i>
+                                                        {{ $renewal->renewal_status }}
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
+                                                        <i class="fas fa-clock mr-1"></i>
+                                                        {{ $renewal->renewal_status }}
+                                                    </span>
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
@@ -831,6 +849,9 @@
                                         @endforelse
                                     </tbody>
                                 </table>
+                                <div class="px-6 py-4 bg-white border-t border-gray-200">
+                                  <div class="pagination-container" id="renewalPaginationContainer"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -935,17 +956,79 @@
     const searchInput = document.getElementById('searchInput');
     const barangaySelect = document.getElementById('barangaySelect');
     const academicYearSelect = document.getElementById('academicYearSelect');
-    const scholarStatusSelect = document.getElementById('scholarStatusSelect'); // Add this line
+    const scholarStatusSelect = document.getElementById('scholarStatusSelect');
     const printPdfBtn = document.getElementById('printPdfBtn');
     const scholarsTableBody = document.querySelector('#scholars-tab tbody');
 
-    // ...existing code...
+    // Function to show loading state for scholars
+    function showLoading() {
+        scholarsTableBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="p-4 text-center">
+                    <div class="flex items-center justify-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                        <span class="ml-2">Loading...</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
 
+    // Function to update scholars table with AJAX results
+    function updateScholarsTable(results) {
+        if (results.length === 0) {
+            scholarsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="p-4 text-center text-gray-500">
+                        No scholars found matching your criteria
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        scholarsTableBody.innerHTML = results.map(scholar => `
+            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-semibold text-gray-900">
+                        ${scholar.applicant_fname} ${scholar.applicant_lname}
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900 font-medium">${scholar.applicant_school_name}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="text-sm text-gray-900">${scholar.applicant_brgy || 'undefined'}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="text-sm text-gray-900">${scholar.applicant_year_level}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${getStatusBadge(scholar.scholar_status)}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Function to get status badge HTML
+    function getStatusBadge(status) {
+        if (status === 'Approved') {
+            return `<span class="inline-flex items-center px-3 py-1 text-xs font-semibold border border-gray-300 bg-gray-50 text-gray-800">
+                ${status}
+            </span>`;
+        } else {
+            return `<span class="inline-flex items-center px-3 py-1 text-xs font-semibold border border-gray-300 bg-gray-50 text-gray-800">
+                ${status}
+            </span>`;
+        }
+    }
+
+    // Function to perform AJAX request for scholars
     function filterScholars() {
         const search = searchInput.value;
         const barangay = barangaySelect.value;
         const academicYear = academicYearSelect.value;
-        const status = scholarStatusSelect.value; // Add this line
+        const status = scholarStatusSelect.value;
 
         // Show loading state
         showLoading();
@@ -955,10 +1038,42 @@
         formData.append('search', search);
         formData.append('barangay', barangay);
         formData.append('academic_year', academicYear);
-        formData.append('status', status); // Add this line
+        formData.append('status', status);
+        formData.append('tab', 'scholars');
         formData.append('_token', '{{ csrf_token() }}');
 
-        // ...existing fetch code...
+        // Make AJAX request
+        fetch('{{ route("LydoAdmin.report.post") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                updateScholarsTable(data.scholars);
+            } else {
+                throw new Error('Server returned error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            scholarsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="p-4 text-center text-red-500">
+                        Error loading data. Please try again.
+                    </td>
+                </tr>
+            `;
+        });
     }
 
     // Print PDF functionality
@@ -973,7 +1088,29 @@
         });
     }
 
-    // ...existing event listeners...
+    // Real-time search functionality for scholars
+    let searchTimeout;
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                filterScholars();
+            }, 300);
+        });
+    }
+
+    // Real-time dropdown filtering for scholars
+    if (barangaySelect) {
+        barangaySelect.addEventListener('change', function() {
+            filterScholars();
+        });
+    }
+
+    if (academicYearSelect) {
+        academicYearSelect.addEventListener('change', function() {
+            filterScholars();
+        });
+    }
 
     if (scholarStatusSelect) {
         scholarStatusSelect.addEventListener('change', function() {
@@ -1365,6 +1502,453 @@ if (applicantsRemarksSelect) {
 
 
     </script>
+    <script>
+// Global pagination states for all tables
+const paginationStates = {
+    scholars: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        allRows: [],
+        filteredRows: []
+    },
+    applicants: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        allRows: [],
+        filteredRows: []
+    },
+    school: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        allRows: [],
+        filteredRows: []
+    },
+    barangay: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        allRows: [],
+        filteredRows: []
+    },
+    renewal: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        allRows: [],
+        filteredRows: []
+    }
+};
+
+// Function to get full name for sorting
+function getFullNameForSorting(row) {
+    const nameCell = row.cells[0];
+    if (!nameCell) return '';
+    return nameCell.textContent.trim().toLowerCase();
+}
+
+// Function to sort rows alphabetically by name
+function sortRowsAlphabetically(rows) {
+    return rows.sort((a, b) => {
+        const nameA = getFullNameForSorting(a);
+        const nameB = getFullNameForSorting(b);
+        return nameA.localeCompare(nameB);
+    });
+}
+
+// Initialize data from all tables
+function initializeAllTableData() {
+    // Scholars table
+    const scholarsRows = Array.from(document.querySelectorAll('#scholars-tab tbody tr'));
+    paginationStates.scholars.allRows = scholarsRows.filter(row => !row.querySelector('td[colspan]'));
+    paginationStates.scholars.allRows = sortRowsAlphabetically(paginationStates.scholars.allRows);
+    paginationStates.scholars.filteredRows = [...paginationStates.scholars.allRows];
+    
+    // Applicants table
+    const applicantsRows = Array.from(document.querySelectorAll('#applicants-tab tbody tr'));
+    paginationStates.applicants.allRows = applicantsRows.filter(row => !row.querySelector('td[colspan]'));
+    paginationStates.applicants.allRows = sortRowsAlphabetically(paginationStates.applicants.allRows);
+    paginationStates.applicants.filteredRows = [...paginationStates.applicants.allRows];
+    
+    // School demographic table
+    const schoolRows = Array.from(document.querySelectorAll('#school-tab tbody tr'));
+    paginationStates.school.allRows = schoolRows.filter(row => !row.querySelector('td[colspan]'));
+    paginationStates.school.filteredRows = [...paginationStates.school.allRows];
+    
+    // Barangay demographic table
+    const barangayRows = Array.from(document.querySelectorAll('#barangay-tab tbody tr'));
+    paginationStates.barangay.allRows = barangayRows.filter(row => !row.querySelector('td[colspan]'));
+    paginationStates.barangay.filteredRows = [...paginationStates.barangay.allRows];
+    
+    // Renewal table
+    const renewalRows = Array.from(document.querySelectorAll('#renewal-tab tbody tr'));
+    paginationStates.renewal.allRows = renewalRows.filter(row => !row.querySelector('td[colspan]'));
+    paginationStates.renewal.allRows = sortRowsAlphabetically(paginationStates.renewal.allRows);
+    paginationStates.renewal.filteredRows = [...paginationStates.renewal.allRows];
+}
+
+// Initialize pagination for all tables
+function initializeAllPagination() {
+    updatePagination('scholars');
+    updatePagination('applicants');
+    updatePagination('school');
+    updatePagination('barangay');
+    updatePagination('renewal');
+}
+
+// Update pagination display for specific table
+function updatePagination(tableType) {
+    const state = paginationStates[tableType];
+    const container = document.getElementById(`${tableType}PaginationContainer`);
+    
+    if (!container) return;
+    
+    // Hide all rows first
+    state.allRows.forEach(row => {
+        row.style.display = 'none';
+    });
+    
+    // Calculate pagination for filtered rows
+    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
+    const endIndex = startIndex + state.rowsPerPage;
+    const pageRows = state.filteredRows.slice(startIndex, endIndex);
+    
+    // Show only rows for current page
+    pageRows.forEach(row => {
+        row.style.display = '';
+    });
+    
+    // Update pagination controls
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    const startItem = state.filteredRows.length === 0 ? 0 : Math.min((state.currentPage - 1) * state.rowsPerPage + 1, state.filteredRows.length);
+    const endItem = Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
+    
+    container.innerHTML = `
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-sm text-gray-600">
+                Showing <span class="font-semibold">${startItem}-${endItem}</span> of <span class="font-semibold">${state.filteredRows.length}</span> ${getTableLabel(tableType)}
+            </div>
+            
+            <div class="flex items-center space-x-1">
+                <!-- First Page -->
+                <button onclick="changePage('${tableType}', 1)" 
+                    class="px-3 py-2 text-sm font-medium rounded-l-md border border-gray-300 ${
+                        state.currentPage === 1 
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    }"
+                    ${state.currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+                
+                <!-- Previous Page -->
+                <button onclick="changePage('${tableType}', ${state.currentPage - 1})" 
+                    class="px-3 py-2 text-sm font-medium border border-gray-300 ${
+                        state.currentPage === 1 
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    }"
+                    ${state.currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-left"></i>
+                </button>
+                
+                <!-- Page Info -->
+                <div class="flex items-center px-4 py-2 text-sm text-gray-700 border border-gray-300 bg-white">
+                    Page 
+                    <input type="number" 
+                           class="mx-2 w-12 text-center border border-gray-300 rounded px-1 py-1 text-sm" 
+                           value="${state.currentPage}" 
+                           min="1" 
+                           max="${totalPages}" 
+                           onchange="goToPage('${tableType}', this.value)">
+                    of ${totalPages}
+                </div>
+                
+                <!-- Next Page -->
+                <button onclick="changePage('${tableType}', ${state.currentPage + 1})" 
+                    class="px-3 py-2 text-sm font-medium border border-gray-300 ${
+                        state.currentPage === totalPages 
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    }"
+                    ${state.currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-angle-right"></i>
+                </button>
+                
+                <!-- Last Page -->
+                <button onclick="changePage('${tableType}', ${totalPages})" 
+                    class="px-3 py-2 text-sm font-medium rounded-r-md border border-gray-300 ${
+                        state.currentPage === totalPages 
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    }"
+                    ${state.currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Get table label for pagination display
+function getTableLabel(tableType) {
+    const labels = {
+        scholars: 'scholars',
+        applicants: 'applicants',
+        school: 'schools',
+        barangay: 'barangays',
+        renewal: 'renewals'
+    };
+    return labels[tableType] || 'items';
+}
+
+// Change page for specific table
+function changePage(tableType, page) {
+    const state = paginationStates[tableType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updatePagination(tableType);
+}
+
+// Go to specific page for specific table
+function goToPage(tableType, page) {
+    const state = paginationStates[tableType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    page = parseInt(page);
+    if (isNaN(page) || page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updatePagination(tableType);
+}
+
+// Initialize filtering functionality for all tables
+function initializeAllFiltering() {
+    // Scholars filtering
+    const scholarsSearchInput = document.getElementById('searchInput');
+    const scholarsBarangaySelect = document.getElementById('barangaySelect');
+    const scholarsAcademicYearSelect = document.getElementById('academicYearSelect');
+    const scholarsStatusSelect = document.getElementById('scholarStatusSelect');
+
+    if (scholarsSearchInput && scholarsBarangaySelect && scholarsAcademicYearSelect && scholarsStatusSelect) {
+        function filterScholarsTable() {
+            const searchTerm = scholarsSearchInput.value.toLowerCase();
+            const selectedBarangay = scholarsBarangaySelect.value;
+            const selectedAcademicYear = scholarsAcademicYearSelect.value;
+            const selectedStatus = scholarsStatusSelect.value;
+
+            const filteredRows = paginationStates.scholars.allRows.filter(row => {
+                const nameCell = row.cells[0];
+                const schoolCell = row.cells[1];
+                const barangayCell = row.cells[2];
+                const yearLevelCell = row.cells[3];
+                const statusCell = row.cells[4];
+
+                if (!nameCell || !barangayCell || !statusCell) return false;
+
+                const name = nameCell.textContent.toLowerCase();
+                const school = schoolCell.textContent.toLowerCase();
+                const barangay = barangayCell.textContent.trim();
+                const yearLevel = yearLevelCell.textContent.trim();
+                const status = statusCell.textContent.trim();
+
+                const nameMatch = name.includes(searchTerm) || school.includes(searchTerm);
+                const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+                const academicYearMatch = !selectedAcademicYear || true; // Add academic year logic if available
+                const statusMatch = !selectedStatus || status === selectedStatus;
+
+                return nameMatch && barangayMatch && academicYearMatch && statusMatch;
+            });
+
+            // Sort filtered results alphabetically
+            const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
+
+            // Update filtered rows and reset to page 1
+            paginationStates.scholars.filteredRows = sortedFilteredRows;
+            paginationStates.scholars.currentPage = 1;
+            updatePagination('scholars');
+        }
+
+        // Add event listeners with debouncing
+        scholarsSearchInput.addEventListener('input', debounce(filterScholarsTable, 300));
+        scholarsBarangaySelect.addEventListener('change', filterScholarsTable);
+        scholarsAcademicYearSelect.addEventListener('change', filterScholarsTable);
+        scholarsStatusSelect.addEventListener('change', filterScholarsTable);
+    }
+
+    // Applicants filtering
+    const applicantsSearchInput = document.getElementById('applicantsSearchInput');
+    const applicantsBarangaySelect = document.getElementById('applicantsBarangaySelect');
+    const applicantsAcademicYearSelect = document.getElementById('applicantsAcademicYearSelect');
+    const applicantsRemarksSelect = document.getElementById('applicantsRemarksSelect');
+
+    if (applicantsSearchInput && applicantsBarangaySelect && applicantsAcademicYearSelect && applicantsRemarksSelect) {
+        function filterApplicantsTable() {
+            const searchTerm = applicantsSearchInput.value.toLowerCase();
+            const selectedBarangay = applicantsBarangaySelect.value;
+            const selectedAcademicYear = applicantsAcademicYearSelect.value;
+            const selectedRemarks = applicantsRemarksSelect.value;
+
+            const filteredRows = paginationStates.applicants.allRows.filter(row => {
+                const nameCell = row.cells[0];
+                const emailCell = row.cells[1];
+                const contactCell = row.cells[2];
+                const barangayCell = row.cells[3];
+                const remarksCell = row.cells[4];
+
+                if (!nameCell || !barangayCell || !remarksCell) return false;
+
+                const name = nameCell.textContent.toLowerCase();
+                const email = emailCell.textContent.toLowerCase();
+                const contact = contactCell.textContent.toLowerCase();
+                const barangay = barangayCell.textContent.trim();
+                const remarks = remarksCell.textContent.trim();
+
+                const nameMatch = name.includes(searchTerm) || email.includes(searchTerm) || contact.includes(searchTerm);
+                const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+                const academicYearMatch = !selectedAcademicYear || true; // Add academic year logic if available
+                const remarksMatch = !selectedRemarks || remarks === selectedRemarks;
+
+                return nameMatch && barangayMatch && academicYearMatch && remarksMatch;
+            });
+
+            // Sort filtered results alphabetically
+            const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
+
+            // Update filtered rows and reset to page 1
+            paginationStates.applicants.filteredRows = sortedFilteredRows;
+            paginationStates.applicants.currentPage = 1;
+            updatePagination('applicants');
+        }
+
+        // Add event listeners with debouncing
+        applicantsSearchInput.addEventListener('input', debounce(filterApplicantsTable, 300));
+        applicantsBarangaySelect.addEventListener('change', filterApplicantsTable);
+        applicantsAcademicYearSelect.addEventListener('change', filterApplicantsTable);
+        applicantsRemarksSelect.addEventListener('change', filterApplicantsTable);
+    }
+
+    // School demographic filtering
+    const schoolSearchInput = document.getElementById('schoolSearchInput'); // You might need to add this
+    if (schoolSearchInput) {
+        function filterSchoolTable() {
+            const searchTerm = schoolSearchInput.value.toLowerCase();
+
+            const filteredRows = paginationStates.school.allRows.filter(row => {
+                const schoolCell = row.cells[0];
+                if (!schoolCell) return false;
+
+                const school = schoolCell.textContent.toLowerCase();
+                return school.includes(searchTerm);
+            });
+
+            // Update filtered rows and reset to page 1
+            paginationStates.school.filteredRows = filteredRows;
+            paginationStates.school.currentPage = 1;
+            updatePagination('school');
+        }
+
+        schoolSearchInput.addEventListener('input', debounce(filterSchoolTable, 300));
+    }
+
+    // Barangay demographic filtering
+    const barangaySearchInput = document.getElementById('barangaySearchInput'); // You might need to add this
+    if (barangaySearchInput) {
+        function filterBarangayTable() {
+            const searchTerm = barangaySearchInput.value.toLowerCase();
+
+            const filteredRows = paginationStates.barangay.allRows.filter(row => {
+                const barangayCell = row.cells[0];
+                if (!barangayCell) return false;
+
+                const barangay = barangayCell.textContent.toLowerCase();
+                return barangay.includes(searchTerm);
+            });
+
+            // Update filtered rows and reset to page 1
+            paginationStates.barangay.filteredRows = filteredRows;
+            paginationStates.barangay.currentPage = 1;
+            updatePagination('barangay');
+        }
+
+        barangaySearchInput.addEventListener('input', debounce(filterBarangayTable, 300));
+    }
+
+    // Renewal filtering
+    const renewalSearchInput = document.getElementById('renewalSearchInput');
+    const renewalBarangaySelect = document.getElementById('renewalBarangaySelect');
+    const renewalAcademicYearSelect = document.getElementById('renewalAcademicYearSelect');
+    const renewalStatusSelect = document.getElementById('renewalStatusSelect');
+
+    if (renewalSearchInput && renewalBarangaySelect && renewalAcademicYearSelect && renewalStatusSelect) {
+        function filterRenewalTable() {
+            const searchTerm = renewalSearchInput.value.toLowerCase();
+            const selectedBarangay = renewalBarangaySelect.value;
+            const selectedAcademicYear = renewalAcademicYearSelect.value;
+            const selectedStatus = renewalStatusSelect.value;
+
+            const filteredRows = paginationStates.renewal.allRows.filter(row => {
+                const nameCell = row.cells[0];
+                const schoolCell = row.cells[1];
+                const barangayCell = row.cells[2];
+                const academicYearCell = row.cells[3];
+                const statusCell = row.cells[4];
+
+                if (!nameCell || !barangayCell || !statusCell) return false;
+
+                const name = nameCell.textContent.toLowerCase();
+                const school = schoolCell.textContent.toLowerCase();
+                const barangay = barangayCell.textContent.trim();
+                const academicYear = academicYearCell.textContent.trim();
+                const status = statusCell.textContent.trim();
+
+                const nameMatch = name.includes(searchTerm) || school.includes(searchTerm);
+                const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+                const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
+                const statusMatch = !selectedStatus || status === selectedStatus;
+
+                return nameMatch && barangayMatch && academicYearMatch && statusMatch;
+            });
+
+            // Sort filtered results alphabetically
+            const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
+
+            // Update filtered rows and reset to page 1
+            paginationStates.renewal.filteredRows = sortedFilteredRows;
+            paginationStates.renewal.currentPage = 1;
+            updatePagination('renewal');
+        }
+
+        // Add event listeners with debouncing
+        renewalSearchInput.addEventListener('input', debounce(filterRenewalTable, 300));
+        renewalBarangaySelect.addEventListener('change', filterRenewalTable);
+        renewalAcademicYearSelect.addEventListener('change', filterRenewalTable);
+        renewalStatusSelect.addEventListener('change', filterRenewalTable);
+    }
+}
+
+// Debounce function for search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Initialize everything when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializeAllTableData();
+    initializeAllPagination();
+    initializeAllFiltering();
+});
+</script>
 </body>
 
 </html>

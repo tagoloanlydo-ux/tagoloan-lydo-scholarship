@@ -1,21 +1,44 @@
-# TODO: Implement Document Review Feature in Renewal Modal
+# Renewal Document Update Feature Implementation
 
 ## Overview
-Add Good/Bad buttons for each of the 3 renewal documents (Certificate of Registration, Grade Slip, Barangay Indigency) in the lydo_staff/renewal modal. When clicked, change document color (green for good, red for bad) and icon (check/X), then save remarks to tbl_renewal_comments table.
+Implement functionality where bad documents in renewal applications trigger an email notification to applicants with staff comments, and allow status reset when documents are updated.
+
+## Current Status
+- Document rating system exists (good/bad)
+- Update request button appears for bad documents
+- Email sending functionality exists
+- Status reset method exists but may need integration
 
 ## Tasks
-- [ ] Modify renewal.blade.php modal to add Good/Bad buttons for each document
-- [ ] Add JavaScript to handle button clicks, update UI, and send AJAX requests
-- [ ] Add controller method in LydoStaffController to save/load comments
-- [ ] Update routes to include new endpoints for saving comments
-- [ ] Test the functionality: click buttons, verify UI changes, check database saves
-- [ ] Ensure existing comments are loaded when modal opens
+
+### 1. Verify Send Email Button for Bad Documents
+- [ ] Confirm button appears in document viewer when document is marked as bad
+- [ ] Test button functionality in renewal.js
+- [ ] Ensure button only shows for bad documents
+
+### 2. Enhance Email Content
+- [x] Verify email includes:
+  - Staff comment
+  - Document type that needs update
+  - Clear instructions for applicant
+- [x] Update EmailService.php sendDocumentUpdateRequest method if needed
+
+### 3. Implement Document Status Reset
+- [ ] Add functionality to reset bad status to "New" when document is updated
+- [ ] Ensure scholars can upload new documents and trigger status reset
+- [ ] Integrate markDocumentAsUpdated method properly
+
+### 4. Testing
+- [ ] Test complete flow: mark bad → send email → scholar updates → status resets
+- [ ] Verify no damage to existing renewal functionality
+- [ ] Check email delivery and content
 
 ## Files to Modify
-- resources/views/lydo_staff/renewal.blade.php
-- app/Http/Controllers/LydoStaffController.php
-- routes/web.php (if needed)
+- public/js/renewal.js (button logic)
+- app/Http/Controllers/RenewalController.php (status reset)
+- app/Services/EmailService.php (email content)
+- Scholar renewal upload views/controllers (if needed)
 
-## Database
-- Use existing tbl_renewal_comments table
-- Fields: renewal_comment_id, renewal_id, lydopers_id, comment (good/bad), document_type (cert_of_reg/grade_slip/brgy_indigency)
+## Dependencies
+- Ensure scholar portal has document upload functionality
+- Email service must be properly configured

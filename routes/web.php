@@ -5,6 +5,7 @@ use App\Http\Controllers\MayorStaffController;
 use App\Http\Controllers\LydoAdminController;
 use App\Http\Controllers\LydoStaffController;
 use App\Http\Controllers\LydopersController;
+use App\Http\Controllers\RenewalController;
 use App\Http\Controllers\ScholarController;
 use App\Http\Controllers\StatusController;
 
@@ -95,12 +96,11 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/screening', [LydoStaffController::class, 'screening'])->name('LydoStaff.screening');
     Route::post('/lydo_staff/update-remarks/{id}', [LydoStaffController::class, 'updateRemarks'])->name('updateApplicantsRemarks');
     Route::post('/lydo_staff/update-intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'updateIntakeSheet'])->name('updateIntakeSheet');
-    Route::get('/lydo_staff/renewal', [LydoStaffController::class, 'renewal'])->name('LydoStaff.renewal');
-    Route::post('/lydo_staff/renewal/update/{scholarId}', [LydoStaffController::class, 'updateStatus']);
+    Route::get('/lydo_staff/renewal', [RenewalController::class, 'renewal'])->name('LydoStaff.renewal');
+    Route::post('/lydo_staff/renewal/update/{scholarId}', [RenewalController::class, 'updateStatus']);
     Route::get('/renewals/{id}/requirements', [RenewalController::class, 'getRequirements']);
-    Route::post('/lydo_staff/renewal/{id}/update-status', [LydoStaffController::class, 'updateRenewalStatus'])->name('renewal.updateStatus');
-    Route::get('/reviewed-applicants/pdf', [LydoStaffController::class, 'reviewedApplicantsPdf'])->name('LydoStaff.reviewedApplicantsPdf');
-    Route::get('/renewal-applications/pdf', [LydoStaffController::class, 'renewalApplicationsPdf'])->name('LydoStaff.renewalApplicationsPdf');
+    Route::post('/lydo_staff/renewal/{id}/update-status', [RenewalController::class, 'updateRenewalStatus'])->name('renewal.updateStatus');
+    Route::get('/reviewed-applicants/pdf', [RenewalController::class, 'reviewedApplicantsPdf'])->name('LydoStaff.reviewedApplicantsPdf');
     Route::get('/lydo_staff/disbursement', [LydoStaffController::class, 'disbursement'])->name('LydoStaff.disbursement');
     Route::post('/lydo_staff/sign-disbursement/{disburse_id}', [LydoStaffController::class, 'signDisbursement'])->name('LydoStaff.signDisbursement');
     Route::get('/lydo_staff/settings', [LydoStaffController::class, 'settings'])->name('LydoStaff.settings');
@@ -117,7 +117,18 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'showIntakeSheet'])->name('lydo_staff.intake_sheet.show');
     Route::post('/lydo_staff/submit-intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'submitIntakeSheet'])->name('lydo_staff.submitIntakeSheet');
     Route::get('/lydo_staff/get-applicant-details/{applicant_id}', [LydoStaffController::class, 'getApplicantDetails'])->name('lydo_staff.getApplicantDetails');
+  // Renewal Document Management Routes
+Route::post('/lydo_staff/save-renewal-document-status', [RenewalController::class, 'saveRenewalDocumentStatus']);
+Route::post('/lydo_staff/save-renewal-document-comment', [RenewalController::class, 'saveRenewalDocumentComment']);
+Route::get('/lydo_staff/get-renewal-document-statuses/{renewalId}', [RenewalController::class, 'getRenewalDocumentStatuses']);
+Route::get('/lydo_staff/check-renewal-document-updates/{renewalId}', [RenewalController::class, 'checkRenewalDocumentUpdates']);
 
+// Renewal Status Management Routes
+Route::post('/lydo_staff/request-document-update/{renewalId}', [RenewalController::class, 'requestDocumentUpdate']);
+Route::get('/lydo_staff/get-document-comments/{renewalId}', [RenewalController::class, 'getDocumentComments']);
+Route::post('/lydo_staff/mark-document-updated/{renewalId}', [RenewalController::class, 'markDocumentAsUpdated']);
+Route::post('/lydo_staff/renewal/{id}/update-status', [RenewalController::class, 'updateRenewalStatus']);
+Route::post('/lydo_staff/renewal/update/{scholarId}', [RenewalController::class, 'updateStatus']);
 });
 
 // Mayor Staff Routes - Only accessible by mayor_staff role

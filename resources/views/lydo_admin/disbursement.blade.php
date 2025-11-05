@@ -306,6 +306,40 @@
                 <p class="text-xs text-gray-500 mt-1">Select a barangay to filter scholars</p>
             </div>
 
+            <!-- Amount -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                <input type="number" name="amount" step="0.01" min="0" placeholder="Enter amount" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
+            </div>
+
+            <!-- Disbursement Date -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Disbursement Date</label>
+                <input type="date" name="disbursement_date" id="disbursement_date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
+                <small class="error-message text-red-500 text-sm"></small>
+            </div>
+
+            <!-- Semester -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                <select name="semester" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
+                    <option value="">Select Semester</option>
+                    <option value="1st Semester">1st Semester</option>
+                    <option value="2nd Semester">2nd Semester</option>
+                    <option value="Summer">Summer</option>
+                </select>
+            </div>
+
+            <!-- Academic Year -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Academic Year</label>
+                @php
+                    $currentYear = date('Y');
+                    $nextYear = $currentYear + 1;
+                @endphp
+                <input type="text" name="academic_year" value="{{ $currentYear }}-{{ $nextYear }}" placeholder="e.g., 2024-2025" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
+            </div>
+
             <!-- Scholar Selection -->
             <div class="col-span-full md:col-span-2 lg:col-span-3">
                 <label class="block text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -384,40 +418,6 @@
                         <span><strong>Instructions:</strong> Hold Ctrl (or Cmd on Mac) to select multiple scholars. Use the search box above to filter the list.</span>
                     </p>
                 </div>
-            </div>
-
-            <!-- Amount -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                <input type="number" name="amount" step="0.01" min="0" placeholder="Enter amount" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
-            </div>
-
-            <!-- Disbursement Date -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Disbursement Date</label>
-                <input type="date" name="disbursement_date" id="disbursement_date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
-                <small class="error-message text-red-500 text-sm"></small>
-            </div>
-
-            <!-- Semester -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
-                <select name="semester" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
-                    <option value="">Select Semester</option>
-                    <option value="1st Semester">1st Semester</option>
-                    <option value="2nd Semester">2nd Semester</option>
-                    <option value="Summer">Summer</option>
-                </select>
-            </div>
-
-            <!-- Academic Year -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Academic Year</label>
-                @php
-                    $currentYear = date('Y');
-                    $nextYear = $currentYear + 1;
-                @endphp
-                <input type="text" name="academic_year" value="{{ $currentYear }}-{{ $nextYear }}" placeholder="e.g., 2024-2025" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
             </div>
 
             <!-- Submit Button -->

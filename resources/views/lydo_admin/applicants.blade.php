@@ -16,128 +16,10 @@
         input::placeholder, select::placeholder {
             color: black !important;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #6e8efb, #a777e3);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            opacity: 1;
-            animation: fadeIn 1s ease forwards;
-        }
-
-        .loading-container {
-            text-align: center;
-            max-width: 600px;
-            padding: 2rem;
-        }
-
-        .spinner {
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
-            margin: 0 auto 2rem;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .spinner img {
-            width: 80%;
-            height: 100%;
-            border-radius: 50%;
-        }
-
-        .text-line {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: slideUp 1s ease forwards 0.5s both;
-            color: white;
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .fade-out {
-            animation: fadeOut 1s ease forwards;
-        }
-
-        @keyframes fadeOut {
-            to {
-                opacity: 0;
-                visibility: hidden;
-            }
-        }
-
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .text-line {
-                font-size: 1.8rem;
-            }
-            .spinner {
-                width: 80px;
-                height: 80px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .text-line {
-                font-size: 1.5rem;
-            }
-            .spinner {
-                width: 60px;
-                height: 60px;
-            }
-        }
     </style>
 </head>
 
 <body class="bg-gray-50 h-screen flex flex-col">
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-container">
-            <div class="spinner">
-                <img src="{{ asset('images/LYDO.png') }}" alt="Loading">
-            </div>
-            <div class="text-line">Loading...</div>
-        </div>
-    </div>
     <!-- Header -->
     <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans flex-shrink-0">
             <div class="flex items-center">
@@ -232,7 +114,22 @@
 </ul>
 
 
+<script>
+    function toggleDropdown(id) {
+        const menu = document.getElementById(id);
+        menu.classList.toggle("hidden");
+    }
+</script>
 
+<li class="text-blue-600 bg-blue-50">
+    <a href="/lydo_admin/applicants" 
+     class=" flex items-center justify-between p-3 rounded-lg text-white-700 bg-violet-600 text-white">
+         <div class="flex items-center">
+            <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
+            <span class="ml-4 hidden md:block text-lg">Applicants</span>
+        </div>
+    </a>
+</li>
 
 <!-- Scholar Dropdown -->
 <li class="relative">
@@ -268,15 +165,33 @@
 </ul>
 
 </li>
-<li class="text-blue-600 bg-blue-50">
-    <a href="/lydo_admin/applicants" 
-     class=" flex items-center justify-between p-3 rounded-lg text-white-700 bg-violet-600 text-white">
-         <div class="flex items-center">
-            <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Applicants</span>
-        </div>
-    </a>
-</li>
+
+<script>
+    // Toggle dropdown and save state
+    function toggleDropdown(id) {
+        const menu = document.getElementById(id);
+        const isHidden = menu.classList.contains("hidden");
+
+        if (isHidden) {
+            menu.classList.remove("hidden");
+            localStorage.setItem(id, "open");
+        } else {
+            menu.classList.add("hidden");
+            localStorage.setItem(id, "closed");
+        }
+    }
+
+    // Restore dropdown state on page load
+    window.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll("ul[id]").forEach(menu => {
+            const state = localStorage.getItem(menu.id);
+            if (state === "open") {
+                menu.classList.remove("hidden");
+            }
+        });
+    });
+</script>
+
 <li>
     <a href="/lydo_admin/announcement"
        class=" flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
@@ -311,6 +226,24 @@
                         </button>
                     </form>
 
+<script>
+    document.getElementById('logoutForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Are you sure you want to logout?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, logout',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                e.target.submit();
+            }
+        });
+    });
+</script>
 </div>
             </div>
             <div class="flex-1 overflow-y-auto p-4 md:p-5 text-[16px]">
@@ -319,44 +252,35 @@
                 </div>
 
                 <!-- Filter Section -->
-                <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
-                    <form method="GET" action="{{ route('LydoAdmin.applicants') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4" id="filterForm">
-                        <!-- Search Input -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
-                            <input type="text" name="search" value="{{ request('search') }}"
-                                   placeholder="Enter name..."
-                                   class="w-full p-2 border border-black rounded-md focus:ring-blue-500 focus:border-blue-500 placeholder:text-black"
-                                   id="searchInput">
-                        </div>
-
-                        <!-- Barangay Filter -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                            <select name="barangay" class="w-full p-2 border border-black rounded-md focus:ring-blue-500 focus:border-blue-500" id="barangaySelect" onchange="this.form.submit()">
-        <option value="">All Barangays</option>
-        @foreach($barangays as $barangay)
-            <option value="{{ $barangay }}" {{ request()->query('barangay') == $barangay ? 'selected' : '' }}>
-                {{ $barangay }}
-            </option>
-        @endforeach
-    </select>
+  <!-- Filter Section -->
+<div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+    <div class="flex flex-col md:flex-row gap-4" id="filterForm">
+        <div class="flex-1">
+            <input type="text" id="searchInput" placeholder="Search by name..." 
+                   class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+        </div>
+        <div class="flex-1">
+            <select id="barangaySelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                <option value="">All Barangays</option>
+                @foreach($barangays as $barangay)
+                    <option value="{{ $barangay }}">
+                        {{ $barangay }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="flex-1">
+            <select id="academicYearSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                <option value="">All Academic Years</option>
+                @foreach($academicYears as $year)
+                    <option value="{{ $year }}">
+                        {{ $year }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </div>
 </div>
-
-<!-- Academic Year Filter -->
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Academic Year</label>
-    <select name="academic_year" class="w-full p-2 border border-black rounded-md focus:ring-blue-500 focus:border-blue-500" id="academicYearSelect" onchange="this.form.submit()">
-        <option value="">All Academic Years</option>
-        @foreach($academicYears as $year)
-            <option value="{{ $year }}" {{ request()->query('academic_year') == $year ? 'selected' : '' }}>
-                {{ $year }}
-            </option>
-        @endforeach
-    </select>
-                        </div>
-                    </form>
-                </div>
 
                 <!-- Applicants Table -->
                 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -384,21 +308,52 @@
                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">Barangay</th>
                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">Email</th>
                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">School</th>
-                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">Course</th>
                                      <th class="px-4 py-3 border border-gray-200 align-middle text-center">Academic Year</th>
                                  </tr>
                             </thead>
-                          <tbody id="applicantTableBody">
-        @include('lydo_admin.partials.applicants_table', ['applicants' => $applicants])
-    </tbody>                       
-     </table>
+                            <tbody>
+                                @forelse($applicants as $applicant)
+                                    <tr class="hover:bg-gray-50 border-b">
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <input type="checkbox" name="selected_applicants" value="{{ $applicant->applicant_id }}" class="applicant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ $applicant->applicant_lname }}{{ $applicant->applicant_suffix ? ' ' . $applicant->applicant_suffix : '' }}, 
+                                                {{ $applicant->applicant_fname }} 
+                                                {{ $applicant->applicant_mname ? $applicant->applicant_mname . ' ' : '' }}
+                                            </div>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_brgy }}</div>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_email }}</div>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_school_name }}</div>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_acad_year }}</div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="px-4 py-2 text-center text-sm text-gray-500">
+                                            No applicants found.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
 
                  
                     <!-- Pagination -->
-                    <div class="px-6 py-4 bg-white border-t border-gray-200">
-                        {{ $applicants->links() }}
-                    </div>
+<!-- Pagination -->
+<div class="px-6 py-4 bg-white border-t border-gray-200">
+    <div class="pagination-container" id="paginationContainer"></div>
+</div>
                 </div>
 
 
@@ -446,9 +401,7 @@
                                         class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
                                     <span id="sendEmailText">Send Email</span>
                                     <span id="sendEmailLoading" class="hidden">
-                                        <div class="inline-block w-5 h-5 animate-spin mr-2">
-                                            <img src="{{ asset('images/LYDO.png') }}" alt="Loading" class="w-full h-full rounded-full">
-                                        </div>Sending...
+                                        <i class="fas fa-spinner fa-spin mr-2"></i>Sending...
                                     </span>
                                 </button>
                             </div>
@@ -456,412 +409,562 @@
                     </div>
                 </div>
             </div>
-     <script>
-// ===============================
-// 🏷️ UTILITY FUNCTIONS
-// ===============================
 
-/**
- * Toggle dropdown visibility and save state to localStorage
- * @param {string} id - The ID of the dropdown element
- */
-function toggleDropdown(id) {
-    const menu = document.getElementById(id);
-    const isHidden = menu.classList.contains("hidden");
-    
-    if (isHidden) {
-        menu.classList.remove("hidden");
-        localStorage.setItem(id, "open");
-    } else {
-        menu.classList.add("hidden");
-        localStorage.setItem(id, "closed");
-    }
-}
+            <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize pagination and filtering
+    initializeApplicantData();
+    initializeApplicantPagination();
+    initializeApplicantFiltering();
 
-/**
- * Restore dropdown states from localStorage on page load
- */
-function restoreDropdownStates() {
-    document.querySelectorAll("ul[id]").forEach(menu => {
-        const state = localStorage.getItem(menu.id);
-        if (state === "open") {
-            menu.classList.remove("hidden");
-        }
-    });
-}
-
-// ===============================
-// 🔐 LOGOUT CONFIRMATION FUNCTIONALITY
-// ===============================
-
-/**
- * Show confirmation dialog before submitting logout form
- */
-function setupLogoutConfirmation() {
-    document.getElementById('logoutForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        Swal.fire({
-            title: 'Are you sure you want to logout?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, logout',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                e.target.submit();
-            }
-        });
-    });
-}
-
-// ===============================
-// 📋 APPLICANT MANAGEMENT FUNCTIONALITY
-// ===============================
-
-/**
- * Main function to handle applicant selection, copying, and emailing
- */
-function setupApplicantManagement() {
-    /* ===============================
-       📦 VARIABLE DECLARATIONS
-       =============================== */
+    // Rest of your existing JavaScript code for checkboxes, buttons, etc.
     const selectAll = document.getElementById('selectAll');
     const checkboxes = document.querySelectorAll('.applicant-checkbox');
     const copyNamesBtn = document.getElementById('copyNamesBtn');
     const emailSelectedBtn = document.getElementById('emailSelectedBtn');
 
-    // Email modal elements
-    const emailModal = document.getElementById('emailModal');
-    const closeEmailModal = document.getElementById('closeEmailModal');
-    const cancelEmailBtn = document.getElementById('cancelEmailBtn');
-    const emailForm = document.getElementById('emailForm');
-    const emailSubject = document.getElementById('emailSubject');
-    const emailMessage = document.getElementById('emailMessage');
-    const recipientsPreview = document.getElementById('recipientsPreview');
-    const sendEmailBtn = document.getElementById('sendEmailBtn');
-    const sendEmailText = document.getElementById('sendEmailText');
-    const sendEmailLoading = document.getElementById('sendEmailLoading');
 
-    /* ===============================
-       ✅ SELECT ALL CHECKBOX FUNCTIONALITY
-       =============================== */
-    selectAll.addEventListener('change', function() {
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
+                    // Email modal elements
+                    const emailModal = document.getElementById('emailModal');
+                    const closeEmailModal = document.getElementById('closeEmailModal');
+                    const cancelEmailBtn = document.getElementById('cancelEmailBtn');
+                    const emailForm = document.getElementById('emailForm');
+                    const emailSubject = document.getElementById('emailSubject');
+                    const emailMessage = document.getElementById('emailMessage');
+                    const recipientsPreview = document.getElementById('recipientsPreview');
+                    const sendEmailBtn = document.getElementById('sendEmailBtn');
+                    const sendEmailText = document.getElementById('sendEmailText');
+                    const sendEmailLoading = document.getElementById('sendEmailLoading');
+
+                    // Select all checkbox functionality
+                    selectAll.addEventListener('change', function() {
+                        checkboxes.forEach(checkbox => {
+                            checkbox.checked = this.checked;
+                        });
+                        updateButtons();
+                        updateRecipientsPreview();
+                    });
+
+                    // Update button states
+                    function updateButtons() {
+                        const selectedCount = document.querySelectorAll('.applicant-checkbox:checked').length;
+                        const hasSelection = selectedCount > 0;
+
+                        copyNamesBtn.disabled = !hasSelection;
+                        emailSelectedBtn.disabled = !hasSelection;
+                        copyNamesBtn.classList.toggle('hidden', !hasSelection);
+                        emailSelectedBtn.classList.toggle('hidden', !hasSelection);
+                    }
+
+                    // Individual checkbox change
+                    checkboxes.forEach(checkbox => {
+                        checkbox.addEventListener('change', function() {
+                            updateButtons();
+                            updateRecipientsPreview();
+
+                            // Update selectAll checkbox state
+                            const allChecked = [...checkboxes].every(cb => cb.checked);
+                            const someChecked = [...checkboxes].some(cb => cb.checked);
+
+                            selectAll.checked = allChecked;
+                            selectAll.indeterminate = someChecked && !allChecked;
+                        });
+                    });
+
+                    // Update recipients preview
+                    function updateRecipientsPreview() {
+                        const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
+
+                        if (selectedCheckboxes.length === 0) {
+                            recipientsPreview.innerHTML = 'No recipients selected';
+                            return;
+                        }
+
+                        const recipients = Array.from(selectedCheckboxes).map(checkbox => {
+                            const row = checkbox.closest('tr');
+                            const name = row.querySelector('td:nth-child(2)').textContent.trim();
+                            const email = row.querySelector('td:nth-child(4)').textContent.trim();
+                            return `${name} (${email})`;
+                        });
+
+                        recipientsPreview.innerHTML = recipients.join('<br>');
+                    }
+
+                    // Copy Names button functionality
+  copyNamesBtn.addEventListener('click', function() {
+    const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
+
+    if (selectedCheckboxes.length === 0) {
+        Swal.fire({
+            title: 'No Selection!',
+            text: 'Please select at least one applicant to copy names.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
         });
-        updateButtons();
-        updateRecipientsPreview();
-    });
-
-    /* ===============================
-       🔄 UPDATE BUTTON STATES
-       =============================== */
-    function updateButtons() {
-        const selectedCount = document.querySelectorAll('.applicant-checkbox:checked').length;
-        const hasSelection = selectedCount > 0;
-
-        copyNamesBtn.disabled = !hasSelection;
-        emailSelectedBtn.disabled = !hasSelection;
-        copyNamesBtn.classList.toggle('hidden', !hasSelection);
-        emailSelectedBtn.classList.toggle('hidden', !hasSelection);
+        return;
     }
 
-    /* ===============================
-       ☑️ INDIVIDUAL CHECKBOX CHANGE HANDLER
-       =============================== */
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            updateButtons();
-            updateRecipientsPreview();
-
-            // Update "Select All" checkbox state
-            const allChecked = [...checkboxes].every(cb => cb.checked);
-            const someChecked = [...checkboxes].some(cb => cb.checked);
-
-            selectAll.checked = allChecked;
-            selectAll.indeterminate = someChecked && !allChecked;
-        });
+    // Group selected applicants by barangay
+    const barangayGroups = {};
+    selectedCheckboxes.forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        const name = row.querySelector('td:nth-child(2)').textContent.trim();
+        const barangay = row.querySelector('td:nth-child(3)').textContent.trim();
+        if (!barangayGroups[barangay]) {
+            barangayGroups[barangay] = [];
+        }
+        barangayGroups[barangay].push(name);
     });
 
-    /* ===============================
-       👥 UPDATE RECIPIENTS PREVIEW
-       =============================== */
-    function updateRecipientsPreview() {
-        const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
-
-        if (selectedCheckboxes.length === 0) {
-            recipientsPreview.innerHTML = 'No recipients selected';
-            return;
-        }
-
-        const recipients = Array.from(selectedCheckboxes).map(checkbox => {
-            const row = checkbox.closest('tr');
-            const name = row.querySelector('td:nth-child(2)').textContent.trim();
-            const email = row.querySelector('td:nth-child(4)').textContent.trim();
-            return `${name} (${email})`;
+    // Build the output string
+    let output = '';
+    Object.keys(barangayGroups).forEach(barangay => {
+        output += `${barangay}\n`;
+        barangayGroups[barangay].forEach((name, idx) => {
+            output += `${idx + 1}. ${name}\n`;
         });
-
-        recipientsPreview.innerHTML = recipients.join('<br>');
-    }
-
-    /* ===============================
-       📋 COPY NAMES BUTTON FUNCTIONALITY
-       =============================== */
-    copyNamesBtn.addEventListener('click', function() {
-        const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
-
-        if (selectedCheckboxes.length === 0) {
-            Swal.fire({
-                title: 'No Selection!',
-                text: 'Please select at least one applicant to copy names.',
-                icon: 'warning',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        // Group selected applicants by barangay
-        const barangayGroups = {};
-        selectedCheckboxes.forEach(checkbox => {
-            const row = checkbox.closest('tr');
-            const name = row.querySelector('td:nth-child(2)').textContent.trim();
-            const barangay = row.querySelector('td:nth-child(3)').textContent.trim();
-            if (!barangayGroups[barangay]) {
-                barangayGroups[barangay] = [];
-            }
-            barangayGroups[barangay].push(name);
-        });
-
-        // Build output string
-        let output = '';
-        Object.keys(barangayGroups).forEach(barangay => {
-            output += `${barangay}\n`;
-            barangayGroups[barangay].forEach((name, idx) => {
-                output += `${idx + 1}. ${name}\n`;
-            });
-            output += '\n';
-        });
-
-        // Copy to clipboard
-        navigator.clipboard.writeText(output.trim())
-        .then(() => {
-            Swal.fire({
-                title: 'Success!',
-                text: 'Selected applicant names grouped by barangay copied to clipboard!',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            });
-        })
-        .catch(err => {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Failed to copy names: ' + err,
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        });
+        output += '\n';
     });
 
-    /* ===============================
-       📧 EMAIL SELECTED BUTTON FUNCTIONALITY
-       =============================== */
-    emailSelectedBtn.addEventListener('click', function() {
-        const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
-
-        if (selectedCheckboxes.length === 0) {
-            Swal.fire({
-                title: 'No Selection!',
-                text: 'Please select at least one applicant to send email.',
-                icon: 'warning',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        updateRecipientsPreview();
-        emailModal.classList.remove('hidden');
-        emailSubject.focus();
-    });
-
-    /* ===============================
-       ❌ CLOSE EMAIL MODAL FUNCTIONALITY
-       =============================== */
-    function closeEmailModalHandler() {
-        emailModal.classList.add('hidden');
-        emailForm.reset();
-        sendEmailText.classList.remove('hidden');
-        sendEmailLoading.classList.add('hidden');
-        sendEmailBtn.disabled = false;
-    }
-
-    closeEmailModal.addEventListener('click', closeEmailModalHandler);
-    cancelEmailBtn.addEventListener('click', closeEmailModalHandler);
-
-    // Close modal when clicking outside the modal
-    emailModal.addEventListener('click', function(e) {
-        if (e.target === emailModal) {
-            closeEmailModalHandler();
-        }
-    });
-
-    /* ===============================
-       🚀 SEND EMAIL FORM SUBMISSION (AJAX)
-       =============================== */
-    emailForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
-        const subject = emailSubject.value.trim();
-        const message = emailMessage.value.trim();
-
-        if (!subject || !message) {
-            Swal.fire({
-                title: 'Missing Information!',
-                text: 'Please fill in both subject and message fields.',
-                icon: 'warning',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        if (selectedCheckboxes.length === 0) {
-            Swal.fire({
-                title: 'No Recipients!',
-                text: 'No applicants selected to send email to.',
-                icon: 'warning',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        // Collect recipient data
-        const recipients = Array.from(selectedCheckboxes).map(checkbox => {
-            const row = checkbox.closest('tr');
-            return {
-                id: checkbox.value,
-                name: row.querySelector('td:nth-child(2)').textContent.trim(),
-                email: row.querySelector('td:nth-child(4)').textContent.trim()
-            };
+    navigator.clipboard.writeText(output.trim()).then(() => {
+        Swal.fire({
+            title: 'Success!',
+            text: 'Selected applicant names grouped by barangay copied to clipboard!',
+            icon: 'success',
+            confirmButtonText: 'OK'
         });
+    }).catch(err => {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Failed to copy names: ' + err,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    });
+});
 
-        // Show loading state
-        sendEmailText.classList.add('hidden');
-        sendEmailLoading.classList.remove('hidden');
-        sendEmailBtn.disabled = true;
+                    // Email Selected button functionality
+                    emailSelectedBtn.addEventListener('click', function() {
+                        const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
 
-        // Send email via AJAX
-        fetch('/lydo_admin/send-email-to-applicants', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-            },
-            body: JSON.stringify({ recipients, subject, message })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    title: 'Success!',
-                    text: `Email sent successfully to ${recipients.length} applicant(s)!`,
-                    icon: 'success',
-                    confirmButtonText: 'OK'
+                        if (selectedCheckboxes.length === 0) {
+                            Swal.fire({
+                                title: 'No Selection!',
+                                text: 'Please select at least one applicant to send email.',
+                                icon: 'warning',
+                                confirmButtonText: 'OK'
+                            });
+                            return;
+                        }
+
+                        updateRecipientsPreview();
+                        emailModal.classList.remove('hidden');
+                        emailSubject.focus();
+                    });
+
+                    // Close email modal
+                    function closeEmailModalHandler() {
+                        emailModal.classList.add('hidden');
+                        emailForm.reset();
+                        sendEmailText.classList.remove('hidden');
+                        sendEmailLoading.classList.add('hidden');
+                        sendEmailBtn.disabled = false;
+                    }
+
+                    closeEmailModal.addEventListener('click', closeEmailModalHandler);
+                    cancelEmailBtn.addEventListener('click', closeEmailModalHandler);
+
+                    // Close modal when clicking outside
+                    emailModal.addEventListener('click', function(e) {
+                        if (e.target === emailModal) {
+                            closeEmailModalHandler();
+                        }
+                    });
+
+                    // Send email form submission
+                    emailForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+
+                        const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
+                        const subject = emailSubject.value.trim();
+                        const message = emailMessage.value.trim();
+
+                        if (!subject || !message) {
+                            Swal.fire({
+                                title: 'Missing Information!',
+                                text: 'Please fill in both subject and message fields.',
+                                icon: 'warning',
+                                confirmButtonText: 'OK'
+                            });
+                            return;
+                        }
+
+                        if (selectedCheckboxes.length === 0) {
+                            Swal.fire({
+                                title: 'No Recipients!',
+                                text: 'No applicants selected to send email to.',
+                                icon: 'warning',
+                                confirmButtonText: 'OK'
+                            });
+                            return;
+                        }
+
+                        // Collect recipient data
+                        const recipients = Array.from(selectedCheckboxes).map(checkbox => {
+                            const row = checkbox.closest('tr');
+                            return {
+                                id: checkbox.value,
+                                name: row.querySelector('td:nth-child(2)').textContent.trim(),
+                                email: row.querySelector('td:nth-child(4)').textContent.trim()
+                            };
+                        });
+
+                        // Show loading state
+                        sendEmailText.classList.add('hidden');
+                        sendEmailLoading.classList.remove('hidden');
+                        sendEmailBtn.disabled = true;
+
+                        // Send email via AJAX
+                        fetch('/lydo_admin/send-email-to-applicants', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                            },
+                            body: JSON.stringify({
+                                recipients: recipients,
+                                subject: subject,
+                                message: message
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: `Email sent successfully to ${recipients.length} applicant(s)!`,
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                });
+                                closeEmailModalHandler();
+                            } else {
+                                throw new Error(data.message || 'Failed to send email');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Email sending error:', error);
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Failed to send email: ' + error.message,
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        })
+                        .finally(() => {
+                            // Reset loading state
+                            sendEmailText.classList.remove('hidden');
+                            sendEmailLoading.classList.add('hidden');
+                            sendEmailBtn.disabled = false;
+                        });
+                    });
+
+                    // Auto-submit form when filters change
+                    const searchInput = document.getElementById('searchInput');
+                    const barangaySelect = document.getElementById('barangaySelect');
+                    const academicYearSelect = document.getElementById('academicYearSelect');
+                    const filterForm = document.getElementById('filterForm');
+
+                    // Function to submit form with debounce for search input
+                    let searchTimeout;
+                    function submitForm() {
+                        filterForm.submit();
+                    }
+
+                    function debounceSubmit() {
+                        clearTimeout(searchTimeout);
+                        searchTimeout = setTimeout(submitForm, 500); // 500ms delay
+                    }
+
+                    // Event listeners for filter changes - filters apply automatically
+                    searchInput.addEventListener('input', debounceSubmit);
+                    barangaySelect.addEventListener('change', submitForm);
+                    academicYearSelect.addEventListener('change', submitForm);
+
+                    // Initialize button states
+                    updateButtons();
                 });
-                closeEmailModalHandler();
-            } else {
-                throw new Error(data.message || 'Failed to send email');
-            }
-        })
-        .catch(error => {
-            console.error('Email sending error:', error);
-            Swal.fire({
-                title: 'Error!',
-                text: 'Failed to send email: ' + error.message,
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        })
-        .finally(() => {
-            sendEmailText.classList.remove('hidden');
-            sendEmailLoading.classList.add('hidden');
-            sendEmailBtn.disabled = false;
-        });
-    });
-}
 
-// ===============================
-// 🔍 SEARCH FUNCTIONALITY
-// ===============================
+                // Toggle dropdown and save state
+                function toggleDropdown(id) {
+                    const menu = document.getElementById(id);
+                    const isHidden = menu.classList.contains("hidden");
 
-/**
- * Setup search functionality with debouncing
- */
-function setupSearchFunctionality() {
-    const searchInput = document.getElementById('searchInput');
-    const tableBody = document.getElementById('applicantTableBody');
-    let searchTimeout;
+                    if (isHidden) {
+                        menu.classList.remove("hidden");
+                        localStorage.setItem(id, "open");
+                    } else {
+                        menu.classList.add("hidden");
+                        localStorage.setItem(id, "closed");
+                    }
+                }
 
-    searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            const query = searchInput.value;
-
-            fetch(`{{ route('applicants.ajaxSearch') }}?search=${encodeURIComponent(query)}`)
-                .then(response => response.text())
-                .then(html => {
-                    tableBody.innerHTML = html;
-                })
-                .catch(error => console.error('Error:', error));
-        }, 300); // debounce 300ms
-    });
-}
-
-// ===============================
-// 🔔 NOTIFICATION DROPDOWN FUNCTIONALITY
-// ===============================
-
-/**
- * Setup notification dropdown functionality
- */
-function setupNotificationDropdown() {
+                // Restore dropdown state on page load
+                window.addEventListener("DOMContentLoaded", () => {
+                    document.querySelectorAll("ul[id]").forEach(menu => {
+                        const state = localStorage.getItem(menu.id);
+                        if (state === "open") {
+                            menu.classList.remove("hidden");
+                        }
+                    });
+                });
+            </script>
+        </div>
+    </div>
+    
+<!-- ⚡ JS -->
+<script>
     document.getElementById("notifBell").addEventListener("click", function () {
         let dropdown = document.getElementById("notifDropdown");
         dropdown.classList.toggle("hidden");
 
-        // Remove badge when opened
+        // remove badge when opened
         let notifCount = document.getElementById("notifCount");
-        if (notifCount) notifCount.remove();
+        if (notifCount) {
+            notifCount.remove();
+        }
+    });
+</script>
+<script>
+// Global pagination state
+const paginationState = {
+    currentPage: 1,
+    rowsPerPage: 15,
+    allRows: [],
+    filteredRows: []
+};
+
+// Function to get full name for sorting
+function getFullNameForSorting(row) {
+    const nameCell = row.cells[1];
+    if (!nameCell) return '';
+    return nameCell.textContent.trim().toLowerCase();
+}
+
+// Function to sort rows alphabetically by last name
+function sortRowsAlphabetically(rows) {
+    return rows.sort((a, b) => {
+        const nameA = getFullNameForSorting(a);
+        const nameB = getFullNameForSorting(b);
+        return nameA.localeCompare(nameB);
     });
 }
 
-// ===============================
-// 📄 INITIALIZATION
-// ===============================
+// Initialize data from the table
+function initializeApplicantData() {
+    const tableRows = Array.from(document.querySelectorAll('table tbody tr'));
+    paginationState.allRows = tableRows.filter(row => !row.querySelector('td[colspan]'));
+    
+    // Sort rows alphabetically by last name
+    paginationState.allRows = sortRowsAlphabetically(paginationState.allRows);
+    paginationState.filteredRows = [...paginationState.allRows];
+}
 
-/**
- * Hide loading overlay when page is fully loaded
- */
-window.addEventListener('load', function() {
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    if (loadingOverlay) {
-        loadingOverlay.classList.add('fade-out');
-        setTimeout(() => {
-            loadingOverlay.style.display = 'none';
-        }, 1000); // Match the fadeOut animation duration
+// Initialize pagination
+function initializeApplicantPagination() {
+    updateApplicantPagination();
+}
+
+// Update pagination display
+function updateApplicantPagination() {
+    const state = paginationState;
+    const container = document.getElementById('paginationContainer');
+    
+    if (!container) return;
+    
+    // Hide all rows first
+    state.allRows.forEach(row => {
+        row.style.display = 'none';
+    });
+    
+    // Calculate pagination for filtered rows
+    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
+    const endIndex = startIndex + state.rowsPerPage;
+    const pageRows = state.filteredRows.slice(startIndex, endIndex);
+    
+    // Show only rows for current page
+    pageRows.forEach(row => {
+        row.style.display = '';
+    });
+    
+    // Update pagination controls
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    const startItem = state.filteredRows.length === 0 ? 0 : Math.min((state.currentPage - 1) * state.rowsPerPage + 1, state.filteredRows.length);
+    const endItem = Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
+    
+    container.innerHTML = `
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-sm text-gray-600">
+                Showing <span class="font-semibold">${startItem}-${endItem}</span> of <span class="font-semibold">${state.filteredRows.length}</span> applicants
+            </div>
+            
+            <div class="flex items-center space-x-1">
+                <!-- First Page -->
+                <button onclick="changeApplicantPage(1)" 
+                    class="px-3 py-2 text-sm font-medium rounded-l-md border border-gray-300 ${
+                        state.currentPage === 1 
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    }"
+                    ${state.currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+                
+                <!-- Previous Page -->
+                <button onclick="changeApplicantPage(${state.currentPage - 1})" 
+                    class="px-3 py-2 text-sm font-medium border border-gray-300 ${
+                        state.currentPage === 1 
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    }"
+                    ${state.currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-left"></i>
+                </button>
+                
+                <!-- Page Info -->
+                <div class="flex items-center px-4 py-2 text-sm text-gray-700 border border-gray-300 bg-white">
+                    Page 
+                    <input type="number" 
+                           class="mx-2 w-12 text-center border border-gray-300 rounded px-1 py-1 text-sm" 
+                           value="${state.currentPage}" 
+                           min="1" 
+                           max="${totalPages}" 
+                           onchange="goToApplicantPage(this.value)">
+                    of ${totalPages}
+                </div>
+                
+                <!-- Next Page -->
+                <button onclick="changeApplicantPage(${state.currentPage + 1})" 
+                    class="px-3 py-2 text-sm font-medium border border-gray-300 ${
+                        state.currentPage === totalPages 
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    }"
+                    ${state.currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-angle-right"></i>
+                </button>
+                
+                <!-- Last Page -->
+                <button onclick="changeApplicantPage(${totalPages})" 
+                    class="px-3 py-2 text-sm font-medium rounded-r-md border border-gray-300 ${
+                        state.currentPage === totalPages 
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    }"
+                    ${state.currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Change page
+function changeApplicantPage(page) {
+    const state = paginationState;
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updateApplicantPagination();
+}
+
+// Go to specific page
+function goToApplicantPage(page) {
+    const state = paginationState;
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    page = parseInt(page);
+    if (isNaN(page) || page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updateApplicantPagination();
+}
+
+// Initialize filtering functionality
+function initializeApplicantFiltering() {
+    const searchInput = document.getElementById('searchInput');
+    const barangaySelect = document.getElementById('barangaySelect');
+    const academicYearSelect = document.getElementById('academicYearSelect');
+
+    function filterApplicantTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedBarangay = barangaySelect.value;
+        const selectedAcademicYear = academicYearSelect.value;
+
+        const filteredRows = paginationState.allRows.filter(row => {
+            const nameCell = row.cells[1];
+            const barangayCell = row.cells[2];
+            const academicYearCell = row.cells[5];
+
+            if (!nameCell || !barangayCell || !academicYearCell) return false;
+
+            const name = nameCell.textContent.toLowerCase();
+            const barangay = barangayCell.textContent.trim();
+            const academicYear = academicYearCell.textContent.trim();
+
+            const nameMatch = name.includes(searchTerm);
+            const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+            const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
+
+            return nameMatch && barangayMatch && academicYearMatch;
+        });
+
+        // Sort filtered results alphabetically
+        const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
+
+        // Update filtered rows and reset to page 1
+        paginationState.filteredRows = sortedFilteredRows;
+        paginationState.currentPage = 1;
+        updateApplicantPagination();
+        
+        // Reset select all checkbox
+        document.getElementById('selectAll').checked = false;
+        document.getElementById('selectAll').indeterminate = false;
     }
-});
 
-/**
- * Initialize all functionality when DOM is loaded
- */
+    // Add event listeners with debouncing
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(filterApplicantTable, 300));
+    }
+    if (barangaySelect) {
+        barangaySelect.addEventListener('change', filterApplicantTable);
+    }
+    if (academicYearSelect) {
+        academicYearSelect.addEventListener('change', filterApplicantTable);
+    }
+}
+
+// Debounce function for search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    restoreDropdownStates();
-    setupLogoutConfirmation();
-    setupApplicantManagement();
-    setupSearchFunctionality();
-    setupNotificationDropdown();
+    initializeApplicantData();
+    initializeApplicantPagination();
+    initializeApplicantFiltering();
 });
 </script>
 </body>
