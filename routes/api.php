@@ -15,12 +15,13 @@ use App\Http\Controllers\API\DisbursementController;
 use App\Http\Controllers\API\RenewalController;
 use App\Http\Controllers\API\AnnouncementController;
 use App\Http\Controllers\API\ApplicationPersonnelController;
-use App\Http\Controllers\MayorStaffController;
 
 // Wrap all routes in staging prefix to match Flutter app expectations
 Route::prefix('staging')->group(function () {
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::prefix('auth')->group(function () {
+        Route::post('/login', [AuthController::class, 'login']);
+        Route::post('/register', [AuthController::class, 'register']);
+    });
 
     Route::apiResource('/applicants', ApplicantController::class);
     Route::apiResource('/applications', ApplicationController::class);
@@ -32,11 +33,6 @@ Route::prefix('staging')->group(function () {
     Route::apiResource('/notifications', NotificationController::class);
     Route::apiResource('/admins', AdminController::class);
     Route::apiResource('/application-personnels', ApplicationPersonnelController::class);
-
-    // Mayor Staff API endpoints
-    Route::get('/welcome', [MayorStaffController::class, 'welcome']);
-    Route::get('/mayor-staff/intake-sheet/{applicationPersonnelId}', [MayorStaffController::class, 'getIntakeSheet']);
-    Route::post('/mayor-staff/update-status/{id}', [MayorStaffController::class, 'updateStatus']);
 });
 
 ?>
