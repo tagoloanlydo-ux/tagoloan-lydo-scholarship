@@ -793,17 +793,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize pagination
     initializePagination();
 });
-            // Hide loading spinner when page is fully loaded
-            window.addEventListener('load', function() {
-                const loadingOverlay = document.getElementById('loadingOverlay');
-                if (loadingOverlay) {
-                    loadingOverlay.classList.add('fade-out');
-                    // Remove from DOM after animation completes
-                    setTimeout(() => {
-                        loadingOverlay.style.display = 'none';
-                    }, 1000); // Match the animation duration
-                }
-            });
+
 
             // ✅ Application Modal Functions
             const applications = @json($applications);
@@ -2276,6 +2266,7 @@ function goToPage(viewType, page) {
 
 
 </script>
+<script src="{{ asset('js/spinner.js') }}"></script>
 
     </body>
     </html>

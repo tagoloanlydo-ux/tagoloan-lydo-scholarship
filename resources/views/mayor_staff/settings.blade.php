@@ -512,20 +512,6 @@ document.getElementById("logoutForm").addEventListener("submit", function (e) {
   }
 </script>
 <script>
-    // Hide loading spinner when page is fully loaded, with minimum display time
-    window.addEventListener('load', function() {
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        if (loadingOverlay) {
-            // Ensure spinner shows for at least 2 seconds
-            setTimeout(() => {
-                loadingOverlay.classList.add('fade-out');
-                setTimeout(() => {
-                    loadingOverlay.style.display = 'none';
-                }, 1000); // Match the fade-out animation duration
-            }, 2000);
-        }
-    });
-
     // Show loading spinner during form submissions (exclude logout form)
     document.addEventListener('DOMContentLoaded', function() {
         const forms = document.querySelectorAll('form');
@@ -542,6 +528,7 @@ document.getElementById("logoutForm").addEventListener("submit", function (e) {
         });
     });
 </script>
+<script src="{{ asset('js/spinner.js') }}"></script>
 </body>
 
 </html>

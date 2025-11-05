@@ -735,20 +735,7 @@
 
  <script src="{{ asset('js/logout.js') }}"></script>
 
-<script>
-    // Hide loading spinner when page is fully loaded, with minimum display time
-    window.addEventListener('load', function() {
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        if (loadingOverlay) {
-            // Ensure spinner shows for at least 2 seconds
-            setTimeout(() => {
-                loadingOverlay.classList.add('fade-out');
-                setTimeout(() => {
-                    loadingOverlay.style.display = 'none';
-                }, 1000); // Match the fade-out animation duration
-            }, 2000);
-        }
-    });
-</script>
+<script src="{{ asset('js/spinner.js') }}"></script>
+
 </div>
 </body>
