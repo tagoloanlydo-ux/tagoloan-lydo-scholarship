@@ -97,23 +97,31 @@ class AuthController extends Controller
      */
     private function scholarLogin(Request $request)
     {
-        // Find scholar by email (from applicant table)
-        $applicant = Applicant::where('applicant_email', $request->email)->first();
+        // Find scholar by username or email
+        $scholar = null;
+        $applicant = null;
 
-        if (!$applicant) {
+        // First try to find by scholar username
+        $scholar = Scholar::where('scholar_username', $request->email)->first();
+
+        if ($scholar) {
+            // Found by username, get applicant through application
+            $applicant = $scholar->applicant;
+        } else {
+            // Try to find by applicant email
+            $applicant = Applicant::where('applicant_email', $request->email)->first();
+
+            if ($applicant) {
+                // Get scholar through application
+                $application = $applicant->application;
+                if ($application) {
+                    $scholar = Scholar::where('application_id', $application->application_id)->first();
+                }
+            }
+        }
+
+        if (!$scholar || !$applicant) {
             return $this->errorResponse('Invalid credentials', 401);
-        }
-
-        // Find scholar account
-        $application = $applicant->application;
-        if (!$application) {
-            return $this->errorResponse('No application found', 401);
-        }
-
-        $scholar = Scholar::where('application_id', $application->application_id)->first();
-
-        if (!$scholar) {
-            return $this->errorResponse('Scholar account not found', 401);
         }
 
         // Check password
