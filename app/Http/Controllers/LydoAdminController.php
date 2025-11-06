@@ -877,7 +877,12 @@ public function disbursement(Request $request)
     // Get applicants with filtering - show both Approved and Rejected initial screening
     $query = DB::table('tbl_applicant')
         ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
-        ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id');
+        ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id')
+        ->select(
+            'tbl_applicant.*',
+            'tbl_application_personnel.initial_screening',
+            'tbl_application_personnel.status'
+        );
 
     // Apply initial screening status filter - default to Approved
     $initialScreeningStatus = $request->get('initial_screening', 'Approved');
@@ -930,7 +935,12 @@ public function generateApplicantsPdf(Request $request)
         // Get applicants with filtering - same query as applicants method
         $query = DB::table('tbl_applicant')
             ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
-            ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id');
+            ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id')
+            ->select(
+                'tbl_applicant.*',
+                'tbl_application_personnel.initial_screening',
+                'tbl_application_personnel.status'
+            );
 
         // Apply initial screening status filter
         $initialScreeningStatus = $request->get('initial_screening', 'Approved');
