@@ -2060,4 +2060,76 @@ public function disbursement(Request $request)
 
         return $pdf->stream('disbursement-report-' . date('Y-m-d') . '.pdf');
     }
+public function generateDisbursementRecordsPdf(Request $request)
+{
+    try {
+        // Set time limit for PDF generation
+        set_time_limit(120); // 2 minutes
+        
+        // Get only UNSIGNED disbursement records with applicant information
+        $query = DB::table('tbl_disburse as d')
+            ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->select(
+                'd.disburse_semester',
+                'd.disburse_acad_year',
+                'd.disburse_amount',
+                'd.disburse_date',
+                'a.applicant_brgy',
+                DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+            )
+            ->whereNull('d.disburse_signature'); // Only unsigned disbursements
+
+        // Apply filters
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('a.applicant_fname', 'like', '%' . $search . '%')
+                  ->orWhere('a.applicant_lname', 'like', '%' . $search . '%')
+                  ->orWhere('a.applicant_mname', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->has('barangay') && !empty($request->barangay)) {
+            $query->where('a.applicant_brgy', $request->barangay);
+        }
+
+        if ($request->has('academic_year') && !empty($request->academic_year)) {
+            $query->where('d.disburse_acad_year', $request->academic_year);
+        }
+
+        if ($request->has('semester') && !empty($request->semester)) {
+            $query->where('d.disburse_semester', $request->semester);
+        }
+
+        // Limit results for PDF generation
+        $unsignedDisbursements = $query->limit(1000)->get();
+
+        // Get filter info for page title
+        $filters = [];
+        if ($request->search) {
+            $filters[] = 'Search: ' . $request->search;
+        }
+        if ($request->barangay) {
+            $filters[] = 'Barangay: ' . $request->barangay;
+        }
+        if ($request->academic_year) {
+            $filters[] = 'Academic Year: ' . $request->academic_year;
+        }
+        if ($request->semester) {
+            $filters[] = 'Semester: ' . $request->semester;
+        }
+
+        $pdf = Pdf::loadView('pdf.disbursement-records-print', compact('unsignedDisbursements', 'filters'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream('disbursement-records-' . date('Y-m-d') . '.pdf');
+        
+    } catch (\Exception $e) {
+        \Log::error('PDF Generation Error: ' . $e->getMessage());
+        return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
+    }
 }
+}
+
