@@ -2709,114 +2709,128 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
             // Updated confirmSubmitForm to use AJAX for better UX
-            function confirmSubmitForm() {
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "Do you want to submit this intake sheet? This action cannot be undone.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, submit it!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Serialize family members data
-                        let familyMembers = [];
-                        const familyRows = document.querySelectorAll('#family_members_tbody tr');
-                        familyRows.forEach(row => {
-                            const cells = row.cells;
-                            familyMembers.push({
-                                name: cells[0].querySelector('input')?.value || '',
-                                relationship: cells[1].querySelector('select')?.value || '',
-                                birthdate: cells[2].querySelector('input')?.value || '',
-                                age: cells[3].querySelector('input')?.value || '',
-                                sex: cells[4].querySelector('select')?.value || '',
-                                civil_status: cells[5].querySelector('select')?.value || '',
-                                education: cells[6].querySelector('select')?.value || '',
-                                occupation: cells[7].querySelector('input')?.value || '',
-                                monthly_income: cells[8].querySelector('input')?.value || '',
-                                remarks: cells[9].querySelector('select')?.value || '',
-                            });
-                        });
-
-                        // Convert to JSON string
-                        document.getElementById('family_members').value = JSON.stringify(familyMembers);
-
-                        // Serialize service records data
-                        let serviceRecords = [];
-                        const serviceRows = document.querySelectorAll('#rv_service_records_tbody tr');
-                        serviceRows.forEach(row => {
-                            const cells = row.cells;
-                            serviceRecords.push({
-                                date: cells[0].querySelector('input')?.value || '',
-                                problem: cells[1].querySelector('input')?.value || '',
-                                action: cells[2].querySelector('input')?.value || '',
-                                remarks: cells[3].querySelector('select')?.value || '',
-                            });
-                        });
-
-                        // Convert to JSON string
-                        document.getElementById('rv_service_records').value = JSON.stringify(serviceRecords);
-
-                        const id = document.getElementById('remarks_id').value;
-                        const formData = new FormData(document.getElementById('updateRemarksForm'));
-
-                        // Show loading state
-                        Swal.fire({
-                            title: 'Submitting Intake Sheet',
-                            text: 'Please wait...',
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-
-                        // Submit form via AJAX
-                        fetch(`/lydo_staff/update-intake-sheet/${id}`, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            Swal.close();
-
-                            // Check if response contains success message
-                            if (data.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Intake Sheet Submitted!',
-                                    text: 'The intake sheet has been successfully submitted.',
-                                    confirmButtonText: 'OK'
-                                }).then(() => {
-                                    // Close modal and reload page to stay on screening
-                                    closeEditRemarksModal();
-                                    location.reload();
-                                });
-                            } else {
-                                throw new Error(data.message || 'Unexpected response');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Submission Failed',
-                                text: 'Failed to submit intake sheet: ' + error.message,
-                                confirmButtonText: 'OK'
-                            });
-                        });
-                    }
+ function confirmSubmitForm() {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "Do you want to submit this intake sheet? This action cannot be undone.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, submit it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Serialize family members data
+            let familyMembers = [];
+            const familyRows = document.querySelectorAll('#family_members_tbody tr');
+            familyRows.forEach(row => {
+                const cells = row.cells;
+                familyMembers.push({
+                    name: cells[0].querySelector('input')?.value || '',
+                    relationship: cells[1].querySelector('select')?.value || '',
+                    birthdate: cells[2].querySelector('input')?.value || '',
+                    age: cells[3].querySelector('input')?.value || '',
+                    sex: cells[4].querySelector('select')?.value || '',
+                    civil_status: cells[5].querySelector('select')?.value || '',
+                    education: cells[6].querySelector('select')?.value || '',
+                    occupation: cells[7].querySelector('input')?.value || '',
+                    monthly_income: cells[8].querySelector('input')?.value || '',
+                    remarks: cells[9].querySelector('select')?.value || '',
                 });
-            }
+            });
 
+            // Convert to JSON string
+            document.getElementById('family_members').value = JSON.stringify(familyMembers);
+
+            // Serialize service records data
+            let serviceRecords = [];
+            const serviceRows = document.querySelectorAll('#rv_service_records_tbody tr');
+            serviceRows.forEach(row => {
+                const cells = row.cells;
+                serviceRecords.push({
+                    date: cells[0].querySelector('input')?.value || '',
+                    problem: cells[1].querySelector('input')?.value || '',
+                    action: cells[2].querySelector('input')?.value || '',
+                    remarks: cells[3].querySelector('select')?.value || '',
+                });
+            });
+
+            // Convert to JSON string
+            document.getElementById('rv_service_records').value = JSON.stringify(serviceRecords);
+
+            const id = document.getElementById('remarks_id').value;
+            const formData = new FormData(document.getElementById('updateRemarksForm'));
+
+            // Show loading state
+            Swal.fire({
+                title: 'Submitting Intake Sheet',
+                text: 'Please wait...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Submit form via AJAX with better error handling
+            fetch(`/lydo_staff/update-intake-sheet/${id}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(async response => {
+                // First, try to parse as JSON
+                const text = await response.text();
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Try to parse as JSON
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    // If not JSON, check if it contains success indicators
+                    if (text.toLowerCase().includes('success') || text.includes('Intake sheet submitted successfully')) {
+                        return { success: true, message: 'Intake sheet submitted successfully' };
+                    } else {
+                        throw new Error('Unexpected response format from server');
+                    }
+                }
+            })
+            .then(data => {
+                Swal.close();
+
+                // Check if response contains success message
+                if (data.success || data.message?.toLowerCase().includes('success')) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Intake Sheet Submitted!',
+                        text: data.message || 'The intake sheet has been successfully submitted.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Close modal and reload page to stay on screening
+                        closeEditRemarksModal();
+                        location.reload();
+                    });
+                } else {
+                    throw new Error(data.message || 'Submission failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Submission Failed',
+                    text: 'Failed to submit intake sheet: ' + error.message,
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+    });
+}
             // Populate Edit Modal with existing data
 // UPDATED populateEditModal function
 // UPDATED populateEditModal function with proper field mapping

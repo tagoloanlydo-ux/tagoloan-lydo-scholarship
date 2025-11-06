@@ -47,7 +47,6 @@
                     <ul class="max-h-60 overflow-y-auto">
                         @forelse($notifications as $notif)
                             <li class="px-4 py-2 hover:bg-white-50 text-base border-b">
-                                {{-- Application --}}
                                 @if($notif->type === 'application')
                                     <p class="font-medium 
                                         {{ $notif->status === 'Approved' ? 'text-green-600' : 'text-red-600' }}">
@@ -60,7 +59,6 @@
                                     </p>
                                 @endif
 
-                                {{-- Time ago --}}
                                 <p class="text-xs text-gray-500">
                                     {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
                                 </p>
