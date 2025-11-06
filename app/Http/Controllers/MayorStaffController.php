@@ -291,56 +291,56 @@ $percentageReviewed = $totalApplications > 0
 
         $tableApplicants = $query->get();
 
-
-        $listApplicants = DB::table("tbl_applicant as a")
-            ->join(
-                "tbl_application as app",
-                "a.applicant_id",
-                "=",
-                "app.applicant_id",
-            )
-            ->join(
-                "tbl_application_personnel as ap",
-                "app.application_id",
-                "=",
-                "ap.application_id",
-            )
-            ->select(
-                "a.*",
-                "app.application_id",
-                "ap.application_personnel_id",
-                "ap.status",
-                "ap.initial_screening",
-                "ap.remarks",
-                "a.applicant_email",
-            )
-            ->where(
-                "a.applicant_acad_year",
-                "=",
-                now()->format("Y") .
-                    "-" .
-                    now()
-                        ->addYear()
-                        ->format("Y"),
-            )
-            ->whereIn("ap.initial_screening", ["Approved", "Rejected"])
-            ->when($request->filled("search"), function ($q) use ($request) {
-                $q->where(function ($q) use ($request) {
-                    $q->where(
-                        "a.applicant_fname",
-                        "like",
-                        "%" . $request->search . "%",
-                    )->orWhere(
-                        "a.applicant_lname",
-                        "like",
-                        "%" . $request->search . "%",
-                    );
-                });
-            })
-            ->when($request->filled("barangay"), function ($q) use ($request) {
-                $q->where("a.applicant_brgy", $request->barangay);
-            })
-            ->get();
+// Sa application() method, hanapin ang $listApplicants query at palitan ng:
+$listApplicants = DB::table("tbl_applicant as a")
+    ->join(
+        "tbl_application as app",
+        "a.applicant_id",
+        "=",
+        "app.applicant_id",
+    )
+    ->join(
+        "tbl_application_personnel as ap",
+        "app.application_id",
+        "=",
+        "ap.application_id",
+    )
+    ->select(
+        "a.*",
+        "app.application_id",
+        "ap.application_personnel_id",
+        "ap.status",
+        "ap.initial_screening",
+        "ap.remarks",
+        "a.applicant_email",
+    )
+    ->where(
+        "a.applicant_acad_year",
+        "=",
+        now()->format("Y") .
+            "-" .
+            now()
+                ->addYear()
+                ->format("Y"),
+    )
+    ->whereIn("ap.initial_screening", ["Approved", "Rejected"]) // DITO ANG PALIT - tanggalin ang "Pending"
+    ->when($request->filled("search"), function ($q) use ($request) {
+        $q->where(function ($q) use ($request) {
+            $q->where(
+                "a.applicant_fname",
+                "like",
+                "%" . $request->search . "%",
+            )->orWhere(
+                "a.applicant_lname",
+                "like",
+                "%" . $request->search . "%",
+            );
+        });
+    })
+    ->when($request->filled("barangay"), function ($q) use ($request) {
+        $q->where("a.applicant_brgy", $request->barangay);
+    })
+    ->get();
 
         $barangays = DB::table("tbl_applicant")
             ->pluck("applicant_brgy")
