@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Show spinner immediately when script loads (page is loading)
+    // Show spinner immediately when DOM is ready
     showSpinner();
 
     // Hide spinner when page is fully loaded
