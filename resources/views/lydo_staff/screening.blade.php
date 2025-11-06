@@ -2749,6 +2749,13 @@ if (lotSelect) {
  // Populate Edit Modal with existing data
 function populateEditModal(data) {
     // Populate head of family details
+
+    console.log('Received data for populateEditModal:', data);
+    console.log('house_house:', data.house_house);
+    console.log('house_lot:', data.house_lot);
+    console.log('house_house_rent:', data.house_house_rent);
+    console.log('house_lot_rent:', data.house_lot_rent);
+
     document.getElementById('head_4ps').value = data.head_4ps || '';
     document.getElementById('head_ipno').value = data.head_ipno || '';
     document.getElementById('head_address').value = data.head_address || '';

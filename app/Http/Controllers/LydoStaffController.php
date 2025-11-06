@@ -509,37 +509,59 @@ $listApplicants = DB::table("tbl_applicant as a")
 
 
 
-    public function showIntakeSheet($application_personnel_id)
-    {
-        $intakeSheet = \App\Models\FamilyIntakeSheet::where('application_personnel_id', $application_personnel_id)->first();
+public function showIntakeSheet($application_personnel_id)
+{
+    $intakeSheet = \App\Models\FamilyIntakeSheet::where('application_personnel_id', $application_personnel_id)->first();
 
-        $remarks = DB::table('tbl_application_personnel')->where('application_personnel_id', $application_personnel_id)->value('remarks');
+    $remarks = DB::table('tbl_application_personnel')->where('application_personnel_id', $application_personnel_id)->value('remarks');
 
-        // Retrieve applicant gender and place of birth
-        $applicantData = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->where('tbl_application_personnel.application_personnel_id', $application_personnel_id)
-            ->select('tbl_applicant.applicant_gender', 'tbl_applicant.applicant_pob')
-            ->first();
+    // Retrieve applicant gender and place of birth
+    $applicantData = DB::table('tbl_application_personnel')
+        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
+        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+        ->where('tbl_application_personnel.application_personnel_id', $application_personnel_id)
+        ->select('tbl_applicant.applicant_gender', 'tbl_applicant.applicant_pob')
+        ->first();
 
-        $applicantGender = $applicantData ? $applicantData->applicant_gender : null;
-        $applicantPob = $applicantData ? $applicantData->applicant_pob : null;
+    $applicantGender = $applicantData ? $applicantData->applicant_gender : null;
+    $applicantPob = $applicantData ? $applicantData->applicant_pob : null;
 
-        if ($intakeSheet) {
-            $data = $intakeSheet->toArray();
-            $data['remarks'] = $remarks;
-            $data['applicant_gender'] = $applicantGender;
-            $data['applicant_pob'] = $applicantPob;
-            return response()->json($data);
-        } else {
-            return response()->json([
-                'remarks' => $remarks,
-                'applicant_gender' => $applicantGender,
-                'applicant_pob' => $applicantPob
-            ]);
-        }
+    if ($intakeSheet) {
+        $data = $intakeSheet->toArray();
+        $data['remarks'] = $remarks;
+        $data['applicant_gender'] = $applicantGender;
+        $data['applicant_pob'] = $applicantPob;
+        
+        // ADD THESE FIELDS EXPLICITLY TO ENSURE THEY'RE INCLUDED
+        $data['house_house'] = $intakeSheet->house_house;
+        $data['house_lot'] = $intakeSheet->house_lot;
+        $data['house_rent'] = $intakeSheet->house_house_rent;
+        $data['lot_rent'] = $intakeSheet->house_lot_rent;
+        $data['house_water'] = $intakeSheet->house_water;
+        $data['house_electric'] = $intakeSheet->house_electric;
+        $data['other_income'] = $intakeSheet->other_income;
+        $data['house_total_income'] = $intakeSheet->house_total_income;
+        $data['house_net_income'] = $intakeSheet->house_net_income;
+        
+        return response()->json($data);
+    } else {
+        return response()->json([
+            'remarks' => $remarks,
+            'applicant_gender' => $applicantGender,
+            'applicant_pob' => $applicantPob,
+            // Include empty values for house fields if no intake sheet exists
+            'house_house' => null,
+            'house_lot' => null,
+            'house_rent' => null,
+            'lot_rent' => null,
+            'house_water' => null,
+            'house_electric' => null,
+            'other_income' => null,
+            'house_total_income' => null,
+            'house_net_income' => null,
+        ]);
     }
+}
 
 public function updateIntakeSheet(Request $request, $application_personnel_id)
 {
