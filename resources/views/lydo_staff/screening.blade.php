@@ -2196,8 +2196,8 @@ function debounce(func, wait) {
                                         <td><strong>Total Family Net Income:</strong> ₱${d.house_net_income || "-"}</td>
                                     </tr>
                                     <tr>
-                                        <td><strong>House (Owned/Rented):</strong> ${d.house_house || "-"} ${d.house_house_rent ? `(Rent: ₱${d.house_house_rent})` : ''}</td>
-                                        <td><strong>Lot (Owned/Rented):</strong> ${d.house_lot || "-"} ${d.house_lot_rent ? `(Rent: ₱${d.house_lot_rent})` : ''}</td>
+                                        <td><strong>House (Owned/Rented):</strong> ${d.house_house || "-"} ${d.house_rent ? `(Rent: ₱${d.house_rent})` : ''}</td>
+                                        <td><strong>Lot (Owned/Rented):</strong> ${d.house_lot || "-"} ${d.lot_rent ? `(Rent: ₱${d.lot_rent})` : ''}</td>
                                         <td><strong>Water:</strong> ₱${d.house_water || "-"}</td>
                                     </tr>
                                     <tr>
@@ -2514,7 +2514,7 @@ function debounce(func, wait) {
 
                 // Calculate expenses (house rent, lot rent, water, electric)
                 const houseRent = parseFloat(document.getElementById('house_rent').value) || 0;
-                const lotRent = parseFloat(document.getElementById('house_lot_rent').value) || 0;
+                const lotRent = parseFloat(document.getElementById('lot_rent').value) || 0;
                 const houseWater = parseFloat(document.getElementById('house_water').value) || 0;
                 const houseElectric = parseFloat(document.getElementById('house_electric').value) || 0;
                 
@@ -2567,7 +2567,7 @@ if (lotSelect) {
                         lotRentGroup.style.display = 'block';
                     } else {
                         lotRentGroup.style.display = 'none';
-                        document.getElementById('house_lot_rent').value = '';
+                        document.getElementById('lot_rent').value = '';
                         calculateIncomes(); // Recalculate when field changes
                     }
                 }
@@ -2753,8 +2753,8 @@ function populateEditModal(data) {
     console.log('Received data for populateEditModal:', data);
     console.log('house_house:', data.house_house);
     console.log('house_lot:', data.house_lot);
-    console.log('house_rent:', data.house_house_rent);
-    console.log('lot_rent:', data.house_lot_rent);
+    console.log('house_rent:', data.house_rent);
+    console.log('lot_rent:', data.lot_rent);
 
     document.getElementById('head_4ps').value = data.head_4ps || '';
     document.getElementById('head_ipno').value = data.head_ipno || '';
@@ -2777,9 +2777,9 @@ function populateEditModal(data) {
     document.getElementById('house_total_income').value = data.house_total_income || '';
     document.getElementById('house_net_income').value = data.house_net_income || '';
     document.getElementById('house_house').value = data.house_house || '';
-    document.getElementById('house_rent').value = data.house_house_rent || '';
+    document.getElementById('house_rent').value = data.house_rent || '';
     document.getElementById('house_lot').value = data.house_lot || '';
-    document.getElementById('lot_rent').value = data.house_lot_rent || '';
+    document.getElementById('lot_rent').value = data.lot_rent || '';
     document.getElementById('house_water').value = data.house_water || '';
     document.getElementById('house_electric').value = data.house_electric || '';
 
