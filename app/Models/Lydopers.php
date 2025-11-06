@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable; // << important
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens; // Add this for Sanctum
 
 class Lydopers extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, HasApiTokens; // Add HasApiTokens trait
 
     protected $table = 'tbl_lydopers';
     protected $primaryKey = 'lydopers_id';
-    public $timestamps = true; // set to true kung may created_at/updated_at
+    public $timestamps = true;
 
     protected $fillable = [
         'lydopers_fname','lydopers_mname','lydopers_lname','lydopers_suffix',
@@ -27,7 +28,7 @@ class Lydopers extends Authenticatable
         return $this->lydopers_pass;
     }
 
-    // Specify the column namek for authentication (username/email)
+    // Specify the column name for authentication (username/email)
     public function getAuthIdentifierName()
     {
         return 'lydopers_email';

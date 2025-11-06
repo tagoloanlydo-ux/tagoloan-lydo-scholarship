@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Scholar;
 use App\Models\Applicant;
+use App\Models\Lydopers;
 
 class AuthController extends Controller
 {
@@ -23,9 +24,9 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|string', // Changed from email to string to accept username
+            'email' => 'required|string',
             'password' => 'required|string',
-            'user_type' => 'required|in:user,scholar', // user for staff/admin, scholar for scholars
+            'user_type' => 'required|in:user,scholar',
         ]);
 
         if ($validator->fails()) {
@@ -48,9 +49,8 @@ class AuthController extends Controller
      */
     private function userLogin(Request $request)
     {
-        // Try to authenticate with lydopers table first (existing system)
-        // Try both username and email
-        $lydopers = \App\Models\Lydopers::where(function($query) use ($request) {
+        // Try to authenticate with lydopers table first
+        $lydopers = Lydopers::where(function($query) use ($request) {
                 $query->where('lydopers_username', $request->email)
                       ->orWhere('lydopers_email', $request->email);
             })
@@ -58,7 +58,8 @@ class AuthController extends Controller
             ->first();
 
         if ($lydopers && Hash::check($request->password, $lydopers->lydopers_pass)) {
-            $token = $this->generateApiToken($lydopers);
+            // Create Sanctum token
+            $token = $lydopers->createToken('mobile-app')->plainTextToken;
 
             return $this->successResponse([
                 'user' => [
@@ -73,9 +74,9 @@ class AuthController extends Controller
         }
 
         // Fallback to Laravel's default users table
-        $user = \App\Models\User::where('email', $request->email)->first();
-        if ($user && Hash::check($request->password, $user->password)) {
-            $token = $this->generateApiToken($user);
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            $user = Auth::user();
+            $token = $user->createToken('mobile-app')->plainTextToken;
 
             return $this->successResponse([
                 'user' => [
@@ -93,18 +94,18 @@ class AuthController extends Controller
     }
 
     /**
-     * Login for scholars
+     * Login for scholars - UPDATED FOR SANCTUM
      */
     private function scholarLogin(Request $request)
     {
-        // Find scholar by username from tbl_scholar
+        // Find scholar by username
         $scholar = Scholar::where('scholar_username', $request->email)->first();
 
         if (!$scholar) {
             return $this->errorResponse('Invalid credentials', 401);
         }
 
-        // Check password against scholar_pass in tbl_scholar
+        // Check password
         if (!Hash::check($request->password, $scholar->scholar_pass)) {
             return $this->errorResponse('Invalid credentials', 401);
         }
@@ -114,11 +115,11 @@ class AuthController extends Controller
             return $this->errorResponse('Account is inactive', 401);
         }
 
-        // Get applicant data through application relationship
+        // Get applicant data
         $applicant = $scholar->applicant;
 
-        // Create token for scholar
-        $token = $this->generateApiToken($scholar);
+        // Create Sanctum token for scholar
+        $token = $scholar->createToken('mobile-app')->plainTextToken;
 
         return $this->successResponse([
             'scholar' => [
@@ -133,23 +134,29 @@ class AuthController extends Controller
     }
 
     /**
-     * Logout
+     * Logout - UPDATED FOR SANCTUM
      */
     public function logout(Request $request)
     {
-        // Simple logout - just return success
-        return $this->successResponse(null, 'Logged out successfully');
+        try {
+            // Revoke the current access token
+            $request->user()->currentAccessToken()->delete();
+            
+            return $this->successResponse(null, 'Logged out successfully');
+        } catch (\Exception $e) {
+            return $this->errorResponse('Logout failed', 500);
+        }
     }
 
     /**
-     * Get user profile
+     * Get user profile - UPDATED FOR SANCTUM
      */
     public function profile(Request $request)
     {
         $user = $request->user();
 
+        // Check if it's a scholar
         if ($user instanceof Scholar) {
-            // Scholar profile
             $user->load('applicant');
             return $this->successResponse([
                 'scholar' => [
@@ -163,7 +170,12 @@ class AuthController extends Controller
         } else {
             // Staff/Admin profile
             return $this->successResponse([
-                'profile' => $user,
+                'user' => [
+                    'id' => $user->id ?? $user->lydopers_id,
+                    'name' => $user->name ?? $user->lydopers_fname . ' ' . $user->lydopers_lname,
+                    'email' => $user->email ?? $user->lydopers_email,
+                    'role' => $user->role ?? $user->lydopers_role,
+                ],
                 'type' => 'user'
             ]);
         }
@@ -237,9 +249,12 @@ class AuthController extends Controller
     private function sendUserOtp($email)
     {
         $user = User::where('email', $email)->first();
-
         if (!$user) {
-            return $this->errorResponse('Email not found', 404);
+            // Try Lydopers table
+            $lydopers = Lydopers::where('lydopers_email', $email)->first();
+            if (!$lydopers) {
+                return $this->errorResponse('Email not found', 404);
+            }
         }
 
         // Generate OTP
@@ -376,12 +391,21 @@ class AuthController extends Controller
      */
     private function resetUserPassword($email, $password)
     {
+        // Try User table first
         $user = User::where('email', $email)->first();
-        if (!$user) {
-            throw new \Exception('User not found');
+        if ($user) {
+            $user->update(['password' => Hash::make($password)]);
+            return;
         }
 
-        $user->update(['password' => Hash::make($password)]);
+        // Try Lydopers table
+        $lydopers = Lydopers::where('lydopers_email', $email)->first();
+        if ($lydopers) {
+            $lydopers->update(['lydopers_pass' => Hash::make($password)]);
+            return;
+        }
+
+        throw new \Exception('User not found');
     }
 
     /**
@@ -407,28 +431,12 @@ class AuthController extends Controller
             'role' => $request->role,
         ]);
 
-        $token = $this->generateApiToken($user);
+        $token = $user->createToken('mobile-app')->plainTextToken;
 
         return $this->successResponse([
             'user' => $user,
             'token' => $token,
         ], 'User registered successfully', 201);
-    }
-
-    /**
-     * Generate API token for user
-     */
-    private function generateApiToken($user)
-    {
-        // Generate a simple token using user ID and timestamp
-        $tokenData = [
-            'user_id' => $user->id ?? $user->scholar_id ?? $user->lydopers_id,
-            'user_type' => $user instanceof Scholar ? 'scholar' : 
-                          ($user instanceof \App\Models\Lydopers ? 'lydopers' : 'user'),
-            'timestamp' => time(),
-        ];
-        
-        return base64_encode(json_encode($tokenData));
     }
 
     /**
