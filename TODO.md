@@ -1,0 +1,1 @@
+without damaging the code bakit in /lydo_staff/screening yung value ng house_house,  house_lot. lot_rent, house_rent ay hindi niya ma fetch at makita sa family intake sheet modal addtional info tab fields

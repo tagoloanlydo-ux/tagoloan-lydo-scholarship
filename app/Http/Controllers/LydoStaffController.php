@@ -507,8 +507,6 @@ $listApplicants = DB::table("tbl_applicant as a")
         );
     }
 
-
-
 public function showIntakeSheet($application_personnel_id)
 {
     $intakeSheet = \App\Models\FamilyIntakeSheet::where('application_personnel_id', $application_personnel_id)->first();
@@ -532,16 +530,24 @@ public function showIntakeSheet($application_personnel_id)
         $data['applicant_gender'] = $applicantGender;
         $data['applicant_pob'] = $applicantPob;
         
-        // UPDATE THESE FIELDS TO NEW NAMES
+        // CORRECTED: Ensure all fields are properly mapped
         $data['house_house'] = $intakeSheet->house_house;
         $data['house_lot'] = $intakeSheet->house_lot;
-        $data['house_rent'] = $intakeSheet->house_rent; // Changed from house_house_rent
-        $data['lot_rent'] = $intakeSheet->lot_rent; // Changed from house_lot_rent
+        $data['house_rent'] = $intakeSheet->house_rent;
+        $data['lot_rent'] = $intakeSheet->lot_rent;
         $data['house_water'] = $intakeSheet->house_water;
         $data['house_electric'] = $intakeSheet->house_electric;
         $data['other_income'] = $intakeSheet->other_income;
         $data['house_total_income'] = $intakeSheet->house_total_income;
         $data['house_net_income'] = $intakeSheet->house_net_income;
+        
+        // Debug log to verify data
+        \Log::info('Intake Sheet Data:', [
+            'house_house' => $data['house_house'],
+            'house_lot' => $data['house_lot'],
+            'house_rent' => $data['house_rent'],
+            'lot_rent' => $data['lot_rent']
+        ]);
         
         return response()->json($data);
     } else {
@@ -552,8 +558,8 @@ public function showIntakeSheet($application_personnel_id)
             // Include empty values for house fields if no intake sheet exists
             'house_house' => null,
             'house_lot' => null,
-            'house_rent' => null, // Changed from house_house_rent
-            'lot_rent' => null, // Changed from house_lot_rent
+            'house_rent' => null,
+            'lot_rent' => null,
             'house_water' => null,
             'house_electric' => null,
             'other_income' => null,
@@ -562,6 +568,7 @@ public function showIntakeSheet($application_personnel_id)
         ]);
     }
 }
+
 public function updateIntakeSheet(Request $request, $application_personnel_id)
 {
     // Validation (kept simple; adjust as needed)
@@ -583,13 +590,11 @@ public function updateIntakeSheet(Request $request, $application_personnel_id)
         'house_net_income' => 'nullable|numeric',
         'other_income' => 'nullable|numeric',
         'house_house' => 'nullable|string|max:255',
-        'house_value' => 'nullable|numeric',
         'house_lot' => 'nullable|string|max:255',
-        'lot_value' => 'nullable|numeric',
-        'house_rent' => 'nullable|numeric', // Changed from house_house_rent
-        'lot_rent' => 'nullable|numeric', // Changed from house_lot_rent
-        'house_water' => 'nullable|string|max:255',
-        'house_electric' => 'nullable|string|max:255',
+        'house_rent' => 'nullable|numeric',
+        'lot_rent' => 'nullable|numeric',
+        'house_water' => 'nullable|numeric',
+        'house_electric' => 'nullable|numeric',
         'house_remarks' => 'nullable|string',
 
         // JSON fields
