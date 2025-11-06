@@ -109,7 +109,7 @@ class StatusController extends Controller
         $query->where('app.applicant_brgy', $request->barangay);
     }
 
-    $applications = $query->paginate();
+    $applications = $query->paginate(100000);
 
     // DEBUG final apps
     \Log::info("Final applications for view:", ['count' => $applications->count(), 'data' => $applications->items()]);
@@ -138,7 +138,7 @@ class StatusController extends Controller
     $debugListResults = $listQuery->get();
     \Log::info("List query results:", ['count' => $debugListResults->count(), 'data' => $debugListResults->toArray()]);
 
-    $listApplications = $listQuery->paginate(100, ['*'], 'list');
+    $listApplications = $listQuery->paginate(10000000, ['*'], 'list');
 
     $showBadge = !session('notifications_viewed');
     $tableApplicants = $applications;
