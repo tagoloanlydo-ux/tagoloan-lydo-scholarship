@@ -2533,23 +2533,35 @@ function debounce(func, wait) {
                 setCurrentDate();
 
                 // Add event listeners for house and lot toggles
-                const houseSelect = document.getElementById('house_house');
-                const lotSelect = document.getElementById('house_lot');
-                const houseRentGroup = document.getElementById('house_rent_group');
-                const lotRentGroup = document.getElementById('lot_rent_group');
+ // FIX: Properly handle rent field display based on saved data
+const houseSelect = document.getElementById('house_house');
+const lotSelect = document.getElementById('house_lot');
+const houseRentGroup = document.getElementById('house_rent_group');
+const lotRentGroup = document.getElementById('lot_rent_group');
 
-                function toggleHouseFields() {
-                    const value = houseSelect.value;
-                    if (value === 'Rent') {
-                        houseRentGroup.style.display = 'block';
-                    } else {
-                        houseRentGroup.style.display = 'none';
-                        document.getElementById('house_house_rent').value = '';
-                        calculateIncomes(); // Recalculate when field is hidden
-                    }
-                }
+// Show/hide house rent field based on saved value
+if (data.house_house === 'Rent') {
+    houseRentGroup.style.display = 'block';
+} else {
+    houseRentGroup.style.display = 'none';
+}
 
-                function toggleLotFields() {
+// Show/hide lot rent field based on saved value
+if (data.house_lot === 'Rent') {
+    lotRentGroup.style.display = 'block';
+} else {
+    lotRentGroup.style.display = 'none';
+}
+
+// Trigger change events to ensure proper initialization
+if (houseSelect) {
+    houseSelect.dispatchEvent(new Event('change'));
+}
+if (lotSelect) {
+    lotSelect.dispatchEvent(new Event('change'));
+}
+
+               function toggleLotFields() {
                     const value = lotSelect.value;
                     if (value === 'Rent') {
                         lotRentGroup.style.display = 'block';
