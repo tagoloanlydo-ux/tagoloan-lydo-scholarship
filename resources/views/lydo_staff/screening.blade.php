@@ -2734,120 +2734,128 @@ function debounce(func, wait) {
             });
 
             // Populate Edit Modal with existing data
-            function populateEditModal(data) {
-                // Populate head of family details
-                document.getElementById('head_4ps').value = data.head_4ps || '';
-                document.getElementById('head_ipno').value = data.head_ipno || '';
-                document.getElementById('head_address').value = data.head_address || '';
-                document.getElementById('head_zone').value = data.head_zone || '';
-                document.getElementById('head_educ').value = data.head_educ || '';
-                document.getElementById('head_occ').value = data.head_occ || '';
-                document.getElementById('head_religion').value = data.head_religion || '';
+ // Populate Edit Modal with existing data
+function populateEditModal(data) {
+    // Populate head of family details
+    document.getElementById('head_4ps').value = data.head_4ps || '';
+    document.getElementById('head_ipno').value = data.head_ipno || '';
+    document.getElementById('head_address').value = data.head_address || '';
+    document.getElementById('head_zone').value = data.head_zone || '';
+    document.getElementById('head_educ').value = data.head_educ || '';
+    document.getElementById('head_occ').value = data.head_occ || '';
+    document.getElementById('head_religion').value = data.head_religion || '';
 
-                // Only populate Place of Birth and Gender if intake sheet has saved values
-                if (data.head_pob) {
-                    document.getElementById('head_pob').value = data.head_pob;
-                }
-                if (data.applicant_gender) {
-                    document.getElementById('applicant_gender').value = data.applicant_gender;
-                }
+    // Only populate Place of Birth and Gender if intake sheet has saved values
+    if (data.head_pob) {
+        document.getElementById('head_pob').value = data.head_pob;
+    }
+    if (data.applicant_gender) {
+        document.getElementById('applicant_gender').value = data.applicant_gender;
+    }
 
-                // Populate household information
-                document.getElementById('other_income').value = data.other_income || '';
-                document.getElementById('house_total_income').value = data.house_total_income || '';
-                document.getElementById('house_net_income').value = data.house_net_income || '';
-                document.getElementById('house_house').value = data.house_house || '';
-                document.getElementById('house_house_rent').value = data.house_house_rent || '';
-                document.getElementById('house_lot').value = data.house_lot || '';
-                document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
-                document.getElementById('house_water').value = data.house_water || '';
-                document.getElementById('house_electric').value = data.house_electric || '';
+    // Populate household information
+    document.getElementById('other_income').value = data.other_income || '';
+    document.getElementById('house_total_income').value = data.house_total_income || '';
+    document.getElementById('house_net_income').value = data.house_net_income || '';
+    document.getElementById('house_house').value = data.house_house || '';
+    document.getElementById('house_house_rent').value = data.house_house_rent || '';
+    document.getElementById('house_lot').value = data.house_lot || '';
+    document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
+    document.getElementById('house_water').value = data.house_water || '';
+    document.getElementById('house_electric').value = data.house_electric || '';
 
-                // Handle conditional fields for house and lot
-                const houseSelect = document.getElementById('house_house');
-                const lotSelect = document.getElementById('house_lot');
+    // FIX: Properly handle rent field display based on saved data
+    const houseSelect = document.getElementById('house_house');
+    const lotSelect = document.getElementById('house_lot');
+    const houseRentGroup = document.getElementById('house_rent_group');
+    const lotRentGroup = document.getElementById('lot_rent_group');
 
-                // Directly call the toggle functions to ensure rent fields are shown/hidden correctly
-                if (houseSelect) {
-                    toggleHouseFields();
-                }
-                if (lotSelect) {
-                    toggleLotFields();
-                }
+    // Show/hide house rent field based on saved value
+    if (data.house_house === 'Rent') {
+        houseRentGroup.style.display = 'block';
+    } else {
+        houseRentGroup.style.display = 'none';
+    }
 
-                // Populate remarks
-                document.getElementById('remarks').value = data.remarks || '';
+    // Show/hide lot rent field based on saved value
+    if (data.house_lot === 'Rent') {
+        lotRentGroup.style.display = 'block';
+    } else {
+        lotRentGroup.style.display = 'none';
+    }
 
-                // Populate health & signatures
-                // Only overwrite worker_name if the intake record actually has a value.
-                // Otherwise keep the readonly session-provided name already rendered in the input.
-                if (data.worker_name && String(data.worker_name).trim() !== '') {
-                    document.getElementById('worker_name').value = data.worker_name;
-                }
-                // Officer name may be edited every time — keep existing logic
-                if (data.officer_name && String(data.officer_name).trim() !== '') {
-                    document.getElementById('officer_name').value = data.officer_name;
-                }
+    // Populate remarks
+    document.getElementById('remarks').value = data.remarks || '';
 
-                // Populate family members
-                if (data.family_members) {
-                    let familyMembers = data.family_members;
-                    if (typeof familyMembers === 'string') {
-                        try {
-                            familyMembers = JSON.parse(familyMembers);
-                        } catch (e) {
-                            familyMembers = [];
-                        }
-                    }
-                    if (Array.isArray(familyMembers)) {
-                        familyMembers.forEach(member => {
-                            addFamilyMemberRow();
-                            const rows = document.querySelectorAll('#family_members_tbody tr');
-                            const lastRow = rows[rows.length - 1];
-                            lastRow.cells[0].querySelector('input').value = member.name || '';
-                            lastRow.cells[1].querySelector('select').value = member.relationship || member.relation || '';
-                            lastRow.cells[2].querySelector('input').value = member.birthdate || member.birth || '';
-                            lastRow.cells[3].querySelector('input').value = member.age || '';
-                            lastRow.cells[4].querySelector('select').value = member.sex || '';
-                            lastRow.cells[5].querySelector('select').value = member.civil_status || member.civil || '';
-                            lastRow.cells[6].querySelector('select').value = member.education || member.educ || '';
-                            lastRow.cells[7].querySelector('input').value = member.occupation || member.occ || '';
-                            lastRow.cells[8].querySelector('input').value = member.monthly_income || member.income || '';
-                            lastRow.cells[9].querySelector('select').value = member.remarks || '';
-                        });
-                    }
-                }
+    // Populate health & signatures
+    // Only overwrite worker_name if the intake record actually has a value.
+    // Otherwise keep the readonly session-provided name already rendered in the input.
+    if (data.worker_name && String(data.worker_name).trim() !== '') {
+        document.getElementById('worker_name').value = data.worker_name;
+    }
+    // Officer name may be edited every time — keep existing logic
+    if (data.officer_name && String(data.officer_name).trim() !== '') {
+        document.getElementById('officer_name').value = data.officer_name;
+    }
 
-                // Populate service records
-                if (data.rv_service_records) {
-                    let serviceRecords = data.rv_service_records;
-                    if (typeof serviceRecords === 'string') {
-                        try {
-                            serviceRecords = JSON.parse(serviceRecords);
-                        } catch (e) {
-                            serviceRecords = [];
-                        }
-                    }
-                    if (Array.isArray(serviceRecords)) {
-                        serviceRecords.forEach(record => {
-                            addRvServiceRecordRow();
-                            const rows = document.querySelectorAll('#rv_service_records_tbody tr');
-                            const lastRow = rows[rows.length - 1];
-                            // Only set the date if it's not already set to current date
-                            if (!lastRow.cells[0].querySelector('input').value) {
-                                lastRow.cells[0].querySelector('input').value = record.date || '';
-                            }
-                            lastRow.cells[1].querySelector('input').value = record.problem || '';
-                            lastRow.cells[2].querySelector('input').value = record.action || '';
-                            lastRow.cells[3].querySelector('select').value = record.remarks || '';
-                        });
-                    }
-                }
-
-                // Calculate incomes after populating data
-                setTimeout(calculateIncomes, 100);
+    // Populate family members
+    if (data.family_members) {
+        let familyMembers = data.family_members;
+        if (typeof familyMembers === 'string') {
+            try {
+                familyMembers = JSON.parse(familyMembers);
+            } catch (e) {
+                familyMembers = [];
             }
+        }
+        if (Array.isArray(familyMembers)) {
+            familyMembers.forEach(member => {
+                addFamilyMemberRow();
+                const rows = document.querySelectorAll('#family_members_tbody tr');
+                const lastRow = rows[rows.length - 1];
+                lastRow.cells[0].querySelector('input').value = member.name || '';
+                lastRow.cells[1].querySelector('select').value = member.relationship || member.relation || '';
+                lastRow.cells[2].querySelector('input').value = member.birthdate || member.birth || '';
+                lastRow.cells[3].querySelector('input').value = member.age || '';
+                lastRow.cells[4].querySelector('select').value = member.sex || '';
+                lastRow.cells[5].querySelector('select').value = member.civil_status || member.civil || '';
+                lastRow.cells[6].querySelector('select').value = member.education || member.educ || '';
+                lastRow.cells[7].querySelector('input').value = member.occupation || member.occ || '';
+                lastRow.cells[8].querySelector('input').value = member.monthly_income || member.income || '';
+                lastRow.cells[9].querySelector('select').value = member.remarks || '';
+            });
+        }
+    }
 
+    // Populate service records
+    if (data.rv_service_records) {
+        let serviceRecords = data.rv_service_records;
+        if (typeof serviceRecords === 'string') {
+            try {
+                serviceRecords = JSON.parse(serviceRecords);
+            } catch (e) {
+                serviceRecords = [];
+            }
+        }
+        if (Array.isArray(serviceRecords)) {
+            serviceRecords.forEach(record => {
+                addRvServiceRecordRow();
+                const rows = document.querySelectorAll('#rv_service_records_tbody tr');
+                const lastRow = rows[rows.length - 1];
+                // Only set the date if it's not already set to current date
+                if (!lastRow.cells[0].querySelector('input').value) {
+                    lastRow.cells[0].querySelector('input').value = record.date || '';
+                }
+                lastRow.cells[1].querySelector('input').value = record.problem || '';
+                lastRow.cells[2].querySelector('input').value = record.action || '';
+                lastRow.cells[3].querySelector('select').value = record.remarks || '';
+            });
+        }
+    }
+
+    // Calculate incomes after populating data
+    setTimeout(calculateIncomes, 100);
+}
             // Signature modal variables
             let signaturePad = null;
             let currentSignatureType = '';
