@@ -63,12 +63,11 @@ Route::middleware(['role:lydo_admin'])->group(function () {
     Route::get('/lydo_admin/status', [LydoAdminController::class, 'status'])->name('LydoAdmin.status');
     Route::post('/lydo_admin/update-scholar-status', [LydoAdminController::class, 'updateScholarStatus'])->name('LydoAdmin.updateScholarStatus');
     Route::get('/lydo_admin/settings', [LydoAdminController::class, 'settings'])->name('LydoAdmin.settings');
-Route::put('/lydo_admin/announcement/{id}', [LydoAdminController::class, 'updateAnnouncement'])->name('LydoAdmin.updateAnnouncement');
+    Route::put('/lydo_admin/announcement/{id}', [LydoAdminController::class, 'updateAnnouncement'])->name('LydoAdmin.updateAnnouncement');
+    Route::get('/lydo_admin/get-scholar-documents/{scholar_id}', [LydoAdminController::class, 'getScholarDocuments'])->name('LydoAdmin.getScholarDocuments');
     Route::put('/lydo_admin/update-password', [LydoAdminController::class, 'updatePassword'])->name('LydoAdmin.updatePassword');
     Route::put('/lydo_admin/update-deadlines', [LydoAdminController::class, 'updateDeadlines'])->name('LydoAdmin.updateDeadlines');
     Route::put('/lydo_admin/update-personal-info/{id}', [LydoAdminController::class, 'updatePersonalInfo'])->name('LydoAdmin.updatePersonalInfo');
-    Route::get('/lydo_admin/report', [LydoAdminController::class, 'report'])->name('LydoAdmin.report');
-    Route::post('/lydo_admin/report', [LydoAdminController::class, 'report'])->name('LydoAdmin.report.post');
     Route::get('/lydo_admin/applicants', [LydoAdminController::class, 'applicants'])->name('LydoAdmin.applicants');
     Route::get('/lydo_admin/get-all-filtered-applicants', [LydoAdminController::class, 'getAllFilteredApplicants'])->name('LydoAdmin.getAllFilteredApplicants');
     Route::get('/lydo_admin/get-all-filtered-scholars', [LydoAdminController::class, 'getAllFilteredScholars'])->name('LydoAdmin.getAllFilteredScholars');
@@ -85,7 +84,11 @@ Route::put('/lydo_admin/announcement/{id}', [LydoAdminController::class, 'update
     Route::get('/lydo_admin/report/pdf/summary', [LydoAdminController::class, 'generateSummaryPdf'])->name('LydoAdmin.report.pdf.summary');
     Route::get('/lydo_admin/get-scholars-by-barangay', [LydoAdminController::class, 'getScholarsByBarangay'])->name('LydoAdmin.getScholarsByBarangay');
     Route::get('/lydo_admin/get-scholars-with-disbursement', [LydoAdminController::class, 'getScholarsWithDisbursement'])->name('LydoAdmin.getScholarsWithDisbursement');
-Route::get('/lydo_admin/disbursement-pdf', [LydoAdminController::class, 'generateDisbursementPdf'])->name('LydoAdmin.disbursementPdf');    Route::get('/lydo_admin/get-scholars-without-disbursement', [LydoAdminController::class, 'getScholarsWithoutDisbursement'])->name('LydoAdmin.getScholarsWithoutDisbursement');
+    Route::get('/lydo_admin/generate-disbursement-records-pdf', [LydoAdminController::class, 'generateDisbursementRecordsPdf'])->name('LydoAdmin.generateDisbursementRecordsPdf');
+    Route::get('/lydo_admin/disbursement-pdf', [LydoAdminController::class, 'generateDisbursementPdf'])->name('LydoAdmin.disbursementPdf');
+    Route::get('/lydo_admin/scholars/pdf', [LydoAdminController::class, 'generateScholarsPdf'])->name('LydoAdmin.scholars.pdf');
+    Route::get('/lydo_admin/scholar/{scholarId}/documents', [LydoAdminController::class, 'getScholarDocuments'])->name('LydoAdmin.scholar.documents');
+    Route::get('/lydo_admin/get-scholars-without-disbursement', [LydoAdminController::class, 'getScholarsWithoutDisbursement'])->name('LydoAdmin.getScholarsWithoutDisbursement');
 });
 
 Route::middleware(['role:lydo_staff'])->group(function () {
@@ -122,6 +125,7 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::post('/lydo_staff/mark-document-updated/{renewalId}', [RenewalController::class, 'markDocumentAsUpdated']);
     Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments']);
     Route::put('/lydo_staff/update-password', [LydoStaffController::class, 'updatePassword'])->name('lydo_staff.updatePassword');
+
 });
 
 // Mayor Staff Routes - Only accessible by mayor_staff role

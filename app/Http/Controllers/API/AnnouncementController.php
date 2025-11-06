@@ -84,7 +84,7 @@ class AnnouncementController extends Controller
         $validator = Validator::make($request->all(), [
             'announce_title' => 'required|string|max:255',
             'announce_content' => 'required|string',
-            'announce_type' => 'required|string|in:applicants,scholars',
+            'announce_type' => 'required|string|in:applicant,scholar',
         ]);
 
         if ($validator->fails()) {
@@ -160,5 +160,11 @@ class AnnouncementController extends Controller
         } catch (\Exception $e) {
             return $this->errorResponse('Failed to delete announcement: ' . $e->getMessage(), 500);
         }
+    }
+
+    public function getScholarAnnouncements(Request $request)
+    {
+        $request->merge(['type' => 'scholar']);
+        return $this->index($request);
     }
 }

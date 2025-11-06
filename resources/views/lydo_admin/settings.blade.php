@@ -214,13 +214,6 @@
         </div>
     </a>
 </li>
-
-        <li>
-          <a href="/lydo_admin/report" class=" flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
-            <i class="bx bxs-report text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Reports</span>
-          </a>
-        </li>
       </ul>
 
       <ul class="side-menu space-y-1">

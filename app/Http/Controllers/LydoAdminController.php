@@ -13,448 +13,7 @@ use App\Models\Disburse;
 use App\Models\Settings;
 class LydoAdminController extends Controller
 {
-    public function getFilteredApplicantsWithRemarks(Request $request)
-{
-    $query = DB::table('tbl_application_personnel')
-        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-        ->select('tbl_applicant.*', 'tbl_application_personnel.remarks')
-        ->where('tbl_application_personnel.initial_screening', 'Approved');
 
-    // Apply search filter
-    if ($request->has('search') && !empty($request->search)) {
-        $query->where(function($q) use ($request) {
-            $q->where('applicant_fname', 'like', '%' . $request->search . '%')
-              ->orWhere('applicant_lname', 'like', '%' . $request->search . '%');
-        });
-    }
-
-    // Apply barangay filter
-    if ($request->has('barangay') && !empty($request->barangay)) {
-        $query->where('applicant_brgy', $request->barangay);
-    }
-
-    // Apply academic year filter
-    if ($request->has('academic_year') && !empty($request->academic_year)) {
-        $query->where('applicant_acad_year', $request->academic_year);
-    }
-
-    // Apply remarks filter
-    if ($request->has('remarks') && !empty($request->remarks)) {
-        $query->where('tbl_application_personnel.remarks', $request->remarks);
-    }
-
-    // Apply status filter
-    if ($request->has('status') && !empty($request->status)) {
-        $query->where('tbl_application_personnel.status', $request->status);
-    }
-
-    $applicants = $query->get();
-
-    // Format the data for JSON response
-    $formattedApplicants = $applicants->map(function ($applicant) {
-        return [
-            'applicant_fname' => $applicant->applicant_fname,
-            'applicant_lname' => $applicant->applicant_lname,
-            'applicant_email' => $applicant->applicant_email,
-            'applicant_contact_number' => $applicant->applicant_contact_number,
-            'applicant_brgy' => $applicant->applicant_brgy,
-            'remarks' => $applicant->remarks,
-        ];
-    });
-
-    return response()->json([
-        'success' => true,
-        'applicants' => $formattedApplicants
-    ]);
-}
-    public function report(Request $request)
-    {
-        // Notifications
-        $notifications = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select(
-                'tbl_applicant.applicant_fname as name',
-                'tbl_application_personnel.status as status',
-                'tbl_application_personnel.updated_at as created_at',
-                DB::raw("'application' as type")
-            )
-            ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-            
-            ->unionAll(
-                DB::table('tbl_renewal')
-                    ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                    ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                    ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                    ->select(
-                        'tbl_applicant.applicant_fname as name',
-                        'tbl_renewal.renewal_status as status',
-                        'tbl_renewal.updated_at as created_at',
-                        DB::raw("'renewal' as type")
-                    )
-                    ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-            )
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // Total applicants count
-        $totalApplicants = DB::table('tbl_applicant')->count();
-
-        // Approved initial screening count
-        $approvedInitialCount = DB::table('tbl_application_personnel')
-            ->where('initial_screening', 'Approved')
-            ->count();
-
-        // Rejected applicants count
-        $rejectedApplicantsCount = DB::table('tbl_application_personnel')
-            ->where('status', 'Rejected')
-            ->count();
-
-        // Inactive scholars count
-        $inactiveScholarsCount = DB::table('tbl_scholar')
-            ->where('scholar_status', 'inactive')
-            ->count();
-
-        // Active scholars count
-        $activeScholarsCount = DB::table('tbl_scholar')
-            ->where('scholar_status', 'active')
-            ->count();
-
-        // Line graph data for approved vs rejected applications trend by academic year
-        $years = DB::table('tbl_applicant')
-            ->select('applicant_acad_year')
-            ->distinct()
-            ->orderBy('applicant_acad_year')
-            ->pluck('applicant_acad_year')
-            ->toArray();
-
-        // If no years data, use current academic year as default
-        if (empty($years)) {
-            $currentYear = date('Y');
-            $years = [$currentYear . '-' . ($currentYear + 1)];
-        }
-
-        $approvedApplicationsTrend = [];
-        $rejectedApplicationsTrend = [];
-        $approvalRateTrend = [];
-        $activeScholarsTrend = [];
-        $inactiveScholarsTrend = [];
-
-        foreach ($years as $year) {
-            $approvedApplications = DB::table('tbl_application_personnel')
-                ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-                ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                ->where('tbl_applicant.applicant_acad_year', $year)
-                ->where('tbl_application_personnel.status', 'Approved')
-                ->count();
-
-            $rejectedApplications = DB::table('tbl_application_personnel')
-                ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-                ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                ->where('tbl_applicant.applicant_acad_year', $year)
-                ->where('tbl_application_personnel.status', 'Rejected')
-                ->count();
-
-            $approvedApplicationsTrend[] = $approvedApplications;
-            $rejectedApplicationsTrend[] = $rejectedApplications;
-
-            // Calculate approval rate percentage
-            $totalApplications = $approvedApplications + $rejectedApplications;
-            $approvalRate = $totalApplications > 0 ? round(($approvedApplications / $totalApplications) * 100, 2) : 0;
-            $approvalRateTrend[] = $approvalRate;
-
-            // Calculate active and inactive scholars for each year (keeping this for the other chart)
-            $activeScholars = DB::table('tbl_scholar')
-                ->whereYear('date_activated', $year)
-                ->where('scholar_status', 'active')
-                ->count();
-            $activeScholarsTrend[] = $activeScholars;
-
-            $inactiveScholars = DB::table('tbl_scholar')
-                ->whereYear('date_activated', $year)
-                ->where('scholar_status', 'inactive')
-                ->count();
-            $inactiveScholarsTrend[] = $inactiveScholars;
-        }
-
-        // Check if this is an AJAX request for filtering
-   if ($request->ajax()) {
-    if ($request->input('tab') === 'applicants') {
-        return $this->getFilteredApplicantsWithRemarks($request);
-    } else {
-        return $this->getFilteredScholars($request);
-    }
-}
-
-        // Fetch scholars for the second tab
-        $query = DB::table('tbl_scholar')
-            ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select('tbl_scholar.*', 'tbl_applicant.*');
-
-        // Apply search filter
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('applicant_fname', 'like', '%' . $request->search . '%')
-                  ->orWhere('applicant_lname', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        // Apply barangay filter
-        if ($request->has('barangay') && !empty($request->barangay)) {
-            $query->where('applicant_brgy', $request->barangay);
-        }
-
-        // Apply status filter
-        if ($request->has('status') && !empty($request->status)) {
-            $query->where('scholar_status', $request->status);
-        }
-
-        $scholars = $query->paginate(15);
-
-        // Get distinct barangays for filter dropdown
-        $barangays = DB::table('tbl_applicant')
-            ->select('applicant_brgy')
-            ->distinct()
-            ->orderBy('applicant_brgy', 'asc')
-            ->pluck('applicant_brgy');
-
-        // Get distinct statuses for filter dropdown
-        $statuses = DB::table('tbl_scholar')
-            ->select('scholar_status')
-            ->distinct()
-            ->orderBy('scholar_status', 'asc')
-            ->pluck('scholar_status');
-
-        // Get distinct academic years for filter dropdown
-        $academicYears = DB::table('tbl_applicant')
-            ->select('applicant_acad_year')
-            ->distinct()
-            ->orderBy('applicant_acad_year', 'desc')
-            ->pluck('applicant_acad_year');
-
-        // Get distinct remarks for filter dropdown with badge and icon mappings
-        $remarksData = DB::table('tbl_application_personnel')
-            ->select('remarks')
-            ->whereNotNull('remarks')
-            ->where('remarks', '!=', '')
-            ->distinct()
-            ->orderBy('remarks', 'asc')
-            ->get();
-
-        // Create a mapping of remarks to their display properties
-        $remarks = $remarksData->map(function ($remark) {
-            // Ensure remarks is a string and not null
-            $remarksValue = is_string($remark->remarks) ? $remark->remarks : (string) $remark->remarks;
-
-            // Simple mapping based on remark content
-            $badgeClass = 'bg-gray-100 text-gray-800';
-            $iconClass = 'fas fa-question-circle';
-
-            if (stripos($remarksValue, 'approved') !== false || stripos($remarksValue, 'passed') !== false) {
-                $badgeClass = 'bg-green-100 text-green-800';
-                $iconClass = 'fas fa-check-circle';
-            } elseif (stripos($remarksValue, 'rejected') !== false || stripos($remarksValue, 'failed') !== false) {
-                $badgeClass = 'bg-red-100 text-red-800';
-                $iconClass = 'fas fa-times-circle';
-            } elseif (stripos($remarksValue, 'pending') !== false || stripos($remarksValue, 'review') !== false) {
-                $badgeClass = 'bg-yellow-100 text-yellow-800';
-                $iconClass = 'fas fa-clock';
-            }
-
-            return (object) [
-                'remarks' => $remarksValue,
-                'badge_class' => $badgeClass,
-                'icon_class' => $iconClass
-            ];
-        });
-
-        // Fetch applicants with remarks for the third tab (only reviewed initial screening)
-        $applicantsQuery = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select('tbl_applicant.*', 'tbl_application_personnel.remarks')
-            ->where('tbl_application_personnel.initial_screening', 'Approved');
-
-        // Apply search filter
-        if ($request->has('search') && !empty($request->search)) {
-            $applicantsQuery->where(function($q) use ($request) {
-                $q->where('applicant_fname', 'like', '%' . $request->search . '%')
-                  ->orWhere('applicant_lname', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        // Apply barangay filter
-        if ($request->has('barangay') && !empty($request->barangay)) {
-            $applicantsQuery->where('applicant_brgy', $request->barangay);
-        }
-
-        // Apply academic year filter
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
-            $applicantsQuery->where('applicant_acad_year', $request->academic_year);
-        }
-
-        // Apply remarks filter
-        if ($request->has('remarks') && !empty($request->remarks)) {
-            $applicantsQuery->where('tbl_application_personnel.remarks', $request->remarks);
-        }
-
-        $applicantsWithRemarks = $applicantsQuery->paginate(15);
-
-        // Fix remarks field - ensure it's cast to string to prevent stdClass errors
-        $applicantsWithRemarks->getCollection()->transform(function ($applicant) {
-            if (isset($applicant->remarks)) {
-                // Handle different data types that might be stored in remarks
-                if (is_object($applicant->remarks)) {
-                    // If it's an object/stdClass, convert to string representation
-                    $applicant->remarks = json_encode($applicant->remarks);
-                } elseif (is_array($applicant->remarks)) {
-                    // If it's an array, convert to JSON string
-                    $applicant->remarks = json_encode($applicant->remarks);
-                } elseif (!is_string($applicant->remarks)) {
-                    // If it's any other non-string type, cast to string
-                    $applicant->remarks = (string) $applicant->remarks;
-                }
-                // If it's null or empty, set to empty string
-                if (empty($applicant->remarks) || $applicant->remarks === 'null') {
-                    $applicant->remarks = '';
-                }
-            } else {
-                $applicant->remarks = '';
-            }
-            return $applicant;
-        });
-
-
-        // Fetch school demographic data for the fourth tab
-        $schoolDemographics = DB::table('tbl_scholar')
-            ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select('tbl_applicant.applicant_school_name', DB::raw('count(*) as total'))
-            ->groupBy('tbl_applicant.applicant_school_name')
-            ->get();
-
-        // Fetch barangay demographic data for the fifth tab
-        $barangayDemographics = DB::table('tbl_applicant')
-            ->select('applicant_brgy', DB::raw('count(*) as total'))
-            ->groupBy('applicant_brgy')
-            ->get();
-
-        // Fetch renewal applications for the new tab (Approved and Rejected only)
-        $renewalQuery = DB::table('tbl_renewal')
-            ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-            ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select(
-                'tbl_renewal.renewal_id',
-                'tbl_renewal.renewal_status',
-                'tbl_renewal.date_submitted',
-                'tbl_renewal.renewal_semester',
-                'tbl_renewal.renewal_acad_year',
-                'tbl_applicant.applicant_fname',
-                'tbl_applicant.applicant_mname',
-                'tbl_applicant.applicant_lname',
-                'tbl_applicant.applicant_suffix',
-                'tbl_applicant.applicant_school_name',
-                'tbl_applicant.applicant_brgy',
-                'tbl_applicant.applicant_course',
-                'tbl_applicant.applicant_year_level'
-            )
-            ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected']);
-
-        // Apply filters for initial load
-        if ($request->has('search') && !empty($request->search)) {
-            $renewalQuery->where(function($q) use ($request) {
-                $q->where('applicant_fname', 'like', '%' . $request->search . '%')
-                  ->orWhere('applicant_lname', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        if ($request->has('barangay') && !empty($request->barangay)) {
-            $renewalQuery->where('applicant_brgy', $request->barangay);
-        }
-
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
-            $renewalQuery->where('renewal_acad_year', $request->academic_year);
-        }
-
-        if ($request->has('status') && !empty($request->status) && in_array($request->status, ['Approved', 'Rejected'])) {
-            $renewalQuery->where('renewal_status', $request->status);
-        }
-
-        $approvedRenewals = $renewalQuery->get();
-
-        return view('lydo_admin.report', compact(
-            'totalApplicants',
-            'approvedInitialCount',
-            'rejectedApplicantsCount',
-            'inactiveScholarsCount',
-            'activeScholarsCount',
-            'approvedApplicationsTrend',
-            'rejectedApplicationsTrend',
-            'approvalRateTrend',
-            'activeScholarsTrend',
-            'inactiveScholarsTrend',
-            'scholars',
-            'applicantsWithRemarks',
-            'schoolDemographics',
-            'barangayDemographics',
-            'approvedRenewals',
-            'notifications',
-            'years',
-            'barangays',
-            'statuses',
-            'academicYears',
-            'remarks'
-        ));
-    }
-
-    private function getFilteredScholars(Request $request)
-    {
-        $query = DB::table('tbl_scholar')
-            ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select('tbl_scholar.*', 'tbl_applicant.*');
-
-        // Apply search filter
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('applicant_fname', 'like', '%' . $request->search . '%')
-                  ->orWhere('applicant_lname', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        // Apply barangay filter
-        if ($request->has('barangay') && !empty($request->barangay)) {
-            $query->where('applicant_brgy', $request->barangay);
-        }
-
-        // Apply academic year filter
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
-            $query->where('applicant_acad_year', $request->academic_year);
-        }
-
-        $scholars = $query->get();
-
-        // Format the data for JSON response
-        $formattedScholars = $scholars->map(function ($scholar) {
-            return [
-                'applicant_fname' => $scholar->applicant_fname,
-                'applicant_lname' => $scholar->applicant_lname,
-                'applicant_school_name' => $scholar->applicant_school_name,
-                'applicant_course' => $scholar->applicant_course,
-                'applicant_year_level' => $scholar->applicant_year_level,
-                'applicant_brgy' => $scholar->applicant_brgy,
-                'scholar_status' => $scholar->scholar_status,
-            ];
-        });
-
-        return response()->json([
-            'success' => true,
-            'scholars' => $formattedScholars
-        ]);
-    }
     public function announcement()
     {
         $notifications = DB::table('tbl_application_personnel')
@@ -715,93 +274,100 @@ class LydoAdminController extends Controller
         return view('lydo_admin.mayor', compact('notifications', 'inactiveStaff', 'activeStaff'));
     }
 
-    public function scholar(Request $request)
-    {
-        $notifications = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select(
-                'tbl_applicant.applicant_fname as name',
-                'tbl_application_personnel.status as status',
-                'tbl_application_personnel.updated_at as created_at',
-                DB::raw("'application' as type")
-            )
-            ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-            
-            ->unionAll(
-                DB::table('tbl_renewal')
-                    ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                    ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                    ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                    ->select(
-                        'tbl_applicant.applicant_fname as name',
-                        'tbl_renewal.renewal_status as status',
-                        'tbl_renewal.updated_at as created_at',
-                        DB::raw("'renewal' as type")
-                    )
-                    ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-            )
-            ->orderBy('created_at', 'desc')
-            ->get();
+public function scholar(Request $request)
+{
+    $notifications = DB::table('tbl_application_personnel')
+        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
+        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+        ->select(
+            'tbl_applicant.applicant_fname as name',
+            'tbl_application_personnel.status as status',
+            'tbl_application_personnel.updated_at as created_at',
+            DB::raw("'application' as type")
+        )
+        ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
+        
+        ->unionAll(
+            DB::table('tbl_renewal')
+                ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
+                ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
+                ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+                ->select(
+                    'tbl_applicant.applicant_fname as name',
+                    'tbl_renewal.renewal_status as status',
+                    'tbl_renewal.updated_at as created_at',
+                    DB::raw("'renewal' as type")
+                )
+                ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
+        )
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-        // Get scholars with applicant information - only active status
-        $query = DB::table('tbl_scholar as s')
-            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
-            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-            ->select(
-                's.scholar_id',
-                's.scholar_status',
-                's.date_activated',
-                'a.applicant_id',
-                'a.applicant_fname',
-                'a.applicant_mname',
-                'a.applicant_lname',
-                'a.applicant_suffix',
-                'a.applicant_brgy',
-                'a.applicant_email',
-                'a.applicant_contact_number',
-                'a.applicant_school_name',
-                'a.applicant_course',
-                'a.applicant_year_level',
-                'a.applicant_acad_year'
-            )
-            ->where('s.scholar_status', 'active');
+    // Get scholars with applicant information - include both active and inactive
+    $query = DB::table('tbl_scholar as s')
+        ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+        ->select(
+            's.scholar_id',
+            's.scholar_status',
+            's.date_activated',
+            'a.applicant_id',
+            'a.applicant_fname',
+            'a.applicant_mname',
+            'a.applicant_lname',
+            'a.applicant_suffix',
+            'a.applicant_brgy',
+            'a.applicant_email',
+            'a.applicant_contact_number',
+            'a.applicant_school_name',
+            'a.applicant_course',
+            'a.applicant_year_level',
+            'a.applicant_acad_year'
+        );
 
-        // Apply filters
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
-                  ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%');
-            });
-        }
+    // Apply status filter - default to active
+    $statusFilter = $request->get('status', 'active');
+    if ($statusFilter === 'active') {
+        $query->where('s.scholar_status', 'active');
+    } elseif ($statusFilter === 'inactive') {
+        $query->where('s.scholar_status', 'inactive');
+    }
+    // If 'all' is selected, show both active and inactive
 
-        if ($request->has('barangay') && !empty($request->barangay)) {
-            $query->where('a.applicant_brgy', $request->barangay);
-        }
-
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
-            $query->where('a.applicant_acad_year', $request->academic_year);
-        }
-
-        $scholars = $query->paginate(30);
-
-        // Get distinct barangays for filter dropdown
-        $barangays = DB::table('tbl_applicant')
-            ->select('applicant_brgy')
-            ->distinct()
-            ->orderBy('applicant_brgy', 'asc')
-            ->pluck('applicant_brgy');
-
-        // Get distinct academic years for filter dropdown
-        $academicYears = DB::table('tbl_applicant')
-            ->select('applicant_acad_year')
-            ->distinct()
-            ->orderBy('applicant_acad_year', 'desc')
-            ->pluck('applicant_acad_year');
-
-        return view('lydo_admin.scholar', compact('notifications', 'scholars', 'barangays', 'academicYears'));
+    // Apply other filters
+    if ($request->has('search') && !empty($request->search)) {
+        $query->where(function($q) use ($request) {
+            $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
+              ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%');
+        });
     }
 
+    if ($request->has('barangay') && !empty($request->barangay)) {
+        $query->where('a.applicant_brgy', $request->barangay);
+    }
+
+    if ($request->has('academic_year') && !empty($request->academic_year)) {
+        $query->where('a.applicant_acad_year', $request->academic_year);
+    }
+
+    $scholars = $query->get(0);
+
+    // Get distinct barangays for filter dropdown
+    $barangays = DB::table('tbl_applicant')
+        ->select('applicant_brgy')
+        ->distinct()
+        ->orderBy('applicant_brgy', 'asc')
+        ->pluck('applicant_brgy');
+
+    // Get distinct academic years for filter dropdown
+    $academicYears = DB::table('tbl_applicant')
+        ->select('applicant_acad_year')
+        ->distinct()
+        ->orderBy('applicant_acad_year', 'desc')
+        ->pluck('applicant_acad_year');
+
+    return view('lydo_admin.scholar', compact('notifications', 'scholars', 'barangays', 'academicYears', 'statusFilter'));
+}
     public function sendEmail(Request $request)
     {
         $request->validate([
@@ -1279,47 +845,110 @@ public function disbursement(Request $request)
         }
     }
 
-    public function applicants(Request $request)
-    {
-        $notifications = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select(
-                'tbl_applicant.applicant_fname as name',
-                'tbl_application_personnel.status as status',
-                'tbl_application_personnel.updated_at as created_at',
-                DB::raw("'application' as type")
-            )
-            ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
+  public function applicants(Request $request)
+{
+    $notifications = DB::table('tbl_application_personnel')
+        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
+        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+        ->select(
+            'tbl_applicant.applicant_fname as name',
+            'tbl_application_personnel.status as status',
+            'tbl_application_personnel.updated_at as created_at',
+            DB::raw("'application' as type")
+        )
+        ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
 
-            ->unionAll(
-                DB::table('tbl_renewal')
-                    ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                    ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                    ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                    ->select(
-                        'tbl_applicant.applicant_fname as name',
-                        'tbl_renewal.renewal_status as status',
-                        'tbl_renewal.updated_at as created_at',
-                        DB::raw("'renewal' as type")
-                    )
-                    ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-            )
-            ->orderBy('created_at', 'desc')
-            ->get();
+        ->unionAll(
+            DB::table('tbl_renewal')
+                ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
+                ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
+                ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+                ->select(
+                    'tbl_applicant.applicant_fname as name',
+                    'tbl_renewal.renewal_status as status',
+                    'tbl_renewal.updated_at as created_at',
+                    DB::raw("'renewal' as type")
+                )
+                ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
+        )
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-        // Get applicants with filtering - only show those with Approved initial screening
+    // Get applicants with filtering - show both Approved and Rejected initial screening
+    $query = DB::table('tbl_applicant')
+        ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
+        ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id')
+        ->select(
+            'tbl_applicant.*',
+            'tbl_application_personnel.initial_screening',
+            'tbl_application_personnel.status'
+        );
+
+    // Apply initial screening status filter - default to Approved
+    $initialScreeningStatus = $request->get('initial_screening', 'Approved');
+    if ($initialScreeningStatus && $initialScreeningStatus !== 'all') {
+        $query->where('tbl_application_personnel.initial_screening', $initialScreeningStatus);
+    }
+
+    // Apply other filters
+    if ($request->has('search') && !empty($request->search)) {
+        $query->where(function($q) use ($request) {
+            $q->where('applicant_fname', 'like', '%' . $request->search . '%')
+              ->orWhere('applicant_lname', 'like', '%' . $request->search . '%');
+        });
+    }
+
+    if ($request->has('barangay') && !empty($request->barangay)) {
+        $query->where('applicant_brgy', $request->barangay);
+    }
+
+    if ($request->has('academic_year') && !empty($request->academic_year)) {
+        $query->where('applicant_acad_year', $request->academic_year);
+    }
+
+    $applicants = $query->paginate(15);
+
+    // Get distinct barangays for filter dropdown
+    $barangays = DB::table('tbl_applicant')
+        ->select('applicant_brgy')
+        ->distinct()
+        ->orderBy('applicant_brgy', 'asc')
+        ->pluck('applicant_brgy');
+
+    // Get distinct academic years for filter dropdown
+    $academicYears = DB::table('tbl_applicant')
+        ->select('applicant_acad_year')
+        ->distinct()
+        ->orderBy('applicant_acad_year', 'desc')
+        ->pluck('applicant_acad_year');
+
+    return view('lydo_admin.applicants', compact('notifications', 'applicants', 'barangays', 'academicYears', 'initialScreeningStatus'));
+}
+
+// Add this new method for PDF generation
+public function generateApplicantsPdf(Request $request)
+{
+    try {
+        // Set time limit for PDF generation
+        set_time_limit(120); // 2 minutes
+        
+        // Get applicants with filtering - same query as applicants method
         $query = DB::table('tbl_applicant')
             ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
             ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id')
-            ->where('tbl_application_personnel.initial_screening', 'Approved');
+            ->select(
+                'tbl_applicant.*',
+                'tbl_application_personnel.initial_screening',
+                'tbl_application_personnel.status'
+            );
 
-        // Apply status filter
-        if ($request->has('status') && !empty($request->status)) {
-            $query->where('tbl_application_personnel.status', $request->status);
+        // Apply initial screening status filter
+        $initialScreeningStatus = $request->get('initial_screening', 'Approved');
+        if ($initialScreeningStatus && $initialScreeningStatus !== 'all') {
+            $query->where('tbl_application_personnel.initial_screening', $initialScreeningStatus);
         }
 
-        // Apply filters
+        // Apply other filters
         if ($request->has('search') && !empty($request->search)) {
             $query->where(function($q) use ($request) {
                 $q->where('applicant_fname', 'like', '%' . $request->search . '%')
@@ -1335,25 +964,33 @@ public function disbursement(Request $request)
             $query->where('applicant_acad_year', $request->academic_year);
         }
 
-        $applicants = $query->paginate(15);
+        $applicants = $query->get();
 
-        // Get distinct barangays for filter dropdown
-        $barangays = DB::table('tbl_applicant')
-            ->select('applicant_brgy')
-            ->distinct()
-            ->orderBy('applicant_brgy', 'asc')
-            ->pluck('applicant_brgy');
+        // Get filter info for page title
+        $filters = [];
+        if ($request->search) {
+            $filters[] = 'Search: ' . $request->search;
+        }
+        if ($request->barangay) {
+            $filters[] = 'Barangay: ' . $request->barangay;
+        }
+        if ($request->academic_year) {
+            $filters[] = 'Academic Year: ' . $request->academic_year;
+        }
+        if ($request->initial_screening) {
+            $filters[] = 'Initial Screening: ' . $request->initial_screening;
+        }
 
-        // Get distinct academic years for filter dropdown
-        $academicYears = DB::table('tbl_applicant')
-            ->select('applicant_acad_year')
-            ->distinct()
-            ->orderBy('applicant_acad_year', 'desc')
-            ->pluck('applicant_acad_year');
+        $pdf = Pdf::loadView('pdf.applicants-print', compact('applicants', 'filters'))
+            ->setPaper('a4', 'landscape');
 
-        return view('lydo_admin.applicants', compact('notifications', 'applicants', 'barangays', 'academicYears'));
+        return $pdf->stream('applicants-list-' . date('Y-m-d') . '.pdf');
+        
+    } catch (\Exception $e) {
+        \Log::error('PDF Generation Error: ' . $e->getMessage());
+        return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
     }
-
+}
     public function getAllFilteredApplicants(Request $request)
     {
         $query = DB::table('tbl_applicant')
@@ -1653,259 +1290,6 @@ public function disbursement(Request $request)
         }
     }
 
-    public function generateScholarsPdf(Request $request)
-    {
-        $query = DB::table('tbl_scholar')
-            ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select('tbl_scholar.*', 'tbl_applicant.*');
-
-        // Apply filters
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('applicant_fname', 'like', '%' . $request->search . '%')
-                  ->orWhere('applicant_lname', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
-            $query->where('applicant_acad_year', $request->academic_year);
-        }
-
-        if ($request->has('barangay') && !empty($request->barangay)) {
-            $query->where('applicant_brgy', $request->barangay);
-        }
-
-        if ($request->has('status') && !empty($request->status)) {
-            $query->where('scholar_status', $request->status);
-        }
-
-        $scholars = $query->get();
-
-        // Get filter info for page title
-        $filters = [];
-        if ($request->search) {
-            $filters[] = 'Search: ' . $request->search;
-        }
-        if ($request->academic_year) {
-            $filters[] = 'Academic Year: ' . $request->academic_year;
-        }
-        if ($request->barangay) {
-            $filters[] = 'Barangay: ' . $request->barangay;
-        }
-        if ($request->status) {
-            $filters[] = 'Status: ' . ucfirst($request->status);
-        }
-
-        $pdf = Pdf::loadView('pdf.scholars-report', compact('scholars', 'filters'))
-            ->setPaper('a4', 'landscape');
-
-        return $pdf->stream('scholars-report-' . date('Y-m-d') . '.pdf');
-    }
-
-    public function generateScholarsPdfByBarangay(Request $request)
-    {
-        $query = DB::table('tbl_scholar')
-            ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select('tbl_scholar.*', 'tbl_applicant.*');
-
-        // Apply academic year filter
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
-            $query->where('applicant_acad_year', $request->academic_year);
-        }
-
-        $scholars = $query->get();
-
-        // Group scholars by barangay
-        $scholarsByBarangay = $scholars->groupBy('applicant_brgy');
-
-        $academicYear = $request->academic_year;
-
-        // Generate separate PDFs
-        $pdfs = [];
-        foreach ($scholarsByBarangay as $barangay => $barangayScholars) {
-            $pdf = Pdf::loadView('pdf.scholars-report-by-barangay', compact('barangayScholars', 'barangay', 'academicYear'))
-                ->setPaper('a4', 'landscape');
-
-            $pdfs[] = [
-                'barangay' => $barangay,
-                'pdf' => $pdf
-            ];
-        }
-
-        // Create a zip file containing all PDFs
-        $zip = new \ZipArchive();
-        $zipFileName = 'scholars-report-by-barangay-' . date('Y-m-d') . '.zip';
-        $zipPath = storage_path('app/temp/' . $zipFileName);
-
-        if ($zip->open($zipPath, \ZipArchive::CREATE) === TRUE) {
-            foreach ($pdfs as $pdfData) {
-                $pdfContent = $pdfData['pdf']->output();
-                $zip->addFromString($pdfData['barangay'] . '-scholars-report.pdf', $pdfContent);
-            }
-            $zip->close();
-        }
-
-        return response()->download($zipPath)->deleteFileAfterSend(true);
-    }
-
-    public function generateApplicantsPdf(Request $request)
-    {
-        $query = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select('tbl_applicant.*', 'tbl_application_personnel.remarks')
-            ->where('tbl_application_personnel.initial_screening', 'Approved');
-
-        // Apply search filter
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('applicant_fname', 'like', '%' . $request->search . '%')
-                  ->orWhere('applicant_lname', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        // Apply barangay filter
-        if ($request->has('barangay') && !empty($request->barangay)) {
-            $query->where('applicant_brgy', $request->barangay);
-        }
-
-        // Apply academic year filter
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
-            $query->where('applicant_acad_year', $request->academic_year);
-        }
-
-        // Apply remarks filter
-        if ($request->has('remarks') && !empty($request->remarks)) {
-            $query->where('tbl_application_personnel.remarks', $request->remarks);
-        }
-
-        $applicants = $query->get();
-
-        $filters = [];
-        if ($request->search) {
-            $filters[] = 'Search: ' . $request->search;
-        }
-        if ($request->barangay) {
-            $filters[] = 'Barangay: ' . $request->barangay;
-        }
-        if ($request->academic_year) {
-            $filters[] = 'Academic Year: ' . $request->academic_year;
-        }
-        if ($request->remarks) {
-            $filters[] = 'Remarks: ' . $request->remarks;
-        }
-
-        $pdf = Pdf::loadView('pdf.applicants-report', compact('applicants', 'filters'))
-            ->setPaper('a4', 'landscape');
-
-        return $pdf->stream('applicants-report-' . date('Y-m-d') . '.pdf');
-    }
-
-    public function generateRenewalPdf(Request $request)
-    {
-        $query = DB::table('tbl_renewal')
-            ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-            ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select(
-                'tbl_renewal.renewal_id',
-                'tbl_renewal.renewal_status',
-                'tbl_renewal.date_submitted',
-                'tbl_renewal.renewal_semester',
-                'tbl_renewal.renewal_acad_year',
-                'tbl_applicant.applicant_fname',
-                'tbl_applicant.applicant_mname',
-                'tbl_applicant.applicant_lname',
-                'tbl_applicant.applicant_suffix',
-                'tbl_applicant.applicant_school_name',
-                'tbl_applicant.applicant_brgy',
-                'tbl_applicant.applicant_course',
-                'tbl_applicant.applicant_year_level'
-            )
-            ->where('tbl_renewal.renewal_status', 'Approved');
-
-        // Apply search filter
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('applicant_fname', 'like', '%' . $request->search . '%')
-                  ->orWhere('applicant_lname', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        // Apply barangay filter
-        if ($request->has('barangay') && !empty($request->barangay)) {
-            $query->where('applicant_brgy', $request->barangay);
-        }
-
-        // Apply academic year filter
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
-            $query->where('renewal_acad_year', $request->academic_year);
-        }
-
-        // Apply status filter
-        if ($request->has('status') && !empty($request->status)) {
-            $query->where('renewal_status', $request->status);
-        }
-
-        $renewals = $query->get();
-
-        $filters = [];
-        if ($request->search) {
-            $filters[] = 'Search: ' . $request->search;
-        }
-        if ($request->barangay) {
-            $filters[] = 'Barangay: ' . $request->barangay;
-        }
-        if ($request->academic_year) {
-            $filters[] = 'Academic Year: ' . $request->academic_year;
-        }
-        if ($request->status) {
-            $filters[] = 'Status: ' . $request->status;
-        }
-
-        $pdf = Pdf::loadView('pdf.renewal-report', compact('renewals', 'filters'))
-            ->setPaper('a4', 'landscape');
-
-        return $pdf->stream('renewal-report-' . date('Y-m-d') . '.pdf');
-    }
-
-    public function generateSummaryPdf(Request $request)
-    {
-        // Get the same data as the summary tab
-        $totalApplicants = DB::table('tbl_applicant')->count();
-        $approvedInitialCount = DB::table('tbl_application_personnel')->where('initial_screening', 'Approved')->count();
-        $approvedStatusCount = DB::table('tbl_application_personnel')->where('status', 'Approved')->count();
-        $inactiveScholarsCount = DB::table('tbl_scholar')->where('scholar_status', 'inactive')->count();
-
-        $years = DB::table('tbl_application_personnel')->selectRaw('YEAR(created_at) as year')->distinct()->pluck('year')->toArray();
-        $applicantsTrend = [];
-        $scholarsTrend = [];
-
-        foreach ($years as $year) {
-            $applicantsTrend[] = DB::table('tbl_application_personnel')->whereYear('created_at', $year)->count();
-            $scholarsTrend[] = DB::table('tbl_scholar')->whereYear('date_activated', $year)->count();
-        }
-
-        $filters = [];
-        if ($request->academic_year) {
-            $filters[] = 'Academic Year: ' . $request->academic_year;
-        }
-
-        $pdf = Pdf::loadView('pdf.summary-report', compact(
-            'totalApplicants',
-            'approvedInitialCount',
-            'approvedStatusCount',
-            'inactiveScholarsCount',
-            'years',
-            'applicantsTrend',
-            'scholarsTrend',
-            'filters'
-        ))->setPaper('a4', 'landscape');
-
-        return $pdf->download('summary-report-' . date('Y-m-d') . '.pdf');
-    }
 
     public function getScholarsByBarangay(Request $request)
     {
@@ -2060,4 +1444,223 @@ public function disbursement(Request $request)
 
         return $pdf->stream('disbursement-report-' . date('Y-m-d') . '.pdf');
     }
+public function generateDisbursementRecordsPdf(Request $request)
+{
+    try {
+        // Set time limit for PDF generation
+        set_time_limit(120); // 2 minutes
+        
+        // Get only UNSIGNED disbursement records with applicant information
+        $query = DB::table('tbl_disburse as d')
+            ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->select(
+                'd.disburse_semester',
+                'd.disburse_acad_year',
+                'd.disburse_amount',
+                'd.disburse_date',
+                'a.applicant_brgy',
+                DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+            )
+            ->whereNull('d.disburse_signature'); // Only unsigned disbursements
+
+        // Apply filters
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('a.applicant_fname', 'like', '%' . $search . '%')
+                  ->orWhere('a.applicant_lname', 'like', '%' . $search . '%')
+                  ->orWhere('a.applicant_mname', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->has('barangay') && !empty($request->barangay)) {
+            $query->where('a.applicant_brgy', $request->barangay);
+        }
+
+        if ($request->has('academic_year') && !empty($request->academic_year)) {
+            $query->where('d.disburse_acad_year', $request->academic_year);
+        }
+
+        if ($request->has('semester') && !empty($request->semester)) {
+            $query->where('d.disburse_semester', $request->semester);
+        }
+
+        // Limit results for PDF generation
+        $unsignedDisbursements = $query->limit(1000)->get();
+
+        // Get filter info for page title
+        $filters = [];
+        if ($request->search) {
+            $filters[] = 'Search: ' . $request->search;
+        }
+        if ($request->barangay) {
+            $filters[] = 'Barangay: ' . $request->barangay;
+        }
+        if ($request->academic_year) {
+            $filters[] = 'Academic Year: ' . $request->academic_year;
+        }
+        if ($request->semester) {
+            $filters[] = 'Semester: ' . $request->semester;
+        }
+
+        $pdf = Pdf::loadView('pdf.disbursement-records-print', compact('unsignedDisbursements', 'filters'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream('disbursement-records-' . date('Y-m-d') . '.pdf');
+        
+    } catch (\Exception $e) {
+        \Log::error('PDF Generation Error: ' . $e->getMessage());
+        return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
+    }
 }
+public function getScholarDocuments($scholar_id)
+{
+    try {
+        $documents = DB::table('tbl_renewal')
+            ->where('scholar_id', $scholar_id)
+            ->select(
+                'renewal_cert_of_reg',
+                'renewal_grade_slip',
+                'renewal_brgy_indigency',
+                'renewal_semester',
+                'renewal_acad_year',
+                'date_submitted',
+                'renewal_status'
+            )
+            ->get();
+
+        // Process documents to generate proper URLs
+        $processedDocuments = $documents->map(function ($doc) {
+            return [
+                'renewal_cert_of_reg' => $this->getDocumentUrl($doc->renewal_cert_of_reg),
+                'renewal_grade_slip' => $this->getDocumentUrl($doc->renewal_grade_slip),
+                'renewal_brgy_indigency' => $this->getDocumentUrl($doc->renewal_brgy_indigency),
+                'renewal_semester' => $doc->renewal_semester,
+                'renewal_acad_year' => $doc->renewal_acad_year,
+                'date_submitted' => $doc->date_submitted,
+                'renewal_status' => $doc->renewal_status,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'documents' => $processedDocuments
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching documents: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+// Helper method to generate proper document URLs
+private function getDocumentUrl($filePath)
+{
+    if (empty($filePath)) {
+        return null;
+    }
+
+    // If it's already a full URL, return as is
+    if (filter_var($filePath, FILTER_VALIDATE_URL)) {
+        return $filePath;
+    }
+
+    // If it starts with storage/, convert to proper URL
+    if (strpos($filePath, 'storage/') === 0) {
+        return asset($filePath);
+    }
+
+    // If it's just a filename, assume it's in storage/renewal
+    if (!str_contains($filePath, '/')) {
+        return asset('storage/renewal/' . $filePath);
+    }
+
+    // For other cases, try to generate URL
+    return asset('storage/' . ltrim($filePath, '/'));
+}
+
+
+public function generateScholarsPdf(Request $request)
+{
+    try {
+        // Set time limit for PDF generation
+        set_time_limit(120); // 2 minutes
+        
+        // Get scholars with applicant information - same query as scholar method
+        $query = DB::table('tbl_scholar as s')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->select(
+                's.scholar_id',
+                's.scholar_status',
+                's.date_activated',
+                'a.applicant_id',
+                'a.applicant_fname',
+                'a.applicant_mname',
+                'a.applicant_lname',
+                'a.applicant_suffix',
+                'a.applicant_brgy',
+                'a.applicant_email',
+                'a.applicant_contact_number',
+                'a.applicant_school_name',
+                'a.applicant_course',
+                'a.applicant_year_level',
+                'a.applicant_acad_year'
+            );
+
+        // Apply status filter
+        $statusFilter = $request->get('status', 'active');
+        if ($statusFilter === 'active') {
+            $query->where('s.scholar_status', 'active');
+        } elseif ($statusFilter === 'inactive') {
+            $query->where('s.scholar_status', 'inactive');
+        }
+
+        // Apply other filters
+        if ($request->has('search') && !empty($request->search)) {
+            $query->where(function($q) use ($request) {
+                $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
+                  ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->has('barangay') && !empty($request->barangay)) {
+            $query->where('a.applicant_brgy', $request->barangay);
+        }
+
+        if ($request->has('academic_year') && !empty($request->academic_year)) {
+            $query->where('a.applicant_acad_year', $request->academic_year);
+        }
+
+        $scholars = $query->get();
+
+        // Get filter info for page title
+        $filters = [];
+        if ($request->search) {
+            $filters[] = 'Search: ' . $request->search;
+        }
+        if ($request->barangay) {
+            $filters[] = 'Barangay: ' . $request->barangay;
+        }
+        if ($request->academic_year) {
+            $filters[] = 'Academic Year: ' . $request->academic_year;
+        }
+        if ($request->status) {
+            $filters[] = 'Status: ' . ucfirst($request->status);
+        }
+
+        $pdf = Pdf::loadView('pdf.scholars-print', compact('scholars', 'filters'))
+            ->setPaper('a4', 'portrait'); // Changed from 'landscape' to 'portrait'
+
+        return $pdf->stream('scholars-list-' . date('Y-m-d') . '.pdf');
+        
+    } catch (\Exception $e) {
+        \Log::error('PDF Generation Error: ' . $e->getMessage());
+        return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
+    }
+}
+}
+

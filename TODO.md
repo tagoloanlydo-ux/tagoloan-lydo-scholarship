@@ -1,5 +1,9 @@
-- [x] Add class "data-table" to the disbursement data table
-- [x] Add CSS styles for .data-table with borders, padding, and design
-- [x] Ensure header table has no outline (already set)
-- [x] Test PDF generation to verify design improvements (Browser tool disabled, but changes applied successfully)
-- [ ] Add Print to PDF button in Disbursement Records tab that generates PDF based on current filters
+/lydo_admin/scholar
+Ang <iframe> viewer ay maliit, kaya hirap basahin ang document content.
+
+Kailangan pang mag-scroll sa loob ng modal, hindi convenient.
+
+
+Hindi visually clear kung anong document (1, 2, 3) ang nakikita.
+
+Sa mobile view, sobrang liit lalo na kung naka-landscape document (PDF).
