@@ -942,23 +942,23 @@
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_school_name }}</td>
                                     <td class="px-4 py-2 border border-gray-200 text-center">
                                         <button
-    type="button"
-    title="Assign Remarks"
-    class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow"
-    data-id="{{ $app->application_personnel_id }}"
-    data-remarks=""
-    data-name="{{ $app->applicant_fname }} {{ $app->applicant_lname }}"
-    data-fname="{{ $app->applicant_fname }}"
-    data-mname="{{ $app->applicant_mname }}"
-    data-lname="{{ $app->applicant_lname }}"
-    data-suffix="{{ $app->applicant_suffix }}"
-    data-bdate="{{ $app->applicant_bdate }}"
-    data-brgy="{{ $app->applicant_brgy }}"
-    data-gender="{{ $app->applicant_gender }}"
-    data-pob="{{ $app->applicant_pob }}"
-    onclick="openEditRemarksModal(this)">
-    <i class="fas fa-plus mr-1"></i> Intake Sheet
-</button>
+                                            type="button"
+                                            title="Assign Remarks"
+                                            class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow"
+                                            data-id="{{ $app->application_personnel_id }}"
+                                            data-remarks=""
+                                            data-name="{{ $app->applicant_fname }} {{ $app->applicant_lname }}"
+                                            data-fname="{{ $app->applicant_fname }}"
+                                            data-mname="{{ $app->applicant_mname }}"
+                                            data-lname="{{ $app->applicant_lname }}"
+                                            data-suffix="{{ $app->applicant_suffix }}"
+                                            data-bdate="{{ $app->applicant_bdate }}"
+                                            data-brgy="{{ $app->applicant_brgy }}"
+                                            data-gender="{{ $app->applicant_gender }}"
+                                            data-pob="{{ $app->applicant_pob }}"
+                                            onclick="openEditRemarksModal(this)">
+                                            <i class="fas fa-plus mr-1"></i> Intake Sheet
+                                        </button>
                                     </td>
                                 </tr>
                                 @empty
@@ -1971,96 +1971,56 @@ function debounce(func, wait) {
             }
 
             // Open Edit Remarks Modal
-function openEditRemarksModal(button) {
-    // Simple version - just show the modal
-    const modal = document.getElementById('editRemarksModal');
-    if (modal) {
-        modal.classList.remove('hidden');
-        document.body.classList.add('modal-open');
+            function openEditRemarksModal(button) {
+                const id = button.getAttribute("data-id");
+                const name = button.getAttribute("data-name");
+                const fname = button.getAttribute("data-fname");
+                const mname = button.getAttribute("data-mname");
+                const lname = button.getAttribute("data-lname");
+                const suffix = button.getAttribute("data-suffix");
+                const bdate = button.getAttribute("data-bdate");
+                const brgy = button.getAttribute("data-brgy");
+                const gender = button.getAttribute("data-gender");
+                const pob = button.getAttribute("data-pob");
 
-        // Get data from button attributes
-        const id = button.getAttribute("data-id");
-        const name = button.getAttribute("data-name");
-        const fname = button.getAttribute("data-fname") || '';
-        const mname = button.getAttribute("data-mname") || '';
-        const lname = button.getAttribute("data-lname") || '';
-        const suffix = button.getAttribute("data-suffix") || '';
-        const bdate = button.getAttribute("data-bdate") || '';
-        const brgy = button.getAttribute("data-brgy") || '';
-        const gender = button.getAttribute("data-gender") || '';
-        const pob = button.getAttribute("data-pob") || '';
-        const remarks = button.getAttribute("data-remarks") || '';
+                // Set the values in the modal form
+                document.getElementById('remarks_id').value = id;
+                document.getElementById('applicant_fname').value = fname || '';
+                document.getElementById('applicant_mname').value = mname || '';
+                document.getElementById('applicant_lname').value = lname || '';
+                document.getElementById('applicant_suffix').value = suffix || '';
+                document.getElementById('head_dob').value = bdate || '';
+                document.getElementById('head_barangay').value = brgy || '';
 
-        // Set basic data
-        document.getElementById('remarks_id').value = id;
-        document.getElementById('applicant_full_name').textContent = name;
+                // Generate serial number and location
+                document.getElementById('serial_number').value = 'SN-' + Date.now();
 
-        // Populate applicant name fields (readonly display fields)
-        document.getElementById('applicant_fname').value = fname;
-        document.getElementById('applicant_mname').value = mname;
-        document.getElementById('applicant_lname').value = lname;
-        document.getElementById('applicant_suffix').value = suffix;
 
-        // Populate head of family information
-        document.getElementById('head_address').value = ''; // Default empty, to be filled by user
-        document.getElementById('head_zone').value = ''; // Default empty, to be filled by user
-        document.getElementById('head_barangay').value = brgy;
-        document.getElementById('head_dob').value = bdate;
-        document.getElementById('head_pob').value = pob;
-        document.getElementById('applicant_gender').value = gender;
+                // Set current date for Date Entry
+                setCurrentDate();
 
-        // Set default values for other head fields
-        document.getElementById('head_4ps').value = '';
-        document.getElementById('head_ipno').value = '';
-        document.getElementById('head_educ').value = '';
-        document.getElementById('head_occ').value = '';
-        document.getElementById('head_religion').value = '';
+                // Clear previous family members and service records
+                document.getElementById('family_members_tbody').innerHTML = '';
+                document.getElementById('rv_service_records_tbody').innerHTML = '';
 
-        // Populate remarks
-        document.getElementById('remarks').value = remarks;
+                // Fetch existing intake sheet data and populate form
+                fetch(`/lydo_staff/intake-sheet/${id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data) {
+                            populateEditModal(data);
+                        }
+                    })
+                    .catch(err => console.error('Error fetching intake sheet data:', err))
+                    .finally(() => {
+                        // Show the modal
+                        document.getElementById('editRemarksModal').classList.remove('hidden');
+                        document.body.classList.add('modal-open');
 
-        // Set current date for date entry
-        setCurrentDate();
-
-        // Worker name is already set from session, officer name remains empty
-
-        // Clear any existing family members and service records
-        document.getElementById('family_members_tbody').innerHTML = '';
-        document.getElementById('rv_service_records_tbody').innerHTML = '';
-
-        // Reset income calculations
-        document.getElementById('other_income').value = '';
-        document.getElementById('house_total_income').value = '';
-        document.getElementById('house_net_income').value = '';
-        document.getElementById('house_house').value = '';
-        document.getElementById('house_house_rent').value = '';
-        document.getElementById('house_lot').value = '';
-        document.getElementById('house_lot_rent').value = '';
-        document.getElementById('house_water').value = '';
-        document.getElementById('house_electric').value = '';
-
-        // Hide rent fields initially
-        document.getElementById('house_rent_group').style.display = 'none';
-        document.getElementById('lot_rent_group').style.display = 'none';
-
-        // Clear signatures
-        document.getElementById('signature_worker').value = '';
-        document.getElementById('signature_officer').value = '';
-        document.getElementById('worker-signature-text').textContent = 'Click to Sign';
-        document.getElementById('officer-signature-text').textContent = 'Click to Sign';
-
-        // Reset officer name
-        document.getElementById('officer_name').value = '';
-
-        // Show first tab
-        showTab('family');
-
-        // Calculate incomes (will be 0 initially)
-        calculateIncomes();
-    } else {
-        console.error('Modal not found!');
-    }
-}
+                        // Reset to first tab
+                        showTab('family');
+                    });
+            }
 
             // Close Edit Remarks Modal
             function closeEditRemarksModal() {
@@ -2573,48 +2533,43 @@ function openEditRemarksModal(button) {
                 setCurrentDate();
 
                 // Add event listeners for house and lot toggles
-               // Add event listeners for house and lot toggles
-const houseSelect = document.getElementById('house_house');
-const lotSelect = document.getElementById('house_lot');
-const houseRentGroup = document.getElementById('house_rent_group');
-const lotRentGroup = document.getElementById('lot_rent_group');
+                const houseSelect = document.getElementById('house_house');
+                const lotSelect = document.getElementById('house_lot');
+                const houseRentGroup = document.getElementById('house_rent_group');
+                const lotRentGroup = document.getElementById('lot_rent_group');
 
-function toggleHouseFields() {
-    const value = houseSelect.value;
-    if (value === 'Rent') {
-        houseRentGroup.style.display = 'block';
-    } else {
-        houseRentGroup.style.display = 'none';
-        document.getElementById('house_house_rent').value = '';
-        calculateIncomes(); // Recalculate when field is hidden
-    }
-}
+                function toggleHouseFields() {
+                    const value = houseSelect.value;
+                    if (value === 'Rent') {
+                        houseRentGroup.style.display = 'block';
+                    } else {
+                        houseRentGroup.style.display = 'none';
+                        document.getElementById('house_house_rent').value = '';
+                        calculateIncomes(); // Recalculate when field is hidden
+                    }
+                }
 
-function toggleLotFields() {
-    const value = lotSelect.value;
-    if (value === 'Rent') {
-        lotRentGroup.style.display = 'block';
-    } else {
-        lotRentGroup.style.display = 'none';
-        document.getElementById('house_lot_rent').value = '';
-        calculateIncomes(); // Recalculate when field changes
-    }
-}
+                function toggleLotFields() {
+                    const value = lotSelect.value;
+                    if (value === 'Rent') {
+                        lotRentGroup.style.display = 'block';
+                    } else {
+                        lotRentGroup.style.display = 'none';
+                        document.getElementById('house_lot_rent').value = '';
+                        calculateIncomes(); // Recalculate when field changes
+                    }
+                }
 
-if (houseSelect) {
-    houseSelect.addEventListener('change', toggleHouseFields);
-    // Initialize on page load - but don't trigger change if we're in a modal
-    if (!document.getElementById('editRemarksModal').classList.contains('hidden')) {
-        toggleHouseFields();
-    }
-}
-if (lotSelect) {
-    lotSelect.addEventListener('change', toggleLotFields);
-    // Initialize on page load - but don't trigger change if we're in a modal
-    if (!document.getElementById('editRemarksModal').classList.contains('hidden')) {
-        toggleLotFields();
-    }
-}
+                if (houseSelect) {
+                    houseSelect.addEventListener('change', toggleHouseFields);
+                    // Initialize on page load
+                    toggleHouseFields();
+                }
+                if (lotSelect) {
+                    lotSelect.addEventListener('change', toggleLotFields);
+                    // Initialize on page load
+                    toggleLotFields();
+                }
 
                 // Add event listeners for all income and expense fields
                 document.addEventListener('input', function(e) {
@@ -2779,69 +2734,56 @@ if (lotSelect) {
             });
 
             // Populate Edit Modal with existing data
-     // Populate household information
-    document.getElementById('other_income').value = data.other_income || '';
-    document.getElementById('house_total_income').value = data.house_total_income || '';
-    document.getElementById('house_net_income').value = data.house_net_income || '';
-    
-    // CRITICAL FIX: Set house and lot values BEFORE triggering change events
-    document.getElementById('house_house').value = data.house_house || '';
-    document.getElementById('house_house_rent').value = data.house_house_rent || '';
-    document.getElementById('house_lot').value = data.house_lot || '';
-    document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
-    
-    document.getElementById('house_water').value = data.house_water || '';
-    document.getElementById('house_electric').value = data.house_electric || '';
+            function populateEditModal(data) {
+                // Populate head of family details
+                document.getElementById('head_4ps').value = data.head_4ps || '';
+                document.getElementById('head_ipno').value = data.head_ipno || '';
+                document.getElementById('head_address').value = data.head_address || '';
+                document.getElementById('head_zone').value = data.head_zone || '';
+                document.getElementById('head_educ').value = data.head_educ || '';
+                document.getElementById('head_occ').value = data.head_occ || '';
+                document.getElementById('head_religion').value = data.head_religion || '';
 
-    // Handle conditional fields for house and lot - UPDATED APPROACH
-    const houseSelect = document.getElementById('house_house');
-    const lotSelect = document.getElementById('house_lot');
-    const houseRentGroup = document.getElementById('house_rent_group');
-    const lotRentGroup = document.getElementById('lot_rent_group');
+                // Only populate Place of Birth and Gender if intake sheet has saved values
+                if (data.head_pob) {
+                    document.getElementById('head_pob').value = data.head_pob;
+                }
+                if (data.applicant_gender) {
+                    document.getElementById('applicant_gender').value = data.applicant_gender;
+                }
 
-    // Directly show/hide based on saved values
-    if (data.house_house === 'Rent') {
-        houseRentGroup.style.display = 'block';
-    } else {
-        houseRentGroup.style.display = 'none';
-    }
+                // Populate household information
+                document.getElementById('other_income').value = data.other_income || '';
+                document.getElementById('house_total_income').value = data.house_total_income || '';
+                document.getElementById('house_net_income').value = data.house_net_income || '';
+                document.getElementById('house_house').value = data.house_house || '';
+                document.getElementById('house_house_rent').value = data.house_house_rent || '';
+                document.getElementById('house_lot').value = data.house_lot || '';
+                document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
+                document.getElementById('house_water').value = data.house_water || '';
+                document.getElementById('house_electric').value = data.house_electric || '';
 
-    if (data.house_lot === 'Rent') {
-        lotRentGroup.style.display = 'block';
-    } else {
-        lotRentGroup.style.display = 'none';
-    }
+                // Handle conditional fields for house and lot
+                const houseSelect = document.getElementById('house_house');
+                const lotSelect = document.getElementById('house_lot');
 
-    // Also update the toggle functions to be more robust
-    function toggleHouseFields() {
-        const value = houseSelect.value;
-        if (value === 'Rent') {
-            houseRentGroup.style.display = 'block';
-        } else {
-            houseRentGroup.style.display = 'none';
-            document.getElementById('house_house_rent').value = '';
-            calculateIncomes(); // Recalculate when field is hidden
-        }
-    }
+                if (data.house_house === 'Rent') {
+                    document.getElementById('house_rent_group').style.display = 'block';
+                    document.getElementById('house_house_rent').value = data.house_house_rent || '';
+                }
 
-    function toggleLotFields() {
-        const value = lotSelect.value;
-        if (value === 'Rent') {
-            lotRentGroup.style.display = 'block';
-        } else {
-            lotRentGroup.style.display = 'none';
-            document.getElementById('house_lot_rent').value = '';
-            calculateIncomes(); // Recalculate when field changes
-        }
-    }
+                if (data.house_lot === 'Rent') {
+                    document.getElementById('lot_rent_group').style.display = 'block';
+                    document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
+                }
 
-    // Re-attach event listeners
-    if (houseSelect) {
-        houseSelect.addEventListener('change', toggleHouseFields);
-    }
-    if (lotSelect) {
-        lotSelect.addEventListener('change', toggleLotFields);
-    }
+                // Trigger change events to update UI
+                if (houseSelect) {
+                    houseSelect.dispatchEvent(new Event('change'));
+                }
+                if (lotSelect) {
+                    lotSelect.dispatchEvent(new Event('change'));
+                }
 
                 // Populate remarks
                 document.getElementById('remarks').value = data.remarks || '';
@@ -2907,7 +2849,7 @@ if (lotSelect) {
                             }
                             lastRow.cells[1].querySelector('input').value = record.problem || '';
                             lastRow.cells[2].querySelector('input').value = record.action || '';
-                            lastRow.cells[3].querySelector('input').value = record.remarks || '';
+                            lastRow.cells[3].querySelector('select').value = record.remarks || '';
                         });
                     }
                 }

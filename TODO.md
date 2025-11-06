@@ -1,16 +1,23 @@
-# TODO: Add Application Requirements Column and Modal
+in lydo_staff/screening
 
-## Tasks
-- [x] Add "Application Requirement" column header to the applicants table
-- [x] Add "View Requirements" button cell in the table body loop
-- [ ] Add Bootstrap modal for each applicant displaying 5 hardcoded requirements
-- [ ] Update table colspan from 7 to 8 for empty state
-- [ ] Test modal functionality in browser
+FIND THE FUNCTION
+Locate the populateEditModal function in your JavaScript code
 
-## Files to Edit
-- resources/views/lydo_admin/applicants.blade.php
+This function fills the modal with existing data
 
-## Notes
-- Use unique modal IDs based on applicant_id (requirementsModal{{ $applicant->applicant_id }})
-- Use Bootstrap modal attributes: data-bs-toggle="modal" data-bs-target="#requirementsModal{{ $applicant->applicant_id }}"
-- Hardcode 5 application requirements in each modal
+2. ADD RENT FIELD DISPLAY LOGIC
+Inside populateEditModal, after setting the house/lot values
+
+Add code to directly show/hide the rent fields based on saved data
+
+3. ENSURE CHANGE EVENTS WORK
+Make sure the house and lot dropdowns trigger their change events
+
+This will automatically show/hide rent fields when values change
+
+4. TEST THE FIX
+Open an existing intake sheet in the modal
+
+Check if house_house value is loaded
+
+Verify rent fields appear when value is "Rent"
