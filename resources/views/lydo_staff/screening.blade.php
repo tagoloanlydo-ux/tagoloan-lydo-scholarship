@@ -1977,16 +1977,86 @@ function openEditRemarksModal(button) {
     if (modal) {
         modal.classList.remove('hidden');
         document.body.classList.add('modal-open');
-        
-        // Set basic data
+
+        // Get data from button attributes
         const id = button.getAttribute("data-id");
         const name = button.getAttribute("data-name");
-        
+        const fname = button.getAttribute("data-fname") || '';
+        const mname = button.getAttribute("data-mname") || '';
+        const lname = button.getAttribute("data-lname") || '';
+        const suffix = button.getAttribute("data-suffix") || '';
+        const bdate = button.getAttribute("data-bdate") || '';
+        const brgy = button.getAttribute("data-brgy") || '';
+        const gender = button.getAttribute("data-gender") || '';
+        const pob = button.getAttribute("data-pob") || '';
+        const remarks = button.getAttribute("data-remarks") || '';
+
+        // Set basic data
         document.getElementById('remarks_id').value = id;
         document.getElementById('applicant_full_name').textContent = name;
-        
+
+        // Populate applicant name fields (readonly display fields)
+        document.getElementById('applicant_fname').value = fname;
+        document.getElementById('applicant_mname').value = mname;
+        document.getElementById('applicant_lname').value = lname;
+        document.getElementById('applicant_suffix').value = suffix;
+
+        // Populate head of family information
+        document.getElementById('head_address').value = ''; // Default empty, to be filled by user
+        document.getElementById('head_zone').value = ''; // Default empty, to be filled by user
+        document.getElementById('head_barangay').value = brgy;
+        document.getElementById('head_dob').value = bdate;
+        document.getElementById('head_pob').value = pob;
+        document.getElementById('applicant_gender').value = gender;
+
+        // Set default values for other head fields
+        document.getElementById('head_4ps').value = '';
+        document.getElementById('head_ipno').value = '';
+        document.getElementById('head_educ').value = '';
+        document.getElementById('head_occ').value = '';
+        document.getElementById('head_religion').value = '';
+
+        // Populate remarks
+        document.getElementById('remarks').value = remarks;
+
+        // Set current date for date entry
+        setCurrentDate();
+
+        // Worker name is already set from session, officer name remains empty
+
+        // Clear any existing family members and service records
+        document.getElementById('family_members_tbody').innerHTML = '';
+        document.getElementById('rv_service_records_tbody').innerHTML = '';
+
+        // Reset income calculations
+        document.getElementById('other_income').value = '';
+        document.getElementById('house_total_income').value = '';
+        document.getElementById('house_net_income').value = '';
+        document.getElementById('house_house').value = '';
+        document.getElementById('house_house_rent').value = '';
+        document.getElementById('house_lot').value = '';
+        document.getElementById('house_lot_rent').value = '';
+        document.getElementById('house_water').value = '';
+        document.getElementById('house_electric').value = '';
+
+        // Hide rent fields initially
+        document.getElementById('house_rent_group').style.display = 'none';
+        document.getElementById('lot_rent_group').style.display = 'none';
+
+        // Clear signatures
+        document.getElementById('signature_worker').value = '';
+        document.getElementById('signature_officer').value = '';
+        document.getElementById('worker-signature-text').textContent = 'Click to Sign';
+        document.getElementById('officer-signature-text').textContent = 'Click to Sign';
+
+        // Reset officer name
+        document.getElementById('officer_name').value = '';
+
         // Show first tab
         showTab('family');
+
+        // Calculate incomes (will be 0 initially)
+        calculateIncomes();
     } else {
         console.error('Modal not found!');
     }
