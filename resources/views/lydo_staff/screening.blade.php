@@ -1386,7 +1386,7 @@
                                 </select>
                                 <div id="house_rent_group" style="display: none;" class="mt-3">
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">House Rent</label>
-                                    <input type="number" step="0.01" name="house_house_rent" id="house_house_rent" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" placeholder="0.00">
+                                    <input type="number" step="0.01" name="house_rent" id="house_rent" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" placeholder="0.00">
                                 </div>
                             </div>
                             <div>
@@ -1398,7 +1398,7 @@
                                 </select>
                                 <div id="lot_rent_group" style="display: none;" class="mt-3">
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Lot Rent</label>
-                                    <input type="number" step="0.01" name="house_lot_rent" id="house_lot_rent" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" placeholder="0.00">
+                                    <input type="number" step="0.01" name="lot_rent" id="lot_rent" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" placeholder="0.00">
                                 </div>
                             </div>
                             <div>
@@ -2753,8 +2753,8 @@ function populateEditModal(data) {
     console.log('Received data for populateEditModal:', data);
     console.log('house_house:', data.house_house);
     console.log('house_lot:', data.house_lot);
-    console.log('house_house_rent:', data.house_house_rent);
-    console.log('house_lot_rent:', data.house_lot_rent);
+    console.log('house_rent:', data.house_house_rent);
+    console.log('lot_rent:', data.house_lot_rent);
 
     document.getElementById('head_4ps').value = data.head_4ps || '';
     document.getElementById('head_ipno').value = data.head_ipno || '';
@@ -2777,9 +2777,9 @@ function populateEditModal(data) {
     document.getElementById('house_total_income').value = data.house_total_income || '';
     document.getElementById('house_net_income').value = data.house_net_income || '';
     document.getElementById('house_house').value = data.house_house || '';
-    document.getElementById('house_house_rent').value = data.house_house_rent || '';
+    document.getElementById('house_rent').value = data.house_house_rent || '';
     document.getElementById('house_lot').value = data.house_lot || '';
-    document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
+    document.getElementById('lot_rent').value = data.house_lot_rent || '';
     document.getElementById('house_water').value = data.house_water || '';
     document.getElementById('house_electric').value = data.house_electric || '';
 
