@@ -243,7 +243,6 @@
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-3xl font-bold text-black-800">List of Applicants</h2>
                 </div>
-
 <!-- Filter Section -->
 <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
     <div class="flex flex-col md:flex-row gap-4" id="filterForm">
@@ -279,6 +278,12 @@
                 <option value="Rejected" {{ $initialScreeningStatus == 'Rejected' ? 'selected' : '' }}>Rejected</option>
             </select>
         </div>
+        <!-- Print PDF Button -->
+        <div class="flex-1">
+            <button id="printPdfBtn" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center">
+                <i class="fas fa-file-pdf mr-2"></i> Print PDF
+            </button>
+        </div>
     </div>
 </div>
 
@@ -308,43 +313,49 @@
                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">Barangay</th>
                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">Email</th>
                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">School</th>
-                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">Academic Year</th>
-                                 </tr>
+                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Academic Year</th>
+                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Initial Screening</th>
+                                </tr>
                             </thead>
-                            <tbody>
-                                @forelse($applicants as $applicant)
-                                    <tr class="hover:bg-gray-50 border-b">
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <input type="checkbox" name="selected_applicants" value="{{ $applicant->applicant_id }}" class="applicant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                        </td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {{ $applicant->applicant_lname }}{{ $applicant->applicant_suffix ? ' ' . $applicant->applicant_suffix : '' }}, 
-                                                {{ $applicant->applicant_fname }} 
-                                                {{ $applicant->applicant_mname ? $applicant->applicant_mname . ' ' : '' }}
-                                            </div>
-                                        </td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_brgy }}</div>
-                                        </td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_email }}</div>
-                                        </td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_school_name }}</div>
-                                        </td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_acad_year }}</div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="px-4 py-2 text-center text-sm text-gray-500">
-                                            No applicants found.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
+                                <tbody>
+                                    @forelse($applicants as $applicant)
+                                        <tr class="hover:bg-gray-50 border-b">
+                                            <td class="px-4 border border-gray-200 py-2 text-center">
+                                                <input type="checkbox" name="selected_applicants" value="{{ $applicant->applicant_id }}" class="applicant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                            </td>
+                                            <td class="px-4 border border-gray-200 py-2 text-center">
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    {{ $applicant->applicant_lname }}{{ $applicant->applicant_suffix ? ' ' . $applicant->applicant_suffix : '' }}, 
+                                                    {{ $applicant->applicant_fname }} 
+                                                    {{ $applicant->applicant_mname ? $applicant->applicant_mname . ' ' : '' }}
+                                                </div>
+                                            </td>
+                                            <td class="px-4 border border-gray-200 py-2 text-center">
+                                                <div class="text-sm text-gray-900">{{ $applicant->applicant_brgy }}</div>
+                                            </td>
+                                            <td class="px-4 border border-gray-200 py-2 text-center">
+                                                <div class="text-sm text-gray-900">{{ $applicant->applicant_email }}</div>
+                                            </td>
+                                            <td class="px-4 border border-gray-200 py-2 text-center">
+                                                <div class="text-sm text-gray-900">{{ $applicant->applicant_school_name }}</div>
+                                            </td>
+                                            <td class="px-4 border border-gray-200 py-2 text-center">
+                                                <div class="text-sm text-gray-900">{{ $applicant->applicant_acad_year }}</div>
+                                            </td>
+                                            <td class="px-4 border border-gray-200 py-2 text-center">
+                                                <div class="text-sm font-medium {{ $applicant->initial_screening == 'Approved' ? 'text-green-600' : 'text-red-600' }}">
+                                                    {{ $applicant->initial_screening }}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="7" class="px-4 py-2 text-center text-sm text-gray-500">
+                                                No applicants found.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
                         </table>
                     </div>
 
@@ -966,6 +977,52 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeApplicantPagination();
     initializeApplicantFiltering();
 });
+// Print PDF functionality
+document.getElementById('printPdfBtn').addEventListener('click', function() {
+    const search = document.getElementById('searchInput').value;
+    const barangay = document.getElementById('barangaySelect').value;
+    const academicYear = document.getElementById('academicYearSelect').value;
+    const initialScreening = document.getElementById('initialScreeningSelect').value;
+
+    // Build URL with current filter parameters
+    let url = '/lydo_admin/generate-applicants-pdf?';
+    const params = new URLSearchParams();
+    
+    if (search) params.append('search', search);
+    if (barangay) params.append('barangay', barangay);
+    if (academicYear) params.append('academic_year', academicYear);
+    if (initialScreening && initialScreening !== 'all') params.append('initial_screening', initialScreening);
+    
+    url += params.toString();
+    
+    // Open PDF in new tab
+    window.open(url, '_blank');
+});
+
+// Update filter form submission to include initial screening
+function submitForm() {
+    const initialScreening = document.getElementById('initialScreeningSelect').value;
+    const form = document.getElementById('filterForm');
+    
+    // Create hidden input for initial screening if needed
+    let hiddenInput = document.getElementById('initialScreeningHidden');
+    if (!hiddenInput) {
+        hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'initial_screening';
+        hiddenInput.id = 'initialScreeningHidden';
+        form.appendChild(hiddenInput);
+    }
+    hiddenInput.value = initialScreening;
+    
+    form.submit();
+}
+
+// Update event listeners to include initial screening filter
+const initialScreeningSelect = document.getElementById('initialScreeningSelect');
+if (initialScreeningSelect) {
+    initialScreeningSelect.addEventListener('change', submitForm);
+}
 </script>
 </body>
 
