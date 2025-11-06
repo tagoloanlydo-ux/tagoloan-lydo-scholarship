@@ -85,7 +85,7 @@ class StatusController extends Controller
             'ap.remarks as remarks',
             'ap.status as status'
         )
-        ->where('ap.initial_screening', 'Approved')
+        ->where('ap.initial_screening', 'Reviewed')
         ->where('ap.status', 'Pending')
 
        // match either remark value
