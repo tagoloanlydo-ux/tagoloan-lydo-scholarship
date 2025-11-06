@@ -22,6 +22,7 @@ Route::prefix('staging')->group(function () {
         Route::get('/login', [AuthController::class, 'login']);
         Route::post('/login', [AuthController::class, 'login']);
         Route::post('/register', [AuthController::class, 'register']);
+        Route::get('/profile', [AuthController::class, 'profile'])->middleware('auth:sanctum');
     });
 
     Route::apiResource('/applicants', ApplicantController::class);
@@ -34,6 +35,11 @@ Route::prefix('staging')->group(function () {
     Route::apiResource('/notifications', NotificationController::class);
     Route::apiResource('/admins', AdminController::class);
     Route::apiResource('/application-personnels', ApplicationPersonnelController::class);
+
+    // Scholar-specific routes
+    Route::prefix('scholar')->middleware('auth:sanctum')->group(function () {
+        Route::get('/profile', [AuthController::class, 'profile']);
+    });
 });
 
 ?>

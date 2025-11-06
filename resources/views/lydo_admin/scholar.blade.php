@@ -278,13 +278,6 @@
         </div>
     </a>
 </li>
-
-        <li>
-          <a href="/lydo_admin/report" class=" flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
-            <i class="bx bxs-report text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Reports</span>
-          </a>
-        </li>
       </ul>
 
       <ul class="side-menu space-y-1">
@@ -328,8 +321,8 @@
                     <h2 class="text-3xl font-bold text-gray-800">List of Scholars</h2>
                 </div>
 
-                <!-- Filter Section -->
- <!-- Filter Section -->
+  
+<!-- Filter Section -->
 <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
     <div class="flex flex-col md:flex-row gap-4" id="filterForm">
         <div class="flex-1">
@@ -356,6 +349,20 @@
                 @endforeach
             </select>
         </div>
+        <!-- Add Status Filter Dropdown -->
+        <div class="flex-1">
+            <select id="statusSelect" name="status" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                <option value="active" {{ $statusFilter == 'active' ? 'selected' : '' }}>Active Scholars</option>
+                <option value="inactive" {{ $statusFilter == 'inactive' ? 'selected' : '' }}>Inactive Scholars</option>
+                <option value="all" {{ $statusFilter == 'all' ? 'selected' : '' }}>All Scholars</option>
+            </select>
+        </div>
+        <!-- Add Print to PDF Button -->
+        <div class="flex-1">
+            <button id="printPdfBtn" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center">
+                <i class="fas fa-file-pdf mr-2"></i> Print to PDF
+            </button>
+        </div>
     </div>
 </div>
 
@@ -378,7 +385,7 @@
                     
                     <div class="overflow-x-auto">
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg  overflow-hidden border border-gray-200">
-                            <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
+                            <thead class="bg-violet-600 to-teal-600 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-4 py-3 border border-gray-200 text-center">
                                         <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
@@ -389,21 +396,23 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">School</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Course</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Academic Year</th>
-                                 </tr>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Documents</th>
+                                </tr>
                             </thead>
-                            <tbody>
+                           <tbody>
                                 @forelse($scholars as $scholar)
                                     <tr class="scholar-row hover:bg-gray-50 border-b">
                                         <td class="px-4 border border-gray-200 py-2 text-center">
                                             <input type="checkbox" name="selected_scholars" value="{{ $scholar->applicant_email }}" data-scholar-id="{{ $scholar->scholar_id }}" class="scholar-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                         </td>
-<td class="px-4 border border-gray-200 py-2 text-center">
-    <div class="text-sm font-medium text-gray-900">
-        {{ $scholar->applicant_lname }}{{ $scholar->applicant_suffix ? ' ' . $scholar->applicant_suffix : '' }}, 
-        {{ $scholar->applicant_fname }} 
-        {{ $scholar->applicant_mname ? $scholar->applicant_mname . ' ' : '' }}
-    </div>
-</td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ $scholar->applicant_lname }}{{ $scholar->applicant_suffix ? ' ' . $scholar->applicant_suffix : '' }}, 
+                                                {{ $scholar->applicant_fname }} 
+                                                {{ $scholar->applicant_mname ? $scholar->applicant_mname . ' ' : '' }}
+                                            </div>
+                                        </td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">
                                             <div class="text-sm text-gray-900">{{ $scholar->applicant_brgy }}</div>
                                         </td>
@@ -417,12 +426,19 @@
                                             <div class="text-sm text-gray-900">{{ $scholar->applicant_course }}</div>
                                         </td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">
-                                        <div class="text-sm text-gray-900">{{ $scholar->applicant_acad_year ?? 'N/A' }}</div>
+                                            <div class="text-sm text-gray-900">{{ $scholar->applicant_acad_year ?? 'N/A' }}</div>
                                         </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $scholar->scholar_status == 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                {{ ucfirst($scholar->scholar_status) }}
+                                            </span>
+                                        </td>
+
+
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center py-4 border border-gray-200 text-gray-500">No scholars found.</td>
+                                        <td colspan="9" class="text-center py-4 border border-gray-200 text-gray-500">No scholars found.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -540,8 +556,6 @@
                     </div>
                 </div>
             </div>
-
-
 
 
             <script>
@@ -823,499 +837,29 @@ generateAnnouncementBtn.addEventListener('click', function() {
                     // Initialize button states
                     updateSendButton();
                 });
-            </script>
-<script>
-// Global pagination state
-const paginationState = {
-    currentPage: 1,
-    rowsPerPage: 15,
-    allRows: [],
-    filteredRows: []
-};
+                // Add this to your existing JavaScript in scholar.blade.php
 
-// Function to get full name for sorting
-function getFullNameForSorting(row) {
-    const nameCell = row.cells[1];
-    if (!nameCell) return '';
-    return nameCell.textContent.trim().toLowerCase();
-}
+// Print to PDF functionality
+document.getElementById('printPdfBtn').addEventListener('click', function() {
+    // Get current filter values
+    const search = document.getElementById('searchInput').value;
+    const barangay = document.getElementById('barangaySelect').value;
+    const academicYear = document.getElementById('academicYearSelect').value;
+    const status = document.getElementById('statusSelect').value;
 
-// Function to sort rows alphabetically by last name
-function sortRowsAlphabetically(rows) {
-    return rows.sort((a, b) => {
-        const nameA = getFullNameForSorting(a);
-        const nameB = getFullNameForSorting(b);
-        return nameA.localeCompare(nameB);
-    });
-}
+    // Build query string
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (barangay) params.append('barangay', barangay);
+    if (academicYear) params.append('academic_year', academicYear);
+    if (status) params.append('status', status);
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize everything
-    initializeScholarData();
-    initializeScholarPagination();
-    initializeScholarFiltering();
-    
-    // Original functionality
-    const selectAll = document.getElementById('selectAll');
-    const checkboxes = document.querySelectorAll('.scholar-checkbox');
-    const sendEmailBtn = document.getElementById('sendEmailBtn');
-    const generateAnnouncementBtn = document.getElementById('generateAnnouncementBtn');
-    const emailModal = document.getElementById('emailModal');
-    const announcementModal = document.getElementById('announcementModal');
-    const announcementContent = document.getElementById('announcementContent');
-    const cancelEmail = document.getElementById('cancelEmail');
-    const closeAnnouncement = document.getElementById('closeAnnouncement');
-    const copyAnnouncement = document.getElementById('copyAnnouncement');
-    const emailForm = document.getElementById('emailForm');
-    const emailLoading = document.getElementById('emailLoading');
-    const sendEmailButton = document.getElementById('sendEmailButton');
-    let allFilteredScholarEmails = new Set();
-
-    // Select All checkbox functionality
-    selectAll.addEventListener('change', async function() {
-        if (this.checked) {
-            selectAll.disabled = true;
-            const loadingSpan = document.createElement('span');
-            loadingSpan.className = 'ml-2 text-sm text-gray-500';
-            loadingSpan.textContent = 'Loading...';
-            selectAll.parentNode.appendChild(loadingSpan);
-
-            try {
-                // Check all currently visible checkboxes
-                const visibleRows = paginationState.filteredRows;
-                visibleRows.forEach(row => {
-                    const checkbox = row.querySelector('.scholar-checkbox');
-                    if (checkbox) {
-                        checkbox.checked = true;
-                    }
-                });
-
-                updateSendButton();
-            } catch (error) {
-                console.error('Error selecting scholars:', error);
-                // Fallback: just select visible checkboxes
-                checkboxes.forEach(checkbox => {
-                    if (checkbox.closest('tr').style.display !== 'none') {
-                        checkbox.checked = true;
-                    }
-                });
-            } finally {
-                // Remove loading state
-                selectAll.disabled = false;
-                loadingSpan.remove();
-            }
-        } else {
-            // Uncheck all checkboxes
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            allFilteredScholarEmails.clear();
-            updateSendButton();
-        }
-    });
-
-    // Individual checkbox change
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            updateSendButton();
-            
-            // Update selectAll checkbox state
-            const visibleCheckboxes = Array.from(checkboxes).filter(cb => 
-                cb.closest('tr').style.display !== 'none'
-            );
-            const allChecked = visibleCheckboxes.every(cb => cb.checked);
-            const someChecked = visibleCheckboxes.some(cb => cb.checked);
-            
-            selectAll.checked = allChecked;
-            selectAll.indeterminate = someChecked && !allChecked;
-        });
-    });
-
-    // Update send button state
-    function updateSendButton() {
-        const selectedCount = document.querySelectorAll('.scholar-checkbox:checked').length;
-        sendEmailBtn.disabled = selectedCount === 0;
-        generateAnnouncementBtn.disabled = selectedCount === 0;
-
-        // Show or hide buttons based on selection
-        if (selectedCount > 0) {
-            sendEmailBtn.classList.remove('hidden');
-            generateAnnouncementBtn.classList.remove('hidden');
-        } else {
-            sendEmailBtn.classList.add('hidden');
-            generateAnnouncementBtn.classList.add('hidden');
-        }
-    }
-
-    // Open email modal
-    sendEmailBtn.addEventListener('click', function() {
-        const selectedEmails = Array.from(document.querySelectorAll('.scholar-checkbox:checked'))
-            .map(checkbox => checkbox.value)
-            .join(', ');
-
-        const selectedScholarIds = Array.from(document.querySelectorAll('.scholar-checkbox:checked'))
-            .map(checkbox => checkbox.getAttribute('data-scholar-id'))
-            .join(', ');
-
-        document.getElementById('emailTo').value = selectedEmails;
-        document.getElementById('scholarId').value = selectedScholarIds;
-
-        emailModal.classList.remove('hidden');
-    });
-
-    // Close email modal
-    cancelEmail.addEventListener('click', function() {
-        emailModal.classList.add('hidden');
-    });
-
-    // Close email modal with close button
-    document.getElementById('closeEmailModal').addEventListener('click', function() {
-        emailModal.classList.add('hidden');
-    });
-
-    // Handle email form submission
-    emailForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Show loading indicator
-        emailLoading.classList.remove('hidden');
-        sendEmailButton.disabled = true;
-        
-        const formData = new FormData(this);
-
-        fetch('{{ route("LydoAdmin.sendEmail") }}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Hide loading indicator
-            emailLoading.classList.add('hidden');
-            sendEmailButton.disabled = false;
-            
-            if (data.success) {
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Email sent successfully!',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
-                emailModal.classList.add('hidden');
-                emailForm.reset();
-            } else {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Failed to send email: ' + data.message,
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            }
-        })
-        .catch(error => {
-            // Hide loading indicator
-            emailLoading.classList.add('hidden');
-            sendEmailButton.disabled = false;
-            Swal.fire({
-                title: 'Error!',
-                text: 'Error sending email: ' + error.message,
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        });
-    });
-
-    // Close modal when clicking outside
-    window.addEventListener('click', function(e) {
-        if (e.target === emailModal) {
-            emailModal.classList.add('hidden');
-        }
-        if (e.target === announcementModal) {
-            announcementModal.classList.add('hidden');
-        }
-    });
-
-    // Generate Announcement button functionality - UPDATED FOR NEW NAME FORMAT
-    generateAnnouncementBtn.addEventListener('click', function() {
-        const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
-
-        if (selectedCheckboxes.length === 0) {
-            Swal.fire({
-                title: 'No Selection!',
-                text: 'Please select at least one scholar to copy names.',
-                icon: 'warning',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        // Group selected scholars by barangay
-        const barangayGroups = {};
-        selectedCheckboxes.forEach(checkbox => {
-            const row = checkbox.closest('tr');
-            const name = row.querySelector('td:nth-child(2) div').textContent.trim();
-            const barangay = row.querySelector('td:nth-child(3) div').textContent.trim();
-            if (!barangayGroups[barangay]) {
-                barangayGroups[barangay] = [];
-            }
-            barangayGroups[barangay].push(name);
-        });
-
-        // Sort barangays alphabetically
-        const sortedBarangays = Object.keys(barangayGroups).sort();
-
-        // Build the output string
-        let output = '';
-        sortedBarangays.forEach(barangay => {
-            output += `${barangay}\n`;
-            // Sort names alphabetically within each barangay
-            barangayGroups[barangay].sort().forEach((name, idx) => {
-                output += `${idx + 1}. ${name}\n`;
-            });
-            output += '\n';
-        });
-
-        navigator.clipboard.writeText(output.trim()).then(() => {
-            Swal.fire({
-                title: 'Success!',
-                text: 'Selected scholar names grouped by barangay copied to clipboard!',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            });
-        }).catch(err => {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Failed to copy names: ' + err,
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        });
-    });
-
-    // Copy announcement to clipboard
-    copyAnnouncement.addEventListener('click', function() {
-        announcementContent.select();
-        document.execCommand('copy');
-        Swal.fire({
-            title: 'Success!',
-            text: 'Announcement copied to clipboard!',
-            icon: 'success',
-            confirmButtonText: 'OK'
-        });
-    });
-
-    // Close announcement modal
-    closeAnnouncement.addEventListener('click', function() {
-        announcementModal.classList.add('hidden');
-    });
-
-    // Initialize button states
-    updateSendButton();
+    // Open PDF in new tab
+    window.open(`/lydo_admin/scholars/pdf?${params.toString()}`, '_blank');
 });
-
-// Initialize data from the table
-function initializeScholarData() {
-    const tableRows = Array.from(document.querySelectorAll('table tbody tr'));
-    paginationState.allRows = tableRows.filter(row => !row.querySelector('td[colspan]'));
-    
-    // Sort rows alphabetically by last name
-    paginationState.allRows = sortRowsAlphabetically(paginationState.allRows);
-    paginationState.filteredRows = [...paginationState.allRows];
-}
-
-// Initialize pagination
-function initializeScholarPagination() {
-    updateScholarPagination();
-}
-
-// Update pagination display
-function updateScholarPagination() {
-    const state = paginationState;
-    const container = document.getElementById('paginationContainer');
-    
-    if (!container) return;
-    
-    // Hide all rows first
-    state.allRows.forEach(row => {
-        row.style.display = 'none';
-    });
-    
-    // Calculate pagination for filtered rows
-    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
-    const endIndex = startIndex + state.rowsPerPage;
-    const pageRows = state.filteredRows.slice(startIndex, endIndex);
-    
-    // Show only rows for current page
-    pageRows.forEach(row => {
-        row.style.display = '';
-    });
-    
-    // Update pagination controls
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    const startItem = state.filteredRows.length === 0 ? 0 : Math.min((state.currentPage - 1) * state.rowsPerPage + 1, state.filteredRows.length);
-    const endItem = Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
-    
- container.innerHTML = `
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="text-sm text-gray-600">
-                Showing <span class="font-semibold">${startItem}-${endItem}</span> of <span class="font-semibold">${state.filteredRows.length}</span> applicants
-            </div>
-            
-            <div class="flex items-center space-x-1">
-                <!-- First Page -->
-                <button onclick="changeScholarPage(1)"
-                    class="px-3 py-2 text-sm font-medium rounded-l-md border border-gray-300 ${
-                        state.currentPage === 1
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }"
-                    ${state.currentPage === 1 ? 'disabled' : ''}>
-                    <i class="fas fa-angle-double-left"></i>
-                </button>
-
-                <!-- Previous Page -->
-                <button onclick="changeScholarPage(${state.currentPage - 1})"
-                    class="px-3 py-2 text-sm font-medium border border-gray-300 ${
-                        state.currentPage === 1
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }"
-                    ${state.currentPage === 1 ? 'disabled' : ''}>
-                    <i class="fas fa-angle-left"></i>
-                </button>
-
-                <!-- Page Info -->
-                <div class="flex items-center px-4 py-2 text-sm text-gray-700 border border-gray-300 bg-white">
-                    Page
-                    <input type="number"
-                           class="mx-2 w-12 text-center border border-gray-300 rounded px-1 py-1 text-sm"
-                           value="${state.currentPage}"
-                           min="1"
-                           max="${totalPages}"
-                           onchange="goToScholarPage(this.value)">
-                    of ${totalPages}
-                </div>
-
-                <!-- Next Page -->
-                <button onclick="changeScholarPage(${state.currentPage + 1})"
-                    class="px-3 py-2 text-sm font-medium border border-gray-300 ${
-                        state.currentPage === totalPages
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }"
-                    ${state.currentPage === totalPages ? 'disabled' : ''}>
-                    <i class="fas fa-angle-right"></i>
-                </button>
-
-                <!-- Last Page -->
-                <button onclick="changeScholarPage(${totalPages})"
-                    class="px-3 py-2 text-sm font-medium rounded-r-md border border-gray-300 ${
-                        state.currentPage === totalPages
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }"
-                    ${state.currentPage === totalPages ? 'disabled' : ''}>
-                    <i class="fas fa-angle-double-right"></i>
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-// Change page
-function changeScholarPage(page) {
-    const state = paginationState;
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updateScholarPagination();
-}
-
-// Go to specific page
-function goToScholarPage(page) {
-    const state = paginationState;
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    page = parseInt(page);
-    if (isNaN(page) || page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updateScholarPagination();
-}
-
-// Initialize filtering functionality
-function initializeScholarFiltering() {
-    const searchInput = document.getElementById('searchInput');
-    const barangaySelect = document.getElementById('barangaySelect');
-    const academicYearSelect = document.getElementById('academicYearSelect');
-
-    function filterScholarTable() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedBarangay = barangaySelect.value;
-        const selectedAcademicYear = academicYearSelect.value;
-
-        const filteredRows = paginationState.allRows.filter(row => {
-            const nameCell = row.cells[1];
-            const barangayCell = row.cells[2];
-            const academicYearCell = row.cells[6];
-
-            if (!nameCell || !barangayCell || !academicYearCell) return false;
-
-            const name = nameCell.textContent.toLowerCase();
-            const barangay = barangayCell.textContent.trim();
-            const academicYear = academicYearCell.textContent.trim();
-
-            const nameMatch = name.includes(searchTerm);
-            const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
-            const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
-
-            return nameMatch && barangayMatch && academicYearMatch;
-        });
-
-        // Sort filtered results alphabetically
-        const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
-
-        // Update filtered rows and reset to page 1
-        paginationState.filteredRows = sortedFilteredRows;
-        paginationState.currentPage = 1;
-        updateScholarPagination();
-        
-        // Reset select all checkbox
-        document.getElementById('selectAll').checked = false;
-        document.getElementById('selectAll').indeterminate = false;
-    }
-
-    // Add event listeners with debouncing
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(filterScholarTable, 300));
-    }
-    if (barangaySelect) {
-        barangaySelect.addEventListener('change', filterScholarTable);
-    }
-    if (academicYearSelect) {
-        academicYearSelect.addEventListener('change', filterScholarTable);
-    }
-}
-
-// Debounce function for search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-</script>
+            </script>
+            <script src="{{ asset('js/filter_paginate.js') }}"></script>
+            <script src="{{ asset('js/scholar.js') }}"></script>
         </div>
     </div>
 </body>

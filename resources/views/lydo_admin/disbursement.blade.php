@@ -219,13 +219,6 @@
         </div>
     </a>
 </li>
-
-        <li>
-          <a href="/lydo_admin/report" class=" flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
-            <i class="bx bxs-report text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Reports</span>
-          </a>
-        </li>
       </ul>
 
       <ul class="side-menu space-y-1">
@@ -896,5 +889,24 @@
     });
 </script>
 <script src="{{ asset('js/disburse.js') }}"></script>
+<script>
+// Print Records PDF Button
+document.getElementById('recordsPrintPdfBtn').addEventListener('click', function() {
+    const search = document.querySelector('input[name="search"]').value;
+    const barangay = document.querySelector('select[name="barangay"]').value;
+    const academicYear = document.querySelector('select[name="academic_year"]').value;
+    const semester = document.querySelector('select[name="semester"]').value;
+    
+    let url = '{{ route("LydoAdmin.generateDisbursementRecordsPdf") }}?';
+    
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (barangay) params.append('barangay', barangay);
+    if (academicYear) params.append('academic_year', academicYear);
+    if (semester) params.append('semester', semester);
+    
+    window.open(url + params.toString(), '_blank');
+});
+</script>
 </body>
 </html>
