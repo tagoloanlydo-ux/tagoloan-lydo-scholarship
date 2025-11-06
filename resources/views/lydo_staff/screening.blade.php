@@ -2513,7 +2513,7 @@ function debounce(func, wait) {
                 document.getElementById('house_total_income').value = houseTotalIncome.toFixed(2);
 
                 // Calculate expenses (house rent, lot rent, water, electric)
-                const houseRent = parseFloat(document.getElementById('house_house_rent').value) || 0;
+                const houseRent = parseFloat(document.getElementById('house_rent').value) || 0;
                 const lotRent = parseFloat(document.getElementById('house_lot_rent').value) || 0;
                 const houseWater = parseFloat(document.getElementById('house_water').value) || 0;
                 const houseElectric = parseFloat(document.getElementById('house_electric').value) || 0;
@@ -2587,8 +2587,8 @@ if (lotSelect) {
                 document.addEventListener('input', function(e) {
                     if (e.target.name === 'family_member_income[]' ||
                         e.target.id === 'other_income' ||
-                        e.target.id === 'house_house_rent' ||
-                        e.target.id === 'house_lot_rent' ||
+                        e.target.id === 'house_rent' ||
+                        e.target.id === 'lot_rent' ||
                         e.target.id === 'house_water' ||
                         e.target.id === 'house_electric') {
                         calculateIncomes();
