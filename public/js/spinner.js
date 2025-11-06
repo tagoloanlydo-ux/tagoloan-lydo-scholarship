@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const loadingOverlay = document.getElementById('loadingOverlay');
 
-    // Function to show spinner
+    // Function to show spinner - ONLY for page loads
     function showSpinner() {
         if (loadingOverlay) {
             loadingOverlay.classList.remove('fade-out');
@@ -15,15 +15,18 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingOverlay.classList.add('fade-out');
             setTimeout(() => {
                 loadingOverlay.style.display = 'none';
-            }, 1000); // Match the fadeOut animation duration
+            }, 500); // Reduced timeout for better UX
         }
     }
 
-    // Show spinner when page starts loading
+    // Show spinner immediately when script loads (page is loading)
     showSpinner();
 
     // Hide spinner when page is fully loaded
     window.addEventListener('load', function() {
-        hideSpinner();
+        setTimeout(hideSpinner, 500); // Small delay to ensure everything is loaded
     });
+
+    // Fallback: hide spinner after 5 seconds max to prevent permanent loading
+    setTimeout(hideSpinner, 5000);
 });
