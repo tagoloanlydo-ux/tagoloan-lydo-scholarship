@@ -315,6 +315,7 @@
                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">School</th>
                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">Academic Year</th>
                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">Initial Screening</th>
+                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Application Requirement</th>
                                 </tr>
                             </thead>
                                 <tbody>
@@ -347,10 +348,16 @@
                                                     {{ $applicant->initial_screening }}
                                                 </div>
                                             </td>
+                                            <td class="px-4 border border-gray-200 py-2 text-center">
+                                                <button type="button" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                                                        data-bs-toggle="modal" data-bs-target="#requirementsModal{{ $applicant->applicant_id }}">
+                                                    View Requirements
+                                                </button>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="px-4 py-2 text-center text-sm text-gray-500">
+                                            <td colspan="8" class="px-4 py-2 text-center text-sm text-gray-500">
                                                 No applicants found.
                                             </td>
                                         </tr>
@@ -358,6 +365,32 @@
                                 </tbody>
                         </table>
                     </div>
+
+                    <!-- Requirements Modals -->
+                    @forelse($applicants as $applicant)
+                    <div class="modal fade" id="requirementsModal{{ $applicant->applicant_id }}" tabindex="-1" aria-labelledby="requirementsModalLabel{{ $applicant->applicant_id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="requirementsModalLabel{{ $applicant->applicant_id }}">Application Requirements for {{ $applicant->applicant_lname }}, {{ $applicant->applicant_fname }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item">1. Valid Identification Card (e.g., Passport, Driver's License)</li>
+                                        <li class="list-group-item">2. Proof of Residency (Barangay Certificate)</li>
+                                        <li class="list-group-item">3. Academic Records (Transcript of Records or Certificate of Enrollment)</li>
+                                        <li class="list-group-item">4. Income Certificate or Proof of Financial Need</li>
+                                        <li class="list-group-item">5. Recent 2x2 Photograph</li>
+                                    </ul>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endforelse
 
                  
                     <!-- Pagination -->
@@ -977,52 +1010,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeApplicantPagination();
     initializeApplicantFiltering();
 });
-// Print PDF functionality
-document.getElementById('printPdfBtn').addEventListener('click', function() {
-    const search = document.getElementById('searchInput').value;
-    const barangay = document.getElementById('barangaySelect').value;
-    const academicYear = document.getElementById('academicYearSelect').value;
-    const initialScreening = document.getElementById('initialScreeningSelect').value;
 
-    // Build URL with current filter parameters
-    let url = '/lydo_admin/generate-applicants-pdf?';
-    const params = new URLSearchParams();
-    
-    if (search) params.append('search', search);
-    if (barangay) params.append('barangay', barangay);
-    if (academicYear) params.append('academic_year', academicYear);
-    if (initialScreening && initialScreening !== 'all') params.append('initial_screening', initialScreening);
-    
-    url += params.toString();
-    
-    // Open PDF in new tab
-    window.open(url, '_blank');
-});
-
-// Update filter form submission to include initial screening
-function submitForm() {
-    const initialScreening = document.getElementById('initialScreeningSelect').value;
-    const form = document.getElementById('filterForm');
-    
-    // Create hidden input for initial screening if needed
-    let hiddenInput = document.getElementById('initialScreeningHidden');
-    if (!hiddenInput) {
-        hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = 'initial_screening';
-        hiddenInput.id = 'initialScreeningHidden';
-        form.appendChild(hiddenInput);
-    }
-    hiddenInput.value = initialScreening;
-    
-    form.submit();
-}
-
-// Update event listeners to include initial screening filter
-const initialScreeningSelect = document.getElementById('initialScreeningSelect');
-if (initialScreeningSelect) {
-    initialScreeningSelect.addEventListener('change', submitForm);
-}
 </script>
 </body>
 

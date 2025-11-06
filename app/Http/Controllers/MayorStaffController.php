@@ -10,8 +10,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\Application;
 use App\Models\Scholar;
-use App\Models\Lydopers;
-
 use App\Models\Announce;
 use App\Models\FamilyIntakeSheet;
 use App\Http\Controllers\SmsController;
@@ -795,46 +793,36 @@ $percentageReviewed = $totalApplications > 0
         }
     }
 
-public function updatePersonalInfo(Request $request, $id)
-{
-    $request->validate([
-        'lydopers_fname' => 'required|string|max:255',
-        'lydopers_mname' => 'nullable|string|max:255',
-        'lydopers_lname' => 'required|string|max:255',
-        'lydopers_suffix' => 'nullable|string|max:10',
-        'lydopers_email' => 'required|email|unique:tbl_lydopers,lydopers_email,' . $id . ',lydopers_id',
-        'lydopers_address' => 'required|string|max:500',
-        'lydopers_contact_number' => 'required|string|max:20',
-        'lydopers_bdate' => 'nullable|date',
-    ]);
+    public function updatePersonalInfo(Request $request, $id)
+    {
+        $request->validate([
+            'lydopers_fname' => 'required|string|max:255',
+            'lydopers_lname' => 'required|string|max:255',
+            'lydopers_email' => 'required|email|unique:tbl_lydopers,lydopers_email,' . $id,
+            'lydopers_address' => 'required|string|max:500',
+            'lydopers_contact_number' => 'required|string|max:20',
+        ]);
 
-    $lydoper = Lydopers::findOrFail($id);
-    
-    // Prepare update data
-    $updateData = [
-        'lydopers_fname' => $request->lydopers_fname,
-        'lydopers_lname' => $request->lydopers_lname,
-        'lydopers_suffix' => $request->lydopers_suffix,
-        'lydopers_email' => $request->lydopers_email,
-        'lydopers_address' => $request->lydopers_address,
-        'lydopers_contact_number' => $request->lydopers_contact_number,
-        'lydopers_bdate' => $request->lydopers_bdate,
-    ];
+        DB::table('tbl_lydopers')
+            ->where('lydopers_id', $id)
+            ->update([
+                'lydopers_fname' => $request->lydopers_fname,
+                'lydopers_lname' => $request->lydopers_lname,
+                'lydopers_email' => $request->lydopers_email,
+                'lydopers_address' => $request->lydopers_address,
+                'lydopers_contact_number' => $request->lydopers_contact_number,
+                'updated_at' => now(),
+            ]);
 
-    // Handle middle name - only update if not empty
-    if (!empty(trim($request->lydopers_mname))) {
-        $updateData['lydopers_mname'] = $request->lydopers_mname;
-    } else {
-        $updateData['lydopers_mname'] = null;
+        // Update session
+        $updatedUser = DB::table('tbl_lydopers')->find($id);
+        session(['lydopers' => $updatedUser]);
+
+        return redirect()->back()->with('success', 'Personal information updated successfully.');
     }
 
-    $lydoper->update($updateData);
 
-    // Update session
-    session(['lydopers' => $lydoper->fresh()]);
 
-    return redirect()->back()->with('success', 'Personal information updated successfully.');
-}
     public function markNotificationsViewed(Request $request)
     {
         session(['notifications_viewed' => true]);
@@ -1607,7 +1595,7 @@ public function updatePersonalInfo(Request $request, $id)
         // Save email message to database
         DB::table('tbl_document_email_messages')->insert([
             'application_personnel_id' => $request->application_personnel_id,
-            'email_content' => "Document update email sent for documents: Grade Slip",
+            'email_content' => "Document update email sent for documents: " . implode(', ', $documentNames),
             'sent_at' => now(),
             'created_at' => now(),
             'updated_at' => now()
@@ -1893,27 +1881,5 @@ public function updatePersonalInfo(Request $request, $id)
             return response()->json(['success' => false, 'message' => 'Error loading intake sheet data.'], 500);
         }
     }
-public function updatePassword(Request $request)
-{
-    $request->validate([
-        'current_password' => 'required',
-        'new_password' => 'required|min:8|confirmed|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
-    ]);
-
-    $user = Lydopers::find(session('lydopers')->lydopers_id);
-
-    // Verify current password
-    if (!Hash::check($request->current_password, $user->lydopers_pass)) {
-        return redirect()->back()->with('error', 'Current password is incorrect.');
-    }
-
-    // Update password
-    $user->update([
-        'lydopers_pass' => Hash::make($request->new_password),
-        'updated_at' => now(),
-    ]);
-
-    return redirect()->back()->with('success', 'Password updated successfully.');
-}
 }
 
