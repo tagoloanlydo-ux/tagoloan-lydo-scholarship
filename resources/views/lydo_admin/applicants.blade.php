@@ -243,6 +243,7 @@
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-3xl font-bold text-black-800">List of Applicants</h2>
                 </div>
+
 <!-- Filter Section -->
 <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
     <div class="flex flex-col md:flex-row gap-4" id="filterForm">
@@ -278,12 +279,6 @@
                 <option value="Rejected" {{ $initialScreeningStatus == 'Rejected' ? 'selected' : '' }}>Rejected</option>
             </select>
         </div>
-        <!-- Print PDF Button -->
-        <div class="flex-1">
-            <button id="printPdfBtn" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center">
-                <i class="fas fa-file-pdf mr-2"></i> Print PDF
-            </button>
-        </div>
     </div>
 </div>
 
@@ -313,84 +308,45 @@
                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">Barangay</th>
                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">Email</th>
                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">School</th>
-                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Academic Year</th>
-                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Initial Screening</th>
-                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Application Requirement</th>
-                                </tr>
+                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">Academic Year</th>
+                                 </tr>
                             </thead>
-                                <tbody>
-                                    @forelse($applicants as $applicant)
-                                        <tr class="hover:bg-gray-50 border-b">
-                                            <td class="px-4 border border-gray-200 py-2 text-center">
-                                                <input type="checkbox" name="selected_applicants" value="{{ $applicant->applicant_id }}" class="applicant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                            </td>
-                                            <td class="px-4 border border-gray-200 py-2 text-center">
-                                                <div class="text-sm font-medium text-gray-900">
-                                                    {{ $applicant->applicant_lname }}{{ $applicant->applicant_suffix ? ' ' . $applicant->applicant_suffix : '' }}, 
-                                                    {{ $applicant->applicant_fname }} 
-                                                    {{ $applicant->applicant_mname ? $applicant->applicant_mname . ' ' : '' }}
-                                                </div>
-                                            </td>
-                                            <td class="px-4 border border-gray-200 py-2 text-center">
-                                                <div class="text-sm text-gray-900">{{ $applicant->applicant_brgy }}</div>
-                                            </td>
-                                            <td class="px-4 border border-gray-200 py-2 text-center">
-                                                <div class="text-sm text-gray-900">{{ $applicant->applicant_email }}</div>
-                                            </td>
-                                            <td class="px-4 border border-gray-200 py-2 text-center">
-                                                <div class="text-sm text-gray-900">{{ $applicant->applicant_school_name }}</div>
-                                            </td>
-                                            <td class="px-4 border border-gray-200 py-2 text-center">
-                                                <div class="text-sm text-gray-900">{{ $applicant->applicant_acad_year }}</div>
-                                            </td>
-                                            <td class="px-4 border border-gray-200 py-2 text-center">
-                                                <div class="text-sm font-medium {{ $applicant->initial_screening == 'Approved' ? 'text-green-600' : 'text-red-600' }}">
-                                                    {{ $applicant->initial_screening }}
-                                                </div>
-                                            </td>
-                                            <td class="px-4 border border-gray-200 py-2 text-center">
-                                                <button type="button" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
-                                                        data-bs-toggle="modal" data-bs-target="#requirementsModal{{ $applicant->applicant_id }}">
-                                                    View Requirements
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="8" class="px-4 py-2 text-center text-sm text-gray-500">
-                                                No applicants found.
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
+                            <tbody>
+                                @forelse($applicants as $applicant)
+                                    <tr class="hover:bg-gray-50 border-b">
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <input type="checkbox" name="selected_applicants" value="{{ $applicant->applicant_id }}" class="applicant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ $applicant->applicant_lname }}{{ $applicant->applicant_suffix ? ' ' . $applicant->applicant_suffix : '' }}, 
+                                                {{ $applicant->applicant_fname }} 
+                                                {{ $applicant->applicant_mname ? $applicant->applicant_mname . ' ' : '' }}
+                                            </div>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_brgy }}</div>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_email }}</div>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_school_name }}</div>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_acad_year }}</div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="px-4 py-2 text-center text-sm text-gray-500">
+                                            No applicants found.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
                         </table>
                     </div>
-
-                    <!-- Requirements Modals -->
-                    @forelse($applicants as $applicant)
-                    <div class="modal fade" id="requirementsModal{{ $applicant->applicant_id }}" tabindex="-1" aria-labelledby="requirementsModalLabel{{ $applicant->applicant_id }}" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="requirementsModalLabel{{ $applicant->applicant_id }}">Application Requirements for {{ $applicant->applicant_lname }}, {{ $applicant->applicant_fname }}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <ul class="list-group list-group-flush">
-                                        <li class="list-group-item">1. Valid Identification Card (e.g., Passport, Driver's License)</li>
-                                        <li class="list-group-item">2. Proof of Residency (Barangay Certificate)</li>
-                                        <li class="list-group-item">3. Academic Records (Transcript of Records or Certificate of Enrollment)</li>
-                                        <li class="list-group-item">4. Income Certificate or Proof of Financial Need</li>
-                                        <li class="list-group-item">5. Recent 2x2 Photograph</li>
-                                    </ul>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @endforelse
 
                  
                     <!-- Pagination -->
@@ -1010,7 +966,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeApplicantPagination();
     initializeApplicantFiltering();
 });
-
 </script>
 </body>
 

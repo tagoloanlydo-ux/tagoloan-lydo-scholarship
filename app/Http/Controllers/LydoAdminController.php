@@ -203,12 +203,12 @@ class LydoAdminController extends Controller
         $inactiveStaff = DB::table('tbl_lydopers')
             ->where('lydopers_role', 'lydo_staff')
             ->where('lydopers_status', 'inactive')
-            ->paginate(15, ['*'], 'inactive_page');
+            ->get();
 
         $activeStaff = DB::table('tbl_lydopers')
             ->where('lydopers_role', 'lydo_staff')
             ->where('lydopers_status', 'active')
-            ->paginate(15, ['*'], 'active_page');
+            ->get();
 
         return view('lydo_admin.lydo', compact('notifications', 'inactiveStaff', 'activeStaff'));
     }
@@ -845,7 +845,7 @@ public function disbursement(Request $request)
         }
     }
 
-  public function applicants(Request $request)
+ public function applicants(Request $request)
 {
     $notifications = DB::table('tbl_application_personnel')
         ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
@@ -857,7 +857,7 @@ public function disbursement(Request $request)
             DB::raw("'application' as type")
         )
         ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-
+        
         ->unionAll(
             DB::table('tbl_renewal')
                 ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
@@ -880,6 +880,12 @@ public function disbursement(Request $request)
         ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id')
         ->select(
             'tbl_applicant.*',
+            'tbl_application.application_letter',
+            'tbl_application.cert_of_reg',
+            'tbl_application.grade_slip',
+            'tbl_application.brgy_indigency',
+            'tbl_application.student_id',
+            'tbl_application.date_submitted',
             'tbl_application_personnel.initial_screening',
             'tbl_application_personnel.status'
         );
@@ -906,7 +912,7 @@ public function disbursement(Request $request)
         $query->where('applicant_acad_year', $request->academic_year);
     }
 
-    $applicants = $query->paginate(15);
+    $applicants = $query->get();
 
     // Get distinct barangays for filter dropdown
     $barangays = DB::table('tbl_applicant')
