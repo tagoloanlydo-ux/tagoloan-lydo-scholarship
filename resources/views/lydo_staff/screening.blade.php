@@ -942,23 +942,23 @@
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_school_name }}</td>
                                     <td class="px-4 py-2 border border-gray-200 text-center">
                                         <button
-                                            type="button"
-                                            title="Assign Remarks"
-                                            class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow"
-                                            data-id="{{ $app->application_personnel_id }}"
-                                            data-remarks=""
-                                            data-name="{{ $app->applicant_fname }} {{ $app->applicant_lname }}"
-                                            data-fname="{{ $app->applicant_fname }}"
-                                            data-mname="{{ $app->applicant_mname }}"
-                                            data-lname="{{ $app->applicant_lname }}"
-                                            data-suffix="{{ $app->applicant_suffix }}"
-                                            data-bdate="{{ $app->applicant_bdate }}"
-                                            data-brgy="{{ $app->applicant_brgy }}"
-                                            data-gender="{{ $app->applicant_gender }}"
-                                            data-pob="{{ $app->applicant_pob }}"
-                                            onclick="openEditRemarksModal(this)">
-                                            <i class="fas fa-plus mr-1"></i> Intake Sheet
-                                        </button>
+    type="button"
+    title="Assign Remarks"
+    class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow"
+    data-id="{{ $app->application_personnel_id }}"
+    data-remarks=""
+    data-name="{{ $app->applicant_fname }} {{ $app->applicant_lname }}"
+    data-fname="{{ $app->applicant_fname }}"
+    data-mname="{{ $app->applicant_mname }}"
+    data-lname="{{ $app->applicant_lname }}"
+    data-suffix="{{ $app->applicant_suffix }}"
+    data-bdate="{{ $app->applicant_bdate }}"
+    data-brgy="{{ $app->applicant_brgy }}"
+    data-gender="{{ $app->applicant_gender }}"
+    data-pob="{{ $app->applicant_pob }}"
+    onclick="openEditRemarksModal(this)">
+    <i class="fas fa-plus mr-1"></i> Intake Sheet
+</button>
                                     </td>
                                 </tr>
                                 @empty
@@ -1971,56 +1971,26 @@ function debounce(func, wait) {
             }
 
             // Open Edit Remarks Modal
-            function openEditRemarksModal(button) {
-                const id = button.getAttribute("data-id");
-                const name = button.getAttribute("data-name");
-                const fname = button.getAttribute("data-fname");
-                const mname = button.getAttribute("data-mname");
-                const lname = button.getAttribute("data-lname");
-                const suffix = button.getAttribute("data-suffix");
-                const bdate = button.getAttribute("data-bdate");
-                const brgy = button.getAttribute("data-brgy");
-                const gender = button.getAttribute("data-gender");
-                const pob = button.getAttribute("data-pob");
-
-                // Set the values in the modal form
-                document.getElementById('remarks_id').value = id;
-                document.getElementById('applicant_fname').value = fname || '';
-                document.getElementById('applicant_mname').value = mname || '';
-                document.getElementById('applicant_lname').value = lname || '';
-                document.getElementById('applicant_suffix').value = suffix || '';
-                document.getElementById('head_dob').value = bdate || '';
-                document.getElementById('head_barangay').value = brgy || '';
-
-                // Generate serial number and location
-                document.getElementById('serial_number').value = 'SN-' + Date.now();
-
-
-                // Set current date for Date Entry
-                setCurrentDate();
-
-                // Clear previous family members and service records
-                document.getElementById('family_members_tbody').innerHTML = '';
-                document.getElementById('rv_service_records_tbody').innerHTML = '';
-
-                // Fetch existing intake sheet data and populate form
-                fetch(`/lydo_staff/intake-sheet/${id}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data) {
-                            populateEditModal(data);
-                        }
-                    })
-                    .catch(err => console.error('Error fetching intake sheet data:', err))
-                    .finally(() => {
-                        // Show the modal
-                        document.getElementById('editRemarksModal').classList.remove('hidden');
-                        document.body.classList.add('modal-open');
-
-                        // Reset to first tab
-                        showTab('family');
-                    });
-            }
+function openEditRemarksModal(button) {
+    // Simple version - just show the modal
+    const modal = document.getElementById('editRemarksModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.classList.add('modal-open');
+        
+        // Set basic data
+        const id = button.getAttribute("data-id");
+        const name = button.getAttribute("data-name");
+        
+        document.getElementById('remarks_id').value = id;
+        document.getElementById('applicant_full_name').textContent = name;
+        
+        // Show first tab
+        showTab('family');
+    } else {
+        console.error('Modal not found!');
+    }
+}
 
             // Close Edit Remarks Modal
             function closeEditRemarksModal() {
