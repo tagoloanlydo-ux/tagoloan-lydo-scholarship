@@ -36,10 +36,13 @@ Route::prefix('staging')->group(function () {
     Route::apiResource('/admins', AdminController::class);
     Route::apiResource('/application-personnels', ApplicationPersonnelController::class);
 
+    // Public scholar announcements route (no auth required)
+    Route::get('/scholar/announcements', [AnnouncementController::class, 'getScholarAnnouncements']);
+
     // Scholar-specific routes
     Route::prefix('scholar')->middleware('auth:sanctum')->group(function () {
         Route::get('/profile', [AuthController::class, 'profile']);
-        Route::get('/announcements', [AnnouncementController::class, 'getScholarAnnouncements']);
+        // Route::get('/announcements', [AnnouncementController::class, 'getScholarAnnouncements']); // Moved to public
     });
 });
 
