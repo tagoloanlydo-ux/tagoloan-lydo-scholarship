@@ -350,7 +350,7 @@ public function scholar(Request $request)
         $query->where('a.applicant_acad_year', $request->academic_year);
     }
 
-    $scholars = $query->paginate(30);
+    $scholars = $query->get(0);
 
     // Get distinct barangays for filter dropdown
     $barangays = DB::table('tbl_applicant')
@@ -845,47 +845,100 @@ public function disbursement(Request $request)
         }
     }
 
-    public function applicants(Request $request)
-    {
-        $notifications = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select(
-                'tbl_applicant.applicant_fname as name',
-                'tbl_application_personnel.status as status',
-                'tbl_application_personnel.updated_at as created_at',
-                DB::raw("'application' as type")
-            )
-            ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
+  public function applicants(Request $request)
+{
+    $notifications = DB::table('tbl_application_personnel')
+        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
+        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+        ->select(
+            'tbl_applicant.applicant_fname as name',
+            'tbl_application_personnel.status as status',
+            'tbl_application_personnel.updated_at as created_at',
+            DB::raw("'application' as type")
+        )
+        ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
 
-            ->unionAll(
-                DB::table('tbl_renewal')
-                    ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                    ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                    ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                    ->select(
-                        'tbl_applicant.applicant_fname as name',
-                        'tbl_renewal.renewal_status as status',
-                        'tbl_renewal.updated_at as created_at',
-                        DB::raw("'renewal' as type")
-                    )
-                    ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-            )
-            ->orderBy('created_at', 'desc')
-            ->get();
+        ->unionAll(
+            DB::table('tbl_renewal')
+                ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
+                ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
+                ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+                ->select(
+                    'tbl_applicant.applicant_fname as name',
+                    'tbl_renewal.renewal_status as status',
+                    'tbl_renewal.updated_at as created_at',
+                    DB::raw("'renewal' as type")
+                )
+                ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
+        )
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-        // Get applicants with filtering - only show those with Approved initial screening
+    // Get applicants with filtering - show both Approved and Rejected initial screening
+    $query = DB::table('tbl_applicant')
+        ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
+        ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id');
+
+    // Apply initial screening status filter - default to Approved
+    $initialScreeningStatus = $request->get('initial_screening', 'Approved');
+    if ($initialScreeningStatus && $initialScreeningStatus !== 'all') {
+        $query->where('tbl_application_personnel.initial_screening', $initialScreeningStatus);
+    }
+
+    // Apply other filters
+    if ($request->has('search') && !empty($request->search)) {
+        $query->where(function($q) use ($request) {
+            $q->where('applicant_fname', 'like', '%' . $request->search . '%')
+              ->orWhere('applicant_lname', 'like', '%' . $request->search . '%');
+        });
+    }
+
+    if ($request->has('barangay') && !empty($request->barangay)) {
+        $query->where('applicant_brgy', $request->barangay);
+    }
+
+    if ($request->has('academic_year') && !empty($request->academic_year)) {
+        $query->where('applicant_acad_year', $request->academic_year);
+    }
+
+    $applicants = $query->paginate(15);
+
+    // Get distinct barangays for filter dropdown
+    $barangays = DB::table('tbl_applicant')
+        ->select('applicant_brgy')
+        ->distinct()
+        ->orderBy('applicant_brgy', 'asc')
+        ->pluck('applicant_brgy');
+
+    // Get distinct academic years for filter dropdown
+    $academicYears = DB::table('tbl_applicant')
+        ->select('applicant_acad_year')
+        ->distinct()
+        ->orderBy('applicant_acad_year', 'desc')
+        ->pluck('applicant_acad_year');
+
+    return view('lydo_admin.applicants', compact('notifications', 'applicants', 'barangays', 'academicYears', 'initialScreeningStatus'));
+}
+
+// Add this new method for PDF generation
+public function generateApplicantsPdf(Request $request)
+{
+    try {
+        // Set time limit for PDF generation
+        set_time_limit(120); // 2 minutes
+        
+        // Get applicants with filtering - same query as applicants method
         $query = DB::table('tbl_applicant')
             ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
-            ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id')
-            ->where('tbl_application_personnel.initial_screening', 'Approved');
+            ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id');
 
-        // Apply status filter
-        if ($request->has('status') && !empty($request->status)) {
-            $query->where('tbl_application_personnel.status', $request->status);
+        // Apply initial screening status filter
+        $initialScreeningStatus = $request->get('initial_screening', 'Approved');
+        if ($initialScreeningStatus && $initialScreeningStatus !== 'all') {
+            $query->where('tbl_application_personnel.initial_screening', $initialScreeningStatus);
         }
 
-        // Apply filters
+        // Apply other filters
         if ($request->has('search') && !empty($request->search)) {
             $query->where(function($q) use ($request) {
                 $q->where('applicant_fname', 'like', '%' . $request->search . '%')
@@ -901,25 +954,33 @@ public function disbursement(Request $request)
             $query->where('applicant_acad_year', $request->academic_year);
         }
 
-        $applicants = $query->paginate(15);
+        $applicants = $query->get();
 
-        // Get distinct barangays for filter dropdown
-        $barangays = DB::table('tbl_applicant')
-            ->select('applicant_brgy')
-            ->distinct()
-            ->orderBy('applicant_brgy', 'asc')
-            ->pluck('applicant_brgy');
+        // Get filter info for page title
+        $filters = [];
+        if ($request->search) {
+            $filters[] = 'Search: ' . $request->search;
+        }
+        if ($request->barangay) {
+            $filters[] = 'Barangay: ' . $request->barangay;
+        }
+        if ($request->academic_year) {
+            $filters[] = 'Academic Year: ' . $request->academic_year;
+        }
+        if ($request->initial_screening) {
+            $filters[] = 'Initial Screening: ' . $request->initial_screening;
+        }
 
-        // Get distinct academic years for filter dropdown
-        $academicYears = DB::table('tbl_applicant')
-            ->select('applicant_acad_year')
-            ->distinct()
-            ->orderBy('applicant_acad_year', 'desc')
-            ->pluck('applicant_acad_year');
+        $pdf = Pdf::loadView('pdf.applicants-print', compact('applicants', 'filters'))
+            ->setPaper('a4', 'landscape');
 
-        return view('lydo_admin.applicants', compact('notifications', 'applicants', 'barangays', 'academicYears'));
+        return $pdf->stream('applicants-list-' . date('Y-m-d') . '.pdf');
+        
+    } catch (\Exception $e) {
+        \Log::error('PDF Generation Error: ' . $e->getMessage());
+        return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
     }
-
+}
     public function getAllFilteredApplicants(Request $request)
     {
         $query = DB::table('tbl_applicant')

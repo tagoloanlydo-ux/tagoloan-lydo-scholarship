@@ -621,7 +621,7 @@
                                 <i class="fas fa-expand"></i>
                             </button>
                         </div>
-                        <div id="doc1Preview" class="mb-3 min-h-[400px] max-h-[400px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300">
+                        <div id="doc1Preview" class="mb-3 min-h-[700px] max-h-[800px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300">
                             <span class="text-gray-500 text-sm">No document available</span>
                         </div>
                         <a id="doc1Download" href="#" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
@@ -640,7 +640,7 @@
                                 <i class="fas fa-expand"></i>
                             </button>
                         </div>
-                        <div id="doc2Preview" class="mb-3 min-h-[400px] max-h-[400px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300">
+                        <div id="doc2Preview" class="mb-3 min-h-[700px] max-h-[800px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300">
                             <span class="text-gray-500 text-sm">No document available</span>
                         </div>
                         <a id="doc2Download" href="#" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
@@ -659,7 +659,7 @@
                                 <i class="fas fa-expand"></i>
                             </button>
                         </div>
-                        <div id="doc3Preview" class="mb-3 min-h-[200px] max-h-[200px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300">
+                        <div id="doc3Preview" class="mb-3 min-h-[700px] max-h-[800px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300">
                             <span class="text-gray-500 text-sm">No document available</span>
                         </div>
                         <a id="doc3Download" href="#" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
@@ -1110,7 +1110,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (isExpanded) {
                 // Collapse current document
                 preview.classList.remove('expanded');
-                preview.style.maxHeight = '800px';
+                preview.style.maxHeight = '200px';
                 container.classList.remove('md:col-span-3', 'col-span-1');
                 documentsGrid.classList.remove('grid-cols-1');
                 documentsGrid.classList.add('md:grid-cols-3');

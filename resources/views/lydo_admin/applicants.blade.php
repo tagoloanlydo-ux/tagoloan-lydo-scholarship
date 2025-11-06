@@ -244,8 +244,7 @@
                     <h2 class="text-3xl font-bold text-black-800">List of Applicants</h2>
                 </div>
 
-                <!-- Filter Section -->
-  <!-- Filter Section -->
+<!-- Filter Section -->
 <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
     <div class="flex flex-col md:flex-row gap-4" id="filterForm">
         <div class="flex-1">
@@ -256,7 +255,7 @@
             <select id="barangaySelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
                 <option value="">All Barangays</option>
                 @foreach($barangays as $barangay)
-                    <option value="{{ $barangay }}">
+                    <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
                         {{ $barangay }}
                     </option>
                 @endforeach
@@ -266,10 +265,18 @@
             <select id="academicYearSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
                 <option value="">All Academic Years</option>
                 @foreach($academicYears as $year)
-                    <option value="{{ $year }}">
+                    <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
                         {{ $year }}
                     </option>
                 @endforeach
+            </select>
+        </div>
+        <!-- Add Initial Screening Filter -->
+        <div class="flex-1">
+            <select id="initialScreeningSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                <option value="all" {{ $initialScreeningStatus == 'all' ? 'selected' : '' }}>All Status</option>
+                <option value="Approved" {{ $initialScreeningStatus == 'Approved' ? 'selected' : '' }}>Approved</option>
+                <option value="Rejected" {{ $initialScreeningStatus == 'Rejected' ? 'selected' : '' }}>Rejected</option>
             </select>
         </div>
     </div>

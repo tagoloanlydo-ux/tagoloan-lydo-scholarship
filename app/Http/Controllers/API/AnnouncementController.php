@@ -84,7 +84,7 @@ class AnnouncementController extends Controller
         $validator = Validator::make($request->all(), [
             'announce_title' => 'required|string|max:255',
             'announce_content' => 'required|string',
-            'announce_type' => 'required|string|in:applicants,scholars',
+            'announce_type' => 'required|string|in:applicant,scholar',
         ]);
 
         if ($validator->fails()) {
@@ -164,7 +164,7 @@ class AnnouncementController extends Controller
 
     public function getScholarAnnouncements(Request $request)
     {
-        $request->merge(['type' => 'scholars']);
+        $request->merge(['type' => 'scholar']);
         return $this->index($request);
     }
 }
