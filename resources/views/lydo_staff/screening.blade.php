@@ -2767,22 +2767,12 @@ function debounce(func, wait) {
                 const houseSelect = document.getElementById('house_house');
                 const lotSelect = document.getElementById('house_lot');
 
-                if (data.house_house === 'Rent') {
-                    document.getElementById('house_rent_group').style.display = 'block';
-                    document.getElementById('house_house_rent').value = data.house_house_rent || '';
-                }
-
-                if (data.house_lot === 'Rent') {
-                    document.getElementById('lot_rent_group').style.display = 'block';
-                    document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
-                }
-
-                // Trigger change events to update UI
+                // Directly call the toggle functions to ensure rent fields are shown/hidden correctly
                 if (houseSelect) {
-                    houseSelect.dispatchEvent(new Event('change'));
+                    toggleHouseFields();
                 }
                 if (lotSelect) {
-                    lotSelect.dispatchEvent(new Event('change'));
+                    toggleLotFields();
                 }
 
                 // Populate remarks
