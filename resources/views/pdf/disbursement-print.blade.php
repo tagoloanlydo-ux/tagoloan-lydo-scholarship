@@ -3,167 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LYDO Scholarship Disbursement Report - Print</title>
+    <title>Signed Disbursements Report</title>
+    <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
+        * {
             margin: 0;
-            padding: 20px;
-            color: #333;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 3px solid #333;
-            padding-bottom: 20px;
+        body {
+            background: #f4f6f9;
+            padding: 30px;
         }
 
-        .header h1 {
-            margin: 0 0 10px 0;
-            font-size: 24px;
-            font-weight: bold;
-            text-transform: uppercase;
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: #fff;
+            margin: auto;
+            padding: 25px;
+            border-radius: 10px;
         }
 
-        .filters {
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-        }
-
-        table {
+        /* HEADER TABLE (no outline) */
+        .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 11px;
+            margin-bottom: 15px;
         }
 
-        th {
-            border: 1px solid #333;
-            padding: 8px 6px;
-            background-color: #343a40;
-            color: white;
-            font-weight: bold;
+        .header-table td {
             text-align: center;
-            text-transform: uppercase;
-            font-size: 10px;
-        }
-
-        td {
-            border: 1px solid #333;
-            padding: 8px 6px;
-            text-align: center;
+            padding: 10px;
             vertical-align: middle;
         }
 
-        .text-center { text-align: center; }
-        .text-left { text-align: left; }
-        .text-right { text-align: right; }
+        .logo img {
+            width: 95px;
+            height: 100 px;
+            object-fit: contain;
+        }
+
+        .name-section div {
+            font-size: 13px;
+            line-height: 1.3;
+        }
+
+        .name-section strong {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        /* FILTERS BOX */
+        .filters-info {
+            background: #eef3ff;
+            padding: 10px;
+            margin-top: 8px;
+            border-left: 4px solid #3f6ad8;
+            font-size: 12px;
+        }
+
+        .filters-info h3 {
+            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* DATA TABLE (with outline & professional style) */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+            font-size: 13px;
+            border: 1px solid #b8c3d6; /* ✅ clean border */
+        }
+
+        .data-table th {
+            background: #324b7a;
+            color: white;
+            padding: 8px;
+            text-transform: uppercase;
+            font-size: 11px;
+            border: 1px solid #2d4170;
+        }
+
+        .data-table td {
+            padding: 8px;
+            border: 1px solid #cbd4e1; /* ✅ subtle borders */
+        }
+
+        .data-table tr:nth-child(even) {
+            background: #f7f9fc;
+        }
+
+        .data-table tr:hover {
+            background: #eef3ff;
+        }
+
+        .text-center {
+            text-align: center;
+        }
 
         .footer {
-            margin-top: 40px;
+            margin-top: 35px;
             text-align: center;
             font-size: 11px;
             color: #666;
-            padding-top: 20px;
             border-top: 1px solid #ccc;
+            padding-top: 10px;
         }
 
-        .no-data {
-            text-align: center;
-            padding: 50px;
-            font-size: 14px;
-            color: #666;
-            font-style: italic;
-        }
-
-        @page {
-            margin: 0.5in;
-            size: A4 landscape;
+        img.signature-img {
+            max-width: 90px;
+            max-height: 45px;
         }
     </style>
 </head>
+
 <body>
+    <div class="container">
 
-<div class="header">
-    <div style="font-size: 18px; font-weight: bold; margin: 5px 0;">Republic of the Philippines</div>
-    <div style="font-size: 16px; font-weight: bold; margin: 5px 0;">Province of Misamis Oriental</div>
-    <div style="font-size: 16px; font-weight: bold; margin: 5px 0;">Municipality of Tagoloan</div>
-    <div style="font-size: 16px; font-weight: bold; margin: 5px 0;">Local Youth Development Office</div>
-    <h1>LYDO Scholarship Disbursement Report</h1>
-</div>
+        <!-- HEADER (NO OUTLINE) -->
+        <table class="header-table">
+            <tr>
+                <td class="logo h-3xl">
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture2.png'))) }}">
+                </td>
 
-@if(!empty($filters))
-<div class="filters">
-    <strong>Applied Filters:</strong>
-    {{ implode(' | ', $filters) }}
-</div>
-@endif
+                <td class="name-section">
+                    <div><strong>Republic of the Philippines</strong></div>
+                    <div>PROVINCE OF MISAMIS ORIENTAL</div>
+                    <div>MUNICIPALITY OF TAGOLOAN</div>
+                    <div><strong>LOCAL YOUTH DEVELOPMENT OFFICE</strong></div>
+                    <div><strong>SCHOLARSHIP MANAGEMENT SYSTEM</strong></div>
 
-@if($disbursements->count() > 0)
-<table>
-    <thead>
-        <tr>
-            <th style="width: 5%;">#</th>
-            <th style="width: 20%;">Scholar Name</th>
-            <th style="width: 12%;">Barangay</th>
-            <th style="width: 10%;">Academic Year</th>
-            <th style="width: 11%;">Semester</th>
-            <th style="width: 12%;">Amount</th>
-            <th style="width: 12%;">Disbursement Date</th>
-            <th style="width: 18%;">Signature</th>
-        </tr>
-    </thead>
-    <tbody>
-        @php
-            $totalAmount = 0;
-        @endphp
-        
-        @foreach($disbursements as $index => $disbursement)
-        @php
-            $totalAmount += $disbursement->disburse_amount;
-        @endphp
-        <tr>
-            <td class="text-center">{{ $index + 1 }}</td>
-            <td class="text-left">{{ $disbursement->full_name }}</td>
-            <td class="text-center">{{ $disbursement->applicant_brgy }}</td>
-            <td class="text-center">{{ $disbursement->disburse_acad_year }}</td>
-            <td class="text-center">{{ $disbursement->disburse_semester }}</td>
-            <td class="text-right">₱{{ number_format($disbursement->disburse_amount, 2) }}</td>
-            <td class="text-center">{{ \Carbon\Carbon::parse($disbursement->disburse_date)->format('M d, Y') }}</td>
-            <td class="text-center">{{ $disbursement->disburse_signature ? 'Signed' : 'Unsigned' }}</td>
-        @endforeach
+                    @if(request('search') || request('barangay') || request('academic_year') || request('semester'))
+                    <div class="filters-info">
+                        <h3>Applied Filters:</h3>
+                        @if(request('search'))
+                            <p><strong>Search:</strong> {{ request('search') }}</p>
+                        @endif
+                        @if(request('barangay'))
+                            <p><strong>Barangay:</strong> {{ request('barangay') }}</p>
+                        @endif
+                        @if(request('academic_year'))
+                            <p><strong>Academic Year:</strong> {{ request('academic_year') }}</p>
+                        @endif
+                        @if(request('semester'))
+                            <p><strong>Semester:</strong> {{ request('semester') }}</p>
+                        @endif
+                    </div>
+                    @endif
+                </td>
 
-        <tr style="background-color: #f8f9fa; font-weight: bold;">
-            <td colspan="5" class="text-right">TOTAL AMOUNT:</td>
-            <td class="text-right">₱{{ number_format($totalAmount, 2) }}</td>
-            <td class="text-center">-</td>
-        </tr>
-    </tbody>
-</table>
+                <td class="logo">
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture3.png'))) }}">
+                </td>
+            </tr>
+        </table>
 
-<div class="footer">
-    <p style="margin: 5px 0; font-weight: bold;">Lydo Scholarship System</p>
-    <p style="margin: 5px 0;">Generated on: {{ date('F d, Y \a\t h:i A') }}</p>
-</div>
 
-@else
-<div class="no-data">
-    <p>No disbursement records found matching the specified criteria.</p>
-    <p>Please adjust your filters and try again.</p>
-</div>
-@endif
+        <!-- TABLE WITH OUTLINE -->
+        @if($signedDisbursements->count() > 0)
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Barangay</th>
+                    <th>Semester</th>
+                    <th>Academic Year</th>
+                    <th class="text-center">Amount</th>
+                    <th class="text-center">Date</th>
+                    <th class="text-center">Signature</th>
+                </tr>
+            </thead>
 
-<script>
-    window.onload = function() {
-        window.print();
-    };
-</script>
+            <tbody>
+                @foreach($signedDisbursements as $index => $disburse)
+                <tr>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td class="text-center">{{ $disburse->full_name }}</td>
+                    <td class="text-center">{{ $disburse->applicant_brgy }}</td>
+                    <td class="text-center">{{ $disburse->disburse_semester }}</td>
+                    <td class="text-center" >{{ $disburse->disburse_acad_year }}</td>
+                    <td class="text-center">{{ number_format($disburse->disburse_amount, 0) }}</td>
+                    <td class="date-column text-center">{{ \Carbon\Carbon::parse($disburse->disburse_date)->format('M d, Y') }}</td>
+                    <td class="text-center">
+                        @if($disburse->disburse_signature)
+                            <img src="{{ $disburse->disburse_signature }}" class="signature-img">
+                        @else
+                            Signed
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
 
+        @else
+        <div class="text-center" style="padding: 40px;">
+            <h3 style="color: #555;">No Signed Disbursements Found</h3>
+            <p style="color: #777;">No data matches the current filter criteria.</p>
+        </div>
+        @endif
+
+
+        <div class="footer">
+            Report generated by LYDO Scholarship Management System <br>
+            {{ \Carbon\Carbon::now()->format('F d, Y — h:i A') }}
+        </div>
+
+    </div>
 </body>
 </html>

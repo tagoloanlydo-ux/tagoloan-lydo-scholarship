@@ -1954,7 +1954,7 @@ public function disbursement(Request $request)
         ]);
     }
 
-public function getScholarsWithoutDisbursement(Request $request)
+    public function getScholarsWithoutDisbursement(Request $request)
 {
     try {
         $request->validate([
@@ -1998,4 +1998,66 @@ public function getScholarsWithoutDisbursement(Request $request)
         ], 500);
     }
 }
+
+    public function generateDisbursementPdf(Request $request)
+    {
+        // Get only signed disbursement records with applicant information
+        $query = DB::table('tbl_disburse as d')
+            ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->select(
+                'd.disburse_semester',
+                'd.disburse_acad_year',
+                'd.disburse_amount',
+                'd.disburse_date',
+                'd.disburse_signature',
+                'a.applicant_brgy',
+                DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+            )
+            ->whereNotNull('d.disburse_signature'); // Only signed disbursements
+
+        // Apply filters
+        if ($request->has('search') && !empty($request->search)) {
+            $query->where(function($q) use ($request) {
+                $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
+                  ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%')
+                  ->orWhere('a.applicant_mname', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->has('barangay') && !empty($request->barangay)) {
+            $query->where('a.applicant_brgy', $request->barangay);
+        }
+
+        if ($request->has('academic_year') && !empty($request->academic_year)) {
+            $query->where('d.disburse_acad_year', $request->academic_year);
+        }
+
+        if ($request->has('semester') && !empty($request->semester)) {
+            $query->where('d.disburse_semester', $request->semester);
+        }
+
+        $signedDisbursements = $query->get();
+
+        // Get filter info for page title
+        $filters = [];
+        if ($request->search) {
+            $filters[] = 'Search: ' . $request->search;
+        }
+        if ($request->barangay) {
+            $filters[] = 'Barangay: ' . $request->barangay;
+        }
+        if ($request->academic_year) {
+            $filters[] = 'Academic Year: ' . $request->academic_year;
+        }
+        if ($request->semester) {
+            $filters[] = 'Semester: ' . $request->semester;
+        }
+
+        $pdf = Pdf::loadView('pdf.disbursement-print', compact('signedDisbursements', 'filters'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream('disbursement-report-' . date('Y-m-d') . '.pdf');
+    }
 }

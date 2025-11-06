@@ -349,29 +349,9 @@
                 <span id="selectedCount" class="text-xs bg-violet-100 text-violet-700 px-2 py-1 rounded-full font-medium">0 selected</span>
             </label>
 
-            <!-- Search and Action Bar -->
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
-                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                    <!-- Search Input -->
-                    <div class="flex-1 max-w-md">
-                        <div class="relative">
-                            <input type="text" id="scholarSearch" placeholder="Search scholars..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-sm">
-                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex gap-2">
-                        <button type="button" id="selectAllScholars" class="flex items-center gap-2 px-4 py-2 text-sm bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium">
-                            <i class="fas fa-check-square"></i>
-                            Select All
-                        </button>
-                        <button type="button" id="clearAllScholars" class="flex items-center gap-2 px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium">
-                            <i class="fas fa-times-circle"></i>
-                            Clear All
-                        </button>
-                    </div>
-                </div>
+            <!-- Search Scholars -->
+            <div class="mb-4">
+                <input type="text" id="scholarSearch" placeholder="Search scholars by name..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500">
             </div>
 
             <!-- Scholar Table Container -->
@@ -808,12 +788,9 @@
         // Scholar Selection Functionality
         const selectAllCheckbox = document.getElementById('selectAllCheckbox');
         const scholarCheckboxes = document.querySelectorAll('.scholar-checkbox');
-        const selectAllButton = document.getElementById('selectAllScholars');
-        const clearAllButton = document.getElementById('clearAllScholars');
         const selectedCount = document.getElementById('selectedCount');
         const submitBtn = document.getElementById('submitBtn');
         const barangayFilter = document.getElementById('barangayFilter');
-        const scholarSearch = document.getElementById('scholarSearch');
 
         // Update selected count
         function updateSelectedCount() {
@@ -844,7 +821,7 @@
         function filterScholarsByBarangay() {
             const selectedBarangay = barangayFilter.value.toLowerCase();
             const rows = document.querySelectorAll('.scholar-row');
-            
+
             rows.forEach(row => {
                 const barangay = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
                 if (!selectedBarangay || barangay.includes(selectedBarangay)) {
@@ -855,11 +832,11 @@
             });
         }
 
-        // Search scholars
+        // Search scholars by name
         function searchScholars() {
-            const searchTerm = scholarSearch.value.toLowerCase();
+            const searchTerm = document.getElementById('scholarSearch').value.toLowerCase();
             const rows = document.querySelectorAll('.scholar-row');
-            
+
             rows.forEach(row => {
                 const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
                 if (name.includes(searchTerm)) {
@@ -869,6 +846,8 @@
                 }
             });
         }
+
+
 
         // Event listeners
         selectAllCheckbox.addEventListener('change', function() {
@@ -883,8 +862,6 @@
             checkbox.addEventListener('change', updateSelectedCount);
         });
 
-        selectAllButton.addEventListener('click', selectAllScholars);
-        clearAllButton.addEventListener('click', clearAllScholars);
         barangayFilter.addEventListener('change', filterScholarsByBarangay);
         scholarSearch.addEventListener('input', searchScholars);
 

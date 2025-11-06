@@ -219,6 +219,41 @@ function initializeSignedDisbursementFiltering() {
     }
 }
 
+// Initialize print PDF functionality for signed disbursements
+function initializeSignedDisbursementPrintPdf() {
+    const printPdfBtn = document.getElementById('signedPrintPdfBtn');
+    if (!printPdfBtn) return;
+
+    printPdfBtn.addEventListener('click', function() {
+        // Get current filter values
+        const searchInput = document.querySelector('#signedFilterForm input[name="search"]');
+        const barangaySelect = document.querySelector('#signedFilterForm select[name="barangay"]');
+        const academicYearSelect = document.querySelector('#signedFilterForm select[name="academic_year"]');
+        const semesterSelect = document.querySelector('#signedFilterForm select[name="semester"]');
+
+        const search = searchInput ? searchInput.value : '';
+        const barangay = barangaySelect ? barangaySelect.value : '';
+        const academic_year = academicYearSelect ? academicYearSelect.value : '';
+        const semester = semesterSelect ? semesterSelect.value : '';
+
+        // Build URL with parameters
+        let url = '/lydo_admin/disbursement-pdf';
+        const params = new URLSearchParams();
+
+        if (search) params.append('search', search);
+        if (barangay) params.append('barangay', barangay);
+        if (academic_year) params.append('academic_year', academic_year);
+        if (semester) params.append('semester', semester);
+
+        if (params.toString()) {
+            url += '?' + params.toString();
+        }
+
+        // Open PDF in new tab/window
+        window.open(url, '_blank');
+    });
+}
+
 // Debounce function for search
 function signedDebounce(func, wait) {
     let timeout;
@@ -240,8 +275,9 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeSignedDisbursementData();
         initializeSignedDisbursementPagination();
         initializeSignedDisbursementFiltering();
+        initializeSignedDisbursementPrintPdf();
     }
-    
+
     // Also reinitialize when switching to signed tab
     const signedTab = document.getElementById('tab-signed');
     if (signedTab) {
@@ -250,6 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 initializeSignedDisbursementData();
                 initializeSignedDisbursementPagination();
                 initializeSignedDisbursementFiltering();
+                initializeSignedDisbursementPrintPdf();
             }, 100);
         });
     }
