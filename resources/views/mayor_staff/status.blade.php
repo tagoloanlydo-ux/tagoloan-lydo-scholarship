@@ -376,7 +376,7 @@
             $status = data_get($a, 'status');
             $remarks = data_get($a, 'remarks');
 
-            return $screening === 'Approved'
+            return $screening === 'Reviewed'
                 && $status === 'Pending'
                 && in_array($remarks, ['Poor', 'Ultra Poor']);
         })->values();
