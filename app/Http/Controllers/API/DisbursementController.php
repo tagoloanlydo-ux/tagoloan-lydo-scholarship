@@ -31,7 +31,7 @@ class DisbursementController extends Controller
             $query->where('scholar_id', $request->scholar_id);
         }
 
-        $disbursements = $query->orderBy('disbursement_date', 'desc')->paginate(15);
+        $disbursements = $query->orderBy('disburse_date', 'desc')->paginate(15);
 
         return $this->paginatedResponse($disbursements, 'Disbursements retrieved successfully');
     }
@@ -183,14 +183,14 @@ class DisbursementController extends Controller
             }
 
             if ($request->has('month') && !empty($request->month)) {
-                $query->whereMonth('disbursement_date', $request->month);
+                $query->whereMonth('disburse_date', $request->month);
             }
 
             if ($request->has('year') && !empty($request->year)) {
-                $query->whereYear('disbursement_date', $request->year);
+                $query->whereYear('disburse_date', $request->year);
             }
 
-            $disbursements = $query->orderBy('disbursement_date', 'desc')->get();
+            $disbursements = $query->orderBy('disburse_date', 'desc')->get();
 
             $pdf = Pdf::loadView('disbursements.report', [
                 'disbursements' => $disbursements,
@@ -259,7 +259,7 @@ class DisbursementController extends Controller
         }
 
         $disbursements = Disburse::where('scholar_id', $scholarId)
-            ->orderBy('disbursement_date', 'desc')
+            ->orderBy('disburse_date', 'desc')
             ->paginate(10);
 
         return $this->paginatedResponse($disbursements, 'Scholar disbursements retrieved successfully');
@@ -304,12 +304,12 @@ class DisbursementController extends Controller
 
             // Monthly disbursements (last 12 months)
             $stats['monthly_disbursements'] = Disburse::select(
-                    DB::raw('YEAR(disbursement_date) as year'),
-                    DB::raw('MONTH(disbursement_date) as month'),
+                    DB::raw('YEAR(disburse_date) as year'),
+                    DB::raw('MONTH(disburse_date) as month'),
                     DB::raw('COUNT(*) as count'),
-                    DB::raw('SUM(disbursement_amount) as amount')
+                    DB::raw('SUM(disburse_amount) as amount')
                 )
-                ->where('disbursement_date', '>=', now()->subMonths(12))
+                ->where('disburse_date', '>=', now()->subMonths(12))
                 ->groupBy('year', 'month')
                 ->orderBy('year', 'desc')
                 ->orderBy('month', 'desc')

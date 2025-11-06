@@ -306,90 +306,10 @@
                 <p class="text-xs text-gray-500 mt-1">Select a barangay to filter scholars</p>
             </div>
 
-            <!-- Scholar Selection -->
-            <div class="col-span-full md:col-span-2 lg:col-span-3">
-                <label class="block text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <i class="fas fa-users text-violet-600"></i>
-                    Select Scholar(s)
-                    <span id="selectedCount" class="text-xs bg-violet-100 text-violet-700 px-2 py-1 rounded-full font-medium">0 selected</span>
-                </label>
-
-                <!-- Search and Action Bar -->
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
-                    <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                        <!-- Search Input -->
-                        <div class="flex-1 max-w-md">
-                            <div class="relative">
-                                <input type="text" id="scholarSearch" placeholder="Search scholars..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-sm">
-                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="flex gap-2">
-                            <button type="button" id="selectAllScholars" class="flex items-center gap-2 px-4 py-2 text-sm bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium">
-                                <i class="fas fa-check-square"></i>
-                                Select All
-                            </button>
-                            <button type="button" id="clearAllScholars" class="flex items-center gap-2 px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium">
-                                <i class="fas fa-times-circle"></i>
-                                Clear All
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Scholar Select Container -->
-                <div class="relative">
-                    <select name="scholar_ids[]" multiple id="scholarSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 shadow-sm hover:shadow-md transition-all duration-200 bg-white" style="height: 280px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a78bfa #f3f4f6;" required>
-                        @foreach($scholars as $scholar)
-                            <option value="{{ $scholar->scholar_id }}" class="py-2 px-3 hover:bg-violet-50">{{ $scholar->full_name }}</option>
-                        @endforeach
-                    </select>
-
-                    <!-- Custom scrollbar styling -->
-                    <style>
-                        #scholarSelect::-webkit-scrollbar {
-                            width: 6px;
-                        }
-                        #scholarSelect::-webkit-scrollbar-track {
-                            background: #f3f4f6;
-                            border-radius: 3px;
-                        }
-                        #scholarSelect::-webkit-scrollbar-thumb {
-                            background: #a78bfa;
-                            border-radius: 3px;
-                        }
-                        #scholarSelect::-webkit-scrollbar-thumb:hover {
-                            background: #8b5cf6;
-                        }
-                        #scholarSelect option {
-                            padding: 8px 12px;
-                            border-bottom: 1px solid #f3f4f6;
-                        }
-                        #scholarSelect option:hover {
-                            background-color: #faf5ff !important;
-                        }
-                        #scholarSelect option:checked {
-                            background-color: #ddd6fe !important;
-                            font-weight: 500;
-                        }
-                    </style>
-                </div>
-
-                <!-- Help Text -->
-                <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p class="text-xs text-blue-700 flex items-center gap-2">
-                        <i class="fas fa-info-circle text-blue-500"></i>
-                        <span><strong>Instructions:</strong> Hold Ctrl (or Cmd on Mac) to select multiple scholars. Use the search box above to filter the list.</span>
-                    </p>
-                </div>
-            </div>
-
             <!-- Amount -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                <input type="number" name="amount" step="0.01" min="0" placeholder="Enter amount" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Amount (₱)</label>
+                <input type="number" name="amount" step="0.01" min="0" value="2500" placeholder="2,500" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
             </div>
 
             <!-- Disbursement Date -->
@@ -420,6 +340,57 @@
                 <input type="text" name="academic_year" value="{{ $currentYear }}-{{ $nextYear }}" placeholder="e.g., 2024-2025" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
             </div>
 
+            <!-- Scholar Selection -->
+
+        <div class="col-span-full md:col-span-2 lg:col-span-3">
+            <label class="block text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-users text-violet-600"></i>
+                Select Scholar(s)
+                <span id="selectedCount" class="text-xs bg-violet-100 text-violet-700 px-2 py-1 rounded-full font-medium">0 selected</span>
+            </label>
+
+            <!-- Search Scholars -->
+            <div class="mb-4">
+                <input type="text" id="scholarSearch" placeholder="Search scholars by name..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500">
+            </div>
+
+            <!-- Scholar Table Container -->
+            <div class="relative">
+                <div class="border border-gray-300 rounded-lg bg-white shadow-sm" style="height: 280px; overflow-y: auto;">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="w-8 px-4 py-2">
+                                    <input type="checkbox" id="selectAllCheckbox" class="rounded border-gray-300 text-violet-600 focus:ring-violet-500">
+                                </th>
+                                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Name</th>
+                                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Barangay</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scholarTableBody" class="divide-y divide-gray-200">
+                            @foreach($scholars as $scholar)
+                                <tr class="hover:bg-gray-50 scholar-row" data-scholar-id="{{ $scholar->scholar_id }}">
+                                    <td class="px-4 py-2">
+                                        <input type="checkbox" name="scholar_ids[]" value="{{ $scholar->scholar_id }}" class="scholar-checkbox rounded border-gray-300 text-violet-600 focus:ring-violet-500">
+                                    </td>
+                                    <td class="px-4 py-2 text-sm text-gray-900">{{ $scholar->full_name }}</td>
+                                    <td class="px-4 py-2 text-sm text-gray-500">{{ $scholar->applicant_brgy }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Help Text -->
+            <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-xs text-blue-700 flex items-center gap-2">
+                    <i class="fas fa-info-circle text-blue-500"></i>
+                    <span><strong>Instructions:</strong> Only scholars without existing disbursements for the selected semester and academic year are shown. Use the search box to filter the list.</span>
+                </p>
+            </div>
+        </div>
+
             <!-- Submit Button -->
 <div class="col-span-full flex justify-center mt-4">
     <button type="submit" id="submitBtn" 
@@ -435,7 +406,7 @@
     <!-- Search and Filter Section -->
     <div class="bg-white p-4 rounded-lg shadow-md mb-6">
         <form id="filterForm" method="GET" action="{{ route('LydoAdmin.disbursement') }}"
-            class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
             <!-- Search -->
             <div>
@@ -487,68 +458,106 @@
                 </select>
             </div>
 
-            <!-- Print Button -->
-            <div class="flex items-end">
-                <button type="button" id="printPdfBtn"
-                    class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium">
-                    <i class="fas fa-print"></i> Print PDF
-                </button>
-            </div>
-
         </form>
-            
     </div>
 
-    <!-- Disbursement Table -->
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-800">Disbursement List</h2>
-        
-        @if($disbursements->count() > 0)
-            <div class="overflow-hidden border border-gray-200  shadow-lg">
-                <table class="w-full  table-fixed border-collapse text-[17px]">
-                    <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
-                        <tr>
-                            <th class="w-2/12 px-4 py-3 border border-gray-200 text-center">Full Name</th>
-                            <th class="w-2/12 px-4 py-3 border border-gray-200 text-center">Barangay</th>
-                            <th class="w-2/12 px-4 py-3 border border-gray-200 text-center">Semester</th>
-                            <th class="w-2/12 px-4 py-3 border border-gray-200 text-center">Academic Year</th>
-                            <th class="w-2/12 px-4 py-3 border border-gray-200 text-center">Amount</th>
-                            <th class="w-2/12 px-4 py-3 border border-gray-200 text-center">Disburse Date</th>
-                        </tr>
-                    </thead>
-                </table>
-                <div class="h-auto overflow-y-auto">
-                    <table class="w-full table-fixed border-collapse text-[17px]">
-                        <tbody id="disbursementTableBody">
-                            @foreach($disbursements as $disburse)
-                                <tr class="hover:bg-gray-50 border-b">
-                                    <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">{{ $disburse->full_name }}</td>
-                                    <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">{{ $disburse->applicant_brgy }}</td>
-                                    <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">{{ $disburse->disburse_semester }}</td>
-                                    <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">{{ $disburse->disburse_acad_year }}</td>
-                                    <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">₱{{ number_format($disburse->disburse_amount, 2) }}</td>
-                                    <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">{{ \Carbon\Carbon::parse($disburse->disburse_date)->format('F d, Y') }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+    <!-- Disbursement Records Table (Unsigned) -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+        <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-violet-50 to-indigo-50">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fas fa-file-signature text-violet-600"></i>
+                        Disbursement Records (Pending Signature)
+                    </h3>
+                    <p class="text-sm text-gray-600 mt-1 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                        Records waiting for signature approval
+                    </p>
+                </div>
+                <div class="hidden md:flex items-center gap-2">
+                    <div class="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                    <span class="text-sm font-medium text-yellow-700">{{ $disbursements->count() }} pending</span>
                 </div>
             </div>
+        </div>
 
-            <!-- Pagination -->
-            <div class="mt-6">
-                {{ $disbursements->appends(request()->except('page'))->links() }}
-            </div>
-        @else
-            <div class="text-center py-8">
-                <p class="text-gray-500 text-lg">No disbursement records found matching your criteria.</p>
-            </div>
-        @endif
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
+                    <tr>
+                        <th class="px-6 py-5 text-left text-sm font-bold uppercase tracking-wider border-b border-violet-500">
+                            Name
+                        </th>
+                        <th class="px-6 py-5 text-left text-sm font-bold uppercase tracking-wider border-b border-violet-500">
+                            Barangay
+                        </th>
+                        <th class="px-6 py-5 text-left text-sm font-bold uppercase tracking-wider border-b border-violet-500">
+                            Semester
+                        </th>
+                        <th class="px-6 py-5 text-left text-sm font-bold uppercase tracking-wider border-b border-violet-500">
+                            Academic Year
+                        </th>
+                        <th class="px-6 py-5 text-left text-sm font-bold uppercase tracking-wider border-b border-violet-500">
+                            Amount
+                        </th>
+                        <th class="px-6 py-5 text-left text-sm font-bold uppercase tracking-wider border-b border-violet-500">
+                            Date
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    @forelse($disbursements as $index => $disburse)
+                    <tr class="transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:shadow-sm {{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30' }}">
+                        <td class="px-6 py-5 whitespace-nowrap text-sm font-semibold text-gray-900">
+                            {{ $disburse->full_name }}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-700">
+                            {{ $disburse->applicant_brgy }}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-700 font-medium">
+                            {{ $disburse->disburse_semester }}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-700 font-medium">
+                            {{ $disburse->disburse_acad_year }}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm font-bold text-green-600">
+                            ₱{{ number_format($disburse->disburse_amount, 2) }}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-700">
+                            {{ \Carbon\Carbon::parse($disburse->disburse_date)->format('M d, Y') }}
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="7" class="px-6 py-16 text-center">
+                            <div class="flex flex-col items-center justify-center">
+                                <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
+                                    <i class="fas fa-file-signature text-3xl text-gray-400"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Pending Disbursements</h3>
+                                <p class="text-gray-500 max-w-md">All disbursements have been signed or no records exist yet. Create new disbursements to see them here.</p>
+                                <div class="mt-4 flex items-center gap-2 text-sm text-gray-400">
+                                    <i class="fas fa-check-circle"></i>
+                                    All caught up!
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+<!-- Add this right after the closing </table> tag in the disbursement records section -->
+<div class="px-6 py-4 bg-white border-t border-gray-200">
+    <div class="pagination-container" id="disbursementPaginationContainer"></div>
+</div>
+
     </div>
 </div>
 
 <div id="tab-content-signed" class="tab-content hidden">
-    <!-- Search and Filter Section -->
+    <!-- Search and Filter Section for Signed Disbursements -->
     <div class="bg-white p-4 rounded-lg shadow-md mb-6">
         <form id="signedFilterForm" method="GET" action="{{ route('LydoAdmin.disbursement') }}"
             class="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -612,501 +621,274 @@
             </div>
 
         </form>
-
     </div>
 
-    <!-- Signed Disbursement Table -->
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-800">Signed Disbursement List</h2>
-
-        @if($signedDisbursements->count() > 0)
-            <div class="overflow-hidden border border-gray-200 shadow-lg">
-                <table class="w-full table-fixed border-collapse text-[17px]">
-                    <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
-                        <tr>
-                            <th class="w-2/12 px-4 py-3 border border-gray-200 text-center">Full Name</th>
-                            <th class="w-2/12 px-4 py-3 border border-gray-200 text-center">Barangay</th>
-                            <th class="w-2/12 px-4 py-3 border border-gray-200 text-center">Semester</th>
-                            <th class="w-2/12 px-4 py-3 border border-gray-200 text-center">Academic Year</th>
-                            <th class="w-2/12 px-4 py-3 border border-gray-200 text-center">Amount</th>
-                            <th class="w-2/12 px-4 py-3 border border-gray-200 text-center">Disburse Date</th>
-                        </tr>
-                    </thead>
-                </table>
-                <div class="h-auto overflow-y-auto">
-                    <table class="w-full table-fixed border-collapse text-[17px]">
-                        <tbody id="signedDisbursementTableBody">
-                            @foreach($signedDisbursements as $disburse)
-                                <tr class="hover:bg-gray-50 border-b">
-                                    <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">{{ $disburse->full_name }}</td>
-                                    <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">{{ $disburse->applicant_brgy }}</td>
-                                    <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">{{ $disburse->disburse_semester }}</td>
-                                    <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">{{ $disburse->disburse_acad_year }}</td>
-                                    <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">₱{{ number_format($disburse->disburse_amount, 2) }}</td>
-                                    <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">{{ \Carbon\Carbon::parse($disburse->disburse_date)->format('F d, Y') }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+    <!-- Signed Disbursements Table -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+        <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-violet-50 to-indigo-50">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fas fa-file-signature text-violet-600"></i>
+                        Signed Disbursements
+                    </h3>
+                    <p class="text-sm text-gray-600 mt-1 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                        Completed disbursements with signatures
+                    </p>
+                </div>
+                <div class="hidden md:flex items-center gap-2">
+                    <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <span class="text-sm font-medium text-green-700">{{ $signedDisbursements->count() }} signed</span>
                 </div>
             </div>
+        </div>
 
-            <!-- Pagination -->
-            <div class="mt-6">
-                {{ $signedDisbursements->links() }}
-            </div>
-        @else
-            <div class="text-center py-8">
-                <p class="text-gray-500 text-lg">No signed disbursement records found.</p>
-            </div>
-        @endif
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
+                    <tr>
+                        <th class="px-6 py-5 text-left text-sm font-bold uppercase tracking-wider border-b border-violet-500">
+                            Name
+                        </th>
+                        <th class="px-6 py-5 text-left text-sm font-bold uppercase tracking-wider border-b border-violet-500">
+                            Barangay
+                        </th>
+                        <th class="px-6 py-5 text-left text-sm font-bold uppercase tracking-wider border-b border-violet-500">
+                            Semester
+                        </th>
+                        <th class="px-6 py-5 text-left text-sm font-bold uppercase tracking-wider border-b border-violet-500">
+                            Academic Year
+                        </th>
+                        <th class="px-6 py-5 text-left text-sm font-bold uppercase tracking-wider border-b border-violet-500">
+                            Amount
+                        </th>
+                        <th class="px-6 py-5 text-left text-sm font-bold uppercase tracking-wider border-b border-violet-500">
+                            Date
+                        </th>
+                        <th class="px-6 py-5 text-left text-sm font-bold uppercase tracking-wider border-b border-violet-500">
+                            Status
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="signedDisbursementTableBody" class="bg-white divide-y divide-gray-100">
+                    @forelse($signedDisbursements as $index => $disburse)
+                    <tr class="transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:shadow-sm {{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30' }}">
+                        <td class="px-6 py-5 whitespace-nowrap text-sm font-semibold text-gray-900">
+                            {{ $disburse->full_name }}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-700">
+                            {{ $disburse->applicant_brgy }}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-700 font-medium">
+                            {{ $disburse->disburse_semester }}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-700 font-medium">
+                            {{ $disburse->disburse_acad_year }}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm font-bold text-green-600">
+                            ₱{{ number_format($disburse->disburse_amount, 2) }}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-700">
+                            {{ \Carbon\Carbon::parse($disburse->disburse_date)->format('M d, Y') }}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-green-800">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Signed
+                            </span>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="7" class="px-6 py-16 text-center">
+                            <div class="flex flex-col items-center justify-center">
+                                <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-4">
+                                    <i class="fas fa-file-signature text-3xl text-gray-400"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Signed Disbursements</h3>
+                                <p class="text-gray-500 max-w-md">No disbursements have been signed yet. Signed records will appear here once they are processed.</p>
+                                <div class="mt-4 flex items-center gap-2 text-sm text-gray-400">
+                                    <i class="fas fa-check-circle"></i>
+                                    Waiting for signatures
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+<!-- Add this right after the closing </table> tag in the signed disbursements section -->
+<div class="px-6 py-4 bg-white border-t border-gray-200">
+    <div class="pagination-container" id="signedDisbursementPaginationContainer"></div>
+</div>
     </div>
 </div>
-
+</div>
+</div>
+</div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const filterForm = document.getElementById("filterForm");
-    const tableBody = document.getElementById("disbursementTableBody");
-
-    // debounce function para hindi sobrang dami ng request habang nagta-type
-    function debounce(func, delay) {
-        let timeout;
-        return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), delay);
-        };
-    }
-
-    // function para mag-load ng filtered records
-    function loadDisbursements() {
-        const formData = new FormData(filterForm);
-        const params = new URLSearchParams(formData);
-
-        fetch(`/lydo_admin/disbursement?${params.toString()}`, {
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        })
-        .then(res => res.json())
-        .then(data => {
-            tableBody.innerHTML = "";
-
-            if (data.length > 0) {
-                data.forEach(row => {
-                    tableBody.innerHTML += `
-                        <tr class="hover:bg-gray-50 border-b">
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.full_name}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.applicant_brgy}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.disburse_semester}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.disburse_acad_year}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">₱${parseFloat(row.disburse_amount).toFixed(2)}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.disburse_date}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center text-gray-500 py-4">
-                            No disbursement records found.
-                        </td>
-                    </tr>
-                `;
-            }
-        })
-        .catch(err => {
-            console.error("Error fetching disbursements:", err);
-        });
-    }
-
-    // auto filter habang nagta-type o nagbabago ang select
-    filterForm.querySelectorAll("input, select").forEach(input => {
-        if (input.type === "text") {
-            input.addEventListener("input", debounce(loadDisbursements, 400));
-        } else {
-            input.addEventListener("change", loadDisbursements);
-        }
-    });
-});
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const signedFilterForm = document.getElementById("signedFilterForm");
-    const signedTableBody = document.getElementById("signedDisbursementTableBody");
-
-    // debounce function para hindi sobrang dami ng request habang nagta-type
-    function debounce(func, delay) {
-        let timeout;
-        return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), delay);
-        };
-    }
-
-    // function para mag-load ng filtered signed records
-    function loadSignedDisbursements() {
-        const formData = new FormData(signedFilterForm);
-        const params = new URLSearchParams(formData);
-        params.append('type', 'signed');
-
-        fetch(`/lydo_admin/disbursement?${params.toString()}`, {
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        })
-        .then(res => res.json())
-        .then(data => {
-            signedTableBody.innerHTML = "";
-
-            if (data.length > 0) {
-                data.forEach(row => {
-                    signedTableBody.innerHTML += `
-                        <tr class="hover:bg-gray-50 border-b">
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.full_name}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.applicant_brgy}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.disburse_semester}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.disburse_acad_year}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">₱${parseFloat(row.disburse_amount).toFixed(2)}</td>
-                            <td class="w-2/12 px-4 border border-gray-200 py-2 text-center">${row.disburse_date}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                signedTableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center text-gray-500 py-4">
-                            No signed disbursement records found.
-                        </td>
-                    </tr>
-                `;
-            }
-        })
-        .catch(err => {
-            console.error("Error fetching signed disbursements:", err);
-        });
-    }
-
-    // auto filter habang nagta-type o nagbabago ang select
-    signedFilterForm.querySelectorAll("input, select").forEach(input => {
-        if (input.type === "text") {
-            input.addEventListener("input", debounce(loadSignedDisbursements, 400));
-        } else {
-            input.addEventListener("change", loadSignedDisbursements);
-        }
-    });
-});
-</script>
-
-<script>
-    // Tab switching functionality with persistence
+    // Tab Switching Functionality
     document.addEventListener('DOMContentLoaded', function() {
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
+        // Tab elements
+        const createTab = document.getElementById('tab-create');
+        const recordsTab = document.getElementById('tab-records');
+        const signedTab = document.getElementById('tab-signed');
+        
+        const createContent = document.getElementById('tab-content-create');
+        const recordsContent = document.getElementById('tab-content-records');
+        const signedContent = document.getElementById('tab-content-signed');
 
-        // Load active tab from localStorage or default to 'create'
-        const activeTab = localStorage.getItem('activeDisbursementTab') || 'create';
-        switchTab(activeTab);
+        // Function to switch tabs
+        function switchTab(tabName) {
+            // Hide all content
+            createContent.classList.add('hidden');
+            recordsContent.classList.add('hidden');
+            signedContent.classList.add('hidden');
+            
+            // Remove active styles from all tabs
+            createTab.classList.remove('border-violet-500', 'text-violet-500');
+            createTab.classList.add('border-transparent', 'text-gray-500');
+            recordsTab.classList.remove('border-violet-500', 'text-violet-500');
+            recordsTab.classList.add('border-transparent', 'text-gray-500');
+            signedTab.classList.remove('border-violet-500', 'text-violet-500');
+            signedTab.classList.add('border-transparent', 'text-gray-500');
 
-        tabButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const tab = this.getAttribute('data-tab');
-                switchTab(tab);
-                localStorage.setItem('activeDisbursementTab', tab);
-            });
-        });
-
-        function switchTab(tab) {
-            // Remove active classes from all buttons
-            tabButtons.forEach(btn => {
-                btn.classList.remove('border-violet-500', 'text-violet-500');
-                btn.classList.add('border-transparent', 'text-gray-500');
-            });
-
-            // Add active class to clicked button
-            document.getElementById('tab-' + tab).classList.remove('border-transparent', 'text-gray-500');
-            document.getElementById('tab-' + tab).classList.add('border-violet-500', 'text-violet-500');
-
-            // Hide all tab contents
-            tabContents.forEach(content => {
-                content.classList.add('hidden');
-            });
-
-            // Show selected tab content
-            document.getElementById('tab-content-' + tab).classList.remove('hidden');
+            // Show selected content and style active tab
+            if (tabName === 'create') {
+                createContent.classList.remove('hidden');
+                createTab.classList.add('border-violet-500', 'text-violet-500');
+                createTab.classList.remove('border-transparent', 'text-gray-500');
+            } else if (tabName === 'records') {
+                recordsContent.classList.remove('hidden');
+                recordsTab.classList.add('border-violet-500', 'text-violet-500');
+                recordsTab.classList.remove('border-transparent', 'text-gray-500');
+            } else if (tabName === 'signed') {
+                signedContent.classList.remove('hidden');
+                signedTab.classList.add('border-violet-500', 'text-violet-500');
+                signedTab.classList.remove('border-transparent', 'text-gray-500');
+            }
         }
-    });
 
-    // Barangay filter functionality
-    document.getElementById('barangayFilter').addEventListener('change', function() {
-        const barangay = this.value;
-        const scholarSelect = document.getElementById('scholarSelect');
+        // Add click event listeners to tabs
+        createTab.addEventListener('click', () => switchTab('create'));
+        recordsTab.addEventListener('click', () => switchTab('records'));
+        signedTab.addEventListener('click', () => switchTab('signed'));
 
-        // Clear current options
-        scholarSelect.innerHTML = '<option value="">Loading...</option>';
+        // Check URL parameters for active tab
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab');
+        if (activeTab) {
+            switchTab(activeTab);
+        }
 
-        // Fetch scholars for selected barangay
-        fetch(`/lydo_admin/get-scholars-by-barangay?barangay=${encodeURIComponent(barangay)}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    scholarSelect.innerHTML = '';
-                    data.scholars.forEach(scholar => {
-                        const option = document.createElement('option');
-                        option.value = scholar.scholar_id;
-                        option.textContent = scholar.full_name;
-                        scholarSelect.appendChild(option);
-                    });
+        // Scholar Selection Functionality
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        const scholarCheckboxes = document.querySelectorAll('.scholar-checkbox');
+        const selectedCount = document.getElementById('selectedCount');
+        const submitBtn = document.getElementById('submitBtn');
+        const barangayFilter = document.getElementById('barangayFilter');
+
+        // Update selected count
+        function updateSelectedCount() {
+            const selected = document.querySelectorAll('.scholar-checkbox:checked').length;
+            selectedCount.textContent = `${selected} selected`;
+            submitBtn.disabled = selected === 0;
+        }
+
+        // Select all scholars
+        function selectAllScholars() {
+            scholarCheckboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            selectAllCheckbox.checked = true;
+            updateSelectedCount();
+        }
+
+        // Clear all scholars
+        function clearAllScholars() {
+            scholarCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            selectAllCheckbox.checked = false;
+            updateSelectedCount();
+        }
+
+        // Filter scholars by barangay
+        function filterScholarsByBarangay() {
+            const selectedBarangay = barangayFilter.value.toLowerCase();
+            const rows = document.querySelectorAll('.scholar-row');
+
+            rows.forEach(row => {
+                const barangay = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                if (!selectedBarangay || barangay.includes(selectedBarangay)) {
+                    row.style.display = '';
                 } else {
-                    scholarSelect.innerHTML = '<option value="">Error loading scholars</option>';
+                    row.style.display = 'none';
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                scholarSelect.innerHTML = '<option value="">Error loading scholars</option>';
             });
-    });
-
-    // Select All functionality
-    document.getElementById('selectAllScholars').addEventListener('click', function() {
-        const scholarSelect = document.getElementById('scholarSelect');
-        const options = scholarSelect.options;
-
-        // First select all scholars
-        for (let i = 0; i < options.length; i++) {
-            options[i].selected = true;
         }
 
-        // Then filter out scholars who already have disbursements for the current academic year and semester
-        filterScholarsWithDisbursements();
-    });
+        // Search scholars by name
+        function searchScholars() {
+            const searchTerm = document.getElementById('scholarSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('.scholar-row');
 
-    // Clear All functionality
-    document.getElementById('clearAllScholars').addEventListener('click', function() {
-        const scholarSelect = document.getElementById('scholarSelect');
-        const options = scholarSelect.options;
-
-        for (let i = 0; i < options.length; i++) {
-            options[i].selected = false;
-        }
-    });
-
-    // Disbursement date validation
-function validateDisbursementDate() {
-    const dateInput = document.getElementById('disbursement_date');
-    const errorElement = dateInput.nextElementSibling;
-    const submitBtn = document.getElementById('submitBtn');
-    const value = dateInput.value;
-
-    if (value) {
-        const date = new Date(value);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        // Extract the year part
-        const year = value.split('-')[0];
-
-        if (isNaN(date.getTime())) {
-            errorElement.textContent = "Invalid date";
-            dateInput.classList.add('error');
-            submitBtn.disabled = true;
-        } 
-        else if (!/^\d{4}$/.test(year)) {
-            errorElement.textContent = "Year must be 4 digits (e.g., 2025)";
-            dateInput.classList.add('error');
-            submitBtn.disabled = true;
-        }
-        else if (date <= today) {
-            errorElement.textContent = "Disbursement date must be in the future";
-            dateInput.classList.add('error');
-            submitBtn.disabled = true;
-        } 
-        else {
-            errorElement.textContent = "";
-            dateInput.classList.remove('error');
-            toggleButton();
-        }
-    } else {
-        errorElement.textContent = "";
-        dateInput.classList.remove('error');
-        toggleButton();
-    }
-}
-
-
-    function toggleButton() {
-        const submitBtn = document.getElementById('submitBtn');
-        const errorElements = document.querySelectorAll('.error-message');
-
-        let hasErrors = false;
-        errorElements.forEach(element => {
-            if (element.textContent.trim() !== '') {
-                hasErrors = true;
-            }
-        });
-
-        submitBtn.disabled = hasErrors;
-    }
-
-    // Add event listeners for disbursement date validation
-    document.getElementById('disbursement_date').addEventListener('blur', validateDisbursementDate);
-    document.getElementById('disbursement_date').addEventListener('input', validateDisbursementDate);
-
-    // Function to filter out scholars with existing disbursements
-    function filterScholarsWithDisbursements() {
-        const academicYearInput = document.querySelector('input[name="academic_year"]');
-        const semesterSelect = document.querySelector('select[name="semester"]');
-        const scholarSelect = document.getElementById('scholarSelect');
-
-        const academicYear = academicYearInput.value.trim();
-        const semester = semesterSelect.value;
-
-        if (!academicYear || !semester) {
-            return; // Don't filter if either field is empty
-        }
-
-        // Fetch scholars who already have disbursements for this academic year and semester
-        fetch(`/lydo_admin/get-scholars-with-disbursement?academic_year=${encodeURIComponent(academicYear)}&semester=${encodeURIComponent(semester)}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const scholarsWithDisbursements = data.scholar_ids;
-                    const options = scholarSelect.options;
-
-                    // Unselect scholars who already have disbursements
-                    for (let i = 0; i < options.length; i++) {
-                        const option = options[i];
-                        if (scholarsWithDisbursements.includes(option.value)) {
-                            option.selected = false;
-                        }
-                        // Note: Scholars without disbursements remain selected if they were selected before
-                    }
+            rows.forEach(row => {
+                const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                if (name.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
                 }
-            })
-            .catch(error => {
-                console.error('Error fetching scholars with disbursements:', error);
             });
-    }
+        }
 
-    // Add event listeners for academic year and semester changes
-    document.querySelector('input[name="academic_year"]').addEventListener('input', filterScholarsWithDisbursements);
-    document.querySelector('select[name="semester"]').addEventListener('change', filterScholarsWithDisbursements);
 
-    // Scholar search functionality
-    document.getElementById('scholarSearch').addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        const scholarSelect = document.getElementById('scholarSelect');
-        const options = scholarSelect.options;
 
-        for (let i = 0; i < options.length; i++) {
-            const option = options[i];
-            const text = option.textContent.toLowerCase();
-            if (text.includes(searchTerm)) {
-                option.style.display = '';
+        // Event listeners
+        selectAllCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                selectAllScholars();
             } else {
-                option.style.display = 'none';
-            }
-        }
-    });
-
-    // Update selected count
-    function updateSelectedCount() {
-        const scholarSelect = document.getElementById('scholarSelect');
-        const selectedOptions = Array.from(scholarSelect.selectedOptions);
-        const count = selectedOptions.length;
-        const selectedCountElement = document.getElementById('selectedCount');
-
-        selectedCountElement.textContent = count + ' selected';
-
-        // Change badge color based on count
-        if (count === 0) {
-            selectedCountElement.className = 'text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-medium';
-        } else if (count < 5) {
-            selectedCountElement.className = 'text-xs bg-violet-100 text-violet-700 px-2 py-1 rounded-full font-medium';
-        } else {
-            selectedCountElement.className = 'text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium';
-        }
-    }
-
-    // Add event listener for scholar selection changes
-    document.getElementById('scholarSelect').addEventListener('change', updateSelectedCount);
-
-    // Update count on page load and after any selection changes
-    updateSelectedCount();
-
-    // Update count after select all/clear all actions
-    document.getElementById('selectAllScholars').addEventListener('click', function() {
-        setTimeout(updateSelectedCount, 10);
-    });
-
-    document.getElementById('clearAllScholars').addEventListener('click', function() {
-        setTimeout(updateSelectedCount, 10);
-    });
-</script>
-
-<script>
-    // SweetAlert confirmation for form submission
-    document.getElementById('submitBtn').addEventListener('click', function(e) {
-        e.preventDefault();
-        const submitBtn = document.getElementById('submitBtn');
-        if (submitBtn.disabled) {
-            return; // Don't show confirmation if form is invalid
-        }
-        Swal.fire({
-            title: 'Are you sure you want to create disbursement?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, create it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Submit the form
-                submitBtn.closest('form').submit();
+                clearAllScholars();
             }
         });
-    });
 
-    // Print PDF functionality
-    document.getElementById('printPdfBtn').addEventListener('click', function() {
-        const filterForm = document.getElementById('filterForm');
-        const formData = new FormData(filterForm);
-        const params = new URLSearchParams(formData);
+        scholarCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectedCount);
+        });
 
-        // Open PDF in new window/tab
-        window.open(`/lydo_admin/disbursement-pdf?${params.toString()}`, '_blank');
-    });
+        barangayFilter.addEventListener('change', filterScholarsByBarangay);
+        scholarSearch.addEventListener('input', searchScholars);
 
-    // Print PDF functionality for signed disbursements
-    document.getElementById('signedPrintPdfBtn').addEventListener('click', function() {
-        const signedFilterForm = document.getElementById('signedFilterForm');
-        const formData = new FormData(signedFilterForm);
-        const params = new URLSearchParams(formData);
-        params.append('type', 'signed');
+        // Initial count update
+        updateSelectedCount();
 
-        // Open PDF in new window/tab
-        window.open(`/lydo_admin/disbursement-pdf?${params.toString()}`, '_blank');
-    });
+        // Date validation
+        const disbursementDateInput = document.getElementById('disbursement_date');
+        const today = new Date().toISOString().split('T')[0];
+        disbursementDateInput.setAttribute('min', today);
 
-    // SweetAlert for session messages
-    document.addEventListener('DOMContentLoaded', function() {
-        @if(session('success'))
-            Swal.fire({
-                title: 'Success!',
-                text: '{{ session('success') }}',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            });
-        @endif
-        @if(session('error'))
-            Swal.fire({
-                title: 'Error!',
-                text: '{{ session('error') }}',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        @endif
+        disbursementDateInput.addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const currentDate = new Date();
+            
+            if (selectedDate < currentDate) {
+                this.classList.add('error');
+                this.nextElementSibling.textContent = 'Disbursement date cannot be in the past.';
+            } else {
+                this.classList.remove('error');
+                this.nextElementSibling.textContent = '';
+            }
+        });
+
     });
 </script>
-
+<script src="{{ asset('js/disburse.js') }}"></script>
+<script src="{{ asset('js/signed_disburse.js') }}"></script>
 </body>
-
 </html>

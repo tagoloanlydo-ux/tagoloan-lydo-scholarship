@@ -73,8 +73,8 @@ class AuthController extends Controller
         }
 
         // Fallback to Laravel's default users table
-        if (Auth::attempt($request->only('email', 'password'))) {
-            $user = Auth::user();
+        $user = \App\Models\User::where('email', $request->email)->first();
+        if ($user && Hash::check($request->password, $user->password)) {
             $token = $this->generateApiToken($user);
 
             return $this->successResponse([
@@ -82,7 +82,7 @@ class AuthController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'role' => $user->role,
+                    'role' => $user->role ?? 'user',
                 ],
                 'token' => $token,
                 'token_type' => 'Bearer',
@@ -97,26 +97,14 @@ class AuthController extends Controller
      */
     private function scholarLogin(Request $request)
     {
-        // Find scholar by email (from applicant table)
-        $applicant = Applicant::where('applicant_email', $request->email)->first();
+        // Find scholar by username from tbl_scholar
+        $scholar = Scholar::where('scholar_username', $request->email)->first();
 
-        if (!$applicant) {
+        if (!$scholar) {
             return $this->errorResponse('Invalid credentials', 401);
         }
 
-        // Find scholar account
-        $application = $applicant->application;
-        if (!$application) {
-            return $this->errorResponse('No application found', 401);
-        }
-
-        $scholar = Scholar::where('application_id', $application->application_id)->first();
-
-        if (!$scholar) {
-            return $this->errorResponse('Scholar account not found', 401);
-        }
-
-        // Check password
+        // Check password against scholar_pass in tbl_scholar
         if (!Hash::check($request->password, $scholar->scholar_pass)) {
             return $this->errorResponse('Invalid credentials', 401);
         }
@@ -125,6 +113,9 @@ class AuthController extends Controller
         if ($scholar->scholar_status !== 'Active') {
             return $this->errorResponse('Account is inactive', 401);
         }
+
+        // Get applicant data through application relationship
+        $applicant = $scholar->applicant;
 
         // Create token for scholar
         $token = $this->generateApiToken($scholar);
@@ -161,7 +152,12 @@ class AuthController extends Controller
             // Scholar profile
             $user->load('applicant');
             return $this->successResponse([
-                'profile' => $user,
+                'scholar' => [
+                    'scholar_id' => $user->scholar_id,
+                    'scholar_username' => $user->scholar_username,
+                    'scholar_status' => $user->scholar_status,
+                    'applicant' => $user->applicant,
+                ],
                 'type' => 'scholar'
             ]);
         } else {

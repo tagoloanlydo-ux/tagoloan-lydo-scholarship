@@ -15,124 +15,87 @@
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <audio id="notificationSound" src="{{ asset('notification/blade.wav') }}" preload="auto"></audio>
+
     <style>
-        /* Loading Spinner Styles */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            opacity: 1;
-            animation: fadeIn 1s ease forwards;
-        }
+ .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 1s ease forwards;
+}
 
-        .loading-container {
-            text-align: center;
-            max-width: 600px;
-            padding: 2rem;
-        }
+.spinner {
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
 
-        .spinner {
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
-            margin: 0 auto 2rem;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+.spinner img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
 
-        .spinner img {
-            width: 80%;
-            height: 100%;
-            border-radius: 50%;
-        }
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 
-        .text-line {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: slideUp 1s ease forwards 0.5s both;
-            color: white;
-        }
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
 
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
-        }
+.fade-out {
+    animation: fadeOut 1s ease forwards;
+}
 
-        @keyframes slideUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
 
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
+/* Responsive spinner size */
+@media (max-width: 768px) {
+    .spinner {
+        width: 80px;
+        height: 80px;
+    }
+}
 
-        .fade-out {
-            animation: fadeOut 1s ease forwards;
-        }
-
-        @keyframes fadeOut {
-            to {
-                opacity: 0;
-                visibility: hidden;
-            }
-        }
-
-        /* Responsive design for spinner */
-        @media (max-width: 768px) {
-            .text-line {
-                font-size: 1.8rem;
-            }
-            .spinner {
-                width: 80px;
-                height: 80px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .text-line {
-                font-size: 1.5rem;
-            }
-            .spinner {
-                width: 60px;
-                height: 60px;
-            }
-        }
+@media (max-width: 480px) {
+    .spinner {
+        width: 60px;
+        height: 60px;
+    }
+}
+   
     </style>
 </head>
 
 <body class="bg-gray-50">
     <!-- Loading Spinner Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-container">
-            <div class="spinner">
-                <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
-            </div>
-            <div class="text-line">Loading...</div>
-        </div>
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner">
+                            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
     </div>
+</div>
+
     <div class="dashboard-grid">
         <!-- Header -->
         <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
@@ -189,7 +152,8 @@
         <!-- Main Content -->
         <div class="flex flex-1 overflow-hidden">
             <!-- Sidebar -->
-            <div class="w-16 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
+            <div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
+
                 <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
                     <ul class="side-menu top space-y-4">
                          <li>
@@ -219,7 +183,7 @@
                                 <li>
                                         <a href="/mayor_staff/status"
                                         class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                        <i class="bx bx-check-circle mr-2 text-white-700"></i> Update Status
+                                        <i class="bx bx-check-circle mr-2 text-white-700"></i> Scholarship Approval
                                         </a>
                                 </li>
                             </ul>
@@ -241,7 +205,7 @@
                     </form>
                 </div>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 md:p-5 text-[14px] text-black-600">
+            <div class="flex-1 overflow-y-auto p-10 md:p-5 text-[14px] text-black-600">
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
                     <!-- Card 1: Applicants -->
                     <a href="/mayor_staff/application" class="bg-white rounded-xl shadow-md p-5 flex flex-col min-h-[180px] hover:shadow-lg transition-shadow cursor-pointer">
@@ -771,17 +735,7 @@
 
  <script src="{{ asset('js/logout.js') }}"></script>
 
-<script>
-    // Hide loading spinner when page is fully loaded
-    window.addEventListener('load', function() {
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        if (loadingOverlay) {
-            loadingOverlay.classList.add('fade-out');
-            setTimeout(() => {
-                loadingOverlay.style.display = 'none';
-            }, 1000); // Match the fade-out animation duration
-        }
-    });
-</script>
+<script src="{{ asset('js/spinner.js') }}"></script>
+
 </div>
 </body>

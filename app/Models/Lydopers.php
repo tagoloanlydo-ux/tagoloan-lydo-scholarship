@@ -27,6 +27,12 @@ class Lydopers extends Authenticatable
         return $this->lydopers_pass;
     }
 
+    // Specify the column namek for authentication (username/email)
+    public function getAuthIdentifierName()
+    {
+        return 'lydopers_email';
+    }
+
     // (Optional) kung wala kayong remember_token column
     public function setRememberToken($value) {}
     public function getRememberTokenName(){ return null; }

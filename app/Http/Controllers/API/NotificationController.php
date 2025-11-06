@@ -13,6 +13,53 @@ use App\Models\Scholar;
 class NotificationController extends Controller
 {
     /**
+     * Success response helper
+     */
+    protected function successResponse($data = [], $message = '', $status = 200)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => $data,
+        ], $status);
+    }
+
+    /**
+     * Error response helper
+     */
+    protected function errorResponse($message, $status = 400)
+    {
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+        ], $status);
+    }
+
+    /**
+     * Validation error response helper
+     */
+    protected function validationErrorResponse($validator)
+    {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation failed',
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    /**
+     * Paginated response helper
+     */
+    protected function paginatedResponse($data, $message = '', $status = 200)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => $data,
+        ], $status);
+    }
+
+    /**
      * Get announcements
      */
     public function announcements(Request $request)

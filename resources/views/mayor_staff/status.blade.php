@@ -3,573 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Scholarship Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <link rel="stylesheet" href="{{ asset('css/mayor_status.css') }}" />
 
     <style>
-        /* Modern Design System */
-        :root {
-            --primary-color: #7c3aed;
-            --primary-dark: #6d28d9;
-            --secondary-color: #059669;
-            --danger-color: #dc2626;
-            --warning-color: #ea580c;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --border-radius: 8px;
-            --border-radius-lg: 12px;
-            --transition: all 0.2s ease-in-out;
-        }
+        /* Fixed header + sidebar + content layout (match application.blade.php) */
+        body { height: 100vh; overflow: hidden; }
+        header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+        .sidebar-fixed { position: fixed; top: 80px; left: 0; bottom: 0; width: 64px; overflow-y: auto; z-index: 999; background: white; }
+        @media (min-width: 768px) { .sidebar-fixed { width: 256px; } }
+        .main-content-fixed { position: fixed; top: 80px; left: 64px; right: 0; bottom: 0; overflow-y: auto; padding: 1rem 1.25rem; }
+        @media (min-width: 768px) { .main-content-fixed { left: 256px; } }
+        /* modal + swal z-index fixes */
+        .modal-overlay { z-index: 1100; }
+        .swal2-container { z-index: 1200 !important; }
 
-        /* Enhanced Modal Styles */
-        .modal {
-            display: none;
+        /* Loading Spinner Styles */
+        .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
-            z-index: 1000;
-            overflow-y: auto;
-            animation: modalFadeIn 0.3s ease-out;
-        }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 2% auto;
-            padding: 0;
-            border-radius: var(--border-radius-lg);
-            width: 95%;
-            max-width: 1200px;
-            box-shadow: var(--shadow-xl);
-            animation: modalSlideIn 0.3s ease-out;
-            overflow: hidden;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .modal-header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 2rem;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: white;
-            padding: 0.5rem;
-            border-radius: 50%;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeIn 1s ease forwards;
         }
 
-        .modal-close:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
-        }
-
-        .modal-body {
-            padding: 2rem;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-
-        .modal-actions {
+        .spinner {
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            border-radius: 50%;
             display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            padding: 1.5rem 2rem;
-            background-color: var(--gray-50);
-            border-top: 1px solid var(--gray-200);
-        }
-
-        /* Enhanced Tab Styles */
-        .tab {
-            padding: 12px 24px;
-            cursor: pointer;
-            border-radius: var(--border-radius);
-            background: var(--gray-100);
-            color: var(--gray-600);
-            transition: var(--transition);
-            font-weight: 500;
-            border: 2px solid transparent;
-            display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 0.5rem;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
         }
 
-        .tab:hover {
-            background: var(--gray-200);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
-
-        .tab.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-            box-shadow: var(--shadow);
-        }
-
-        .tab-green.active {
-            background: var(--secondary-color);
-            color: white;
-            border-color: var(--secondary-color);
-        }
-
-        /* Enhanced Table Styles */
-        .main-table {
+        .spinner img {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            background: white;
-        }
-
-        .main-table thead {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-        }
-
-        .main-table th {
-            padding: 1rem 1.5rem;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .main-table td {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--gray-200);
-            font-size: 0.875rem;
-            color: var(--gray-700);
-        }
-
-        .main-table tbody tr {
-            transition: var(--transition);
-        }
-
-        .main-table tbody tr:hover {
-            background-color: var(--gray-50);
-            transform: scale(1.01);
-        }
-
-        .main-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Enhanced Button Styles */
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
-
-        .btn-success {
-            background: var(--secondary-color);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-success:hover {
-            background: #047857;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
-
-        .btn-danger {
-            background: var(--danger-color);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-danger:hover {
-            background: #b91c1c;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
-
-        .btn-secondary {
-            background: var(--gray-200);
-            color: var(--gray-700);
-            border: 1px solid var(--gray-300);
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-secondary:hover {
-            background: var(--gray-300);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
-
-        /* Enhanced Intake Section Styles */
-        .intake-section {
-            margin-bottom: 2rem;
-            border: 2px solid var(--gray-200);
-            border-radius: var(--border-radius-lg);
-            padding: 2rem;
-            background: white;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
-
-        .intake-section:hover {
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary-color);
-        }
-
-        .intake-section-title {
-            font-weight: 700;
-            margin-bottom: 2rem;
-            border-bottom: 4px solid var(--primary-color);
-            padding-bottom: 1rem;
-            color: var(--gray-800);
-            font-size: 1.5rem;
-            line-height: 1.3;
-            letter-spacing: 0.025em;
-        }
-
-        .intake-section p {
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-bottom: 0.75rem;
-            color: var(--gray-700);
-            font-weight: 500;
-        }
-
-        .intake-section strong {
-            font-weight: 600;
-            color: var(--gray-900);
-            font-size: 1.125rem;
-        }
-
-        /* Enhanced Intake Table */
-        .intake-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            background: white;
-            font-size: 0.875rem;
-        }
-
-        .intake-table th {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .intake-table td {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--gray-200);
-            color: var(--gray-700);
-            font-weight: 500;
-        }
-
-        .intake-table tbody tr:hover {
-            background-color: var(--gray-50);
-        }
-
-        .intake-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Status Badges */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
-        }
-
-        .status-approved {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-
-        .status-rejected {
-            background-color: #fef2f2;
-            color: #991b1b;
-        }
-
-        .status-pending {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-poor {
-            background-color: #fee2e2;
-            color: #dc2626;
-        }
-
-        .status-ultra-poor {
-            background-color: #fed7aa;
-            color: #ea580c;
-        }
-
-        /* Enhanced Search and Filter */
-        .search-container {
-            background: white;
-            padding: 1.5rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 1.5rem;
-        }
-
-        .search-input {
-            border: 2px solid var(--gray-200);
-            border-radius: var(--border-radius);
-            padding: 0.75rem 1rem;
-            font-size: 0.875rem;
-            transition: var(--transition);
-            width: 100%;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-        }
-
-        .filter-select {
-            border: 2px solid var(--gray-200);
-            border-radius: var(--border-radius);
-            padding: 0.75rem 1rem;
-            font-size: 0.875rem;
-            transition: var(--transition);
-            background: white;
-        }
-
-        .filter-select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-        }
-
-        /* Enhanced Info Box */
-        .info-box {
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-            border: 1px solid #f59e0b;
-            border-radius: var(--border-radius);
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .info-box.success {
-            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-            border-color: #16a34a;
-        }
-
-        .info-box p {
-            margin: 0;
-            font-weight: 500;
-            color: var(--gray-800);
-        }
-
-        /* Responsive Design Improvements */
-        @media (max-width: 768px) {
-            .modal-content {
-                width: 98%;
-                margin: 1% auto;
-            }
-
-            .modal-body {
-                padding: 1rem;
-            }
-
-            .intake-section {
-                padding: 1rem;
-            }
-
-            .main-table th,
-            .main-table td {
-                padding: 0.75rem 1rem;
-            }
-
-            .tab {
-                padding: 10px 16px;
-                font-size: 0.875rem;
-            }
-
-            .btn-primary,
-            .btn-success,
-            .btn-danger,
-            .btn-secondary {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.75rem;
-            }
-        }
-
-        /* Print Styles */
-        @media print {
-            body {
-                background: white !important;
-                color: #000;
-                font-size: 10px;
-            }
-            .no-print {
-                display: none !important;
-            }
-            .max-w-6xl {
-                max-width: 100% !important;
-                width: 100% !important;
-            }
-            #reviewArea {
-                page-break-inside: avoid;
-                padding: 0.125rem !important;
-            }
-            .review-columns {
-                font-size: 9px;
-                gap: 4px;
-            }
-            .thin-border {
-                margin-bottom: 0.125rem;
-                padding: 0.125rem;
-            }
-            table {
-                font-size: 8px;
-            }
-            .text-sm {
-                font-size: 8px !important;
-            }
-            .text-xs {
-                font-size: 7px !important;
-            }
-            h2 {
-                font-size: 12px !important;
-            }
-            h4 {
-                font-size: 10px !important;
-            }
-        }
-
-        /* Loading States */
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
-        /* Animation for new elements */
-        .fade-in {
-            animation: fadeIn 0.3s ease-in;
+            height: 100%;
+            border-radius: 50%;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 1s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .spinner {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .spinner {
+                width: 60px;
+                height: 60px;
+            }
+        }
+        /* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: 0.5rem 1rem;
+    background-color: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #6d28d9;
+    transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+    background-color: #d1d5db;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pagination-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.pagination-page-input {
+    width: 3.5rem;
+    padding: 0.4rem;
+    text-align: center;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: white;
+}
+
+.pagination-page-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+        /* Responsive design for pagination */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .pagination-buttons {
+        justify-content: center;
+    }
+
+    .pagination-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .pagination-info {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination-buttons {
+        gap: 0.25rem;
+    }
+
+    .pagination-btn {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.75rem;
+    }
+
+    .pagination-page-info {
+        font-size: 0.8rem;
+    }
+
+    .pagination-page-input {
+        width: 3rem;
+        padding: 0.3rem;
+    }
+}
+
+/* Tab Styles */
+/* Update the Tab Styles section */
+.tab {
+    padding: 0.5rem 1rem;
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.tab:hover {
+    background-color: #e5e7eb;
+}
+
+/* Default active state */
+.tab.active {
+    color: white;
+    border-color: transparent;
+}
+
+/* Purple for Pending Status tab */
+#tab-pending.active {
+    background-color: #7c3aed;
+    border-color: #7c3aed;
+}
+
+#tab-pending.active:hover {
+    background-color: #6d28d9;
+}
+
+/* Green for Approved/Rejected tab */
+#tab-approved-rejected.active {
+    background-color: #10b981 !important;
+    border-color: #10b981 !important;
+}
+
+#tab-approved-rejected.active:hover {
+    background-color: #059669 !important;
+}
+
+/* Enhanced Filter Styles */
+.filter-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.filter-input {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    min-width: 200px;
+}
+
+.filter-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.filter-select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: white;
+    transition: all 0.2s;
+    min-width: 200px;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.clear-filters-btn {
+    padding: 0.5rem 1rem;
+    background-color: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.875rem;
+    font-weight: 500;
+    align-self: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+.clear-filters-btn:hover {
+    background-color: #4b5563;
+}
+
+@media (max-width: 768px) {
+    .filter-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-input, .filter-select {
+        min-width: 100%;
+    }
+    
+    .clear-filters-btn {
+        align-self: stretch;
+    }
+}
     </style>
 </head>
 <body class="bg-gray-50">
+    <!-- Add this loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner">
+            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+        </div>
+    </div>
+    <!-- Rest of your content -->
+
     @php
         // normalize variables
         // controller provides the paginator as $tableApplicants — prefer that if $applications is not set
@@ -592,7 +376,7 @@
             $status = data_get($a, 'status');
             $remarks = data_get($a, 'remarks');
 
-            return $screening === 'Reviewed'
+            return $screening === 'Approved'
                 && $status === 'Pending'
                 && in_array($remarks, ['Poor', 'Ultra Poor']);
         })->values();
@@ -651,9 +435,9 @@
 
         <!-- Main Content -->
         <div class="flex flex-1 overflow-hidden">
-            <!-- Sidebar -->
-            <div class="w-100 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
-                <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
+            <!-- Sidebar (fixed) -->
+   <div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
+                <nav class="flex-1 p-2 md:p-4  space-y-1">
                     <ul class="side-menu top space-y-4">
                         <li>
                             <a href="/mayor_staff/dashboard" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
@@ -662,31 +446,32 @@
                             </a>
                         </li>
                         <li class="relative">
-                            <button onclick="toggleDropdown('scholarMenu')"
-                                class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-                                <div class="flex items-center">
-                                    <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
-                                    <span class="ml-4 hidden md:block text-lg">Applicants</span>
-                                </div>
-                                <i class="bx bx-chevron-down ml-2"></i>
-                            </button>
+    <button type="button" onclick="toggleDropdown('scholarMenu')"
+        class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+        <div class="flex items-center">
+            <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
+            <span class="ml-4 hidden md:block text-lg">Applicants</span>
+        </div>
+        <i class="bx bx-chevron-down ml-2"></i>
+    </button>
 
-                            <!-- Dropdown Menu -->
-                            <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
-                                <li>
-                                    <a href="/mayor_staff/application"
-                                    class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                    <i class="bx bx-search-alt mr-2"></i> Review Applications
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="/mayor_staff/status"
-                                        class="flex items-center p-2 rounded-lg text-gray-700 bg-violet-600 text-white">
-                                    <i class="bx bx-check-circle mr-2"></i> Update Status
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+    <!-- Dropdown Menu - changed to be in-flow so it pushes following items down -->
+    <ul id="scholarMenu" class="mt-2 w-full bg-white shadow-lg border border-gray-200 rounded-lg space-y-2 hidden transition-all duration-200 overflow-hidden">
+        <li>
+            <a href="/mayor_staff/application"
+            class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+            <i class="bx bx-search-alt mr-2"></i> Review Applications
+            </a>
+        </li>
+        <li>
+            <a href="/mayor_staff/status"
+                class="flex items-center p-2 rounded-lg text-gray-700 bg-violet-600 text-white">
+            <i class="bx bx-check-circle mr-2"></i> Scholarship Approval
+            </a>
+        </li>
+    </ul>
+</li>
+
                         <ul class="side-menu space-y-1">
                             <li>
                                 <a href="/mayor_staff/settings" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
@@ -699,18 +484,19 @@
                 </nav>
                 
                 <div class="p-2 md:p-4 border-t">
-                    <form method="POST" action="{{ route('logout') }}" id="logoutForm"> 
-                        @csrf 
-                        <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
+                    <form method="POST" action="{{ route('logout') }}" id="logoutForm">
+                        @csrf
+                        <button type="button" onclick="confirmLogout()" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
                             <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
                             <span class="hidden md:block text-red-600">Logout</span>
                         </button>
                     </form>
                 </div>
             </div>
-
-            <div class="flex-1 main-content-area p-4 md:p-5 text-[16px]">
-                <div class="p-4 bg-gray-50 min-h-screen rounded-lg shadow">
+            
+            <!-- Main content (fixed, scrollable area) -->
+            <div class="main-content-fixed text-[16px]">
+                <div class="p-10 bg-gray-50 min-h-screen rounded-lg shadow">
                     <div class="flex justify-between items-center mb-6">
                         <h5 class="text-3xl font-bold text-gray-800">Applicant Status Management</h5>
                     </div>
@@ -718,12 +504,12 @@
                     <!-- ✅ Applicants -->
                     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                         <div class="flex gap-2">
-                            <div onclick="showTable()" class="tab active" id="tab-pending">
+                            <button type="button" onclick="showTable()" class="tab active" id="tab-pending">
                                 <i class="fas fa-table mr-1"></i> Pending Status
-                            </div>
-                            <div onclick="showList()" class="tab tab-green" id="tab-approved-rejected">
+                            </button>
+                            <button type="button" onclick="showList()" class="tab" id="tab-approved-rejected">
                                 <i class="fas fa-list mr-1"></i> Approved/Rejected
-                            </div>
+                            </button>
                         </div>
                     </div>
 
@@ -734,22 +520,32 @@
                             📋 Pending Status: View applicants awaiting status assignment.
                             </h3>
                         </div>
-                        <div class="flex gap-2 mb-4">
-                            <input type="text" id="nameSearch" placeholder="Search name..." class="border rounded px-3 py-2 w-64">
-                            <select id="barangayFilter" class="border rounded px-3 py-2">
-                                <option value="">All Barangays</option>
-                                @foreach($barangays ?? [] as $brgy)
-                                    <option value="{{ $brgy }}">{{ $brgy }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        
+  <!-- Add this before your table -->
+<div class="filter-container">
+    <div class="filter-group">
+        <label for="searchInputTable" class="filter-label">Search by Name</label>
+        <input type="text" id="searchInputTable" class="filter-input" placeholder="Type to search...">
+    </div>
+
+    <div class="filter-group">
+        <label for="barangaySelectTable" class="filter-label">Filter by Barangay</label>
+        <select id="barangaySelectTable" class="filter-select">
+            <option value="">All Barangays</option>
+            <!-- Add your barangay options dynamically -->
+        </select>
+    </div>
+
+
+</div>
+                        
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
                             <thead class="bg-gradient-to-r from-violet-600 to-violet-800 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-4 py-3 border border-gray-200 text-center">#</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Full Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">4Ps</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">School Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Remarks</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Actions</th>
                                 </tr>
@@ -757,19 +553,19 @@
 
                             <tbody>
                                 @forelse($filteredApplications ?? [] as $index => $app)
-                                <tr class="hover:bg-gray-50 border-b">
+                                <tr class="hover:bg-gray-50 border-b" data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}" data-barangay="{{ $app->barangay }}" data-remarks="{{ $app->remarks }}">
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         {{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}
                                     </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->barangay }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
-                                        {{ $app->head_4ps ?? 'N/A' }}
+                                        {{ $app->school ?? 'N/A' }}
                                     </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         <span class="px-2 py-1 text-sm rounded-lg
-                                            @if($app->remarks == 'Poor') bg-red-100 text-red-800
-                                            @elseif($app->remarks == 'Ultra Poor') bg-orange-100 text-orange-800
+                                            @if($app->remarks == 'Ultra Poor') bg-red-100 text-red-800
+                                            @elseif($app->remarks == 'Poor') bg-yellow-100 text-yellow-800
                                             @else bg-gray-100 text-gray-800
                                             @endif">
                                             {{ $app->remarks }}
@@ -784,37 +580,23 @@
                                                 data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}">
                                                 <i class="fas fa-eye mr-1"></i> View
                                             </button>
-                                            <button
-                                                title="Approve Application"
-                                                class="px-3 py-1 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg shadow approve-btn"
-                                                data-id="{{ $app->application_personnel_id }}"
-                                                data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}">
-                                                <i class="fas fa-check mr-1"></i> Approve
-                                            </button>
-                                            <button
-                                                title="Reject Application"
-                                                class="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg shadow reject-btn"
-                                                data-id="{{ $app->application_personnel_id }}"
-                                                data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}">
-                                                <i class="fas fa-times mr-1"></i> Reject
-                                            </button>
+                                            <!-- Approve/Reject buttons removed from table row.
+                                                 Approval / Rejection will be handled inside the modal only. -->
                                         </div>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
                                     <td colspan="6" class="text-center py-4 border border-gray-200 text-gray-500">
-                                        No applicants pending status matching the selected criteria.
+                                        0 results
                                     </td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
-                        <div class="mt-4">
-                            @if(isset($tableApplicants) && is_object($tableApplicants) && method_exists($tableApplicants, 'appends'))
-                                {{ $tableApplicants->appends(request()->query())->links() }}
-                            @endif
-                        </div>
+
+                        <!-- Pagination for Table View -->
+                        <div class="pagination-container" id="tablePagination"></div>
                     </div>
 
                     <!-- Approved/Rejected Tab -->
@@ -824,35 +606,53 @@
                             ✅ Approved/Rejected: View applicants with assigned status.
                             </h3>
                         </div>
-                        <div class="flex gap-2 mb-4">
-                            <input type="text" id="listNameSearch" placeholder="Search name..." class="border rounded px-3 py-2 w-64">
-                            <select id="listBarangayFilter" class="border rounded px-3 py-2">
-                                <option value="">All Barangays</option>
-                                @foreach($barangays ?? [] as $brgy)
-                                    <option value="{{ $brgy }}">{{ $brgy }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        
+                        <!-- Enhanced Filter Section for List View -->
+        <!-- Add this before your table -->
+<div class="filter-container">
+    <div class="filter-group">
+        <label for="listNameSearch" class="filter-label">Search by Name</label>
+        <input type="text" id="listNameSearch" class="filter-input" placeholder="Type to search...">
+    </div>
+
+    <div class="filter-group">
+        <label for="listBarangayFilter" class="filter-label">Filter by Barangay</label>
+        <select id="listBarangayFilter" class="filter-select">
+            <option value="">All Barangays</option>
+            <!-- Add your barangay options dynamically -->
+        </select>
+    </div>
+
+    <div class="filter-group">
+        <label for="listStatusFilter" class="filter-label">Filter by Status</label>
+        <select id="listStatusFilter" class="filter-select">
+            <option value="">All Status</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+        </select>
+    </div>
+</div>
+                        
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
                             <thead class="bg-gradient-to-r from-green-600 to-green-800 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-4 py-3 border border-gray-200 text-center">#</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Full Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">4Ps</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">School Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($listApplications ?? [] as $index => $app)
-                                <tr class="hover:bg-gray-50 border-b">
+                                <tr class="hover:bg-gray-50 border-b" data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}" data-barangay="{{ $app->barangay }}" data-status="{{ $app->status }}">
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         {{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}
                                     </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->barangay }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
-                                        {{ $app->head_4ps ?? 'N/A' }}
+                                        {{ $app->school ?? 'N/A' }}
                                     </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         <span class="px-2 py-1 text-sm rounded-lg
@@ -866,16 +666,16 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-4 border border-gray-200 text-gray-500">No approved/rejected applicants.</td>
+                                    <td colspan="5" class="text-center py-4 border border-gray-200 text-gray-500">
+                                        0 results
+                                    </td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
-                        <div class="mt-4">
-                            @if(isset($listApplications) && is_object($listApplications) && method_exists($listApplications, 'appends'))
-                                {{ $listApplications->appends(request()->query())->links() }}
-                            @endif
-                        </div>
+                        
+                        <!-- Pagination for List View -->
+                        <div class="pagination-container" id="listPagination"></div>
                     </div>
                 </div>
             </div>
@@ -883,13 +683,20 @@
 
         <!-- Family Intake Sheet Modal -->
         <div id="intakeSheetModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="text-xl font-bold text-gray-800">Family Intake Sheet</h2>
-                    <button type="button" class="modal-close" onclick="closeIntakeSheetModal()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
+<div class="modal-content">
+    <div class="modal-header flex items-center justify-between bg-indigo-600 p-4 rounded-t-lg">
+        <!-- Left side: LYDO Logo -->
+        <div class="flex items-center space-x-3">
+            <img src="{{ asset('images/lydo.png') }}" alt="LYDO Logo" class="w-10 h-10 object-contain">
+            <h2 class="text-xl font-bold text-white">Family Intake Sheet</h2>
+        </div>
+
+        <!-- Right side: Close Button -->
+        <button type="button" class="modal-close text-white hover:text-gray-300" onclick="closeIntakeSheetModal()">
+            <i class="fas fa-times text-lg"></i>
+        </button>
+    </div>
+
                 
                 <div id="reviewArea" class="review-columns">
                     <!-- Head of Family Section -->
@@ -899,6 +706,7 @@
                             <div>
                                 <p><strong>Name:</strong> <span id="modal-applicant-name">-</span></p>
                                 <p><strong>Sex:</strong> <span id="modal-applicant-gender">-</span></p>
+                                <p><strong>Remarks:</strong> <span id="modal-remarks">-</span></p>
                                 <p><strong>Date of Birth:</strong> <span id="modal-head-dob">-</span></p>
                                 <p><strong>Place of Birth:</strong> <span id="modal-head-pob">-</span></p>
                             </div>
@@ -926,7 +734,6 @@
                                 <p><strong>Total Family Income:</strong> <span id="modal-house-total-income">-</span></p>
                                 <p><strong>Total Family Net Income:</strong> <span id="modal-house-net-income">-</span></p>
                                 <p><strong>Other Source of Income:</strong> <span id="modal-other-income">-</span></p>
-                                <p><strong>Remarks:</strong> <span id="modal-remarks">-</span></p>
                             </div>
                             <div>
                                 <p><strong>House (Owned/Rented):</strong> <span id="modal-house-house">-</span></p>
@@ -956,9 +763,10 @@
                                         <th>Remarks</th>
                                     </tr>
                                 </thead>
-                                <tbody id="modal-family-members">
-                                    <!-- Family members will be populated here -->
-                                </tbody>
+<tbody id="modal-family-members" class="text-center align-middle">
+    <!-- Family members will be populated here -->
+</tbody>
+
                             </table>
                         </div>
                     </div>
@@ -976,7 +784,7 @@
                                         <th>Remarks</th>
                                     </tr>
                                 </thead>
-                                <tbody id="modal-service-records">
+                                <tbody id="modal-service-records" class="text-center align-middle">
                                     <!-- Service records will be populated here -->
                                 </tbody>
                             </table>
@@ -985,7 +793,7 @@
 
                     <!-- Health & Signatures Section -->
                     <div class="intake-section">
-                        <h3 class="intake-section-title">Health & Signatures</h3>
+                        <h3 class="intake-section-title">Lydo Personeel Name</h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                             <!-- Left column: Worker -->
@@ -997,10 +805,10 @@
                                 </div>
                                 <!-- signature image above name, centered -->
                                 <div id="modal-worker-signature" class="mb-2 flex items-center justify-center">
-                                    <p class="text-xs text-gray-500">No signature</p>
+
                                 </div>
                                 <p><strong id="modal-worker-fullname">-</strong></p>
-                                <p class="mt-1 text-sm text-gray-600">Worker Signature</p>
+                                <p class="mt-1 text-sm text-gray-600">Lydo Staff Name</p>
                             </div>
 
                             <!-- Right column: Officer -->
@@ -1012,18 +820,16 @@
                                 </div>
                                 <!-- signature image above name, centered -->
                                 <div id="modal-officer-signature" class="mb-2 flex items-center justify-center">
-                                    <p class="text-xs text-gray-500">No signature</p>
+                                    
                                 </div>
                                 <p><strong id="modal-officer-fullname">-</strong></p>
-                                <p class="mt-1 text-sm text-gray-600">Officer Signature</p>
+                                <p class="mt-1 text-sm text-gray-600">Officer Name</p>
                             </div>
                         </div>
 
                         <!-- Centered Family Head Signature + Date -->
                         <div class="mt-6 text-center">
-                            <p><strong>Family Head Signature:</strong></p>
                             <div id="modal-client-signature-large" class="mt-2">
-                                <p class="text-xs text-gray-500">No signature</p>
                             </div>
                             <p class="mt-4"><strong>Date Entry:</strong> <span id="modal-date-entry">-</span></p>
                         </div>
@@ -1032,543 +838,741 @@
                     <!-- Documents Section -->
                     <div class="intake-section">
                         <h3 class="intake-section-title">Documents</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="modal-documents">
-                            <!-- Documents will be populated here -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p><strong>Barangay Clearance:</strong> <span id="modal-doc-brgy-clearance">-</span></p>
+                                <p><strong>Certificate of Indigency:</strong> <span id="modal-doc-cert-indigency">-</span></p>
+                                <p><strong>Certificate of Enrollment:</strong> <span id="modal-doc-cert-enrollment">-</span></p>
+                                <p><strong>Certificate of Grades:</strong> <span id="modal-doc-cert-grades">-</span></p>
+                            </div>
+                            <div>
+                                <p><strong>Birth Certificate:</strong> <span id="modal-doc-birth-cert">-</span></p>
+                                <p><strong>Valid ID:</strong> <span id="modal-doc-valid-id">-</span></p>
+                                <p><strong>Picture (2x2):</strong> <span id="modal-doc-picture">-</span></p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="modal-actions">
-                    <button type="button" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600" onclick="closeIntakeSheetModal()">
-                        Close
-                    </button>
-                    <button type="button" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600" onclick="printIntakeSheet()">
-                        <i class="fas fa-print mr-2"></i> Print
-                    </button>
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end gap-4 mt-6">
+                        <button type="button" class="btn btn-danger" onclick="closeIntakeSheetModal()">
+                            <i class="fas fa-times mr-2"></i> Close
+                        </button>
+                       <button type="button" class="btn btn-success" id="approveBtn">
+                          <i class="fas fa-check mr-2"></i> Approve
+                        </button>
+                       <button type="button" class="btn btn-danger" id="rejectBtn">
+                            <i class="fas fa-times mr-2"></i> Reject
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <script>
-            let currentApplicationId = null;
-            let currentApplicationDocuments = null;
+    <script>
+ // Global variables
+let currentApplicationId = null;
+let currentApplicationName = null;
+let currentView = 'table';
 
-            function showTable() {
-                const tableViewEl = document.getElementById("tableView");
-                const listViewEl = document.getElementById("listView");
-                if (tableViewEl) tableViewEl.classList.remove("hidden");
-                if (listViewEl) listViewEl.classList.add("hidden");
-                const activeTab = document.querySelector('.tab.active');
-                if (activeTab) activeTab.classList.remove('active');
-                const tabs = document.querySelectorAll('.tab');
-                if (tabs && tabs[0]) tabs[0].classList.add('active');
-                localStorage.setItem("viewMode", "table");
-                if (typeof filterTable === 'function') filterTable();
+// Pagination state
+const paginationState = {
+    table: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        allRows: [],
+        filteredRows: []
+    },
+    list: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        allRows: [],
+        filteredRows: []
+    }
+};
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+    initializeData();
+    initializePagination();
+    initializeFiltering();
+    initializeModalEvents();
+    initializeNotificationDropdown();
+    initializeSidebarDropdown();
+});
+
+// Initialize modal events
+function initializeModalEvents() {
+    // View intake sheet buttons
+    document.querySelectorAll('.view-intake-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            openIntakeSheetModal(id, name, 'intake');
+        });
+    });
+
+    // Review renewal buttons
+    document.querySelectorAll('.review-renewal-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            openIntakeSheetModal(id, name, 'renewal');
+        });
+    });
+
+    // Approve button
+    const approveBtn = document.getElementById('approveBtn');
+    if (approveBtn) {
+        approveBtn.addEventListener('click', function() {
+            if (currentApplicationId && currentApplicationName) {
+                approveApplication(currentApplicationId, currentApplicationName);
+            }
+        });
+    }
+
+    // Reject button
+    const rejectBtn = document.getElementById('rejectBtn');
+    if (rejectBtn) {
+        rejectBtn.addEventListener('click', function() {
+            if (currentApplicationId && currentApplicationName) {
+                rejectApplication(currentApplicationId, currentApplicationName);
+            }
+        });
+    }
+}
+
+// Initialize data from the tables
+function initializeData() {
+    // Get ALL table rows (not just visible ones)
+    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
+    paginationState.table.allRows = tableRows.filter(row => !row.querySelector('td[colspan]'));
+    paginationState.table.filteredRows = [...paginationState.table.allRows];
+    
+    // Get ALL list rows
+    const listRows = Array.from(document.querySelectorAll('#listView tbody tr'));
+    paginationState.list.allRows = listRows.filter(row => !row.querySelector('td[colspan]'));
+    paginationState.list.filteredRows = [...paginationState.list.allRows];
+}
+
+// Initialize pagination
+function initializePagination() {
+    updatePagination('table');
+    updatePagination('list');
+}
+
+// Update pagination display
+function updatePagination(viewType) {
+    const state = paginationState[viewType];
+    const containerId = viewType === 'table' ? 'tablePagination' : 'listPagination';
+    const container = document.getElementById(containerId);
+    
+    if (!container) return;
+    
+    // Hide all rows first
+    state.allRows.forEach(row => {
+        row.style.display = 'none';
+    });
+    
+    // Calculate pagination for filtered rows
+    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
+    const endIndex = startIndex + state.rowsPerPage;
+    const pageRows = state.filteredRows.slice(startIndex, endIndex);
+    
+    // Show only rows for current page
+    pageRows.forEach(row => {
+        row.style.display = '';
+    });
+    
+    // Update pagination controls
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    const startItem = state.filteredRows.length === 0 ? 0 : Math.min((state.currentPage - 1) * state.rowsPerPage + 1, state.filteredRows.length);
+    const endItem = Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
+    
+    container.innerHTML = `
+        <div class="pagination-info">
+            Showing ${startItem} to ${endItem} of ${state.filteredRows.length} entries
+        </div>
+        <div class="pagination-buttons">
+            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
+                <i class="fas fa-angle-double-left"></i>
+            </button>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
+                <i class="fas fa-angle-left"></i>
+            </button>
+            <div class="pagination-page-info">
+                Page <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)"> of ${totalPages}
+            </div>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+                <i class="fas fa-angle-right"></i>
+            </button>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+                <i class="fas fa-angle-double-right"></i>
+            </button>
+        </div>
+    `;
+}
+
+// Change page
+function changePage(viewType, page) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updatePagination(viewType);
+}
+
+// Go to specific page
+function goToPage(viewType, page) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    
+    page = parseInt(page);
+    if (isNaN(page) || page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updatePagination(viewType);
+}
+
+// Initialize filtering functionality
+function initializeFiltering() {
+    populateBarangayFilters();
+    
+    const tableNameSearch = document.getElementById('searchInputTable');
+    const tableBarangayFilter = document.getElementById('barangaySelectTable');
+    
+    const listNameSearch = document.getElementById('listNameSearch');
+    const listBarangayFilter = document.getElementById('listBarangayFilter');
+    const listStatusFilter = document.getElementById('listStatusFilter');
+
+    // Table View Filtering
+    function filterTableView() {
+        const searchTerm = tableNameSearch.value.toLowerCase();
+        const selectedBarangay = tableBarangayFilter.value;
+
+        const filteredRows = paginationState.table.allRows.filter(row => {
+            const nameCell = row.cells[1];
+            const barangayCell = row.cells[2];
+
+            if (!nameCell || !barangayCell) return false;
+
+            const name = nameCell.textContent.toLowerCase();
+            const barangay = barangayCell.textContent.trim();
+
+            const nameMatch = name.includes(searchTerm);
+            const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+
+            return nameMatch && barangayMatch;
+        });
+
+        // Update filtered rows and reset to page 1
+        paginationState.table.filteredRows = filteredRows;
+        paginationState.table.currentPage = 1;
+        updatePagination('table');
+    }
+
+    // List View Filtering
+    function filterListView() {
+        const searchTerm = listNameSearch.value.toLowerCase();
+        const selectedBarangay = listBarangayFilter.value;
+        const selectedStatus = listStatusFilter.value;
+
+        const filteredRows = paginationState.list.allRows.filter(row => {
+            const nameCell = row.cells[1];
+            const barangayCell = row.cells[2];
+            const statusCell = row.cells[4];
+
+            if (!nameCell || !barangayCell || !statusCell) return false;
+
+            const name = nameCell.textContent.toLowerCase();
+            const barangay = barangayCell.textContent.trim();
+            const status = statusCell.textContent.trim();
+
+            const nameMatch = name.includes(searchTerm);
+            const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+            const statusMatch = !selectedStatus || status.toLowerCase() === selectedStatus.toLowerCase();
+
+            return nameMatch && barangayMatch && statusMatch;
+        });
+
+        // Update filtered rows and reset to page 1
+        paginationState.list.filteredRows = filteredRows;
+        paginationState.list.currentPage = 1;
+        updatePagination('list');
+    }
+
+    // Add event listeners with debouncing
+    if (tableNameSearch) {
+        tableNameSearch.addEventListener('input', debounce(filterTableView, 300));
+    }
+    if (tableBarangayFilter) {
+        tableBarangayFilter.addEventListener('change', filterTableView);
+    }
+    
+    if (listNameSearch) {
+        listNameSearch.addEventListener('input', debounce(filterListView, 300));
+    }
+    if (listBarangayFilter) {
+        listBarangayFilter.addEventListener('change', filterListView);
+    }
+    if (listStatusFilter) {
+        listStatusFilter.addEventListener('change', filterListView);
+    }
+}
+
+// Debounce function for search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Populate barangay filters (keep your existing function)
+function populateBarangayFilters() {
+    const barangays = getUniqueBarangays();
+    
+    const tableBarangayFilter = document.getElementById('barangaySelectTable');
+    const listBarangayFilter = document.getElementById('listBarangayFilter');
+
+    const populateDropdown = (dropdown) => {
+        if (!dropdown) return;
+        dropdown.innerHTML = '<option value="">All Barangays</option>';
+        barangays.forEach(barangay => {
+            const option = document.createElement('option');
+            option.value = barangay;
+            option.textContent = barangay;
+            dropdown.appendChild(option);
+        });
+    };
+
+    populateDropdown(tableBarangayFilter);
+    populateDropdown(listBarangayFilter);
+}
+
+// Get unique barangays (keep your existing function)
+function getUniqueBarangays() {
+    const barangays = new Set();
+    
+    document.querySelectorAll('#tableView tbody tr, #listView tbody tr').forEach(row => {
+        const barangayCell = row.cells[2];
+        if (barangayCell) {
+            const barangay = barangayCell.textContent.trim();
+            if (barangay) barangays.add(barangay);
+        }
+    });
+    
+    return Array.from(barangays).sort();
+}
+
+// Tab switching functions - UPDATED
+function showTable() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.getElementById('loadingOverlay').classList.remove('fade-out');
+
+    setTimeout(() => {
+        document.getElementById('tableView').classList.remove('hidden');
+        document.getElementById('listView').classList.add('hidden');
+        document.getElementById('tab-pending').classList.add('active');
+        document.getElementById('tab-approved-rejected').classList.remove('active');
+        currentView = 'table';
+        
+        // Reset to first page
+        paginationState.table.currentPage = 1;
+        updatePagination('table');
+        
+        document.getElementById('loadingOverlay').classList.add('fade-out');
+        setTimeout(() => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }, 1000);
+    }, 300);
+}
+
+function showList() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.getElementById('loadingOverlay').classList.remove('fade-out');
+
+    setTimeout(() => {
+        document.getElementById('tableView').classList.add('hidden');
+        document.getElementById('listView').classList.remove('hidden');
+        document.getElementById('tab-pending').classList.remove('active');
+        document.getElementById('tab-approved-rejected').classList.add('active');
+        currentView = 'list';
+        
+        // Reset to first page
+        paginationState.list.currentPage = 1;
+        updatePagination('list');
+        
+        document.getElementById('loadingOverlay').classList.add('fade-out');
+        setTimeout(() => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }, 1000);
+    }, 300);
+}
+
+// Keep all your existing modal functions (openIntakeSheetModal, closeIntakeSheetModal, etc.)
+// They should work without changes
+
+        // Modal functions
+        function openIntakeSheetModal(id, name, type = 'intake') {
+            currentApplicationId = id;
+            currentApplicationName = name;
+
+            // Update modal title based on type
+            const modalTitle = document.querySelector('#intakeSheetModal .modal-header h2');
+            if (modalTitle) {
+                modalTitle.textContent = type === 'renewal' ? 'Renewal Documents Review' : 'Family Intake Sheet';
             }
 
-            function showList() {
-                const tableViewEl = document.getElementById("tableView");
-                const listViewEl = document.getElementById("listView");
-                if (listViewEl) listViewEl.classList.remove("hidden");
-                if (tableViewEl) tableViewEl.classList.add("hidden");
-                const activeTab = document.querySelector('.tab.active');
-                if (activeTab) activeTab.classList.remove('active');
-                const tabs = document.querySelectorAll('.tab');
-                if (tabs && tabs[1]) tabs[1].classList.add('active');
-                localStorage.setItem("viewMode", "list");
-                if (typeof filterList === 'function') filterList();
+            // Show loading
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            document.getElementById('loadingOverlay').classList.remove('fade-out');
+
+            // Fetch intake sheet data
+            fetch(`/mayor_staff/intake-sheet/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    populateIntakeSheetModal(data, type);
+                    document.getElementById('intakeSheetModal').style.display = 'block';
+                    document.getElementById('loadingOverlay').classList.add('fade-out');
+                    setTimeout(() => {
+                        document.getElementById('loadingOverlay').style.display = 'none';
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.error('Error fetching intake sheet:', error);
+                    Swal.fire('Error', 'Failed to load intake sheet data.', 'error');
+                    document.getElementById('loadingOverlay').classList.add('fade-out');
+                    setTimeout(() => {
+                        document.getElementById('loadingOverlay').style.display = 'none';
+                    }, 1000);
+                });
+        }
+
+        function closeIntakeSheetModal() {
+            document.getElementById('intakeSheetModal').style.display = 'none';
+            currentApplicationId = null;
+            currentApplicationName = null;
+        }
+
+        function populateIntakeSheetModal(data) {
+            // Populate head of family section
+            document.getElementById('modal-applicant-name').textContent = data.applicant_name || '-';
+            document.getElementById('modal-applicant-gender').textContent = data.gender || '-';
+            document.getElementById('modal-remarks').textContent = data.remarks || '-';
+            document.getElementById('modal-head-dob').textContent = data.dob || '-';
+            document.getElementById('modal-head-pob').textContent = data.pob || '-';
+            document.getElementById('modal-head-address').textContent = data.address || '-';
+            document.getElementById('modal-head-zone').textContent = data.zone || '-';
+            document.getElementById('modal-head-barangay').textContent = data.barangay || '-';
+            document.getElementById('modal-head-religion').textContent = data.religion || '-';
+            document.getElementById('modal-serial-number').textContent = data.serial_number || '-';
+            document.getElementById('modal-head-4ps').textContent = data.four_ps || '-';
+            document.getElementById('modal-head-ipno').textContent = data.ip_no || '-';
+            document.getElementById('modal-head-educ').textContent = data.education || '-';
+            document.getElementById('modal-head-occ').textContent = data.occupation || '-';
+
+            // Populate household information
+            document.getElementById('modal-house-total-income').textContent = data.total_income || '-';
+            document.getElementById('modal-house-net-income').textContent = data.net_income || '-';
+            document.getElementById('modal-other-income').textContent = data.other_income || '-';
+            document.getElementById('modal-house-house').textContent = data.house || '-';
+            document.getElementById('modal-house-lot').textContent = data.lot || '-';
+            document.getElementById('modal-house-electric').textContent = data.electricity || '-';
+            document.getElementById('modal-house-water').textContent = data.water || '-';
+
+            // Populate family members
+            const familyMembersTbody = document.getElementById('modal-family-members');
+            familyMembersTbody.innerHTML = '';
+            
+            if (data.family_members && data.family_members.length > 0) {
+                data.family_members.forEach(member => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${member.name || '-'}</td>
+                        <td>${member.relation || '-'}</td>
+                        <td>${member.birthdate || '-'}</td>
+                        <td>${member.age || '-'}</td>
+                        <td>${member.gender || '-'}</td>
+                        <td>${member.civil_status || '-'}</td>
+                        <td>${member.education || '-'}</td>
+                        <td>${member.occupation || '-'}</td>
+                        <td>${member.income || '-'}</td>
+                        <td>${member.remarks || '-'}</td>
+                    `;
+                    familyMembersTbody.appendChild(row);
+                });
+            } else {
+                familyMembersTbody.innerHTML = '<tr><td colspan="10" class="text-center py-4">No family members found</td></tr>';
             }
 
-            // View Intake Sheet Modal Functions
-            function openIntakeSheetModal(applicationId) {
-                if (!applicationId) return;
-                fetch(`/mayor_staff/intake-sheet/${applicationId}`)
+            // Populate service records
+            const serviceRecordsTbody = document.getElementById('modal-service-records');
+            serviceRecordsTbody.innerHTML = '';
+            
+            if (data.service_records && data.service_records.length > 0) {
+                data.service_records.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${record.date || '-'}</td>
+                        <td>${record.problem || '-'}</td>
+                        <td>${record.action || '-'}</td>
+                        <td>${record.remarks || '-'}</td>
+                    `;
+                    serviceRecordsTbody.appendChild(row);
+                });
+            } else {
+                serviceRecordsTbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">No service records found</td></tr>';
+            }
+
+            // Populate documents
+            document.getElementById('modal-doc-brgy-clearance').textContent = data.brgy_clearance || '-';
+            document.getElementById('modal-doc-cert-indigency').textContent = data.cert_indigency || '-';
+            document.getElementById('modal-doc-cert-enrollment').textContent = data.cert_enrollment || '-';
+            document.getElementById('modal-doc-cert-grades').textContent = data.cert_grades || '-';
+            document.getElementById('modal-doc-birth-cert').textContent = data.birth_cert || '-';
+            document.getElementById('modal-doc-valid-id').textContent = data.valid_id || '-';
+            document.getElementById('modal-doc-picture').textContent = data.picture || '-';
+
+            // Populate signatures and photos
+            document.getElementById('modal-worker-fullname').textContent = data.worker_name || '-';
+            document.getElementById('modal-officer-fullname').textContent = data.officer_name || '-';
+            document.getElementById('modal-date-entry').textContent = data.date_entry || '-';
+
+            // Handle photos
+            const workerPhotoImg = document.getElementById('modal-worker-photo-img');
+            const officerPhotoImg = document.getElementById('modal-officer-photo-img');
+            
+            if (data.worker_photo) {
+                workerPhotoImg.src = data.worker_photo;
+                workerPhotoImg.style.display = 'block';
+            } else {
+                workerPhotoImg.style.display = 'none';
+            }
+            
+            if (data.officer_photo) {
+                officerPhotoImg.src = data.officer_photo;
+                officerPhotoImg.style.display = 'block';
+            } else {
+                officerPhotoImg.style.display = 'none';
+            }
+
+            // Handle signatures
+            const workerSignatureDiv = document.getElementById('modal-worker-signature');
+            const officerSignatureDiv = document.getElementById('modal-officer-signature');
+            const clientSignatureDiv = document.getElementById('modal-client-signature-large');
+            
+            workerSignatureDiv.innerHTML = data.worker_signature ? 
+                `<img src="${data.worker_signature}" alt="Worker Signature" style="max-width:180px;height:60px;object-fit:contain;">` : 
+                '<div style="height:60px;"></div>';
+                
+            officerSignatureDiv.innerHTML = data.officer_signature ? 
+                `<img src="${data.officer_signature}" alt="Officer Signature" style="max-width:180px;height:60px;object-fit:contain;">` : 
+                '<div style="height:60px;"></div>';
+                
+            clientSignatureDiv.innerHTML = data.client_signature ? 
+                `<img src="${data.client_signature}" alt="Client Signature" style="max-width:300px;height:80px;object-fit:contain;">` : 
+                '<div style="height:80px;"></div>';
+        }
+
+        // Application approval and rejection
+        function approveApplication(id, name) {
+            Swal.fire({
+                title: 'Approve Application?',
+                text: `Are you sure you want to approve ${name}'s application?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10B981',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'Yes, Approve',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    document.getElementById('loadingOverlay').style.display = 'flex';
+                    document.getElementById('loadingOverlay').classList.remove('fade-out');
+                    
+                    // Send approval request
+                    fetch(`/mayor_staff/application/${id}/approve`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
                     .then(response => response.json())
                     .then(data => {
-                        if (data && data.success) {
-                            populateIntakeSheetModal(data.intakeSheet || data.intake_sheet || data);
-                            document.getElementById('intakeSheetModal').style.display = 'block';
+                        document.getElementById('loadingOverlay').classList.add('fade-out');
+                        setTimeout(() => {
+                            document.getElementById('loadingOverlay').style.display = 'none';
+                        }, 1000);
+                        
+                        if (data.success) {
+                            Swal.fire('Approved!', `Application for ${name} has been approved.`, 'success')
+                                .then(() => {
+                                    closeIntakeSheetModal();
+                                    location.reload();
+                                });
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: (data && data.message) ? data.message : 'Failed to load intake sheet data.'
-                            });
+                            Swal.fire('Error!', data.message || 'Failed to approve application.', 'error');
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'An error occurred while loading intake sheet data.'
-                        });
-                    });
-            }
-
-            function closeIntakeSheetModal() {
-                const modal = document.getElementById('intakeSheetModal');
-                if (modal) modal.style.display = 'none';
-            }
-
-            function populateIntakeSheetModal(intake) {
-                // normalize & accept both intakeSheet / intake_sheet shapes
-                const payload = intake || {};
-                const d = normalizeData(payload);
-
-                const setText = (id, value) => {
-                    const el = document.getElementById(id);
-                    if (!el) return;
-                    el.textContent = value === null || value === undefined || value === '' ? '-' : value;
-                };
-
-                // Applicant / Head info
-                const applicantName = d.applicant_name || [d.applicant_fname, d.applicant_mname, d.applicant_lname, d.applicant_suffix].filter(Boolean).join(' ');
-                setText('modal-applicant-name', applicantName || '-');
-                setText('modal-applicant-gender', d.applicant_gender || '-');
-                setText('modal-serial-number', d.serial_number || '-');
-                setText('modal-head-4ps', d.head_4ps || '-');
-                setText('modal-head-ipno', d.head_ipno || '-');
-                setText('modal-head-address', d.head_address || '-');
-                setText('modal-head-zone', d.head_zone || '-');
-                setText('modal-head-barangay', d.head_barangay || '-');
-                setText('modal-head-pob', d.head_pob || '-');
-                setText('modal-head-dob', d.head_dob ? formatDate(d.head_dob) : '-');
-                setText('modal-head-educ', d.head_educ || '-');
-                setText('modal-head-occ', d.head_occ || '-');
-                setText('modal-head-religion', d.head_religion || '-');
-
-                // Household / Income
-                setText('modal-other-income', d.other_income || '-');
-                setText('modal-house-house', d.house_house || '-');
-                setText('modal-house-electric', d.house_electric || '-');
-                setText('modal-remarks', d.remarks || '-');
-                setText('modal-house-total-income', d.house_total_income ?? '-');
-                setText('modal-house-lot', d.house_lot || '-');
-                setText('modal-house-net-income', d.house_net_income ?? '-');
-                setText('modal-house-water', d.house_water || '-');
-
-                // Family members - support array or JSON string
-                let family = d.family_members || [];
-                if (typeof family === 'string') {
-                    try { family = JSON.parse(family); } catch (e) { family = []; }
-                }
-                if (!Array.isArray(family)) family = [];
-
-                const fmBody = document.getElementById('modal-family-members');
-                if (fmBody) {
-                    if (family.length === 0) {
-                        fmBody.innerHTML = '<tr><td colspan="10" class="text-center">No family members recorded</td></tr>';
-                    } else {
-                        fmBody.innerHTML = family.map(m => {
-                            const name = escapeHtml(m.name || m.fullname || m.full_name || `${m.first_name||''} ${m.last_name||''}`.trim());
-                            const relation = escapeHtml(m.relationship || m.relation || m.rel || '');
-                            const bdate = m.birthdate || m.dob || m.birth || '';
-                            const age = m.age || m.years || (bdate ? Math.max(0, new Date().getFullYear() - new Date(bdate).getFullYear()) : '');
-                            const sex = escapeHtml(m.sex || m.gender || '');
-                            const civil = escapeHtml(m.civil_status || m.civil || '');
-                            const educ = escapeHtml(m.education || m.educational_attainment || '');
-                            const occ = escapeHtml(m.occupation || m.occ || '');
-                            const income = escapeHtml(m.income ?? '');
-                            const remarks = escapeHtml(m.remarks || '');
-                            return `<tr>
-                                <td>${name}</td>
-                                <td>${relation}</td>
-                                <td>${bdate ? escapeHtml(formatDate(bdate)) : ''}</td>
-                                <td>${age}</td>
-                                <td>${sex}</td>
-                                <td>${civil}</td>
-                                <td>${educ}</td>
-                                <td>${occ}</td>
-                                <td>${income}</td>
-                                <td>${remarks}</td>
-                            </tr>`;
-                        }).join('');
-                    }
-                }
-
-                // Service records - support array or JSON string
-                let services = d.rv_service_records || d.rv_service_records || d.social_service_records || [];
-                if (typeof services === 'string') {
-                    try { services = JSON.parse(services); } catch (e) { services = []; }
-                }
-                if (!Array.isArray(services)) services = [];
-
-                const srBody = document.getElementById('modal-service-records');
-                if (srBody) {
-                    if (services.length === 0) {
-                        srBody.innerHTML = '<tr><td colspan="4" class="text-center">No service records</td></tr>';
-                    } else {
-                        srBody.innerHTML = services.map(s => {
-                            const date = s.date || s.record_date || s.created_at || '';
-                            const problem = escapeHtml(s.problem || s.need || s.issue || '');
-                            const action = escapeHtml(s.action || s.assistance || s.service || '');
-                            const remarks = escapeHtml(s.remarks || '');
-                            return `<tr>
-                                <td>${date ? escapeHtml(formatDate(date)) : ''}</td>
-                                <td>${problem}</td>
-                                <td>${action}</td>
-                                <td>${remarks}</td>
-                            </tr>`;
-                        }).join('');
-                    }
-                }
-
-                // Worker / Officer names + date
-                setText('modal-worker-fullname', d.worker_name || '-');
-                setText('modal-officer-fullname', d.officer_name || '-');
-                setText('modal-date-entry', d.date_entry ? formatDate(d.date_entry) : '-');
-
-                const setImage = (imgId, url) => {
-                    const imgEl = document.getElementById(imgId);
-                    if (!imgEl) return;
-                    let u = '';
-                    if (!url) { imgEl.style.display = 'none'; return; }
-                    if (typeof url === 'string') u = url.trim();
-                    // if url given as object {url: '...'} or {path: '...'}
-                    if (!u && typeof url === 'object') {
-                        u = (url.url || url.path || url.src || '') + '';
-                    }
-                    if (!u || u === '-') { imgEl.style.display = 'none'; return; }
-                    try {
-                        const resolved = resolveUrl(u);
-                        imgEl.onerror = () => { imgEl.style.display = 'none'; };
-                        imgEl.onload = () => { imgEl.style.display = ''; };
-                        imgEl.src = resolved;
-                    } catch (e) {
-                        imgEl.style.display = 'none';
-                    }
-                };
-
-                const renderSignatureContainer = (containerId, url) => {
-                    const el = document.getElementById(containerId);
-                    if (!el) return;
-                    let u = '';
-                    if (!url) { el.innerHTML = '<p class="text-xs text-gray-500">No signature</p>'; return; }
-                    if (typeof url === 'string') u = url.trim();
-                    if (!u && typeof url === 'object') {
-                        // handle {url:...} or arrays
-                        if (Array.isArray(url)) {
-                            u = (url[0] && (url[0].url || url[0].path || url[0])) || '';
-                        } else {
-                            u = (url.url || url.path || url.src || '') + '';
-                        }
-                    }
-                    if (!u || u === '-') {
-                        el.innerHTML = '<p class="text-xs text-gray-500">No signature</p>';
-                        return;
-                    }
-                    const resolved = resolveUrl(u);
-                    const img = document.createElement('img');
-                    img.style.maxWidth = '220px';
-                    img.style.height = '80px';
-                    img.style.objectFit = 'contain';
-                    img.style.border = '1px solid #e5e7eb';
-                    img.alt = 'signature';
-                    img.onerror = () => { el.innerHTML = '<p class="text-xs text-gray-500">No signature</p>'; };
-                    img.onload = () => { /* keep image */ };
-                    img.src = resolved;
-                    el.innerHTML = '';
-                    // center image inside container
-                    const wrapper = document.createElement('div');
-                    wrapper.style.display = 'flex';
-                    wrapper.style.justifyContent = 'center';
-                    wrapper.style.alignItems = 'center';
-                    wrapper.appendChild(img);
-                    el.appendChild(wrapper);
-                };
-
-                // try worker/officer photo fields, fall back to signature if no photo available
-                setImage('modal-worker-photo-img', d.worker_photo || d.worker_picture || d.signature_worker);
-                setImage('modal-officer-photo-img', d.officer_photo || d.officer_picture || d.signature_officer);
-
-                // render signatures
-                renderSignatureContainer('modal-worker-signature', d.signature_worker);
-                renderSignatureContainer('modal-officer-signature', d.signature_officer);
-                renderSignatureContainer('modal-client-signature-large', d.signature_client);
-
-                // Documents
-                let documents = d.documents || {};
-                if (typeof documents === 'string') {
-                    try { documents = JSON.parse(documents); } catch (e) { documents = {}; }
-                }
-                const docContainer = document.getElementById('modal-documents');
-                if (docContainer) {
-                    const docKeys = ['application_letter', 'cert_of_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
-                    const docLabels = {
-                        application_letter: 'Application Letter',
-                        cert_of_reg: 'Certificate of Registration',
-                        grade_slip: 'Grade Slip',
-                        brgy_indigency: 'Barangay Indigency',
-                        student_id: 'Student ID'
-                    };
-                    docContainer.innerHTML = docKeys.map(key => {
-                        const url = documents[key];
-                        if (!url) return '';
-                        const label = docLabels[key] || key;
-                        const resolvedUrl = resolveUrl(url);
-                        return `<div class="document-item p-2 border rounded-lg bg-gray-50 hover:bg-gray-100 transition">
-                            <a href="${resolvedUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-medium">${label}</a>
-                        </div>`;
-                    }).join('');
-                    if (docContainer.innerHTML.trim() === '') {
-                        docContainer.innerHTML = '<p class="text-gray-500">No documents available</p>';
-                    }
-                }
-
-                // ensure modal visible
-                const modal = document.getElementById('intakeSheetModal');
-                if (modal) {
-                    modal.style.display = 'block';
-                    modal.scrollTop = 0;
-                }
-            }
-
-            function printIntakeSheet() {
-                // simple print of modal content
-                const content = document.querySelector('#intakeSheetModal .modal-content').innerHTML;
-                const win = window.open('', '_blank');
-                win.document.write('<html><head><title>Print Intake Sheet</title></head><body>' + content + '</body></html>');
-                win.document.close();
-                win.print();
-                win.close();
-            }
-
-            // small helper
-            function escapeHtml(s) {
-                if (s === null || s === undefined) return '';
-                return String(s)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;');
-            }
-
-            // Normalize server payload to expected keys (fallbacks)
-            function normalizeData(d) {
-                if (!d || typeof d !== 'object') return {};
-                const get = (keys, def = '') => {
-                    for (const k of keys) {
-                        if (d[k] !== undefined && d[k] !== null) return d[k];
-                    }
-                    return def;
-                };
-
-                const normalized = {
-                    serial_number: get(['serial_number', 'serial_no', 'serial']),
-                    applicant_fname: get(['applicant_fname', 'fname', 'first_name', 'firstName']),
-                    applicant_mname: get(['applicant_mname', 'mname', 'middle_name', 'middleName']),
-                    applicant_lname: get(['applicant_lname', 'lname', 'last_name', 'lastName']),
-                    applicant_suffix: get(['applicant_suffix', 'suffix']),
-                    applicant_gender: get(['applicant_gender', 'gender', 'sex']),
-                    head_4ps: get(['head_4ps', '4ps', 'four_ps']),
-                    head_ipno: get(['head_ipno', 'ip_no', 'ipno']),
-                    head_address: get(['head_address', 'address']),
-                    head_zone: get(['head_zone', 'zone']),
-                    head_barangay: get(['head_barangay', 'barangay', 'head_brgy']),
-                    head_dob: get(['head_dob', 'dob', 'birthdate']),
-                    head_pob: get(['head_pob', 'pob', 'place_of_birth']),
-                    head_educ: get(['head_educ', 'education', 'educ']),
-                    head_occ: get(['head_occ', 'occupation', 'occ']),
-                    head_religion: get(['head_religion', 'religion']),
-                    family_members: get(['family_members', 'members', 'family']),
-                    rv_service_records: get(['rv_service_records', 'service_records', 'serviceRecords']),
-                    other_income: get(['other_income', 'other_source_income', 'otherIncome', 'other']),
-                    house_total_income: get(['house_total_income', 'total_income']),
-                    house_net_income: get(['house_net_income', 'net_income']),
-                    house_house: get(['house_house']),
-                    house_house_rent: get(['house_house_rent']),
-                    house_lot: get(['house_lot']),
-                    house_lot_rent: get(['house_lot_rent']),
-                    house_water: get(['house_water']),
-                    house_electric: get(['house_electric']),
-                    remarks: get(['remarks', 'final_remarks', 'assessment']),
-                    signature_client: get(['signature_client', 'signature_client_url', 'client_signature']),
-                    signature_worker: get(['signature_worker', 'signature_worker_url', 'worker_signature']),
-                    signature_officer: get(['signature_officer', 'signature_officer_url', 'officer_signature']),
-                    worker_name: get(['worker_name', 'social_worker', 'worker']),
-                    officer_name: get(['officer_name', 'officer']),
-                    date_entry: get(['date_entry', 'created_at', 'date']),
-                };
-
-                ['signature_client', 'signature_worker', 'signature_officer'].forEach(k => {
-                    if (normalized[k] && typeof normalized[k] === 'string' && normalized[k].startsWith('/')) {
-                        normalized[k] = resolveUrl(normalized[k]);
-                    }
-                });
-
-                return normalized;
-            }
-
-            // Normalize document data
-            function normalizeDocumentData(d) {
-                if (!d || typeof d !== 'object') return {};
-                const get = (keys, def = '') => {
-                    for (const k of keys) {
-                        if (d[k] !== undefined && d[k] !== null) return d[k];
-                    }
-                    return def;
-                };
-
-                return {
-                    application_letter: get(['application_letter', 'letter']),
-                    cert_of_reg: get(['cert_of_reg', 'registration_certificate']),
-                    grade_slip: get(['grade_slip', 'grades']),
-                    brgy_indigency: get(['brgy_indigency', 'indigency']),
-                    student_id: get(['student_id', 'id']),
-                };
-            }
-
-            function resolveUrl(path) {
-                try {
-                    if (!path) return path;
-                    if (path.startsWith('http://') || path.startsWith('https://')) return path;
-                    const base = window.location.origin;
-                    return base + (path.startsWith('/') ? '' : '/') + path;
-                } catch (e) { return path; }
-            }
-
-            function formatDate(dateString) {
-                if (!dateString) return "-";
-                const date = new Date(dateString);
-                if (isNaN(date)) return dateString;
-                const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                return date.toLocaleDateString('en-US', options);
-            }
-
-            // Filter functions
-            function filterTable() {
-                const nameSearchEl = document.getElementById('nameSearch');
-                const barangayFilterEl = document.getElementById('barangayFilter');
-                const nameSearchValue = nameSearchEl ? nameSearchEl.value.toLowerCase().trim() : '';
-                const barangayFilterValue = barangayFilterEl ? barangayFilterEl.value.toLowerCase().trim() : '';
-
-                const tableViewRows = document.querySelectorAll('#tableView tbody tr');
-                tableViewRows.forEach(row => {
-                    // skip header/empty rows
-                    if (!row.cells || row.cells.length < 3) return;
-                    const nameCell = (row.cells[1].textContent || '').toLowerCase();
-                    const barangayCell = (row.cells[2].textContent || '').toLowerCase();
-
-                    const matchesName = nameCell.includes(nameSearchValue);
-                    const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
-
-                    row.style.display = (matchesName && matchesBarangay) ? '' : 'none';
-                });
-            }
-
-            function filterList() {
-                const nameSearchEl = document.getElementById('listNameSearch');
-                const barangayFilterEl = document.getElementById('listBarangayFilter');
-                const nameSearchValue = nameSearchEl ? nameSearchEl.value.toLowerCase().trim() : '';
-                const barangayFilterValue = barangayFilterEl ? barangayFilterEl.value.toLowerCase().trim() : '';
-
-                const listViewRows = document.querySelectorAll('#listView tbody tr');
-                listViewRows.forEach(row => {
-                    if (!row.cells || row.cells.length < 3) return;
-                    const nameCell = (row.cells[1].textContent || '').toLowerCase();
-                    const barangayCell = (row.cells[2].textContent || '').toLowerCase();
-
-                    const matchesName = nameCell.includes(nameSearchValue);
-                    const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
-
-                    row.style.display = (matchesName && matchesBarangay) ? '' : 'none';
-                });
-            }
-
-            // Safe event wiring on DOM ready
-            document.addEventListener("DOMContentLoaded", function() {
-                let viewMode = localStorage.getItem("viewMode") || "table";
-                if(viewMode === "list") {
-                    showList();
-                } else {
-                    showTable();
-                }
-
-                const nameSearch = document.getElementById('nameSearch');
-                const barangayFilter = document.getElementById('barangayFilter');
-                const listNameSearch = document.getElementById('listNameSearch');
-                const listBarangayFilter = document.getElementById('listBarangayFilter');
-
-                if (nameSearch) nameSearch.addEventListener('input', filterTable);
-                if (barangayFilter) barangayFilter.addEventListener('change', filterTable);
-                if (listNameSearch) listNameSearch.addEventListener('input', filterList);
-                if (listBarangayFilter) listBarangayFilter.addEventListener('change', filterList);
-
-                // Add event listeners for view intake sheet buttons
-                document.querySelectorAll('.view-intake-btn').forEach(button => {
-                    button.removeEventListener?.('click', null);
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        openIntakeSheetModal(id);
-                    });
-                });
-
-                // Add event listeners for approve/reject buttons
-                document.querySelectorAll('.approve-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        const name = this.getAttribute('data-name');
-                        updateStatus(id, name, 'Approved');
-                    });
-                });
-                
-                document.querySelectorAll('.reject-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        const name = this.getAttribute('data-name');
-                        updateStatus(id, name, 'Rejected');
-                    });
-                });
-
-                // Notification bell (guarded)
-                const notifBell = document.getElementById("notifBell");
-                if (notifBell) {
-                    notifBell.addEventListener("click", function () {
-                        let dropdown = document.getElementById("notifDropdown");
-                        if (dropdown) dropdown.classList.toggle("hidden");
-                        let notifCount = document.getElementById("notifCount");
-                        if (notifCount) {
-                            notifCount.remove();
-                            // Mark notifications as viewed on the server (use meta csrf if present)
-                            const tokenMeta = document.querySelector('meta[name="csrf-token"]');
-                            const csrf = tokenMeta ? tokenMeta.getAttribute('content') : null;
-                            fetch('/mayor_staff/mark-notifications-viewed', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    ...(csrf ? {'X-CSRF-TOKEN': csrf} : {})
-                                }
-                            }).then(response => response.json())
-                            .then(data => {
-                                if (data.success) console.log('Notifications marked as viewed');
-                            }).catch(error => {
-                                console.error('Error marking notifications as viewed:', error);
-                            });
-                        }
+                        console.error('Error approving application:', error);
+                        document.getElementById('loadingOverlay').classList.add('fade-out');
+                        setTimeout(() => {
+                            document.getElementById('loadingOverlay').style.display = 'none';
+                        }, 1000);
+                        Swal.fire('Error!', 'Failed to approve application.', 'error');
                     });
                 }
-
-                // Restore dropdown open state
-                document.querySelectorAll("ul[id]").forEach(menu => {
-                    const state = localStorage.getItem(menu.id);
-                    if (state === "open") menu.classList.remove("hidden");
-                });
             });
-        </script>
+        }
 
-        @if(session('success'))
-        <script>
+        function rejectApplication(id, name) {
             Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: '{{ session("success") }}',
-                confirmButtonText: 'OK'
-            });
-        </script>
-        @endif
+                title: 'Reject Application?',
+                text: `Are you sure you want to reject ${name}'s application?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'Yes, Reject',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    document.getElementById('loadingOverlay').style.display = 'flex';
+                    document.getElementById('loadingOverlay').classList.remove('fade-out');
 
-        <script src="{{ asset('js/logout.js') }}"></script>
-    </body>
+                    // Send rejection request
+                    fetch(`/mayor_staff/application/${id}/reject`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('loadingOverlay').classList.add('fade-out');
+                        setTimeout(() => {
+                            document.getElementById('loadingOverlay').style.display = 'none';
+                        }, 1000);
+
+                        if (data.success) {
+                            Swal.fire('Rejected!', `Application for ${name} has been rejected.`, 'success')
+                                .then(() => {
+                                    closeIntakeSheetModal();
+                                    location.reload();
+                                });
+                        } else {
+                            Swal.fire('Error!', data.message || 'Failed to reject application.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error rejecting application:', error);
+                        document.getElementById('loadingOverlay').classList.add('fade-out');
+                        setTimeout(() => {
+                            document.getElementById('loadingOverlay').style.display = 'none';
+                        }, 1000);
+                        Swal.fire('Error!', 'Failed to reject application.', 'error');
+                    });
+                }
+            });
+        }
+
+        function confirmLogout() {
+            Swal.fire({
+                title: 'Logout?',
+                text: 'Are you sure you want to logout?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'Yes, Logout',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('logoutForm').submit();
+                }
+            });
+        }
+
+
+    </script>
+
+<script src="{{ asset('js/spinner.js') }}"></script>
+
+// ...existing code...
+<script>
+function toggleDropdown(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const btn = document.querySelector(`button[onclick="toggleDropdown('${id}')"]`);
+    const chevron = btn ? btn.querySelector('i.bx') : null;
+
+    const willOpen = el.classList.contains('hidden'); // if hidden now, will open
+    // Toggle visibility
+    el.classList.toggle('hidden');
+
+    // Optional: rotate chevron for visual cue
+    if (chevron) {
+        chevron.classList.toggle('rotate-180', willOpen);
+    }
+
+    // Persist state in localStorage so it stays open across pages
+    try {
+        localStorage.setItem(`sidebarDropdown_${id}`, willOpen ? 'open' : 'closed');
+    } catch (e) {
+        console.warn('Could not persist dropdown state:', e);
+    }
+}
+
+function initializeSidebarDropdown() {
+    // Restore saved dropdown states on page load
+    try {
+        Object.keys(localStorage).forEach(key => {
+            if (!key.startsWith('sidebarDropdown_')) return;
+            const id = key.replace('sidebarDropdown_', '');
+            const state = localStorage.getItem(key);
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            const btn = document.querySelector(`button[onclick="toggleDropdown('${id}')"]`);
+            const chevron = btn ? btn.querySelector('i.bx') : null;
+
+            if (state === 'open') {
+                el.classList.remove('hidden');
+                if (chevron) chevron.classList.add('rotate-180');
+            } else {
+                el.classList.add('hidden');
+                if (chevron) chevron.classList.remove('rotate-180');
+            }
+        });
+    } catch (e) {
+        console.warn('initializeSidebarDropdown error:', e);
+    }
+}
+
+// Call initializeSidebarDropdown if DOM already loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeSidebarDropdown);
+} else {
+    initializeSidebarDropdown();
+}
+</script>
+// ...existing code...
+</body>
 </html>

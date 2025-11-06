@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Application;
+use App\Models\ApplicationPersonnel;
 
 class ApplicationController extends Controller
 {
@@ -16,11 +17,18 @@ class ApplicationController extends Controller
         try {
             $applications = Application::with('applicant')->get();
 
+            // Also get ApplicationPersonnel data for each application
+            $applicationsWithPersonnel = $applications->map(function ($application) {
+                $personnel = ApplicationPersonnel::where('application_id', $application->application_id)->first();
+                $application->application_personnel = $personnel;
+                return $application;
+            });
+
             return response()->json([
                 'success' => true,
                 'message' => 'Applications retrieved successfully.',
-                'data' => $applications,
-                'count' => $applications->count()
+                'data' => $applicationsWithPersonnel,
+                'count' => $applicationsWithPersonnel->count()
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -45,6 +53,10 @@ class ApplicationController extends Controller
                     'message' => 'Application not found.'
                 ], 404);
             }
+
+            // Get ApplicationPersonnel data for this application
+            $personnel = ApplicationPersonnel::where('application_id', $application->application_id)->first();
+            $application->application_personnel = $personnel;
 
             return response()->json([
                 'success' => true,

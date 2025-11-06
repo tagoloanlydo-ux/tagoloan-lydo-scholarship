@@ -42,6 +42,7 @@ class EmailService
                 $message->to($email)
                         ->subject('Renewal Status Update - LYDO Scholarship');
             });
+            Log::info('Successfully sent rejection email to: ' . $email);
             return true;
         } catch (\Exception $e) {
             Log::error('Failed to send rejection email: ' . $e->getMessage());
@@ -158,6 +159,70 @@ class EmailService
             return true;
         } catch (\Exception $e) {
             Log::error('Failed to send registration link email: ' . $e->getMessage());
+            return false;
+        }
+    }
+    /**
+     * Send document update request email for renewal
+     *
+     * @param string $email
+     * @param array $data
+     * @return bool
+     */
+    public function sendDocumentUpdateRequest($email, $data)
+    {
+        try {
+            Mail::send('emails.renewal-document-update-required', $data, function ($message) use ($email) {
+                $message->to($email)
+                        ->subject('Document Update Required - Scholarship Renewal');
+            });
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send renewal document update request email: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Send renewal approval email
+     *
+     * @param string $email
+     * @param array $data
+     * @return bool
+     */
+    public function sendRenewalApprovalEmail($email, array $data)
+    {
+        try {
+            Mail::send('emails.renewal-approval', $data, function ($message) use ($email) {
+                $message->to($email)
+                        ->subject('Renewal Approved - LYDO Scholarship');
+            });
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send renewal approval email: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Send plain email (helper method)
+     *
+     * @param string $email
+     * @param string $subject
+     * @param string $message
+     * @return bool
+     */
+    private function sendEmail($email, $subject, $message)
+    {
+        try {
+            Mail::send([], [], function ($mail) use ($email, $subject, $message) {
+                $mail->to($email)
+                     ->subject($subject)
+                     ->html($message);
+            });
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send email: ' . $e->getMessage());
             return false;
         }
     }

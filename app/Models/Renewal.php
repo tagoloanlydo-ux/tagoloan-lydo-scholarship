@@ -25,4 +25,9 @@ class Renewal extends Model
         'renewal_deadline' => 'date',
         'date_submitted' => 'date',
     ];
+
+    public function scholar()
+    {
+        return $this->belongsTo(Scholar::class, 'scholar_id', 'scholar_id');
+    }
 }

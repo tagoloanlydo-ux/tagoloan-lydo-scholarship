@@ -22,13 +22,15 @@
             overflow: hidden;
         }
 
+        /* Loading Spinner Styles */
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -50,7 +52,7 @@
             margin: 0 auto 2rem;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -104,7 +106,7 @@
             }
         }
 
-        /* Responsive design */
+        /* Responsive design for spinner */
         @media (max-width: 768px) {
             .text-line {
                 font-size: 1.8rem;

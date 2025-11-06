@@ -12,6 +12,46 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
+    <style>
+        /* Make tables expand to show all rows */
+        .table-container {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none !important;
+        }
+
+        /* Ensure table containers don't limit height */
+        .bg-white.shadow-sm.border {
+            max-height: none !important;
+            overflow: visible !important;
+        }
+
+        /* Make table body expand fully */
+        table tbody {
+            display: table-row-group;
+        }
+
+        /* Remove any fixed heights from table containers */
+        .overflow-x-auto {
+            max-height: none !important;
+            overflow-y: visible !important;
+        }
+
+        /* Ensure proper table display */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        /* Tab styling */
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50">
@@ -134,7 +174,15 @@
     }
 </script>
 
-
+<li>
+    <a href="/lydo_admin/applicants" 
+     class=" flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
+         <div class="flex items-center">
+            <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
+            <span class="ml-4 hidden md:block text-lg">Applicants</span>
+        </div>
+    </a>
+</li>
 
 <!-- Scholar Dropdown -->
 <li class="relative">
@@ -196,15 +244,7 @@
         });
     });
 </script>
-<li>
-    <a href="/lydo_admin/applicants" 
-     class=" flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
-         <div class="flex items-center">
-            <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Applicants</span>
-        </div>
-    </a>
-</li>
+
 <li>
     <a href="/lydo_admin/announcement"
        class=" flex items-center justify-between p-3 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
@@ -280,8 +320,8 @@
                 <div class="tab-content">
                     <!-- Summary Tab -->
                     <div id="summary-tab" class="tab-pane active">
-                        <!-- 4 Column Cards -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- 5 Column Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
                             <div class="bg-white rounded-xl shadow-sm p-5 border border-blue-300">
                                 <div class="flex justify-between items-center">
                                     <div>
@@ -294,8 +334,6 @@
                                     </span>
                                 </div>
                             </div>
-
-        
 
                             <div class="bg-white rounded-xl shadow-sm p-5 border border-red-300">
                                 <div class="flex justify-between items-center">
@@ -404,7 +442,7 @@
 </div>
                                 </div>
                             </div>
-                            <div class="overflow-x-auto bg-white  shadow-sm border border-gray-200">
+                            <div class="table-container bg-white shadow-sm border border-gray-200">
                                 <table class="w-full">
                                     <thead>
                                         <tr class="bg-green-600 text-white">
@@ -467,49 +505,49 @@
                             <h3 class="text-lg font-semibold mb-4">Applicants by Remarks</h3>
                             <!-- Filter Section -->
                             <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="applicantsFilterForm">
-                                    <div class="flex-1">
-                                        <input type="text" id="applicantsSearchInput" placeholder="Search by name..."
-                                               value="{{ request('search') }}"
-                                               class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div class="flex-1">
+                                            <input type="text" id="applicantsSearchInput" name="search" placeholder="Search by name..."
+                                                   value="{{ request('search') }}"
+                                                   class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                        </div>
+                                        <div class="flex-1">
+                                            <select id="applicantsBarangaySelect" name="barangay" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                                <option value="">All Barangays</option>
+                                                @foreach($barangays as $barangay)
+                                                    <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
+                                                        {{ $barangay }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="flex-1">
+                                            <select id="applicantsAcademicYearSelect" name="academic_year" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                                <option value="">All Academic Years</option>
+                                                @foreach($academicYears as $year)
+                                                    <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
+                                                        {{ $year }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="flex-1">
+                                            <select id="applicantsRemarksSelect" name="remarks" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                                <option value="">All Remarks</option>
+                                                <option value="Ultra Poor" {{ request('remarks') == 'Ultra Poor' ? 'selected' : '' }}>Ultra Poor</option>
+                                                <option value="Poor" {{ request('remarks') == 'Poor' ? 'selected' : '' }}>Poor</option>
+                                                <option value="Non Poor" {{ request('remarks') == 'Non Poor' ? 'selected' : '' }}>Non Poor</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex-1">
+                                            <button type="button" id="printApplicantsPdfBtn"
+                                                class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium flex items-center justify-center" title="Generate and print applicants report">
+                                                <i class="fas fa-print mr-2"></i> Print PDF
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="flex-1">
-                                        <select id="applicantsBarangaySelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                                            <option value="">All Barangays</option>
-                                            @foreach($barangays as $barangay)
-                                                <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
-                                                    {{ $barangay }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="flex-1">
-                                        <select id="applicantsAcademicYearSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                                            <option value="">All Academic Years</option>
-                                            @foreach($academicYears as $year)
-                                                <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
-                                                    {{ $year }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                            <div class="flex-1">
-                                <select id="applicantsRemarksSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                                    <option value="">All Remarks</option>
-                                    <option value="Ultra Poor" {{ request('remarks') == 'Ultra Poor' ? 'selected' : '' }}>Ultra Poor</option>
-                                    <option value="Poor" {{ request('remarks') == 'Poor' ? 'selected' : '' }}>Poor</option>
-                                    <option value="Non Poor" {{ request('remarks') == 'Non Poor' ? 'selected' : '' }}>Non Poor</option>
-                                </select>
                             </div>
-                            <div class="flex-1">
-                                <button type="button" id="printApplicantsPdfBtn"
-                                    class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium flex items-center justify-center" title="Generate and print applicants report">
-                                    <i class="fas fa-print mr-2"></i> Print PDF
-                                </button>
-                            </div>
-                                </div>
-                            </div>
-                            <div class="overflow-x-auto bg-white shadow-sm border border-gray-200">
+                            <div class="table-container bg-white shadow-sm border border-gray-200">
                                 <table class="w-full">
                                     <thead>
                                         <tr class="bg-green-600 text-white">
@@ -571,7 +609,6 @@
                                     </tbody>
                                 </table>
                             </div>
-                            {{ $applicantsWithRemarks->links() }}
                         </div>
                     </div>
 
@@ -579,7 +616,7 @@
                     <div id="school-tab" class="tab-pane hidden">
                         <div class="bg-white rounded-lg shadow-sm p-6">
                             <h3 class="text-lg font-semibold mb-4">School Demographic</h3>
-                            <div class="overflow-x-auto bg-white  shadow-sm border border-gray-200">
+                            <div class="table-container bg-white shadow-sm border border-gray-200">
                                 <table class="w-full">
                                     <thead>
                                         <tr class="bg-green-600 text-white">
@@ -642,7 +679,7 @@
                     <div id="barangay-tab" class="tab-pane hidden">
                         <div class="bg-white rounded-lg shadow-sm p-6">
                             <h3 class="text-lg font-semibold mb-4">Barangay Demographic</h3>
-                            <div class="overflow-x-auto bg-white shadow-sm border border-gray-200">
+                            <div class="table-container bg-white shadow-sm border border-gray-200">
                                 <table class="w-full">
                                     <thead>
                                         <tr class="bg-green-600 text-white">
@@ -677,7 +714,7 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
-                                                    <span class="text-2xl font-bold text-orange-600 mr-2">{{ $barangay->total }}</span>
+                                                    <span class="text-2xl font-bold text-green-600 mr-2">{{ $barangay->total }}</span>
                                                     <span class="text-sm text-gray-500">applicants</span>
                                                 </div>
                                             </td>
@@ -704,7 +741,7 @@
                     <!-- Renewal Tab -->
                     <div id="renewal-tab" class="tab-pane hidden">
                         <div class="bg-white rounded-lg shadow-sm p-6">
-                            <h3 class="text-lg font-semibold mb-4">Approved Renewal Applications</h3>
+                            <h3 class="text-lg font-semibold mb-4">Renewal Applications</h3>
                             <!-- Filter Section -->
                             <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
                                 <div class="flex flex-col md:flex-row gap-4" id="renewalFilterForm">
@@ -749,7 +786,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="overflow-x-auto bg-white  shadow-sm border border-gray-200">
+                            <div class="table-container bg-white shadow-sm border border-gray-200">
                                 <table class="w-full">
                                     <thead>
                                         <tr class="bg-green-600 text-white">
@@ -806,10 +843,22 @@
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                                    <i class="fas fa-check-circle mr-1"></i>
-                                                    {{ $renewal->renewal_status }}
-                                                </span>
+                                                @if($renewal->renewal_status === 'Approved')
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                        <i class="fas fa-check-circle mr-1"></i>
+                                                        {{ $renewal->renewal_status }}
+                                                    </span>
+                                                @elseif($renewal->renewal_status === 'Rejected')
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                                                        <i class="fas fa-times-circle mr-1"></i>
+                                                        {{ $renewal->renewal_status }}
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
+                                                        <i class="fas fa-clock mr-1"></i>
+                                                        {{ $renewal->renewal_status }}
+                                                    </span>
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
@@ -935,17 +984,79 @@
     const searchInput = document.getElementById('searchInput');
     const barangaySelect = document.getElementById('barangaySelect');
     const academicYearSelect = document.getElementById('academicYearSelect');
-    const scholarStatusSelect = document.getElementById('scholarStatusSelect'); // Add this line
+    const scholarStatusSelect = document.getElementById('scholarStatusSelect');
     const printPdfBtn = document.getElementById('printPdfBtn');
     const scholarsTableBody = document.querySelector('#scholars-tab tbody');
 
-    // ...existing code...
+    // Function to show loading state for scholars
+    function showLoading() {
+        scholarsTableBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="p-4 text-center">
+                    <div class="flex items-center justify-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                        <span class="ml-2">Loading...</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
 
+    // Function to update scholars table with AJAX results
+    function updateScholarsTable(results) {
+        if (results.length === 0) {
+            scholarsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="p-4 text-center text-gray-500">
+                        No scholars found matching your criteria
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        scholarsTableBody.innerHTML = results.map(scholar => `
+            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-semibold text-gray-900">
+                        ${scholar.applicant_fname} ${scholar.applicant_lname}
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900 font-medium">${scholar.applicant_school_name}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="text-sm text-gray-900">${scholar.applicant_brgy || 'undefined'}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="text-sm text-gray-900">${scholar.applicant_year_level}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${getStatusBadge(scholar.scholar_status)}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Function to get status badge HTML
+    function getStatusBadge(status) {
+        if (status === 'Approved') {
+            return `<span class="inline-flex items-center px-3 py-1 text-xs font-semibold border border-gray-300 bg-gray-50 text-gray-800">
+                ${status}
+            </span>`;
+        } else {
+            return `<span class="inline-flex items-center px-3 py-1 text-xs font-semibold border border-gray-300 bg-gray-50 text-gray-800">
+                ${status}
+            </span>`;
+        }
+    }
+
+    // Function to perform AJAX request for scholars
     function filterScholars() {
         const search = searchInput.value;
         const barangay = barangaySelect.value;
         const academicYear = academicYearSelect.value;
-        const status = scholarStatusSelect.value; // Add this line
+        const status = scholarStatusSelect.value;
 
         // Show loading state
         showLoading();
@@ -955,10 +1066,42 @@
         formData.append('search', search);
         formData.append('barangay', barangay);
         formData.append('academic_year', academicYear);
-        formData.append('status', status); // Add this line
+        formData.append('status', status);
+        formData.append('tab', 'scholars');
         formData.append('_token', '{{ csrf_token() }}');
 
-        // ...existing fetch code...
+        // Make AJAX request
+        fetch('{{ route("LydoAdmin.report.post") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                updateScholarsTable(data.scholars);
+            } else {
+                throw new Error('Server returned error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            scholarsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="p-4 text-center text-red-500">
+                        Error loading data. Please try again.
+                    </td>
+                </tr>
+            `;
+        });
     }
 
     // Print PDF functionality
@@ -973,7 +1116,29 @@
         });
     }
 
-    // ...existing event listeners...
+    // Real-time search functionality for scholars
+    let searchTimeout;
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                filterScholars();
+            }, 300);
+        });
+    }
+
+    // Real-time dropdown filtering for scholars
+    if (barangaySelect) {
+        barangaySelect.addEventListener('change', function() {
+            filterScholars();
+        });
+    }
+
+    if (academicYearSelect) {
+        academicYearSelect.addEventListener('change', function() {
+            filterScholars();
+        });
+    }
 
     if (scholarStatusSelect) {
         scholarStatusSelect.addEventListener('change', function() {

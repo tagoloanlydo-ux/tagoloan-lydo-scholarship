@@ -12,7 +12,82 @@
     <link rel="stylesheet" href="{{ asset('css/scholar.css') }}" />
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
   </head>
+      <style>
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+            transition: opacity 0.3s ease;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        .spinner {
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .spinner img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-out {
+            animation: fadeOut 1s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        /* Responsive spinner size */
+        @media (max-width: 768px) {
+            .spinner {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .spinner {
+                width: 60px;
+                height: 60px;
+            }
+        }    
+    </style>
   <body class="bg-gray-50 min-h-screen flex flex-col">
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner">
+                            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+    </div>
+</div>
     <!-- HEADER -->
     <header class="banner-grad flex items-center px-6 text-white shadow-md">
        <img src="/images/LYDO.png" alt="LYDO Logo" class="h-10 mr-4"/>
@@ -295,6 +370,8 @@
     feather.replace();
   });
 </script>
+<script src="{{ asset('js/spinner.js') }}"></script>
+
   </body>
 </html>
 

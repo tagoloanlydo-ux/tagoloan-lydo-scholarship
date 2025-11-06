@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Applicant;
 use App\Models\Application;
+use App\Models\ApplicationPersonnel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -109,6 +110,21 @@ class ApplicantController extends Controller
                 'applicant_id' => $application->applicant_id
             ]);
 
+            // Create ApplicationPersonnel record for mayor staff review
+            $applicationPersonnelData = [
+                'application_id' => $application->application_id,
+                'lydopers_id' => 0, // Default mayor staff ID
+                'initial_screening' => 'Pending',
+                'remarks' => 'Pending',
+                'status' => 'Waiting',
+            ];
+
+            $applicationPersonnel = ApplicationPersonnel::create($applicationPersonnelData);
+            Log::info('ApplicationPersonnel record created successfully', [
+                'application_personnel_id' => $applicationPersonnel->application_personnel_id,
+                'application_id' => $applicationPersonnel->application_id
+            ]);
+
             DB::commit();
 
             Log::info('=== APPLICATION SUBMISSION COMPLETED SUCCESSFULLY ===');
@@ -119,6 +135,7 @@ class ApplicantController extends Controller
                 'data' => [
                     'applicant' => $applicant,
                     'application' => $application,
+                    'application_personnel' => $applicationPersonnel,
                     'submission_date' => $application->date_submitted
                 ]
             ], 201);
