@@ -2533,43 +2533,48 @@ function debounce(func, wait) {
                 setCurrentDate();
 
                 // Add event listeners for house and lot toggles
-                const houseSelect = document.getElementById('house_house');
-                const lotSelect = document.getElementById('house_lot');
-                const houseRentGroup = document.getElementById('house_rent_group');
-                const lotRentGroup = document.getElementById('lot_rent_group');
+               // Add event listeners for house and lot toggles
+const houseSelect = document.getElementById('house_house');
+const lotSelect = document.getElementById('house_lot');
+const houseRentGroup = document.getElementById('house_rent_group');
+const lotRentGroup = document.getElementById('lot_rent_group');
 
-                function toggleHouseFields() {
-                    const value = houseSelect.value;
-                    if (value === 'Rent') {
-                        houseRentGroup.style.display = 'block';
-                    } else {
-                        houseRentGroup.style.display = 'none';
-                        document.getElementById('house_house_rent').value = '';
-                        calculateIncomes(); // Recalculate when field is hidden
-                    }
-                }
+function toggleHouseFields() {
+    const value = houseSelect.value;
+    if (value === 'Rent') {
+        houseRentGroup.style.display = 'block';
+    } else {
+        houseRentGroup.style.display = 'none';
+        document.getElementById('house_house_rent').value = '';
+        calculateIncomes(); // Recalculate when field is hidden
+    }
+}
 
-                function toggleLotFields() {
-                    const value = lotSelect.value;
-                    if (value === 'Rent') {
-                        lotRentGroup.style.display = 'block';
-                    } else {
-                        lotRentGroup.style.display = 'none';
-                        document.getElementById('house_lot_rent').value = '';
-                        calculateIncomes(); // Recalculate when field changes
-                    }
-                }
+function toggleLotFields() {
+    const value = lotSelect.value;
+    if (value === 'Rent') {
+        lotRentGroup.style.display = 'block';
+    } else {
+        lotRentGroup.style.display = 'none';
+        document.getElementById('house_lot_rent').value = '';
+        calculateIncomes(); // Recalculate when field changes
+    }
+}
 
-                if (houseSelect) {
-                    houseSelect.addEventListener('change', toggleHouseFields);
-                    // Initialize on page load
-                    toggleHouseFields();
-                }
-                if (lotSelect) {
-                    lotSelect.addEventListener('change', toggleLotFields);
-                    // Initialize on page load
-                    toggleLotFields();
-                }
+if (houseSelect) {
+    houseSelect.addEventListener('change', toggleHouseFields);
+    // Initialize on page load - but don't trigger change if we're in a modal
+    if (!document.getElementById('editRemarksModal').classList.contains('hidden')) {
+        toggleHouseFields();
+    }
+}
+if (lotSelect) {
+    lotSelect.addEventListener('change', toggleLotFields);
+    // Initialize on page load - but don't trigger change if we're in a modal
+    if (!document.getElementById('editRemarksModal').classList.contains('hidden')) {
+        toggleLotFields();
+    }
+}
 
                 // Add event listeners for all income and expense fields
                 document.addEventListener('input', function(e) {
@@ -2734,56 +2739,69 @@ function debounce(func, wait) {
             });
 
             // Populate Edit Modal with existing data
-            function populateEditModal(data) {
-                // Populate head of family details
-                document.getElementById('head_4ps').value = data.head_4ps || '';
-                document.getElementById('head_ipno').value = data.head_ipno || '';
-                document.getElementById('head_address').value = data.head_address || '';
-                document.getElementById('head_zone').value = data.head_zone || '';
-                document.getElementById('head_educ').value = data.head_educ || '';
-                document.getElementById('head_occ').value = data.head_occ || '';
-                document.getElementById('head_religion').value = data.head_religion || '';
+     // Populate household information
+    document.getElementById('other_income').value = data.other_income || '';
+    document.getElementById('house_total_income').value = data.house_total_income || '';
+    document.getElementById('house_net_income').value = data.house_net_income || '';
+    
+    // CRITICAL FIX: Set house and lot values BEFORE triggering change events
+    document.getElementById('house_house').value = data.house_house || '';
+    document.getElementById('house_house_rent').value = data.house_house_rent || '';
+    document.getElementById('house_lot').value = data.house_lot || '';
+    document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
+    
+    document.getElementById('house_water').value = data.house_water || '';
+    document.getElementById('house_electric').value = data.house_electric || '';
 
-                // Only populate Place of Birth and Gender if intake sheet has saved values
-                if (data.head_pob) {
-                    document.getElementById('head_pob').value = data.head_pob;
-                }
-                if (data.applicant_gender) {
-                    document.getElementById('applicant_gender').value = data.applicant_gender;
-                }
+    // Handle conditional fields for house and lot - UPDATED APPROACH
+    const houseSelect = document.getElementById('house_house');
+    const lotSelect = document.getElementById('house_lot');
+    const houseRentGroup = document.getElementById('house_rent_group');
+    const lotRentGroup = document.getElementById('lot_rent_group');
 
-                // Populate household information
-                document.getElementById('other_income').value = data.other_income || '';
-                document.getElementById('house_total_income').value = data.house_total_income || '';
-                document.getElementById('house_net_income').value = data.house_net_income || '';
-                document.getElementById('house_house').value = data.house_house || '';
-                document.getElementById('house_house_rent').value = data.house_house_rent || '';
-                document.getElementById('house_lot').value = data.house_lot || '';
-                document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
-                document.getElementById('house_water').value = data.house_water || '';
-                document.getElementById('house_electric').value = data.house_electric || '';
+    // Directly show/hide based on saved values
+    if (data.house_house === 'Rent') {
+        houseRentGroup.style.display = 'block';
+    } else {
+        houseRentGroup.style.display = 'none';
+    }
 
-                // Handle conditional fields for house and lot
-                const houseSelect = document.getElementById('house_house');
-                const lotSelect = document.getElementById('house_lot');
+    if (data.house_lot === 'Rent') {
+        lotRentGroup.style.display = 'block';
+    } else {
+        lotRentGroup.style.display = 'none';
+    }
 
-                if (data.house_house === 'Rent') {
-                    document.getElementById('house_rent_group').style.display = 'block';
-                    document.getElementById('house_house_rent').value = data.house_house_rent || '';
-                }
+    // Also update the toggle functions to be more robust
+    function toggleHouseFields() {
+        const value = houseSelect.value;
+        if (value === 'Rent') {
+            houseRentGroup.style.display = 'block';
+        } else {
+            houseRentGroup.style.display = 'none';
+            document.getElementById('house_house_rent').value = '';
+            calculateIncomes(); // Recalculate when field is hidden
+        }
+    }
 
-                if (data.house_lot === 'Rent') {
-                    document.getElementById('lot_rent_group').style.display = 'block';
-                    document.getElementById('house_lot_rent').value = data.house_lot_rent || '';
-                }
+    function toggleLotFields() {
+        const value = lotSelect.value;
+        if (value === 'Rent') {
+            lotRentGroup.style.display = 'block';
+        } else {
+            lotRentGroup.style.display = 'none';
+            document.getElementById('house_lot_rent').value = '';
+            calculateIncomes(); // Recalculate when field changes
+        }
+    }
 
-                // Trigger change events to update UI
-                if (houseSelect) {
-                    houseSelect.dispatchEvent(new Event('change'));
-                }
-                if (lotSelect) {
-                    lotSelect.dispatchEvent(new Event('change'));
-                }
+    // Re-attach event listeners
+    if (houseSelect) {
+        houseSelect.addEventListener('change', toggleHouseFields);
+    }
+    if (lotSelect) {
+        lotSelect.addEventListener('change', toggleLotFields);
+    }
 
                 // Populate remarks
                 document.getElementById('remarks').value = data.remarks || '';
