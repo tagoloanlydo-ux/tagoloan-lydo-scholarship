@@ -399,8 +399,7 @@ $pendingScreening = DB::table("tbl_application_personnel")
             ->where("tbl_application_personnel.initial_screening", "Approved")
             ->where("tbl_application_personnel.remarks", "waiting")
             ->whereNotNull("family_intake_sheets.application_personnel_id")
-            ->paginate()
-    ->appends($request->all());
+            ->get();
 
         $currentAcadYear = DB::table("tbl_applicant")
             ->select("applicant_acad_year")
@@ -443,8 +442,7 @@ $listApplicants = DB::table("tbl_applicant as a")
     })
     ->whereIn("ap.remarks", ["Poor", "Non Poor", "Ultra Poor"])
     ->where("a.applicant_acad_year", $currentAcadYear)
-    ->paginate()
-    ->appends($request->all());
+    ->get();
 
         return view(
             "lydo_staff.screening",

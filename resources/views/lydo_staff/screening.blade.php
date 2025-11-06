@@ -1668,24 +1668,28 @@
     </div>
 </div>
         <script>
-  // Pagination state
-const paginationState = {
-    table: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        allRows: [],
-        filteredRows: []
-    },
-    list: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        allRows: [],
-        filteredRows: []
-    }
-};
-
-// Initialize pagination when DOM is loaded
+  // Pagination state - MOVED INSIDE DOMContentLoaded to ensure proper initialization
 document.addEventListener('DOMContentLoaded', function() {
+    // Pagination state
+    const paginationState = {
+        table: {
+            currentPage: 1,
+            rowsPerPage: 15,
+            allRows: [],
+            filteredRows: []
+        },
+        list: {
+            currentPage: 1,
+            rowsPerPage: 15,
+            allRows: [],
+            filteredRows: []
+        }
+    };
+
+    // Make paginationState global
+    window.paginationState = paginationState;
+
+    // Initialize pagination
     initializePagination();
     
     // Update the existing event listeners to use debounce
@@ -1693,203 +1697,177 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('barangayFilter').addEventListener('change', filterTable);
     document.getElementById('listNameSearch').addEventListener('input', debounce(filterList, 300));
     document.getElementById('listBarangayFilter').addEventListener('change', filterList);
-});
 
-// Initialize pagination
-function initializePagination() {
-    // Get ALL table rows (not just visible ones)
-    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
-    paginationState.table.allRows = tableRows.filter(row => !row.querySelector('td[colspan]'));
-    paginationState.table.filteredRows = [...paginationState.table.allRows];
-    
-    // Get ALL list rows
-    const listRows = Array.from(document.querySelectorAll('#listView tbody tr'));
-    paginationState.list.allRows = listRows.filter(row => !row.querySelector('td[colspan]'));
-    paginationState.list.filteredRows = [...paginationState.list.allRows];
-    
-    updatePagination('table');
-    updatePagination('list');
-}
+    // Initialize pagination
+    function initializePagination() {
+        console.log('Initializing pagination...');
+        
+        // Get ALL table rows (not just visible ones)
+        const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
+        paginationState.table.allRows = tableRows.filter(row => {
+            // Filter out empty state rows and ensure row has proper cells
+            const hasColspan = row.querySelector('td[colspan]');
+            const hasCells = row.cells.length > 1;
+            return !hasColspan && hasCells;
+        });
+        paginationState.table.filteredRows = [...paginationState.table.allRows];
+        
+        console.log('Table rows found:', paginationState.table.allRows.length);
+        
+        // Get ALL list rows
+        const listRows = Array.from(document.querySelectorAll('#listView tbody tr'));
+        paginationState.list.allRows = listRows.filter(row => {
+            const hasColspan = row.querySelector('td[colspan]');
+            const hasCells = row.cells.length > 1;
+            return !hasColspan && hasCells;
+        });
+        paginationState.list.filteredRows = [...paginationState.list.allRows];
+        
+        console.log('List rows found:', paginationState.list.allRows.length);
+        
+        updatePagination('table');
+        updatePagination('list');
+    }
 
-// Update pagination display
-function updatePagination(viewType) {
-    const state = paginationState[viewType];
-    const containerId = viewType === 'table' ? 'tablePagination' : 'listPagination';
-    const container = document.getElementById(containerId);
-    
-    if (!container) return;
-    
-    // Hide all rows first
-    state.allRows.forEach(row => {
-        row.style.display = 'none';
-    });
-    
-    // Calculate pagination for filtered rows
-    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
-    const endIndex = startIndex + state.rowsPerPage;
-    const pageRows = state.filteredRows.slice(startIndex, endIndex);
-    
-    // Show only rows for current page
-    pageRows.forEach(row => {
-        row.style.display = '';
-    });
-    
-    // Update pagination controls
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    const startItem = state.filteredRows.length === 0 ? 0 : Math.min(startIndex + 1, state.filteredRows.length);
-    const endItem = Math.min(endIndex, state.filteredRows.length);
-    
-    container.innerHTML = `
-        <div class="pagination-info">
-            Showing ${startItem} to ${endItem} of ${state.filteredRows.length} entries
-        </div>
-        <div class="pagination-buttons">
-            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
-                <i class="fas fa-angle-double-left"></i>
-            </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
-                <i class="fas fa-angle-left"></i>
-            </button>
-            <div class="pagination-page-info">
-                Page <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)"> of ${totalPages}
+    // Update pagination display
+    function updatePagination(viewType) {
+        const state = paginationState[viewType];
+        const containerId = viewType === 'table' ? 'tablePagination' : 'listPagination';
+        const container = document.getElementById(containerId);
+        
+        if (!container) {
+            console.error('Pagination container not found:', containerId);
+            return;
+        }
+        
+        // Hide all rows first
+        state.allRows.forEach(row => {
+            row.style.display = 'none';
+        });
+        
+        // Calculate pagination for filtered rows
+        const startIndex = (state.currentPage - 1) * state.rowsPerPage;
+        const endIndex = startIndex + state.rowsPerPage;
+        const pageRows = state.filteredRows.slice(startIndex, endIndex);
+        
+        // Show only rows for current page
+        pageRows.forEach(row => {
+            row.style.display = '';
+        });
+        
+        // Update pagination controls
+        const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage) || 1;
+        
+        const startItem = state.filteredRows.length === 0 ? 0 : Math.min(startIndex + 1, state.filteredRows.length);
+        const endItem = Math.min(endIndex, state.filteredRows.length);
+        
+        container.innerHTML = `
+            <div class="pagination-info">
+                Showing ${startItem} to ${endItem} of ${state.filteredRows.length} entries
             </div>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                <i class="fas fa-angle-right"></i>
-            </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                <i class="fas fa-angle-double-right"></i>
-            </button>
-        </div>
-    `;
-}
+            <div class="pagination-buttons">
+                <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+                <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-left"></i>
+                </button>
+                <div class="pagination-page-info">
+                    Page <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)"> of ${totalPages}
+                </div>
+                <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-angle-right"></i>
+                </button>
+                <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            </div>
+        `;
+    }
 
-// Update the existing filter functions to work with pagination
-function filterList() {
-    const nameSearchValue = document.getElementById('listNameSearch').value.toLowerCase().trim();
-    const barangayFilterValue = document.getElementById('listBarangayFilter').value.toLowerCase().trim();
+    // Change page
+    function changePage(viewType, page) {
+        const state = paginationState[viewType];
+        const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage) || 1;
+        
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+        
+        state.currentPage = page;
+        updatePagination(viewType);
+    }
 
-    const filteredRows = paginationState.list.allRows.filter(row => {
-        const nameCell = row.cells[1];
-        const barangayCell = row.cells[2];
+    // Go to specific page
+    function goToPage(viewType, page) {
+        const state = paginationState[viewType];
+        const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage) || 1;
+        
+        page = parseInt(page);
+        if (isNaN(page) || page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+        
+        state.currentPage = page;
+        updatePagination(viewType);
+    }
 
-        if (!nameCell || !barangayCell) return false;
+    // Update the existing filter functions to work with pagination
+    function filterTable() {
+        const nameSearchValue = document.getElementById('nameSearch').value.toLowerCase().trim();
+        const barangayFilterValue = document.getElementById('barangayFilter').value.toLowerCase().trim();
 
-        const name = nameCell.textContent.toLowerCase();
-        const barangay = barangayCell.textContent.toLowerCase();
+        const filteredRows = paginationState.table.allRows.filter(row => {
+            const nameCell = row.cells[1];
+            const barangayCell = row.cells[2];
 
-        const matchesName = name.includes(nameSearchValue);
-        const matchesBarangay = barangayFilterValue === '' || barangay.includes(barangayFilterValue);
+            if (!nameCell || !barangayCell) return false;
 
-        return matchesName && matchesBarangay;
-    });
+            const name = nameCell.textContent.toLowerCase();
+            const barangay = barangayCell.textContent.toLowerCase();
 
-    // Update filtered rows and reset to page 1
-    paginationState.list.filteredRows = filteredRows;
-    paginationState.list.currentPage = 1;
-    updatePagination('list');
-}
-// Change page
-function changePage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
-}
+            const matchesName = name.includes(nameSearchValue);
+            const matchesBarangay = barangayFilterValue === '' || barangay.includes(barangayFilterValue);
 
-// Go to specific page
-function goToPage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    page = parseInt(page);
-    if (isNaN(page) || page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
-}
+            return matchesName && matchesBarangay;
+        });
 
-// Update the existing filter functions to work with pagination
-function filterTable() {
-    const nameSearchValue = document.getElementById('nameSearch').value.toLowerCase().trim();
-    const barangayFilterValue = document.getElementById('barangayFilter').value.toLowerCase().trim();
+        // Update filtered rows and reset to page 1
+        paginationState.table.filteredRows = filteredRows;
+        paginationState.table.currentPage = 1;
+        updatePagination('table');
+    }
 
-    const filteredRows = paginationState.table.allRows.filter(row => {
-        const nameCell = row.cells[1];
-        const barangayCell = row.cells[2];
+    function filterList() {
+        const nameSearchValue = document.getElementById('listNameSearch').value.toLowerCase().trim();
+        const barangayFilterValue = document.getElementById('listBarangayFilter').value.toLowerCase().trim();
 
-        if (!nameCell || !barangayCell) return false;
+        const filteredRows = paginationState.list.allRows.filter(row => {
+            const nameCell = row.cells[1];
+            const barangayCell = row.cells[2];
 
-        const name = nameCell.textContent.toLowerCase();
-        const barangay = barangayCell.textContent.toLowerCase();
+            if (!nameCell || !barangayCell) return false;
 
-        const matchesName = name.includes(nameSearchValue);
-        const matchesBarangay = barangayFilterValue === '' || barangay.includes(barangayFilterValue);
+            const name = nameCell.textContent.toLowerCase();
+            const barangay = barangayCell.textContent.toLowerCase();
 
-        return matchesName && matchesBarangay;
-    });
+            const matchesName = name.includes(nameSearchValue);
+            const matchesBarangay = barangayFilterValue === '' || barangay.includes(barangayFilterValue);
 
-    // Debug: Check if filtering is working
-    console.log(`Filtered ${filteredRows.length} rows from ${paginationState.table.allRows.length} total rows`);
+            return matchesName && matchesBarangay;
+        });
 
-    // Update filtered rows and reset to page 1
-    paginationState.table.filteredRows = filteredRows;
-    paginationState.table.currentPage = 1;
-    updatePagination('table');
-}
+        // Update filtered rows and reset to page 1
+        paginationState.list.filteredRows = filteredRows;
+        paginationState.list.currentPage = 1;
+        updatePagination('list');
+    }
 
-function filterList() {
-    const nameSearchValue = document.getElementById('listNameSearch').value.toLowerCase().trim();
-    const barangayFilterValue = document.getElementById('listBarangayFilter').value.toLowerCase().trim();
-
-    const filteredRows = paginationState.list.allRows.filter(row => {
-        const nameCell = row.cells[1];
-        const barangayCell = row.cells[2];
-
-        if (!nameCell || !barangayCell) return false;
-
-        const name = nameCell.textContent.toLowerCase();
-        const barangay = barangayCell.textContent.toLowerCase();
-
-        const matchesName = name.includes(nameSearchValue);
-        const matchesBarangay = barangayFilterValue === '' || barangay.includes(barangayFilterValue);
-
-        return matchesName && matchesBarangay;
-    });
-
-    // Update filtered rows and reset to page 1
-    paginationState.list.filteredRows = filteredRows;
-    paginationState.list.currentPage = 1;
-    updatePagination('list');
-}
-
-// Update the existing showTable and showList functions
-function showTable() {
-    document.getElementById('tableView').classList.remove('hidden');
-    document.getElementById('listView').classList.add('hidden');
-    document.getElementById('tab-screening').classList.add('active');
-    document.getElementById('tab-reviewed').classList.remove('active');
-    
-    // Reset to first page
-    paginationState.table.currentPage = 1;
-    updatePagination('table');
-}
-
-function showList() {
-    document.getElementById('tableView').classList.add('hidden');
-    document.getElementById('listView').classList.remove('hidden');
-    document.getElementById('tab-screening').classList.remove('active');
-    document.getElementById('tab-reviewed').classList.add('active');
-    
-    // Reset to first page
-    paginationState.list.currentPage = 1;
-    updatePagination('list');
-}
+    // Make functions global
+    window.changePage = changePage;
+    window.goToPage = goToPage;
+    window.filterTable = filterTable;
+    window.filterList = filterList;
+    window.updatePagination = updatePagination;
+});
 
 // Debounce function for search
 function debounce(func, wait) {
@@ -1902,6 +1880,33 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+// Update the existing showTable and showList functions
+function showTable() {
+    document.getElementById('tableView').classList.remove('hidden');
+    document.getElementById('listView').classList.add('hidden');
+    document.getElementById('tab-screening').classList.add('active');
+    document.getElementById('tab-reviewed').classList.remove('active');
+    
+    // Reset to first page
+    if (window.paginationState) {
+        window.paginationState.table.currentPage = 1;
+        updatePagination('table');
+    }
+}
+
+function showList() {
+    document.getElementById('tableView').classList.add('hidden');
+    document.getElementById('listView').classList.remove('hidden');
+    document.getElementById('tab-screening').classList.remove('active');
+    document.getElementById('tab-reviewed').classList.add('active');
+    
+    // Reset to first page
+    if (window.paginationState) {
+        window.paginationState.list.currentPage = 1;
+        updatePagination('list');
+    }
 }
                 </script>
         <script>
