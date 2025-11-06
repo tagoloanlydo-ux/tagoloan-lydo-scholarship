@@ -15,6 +15,10 @@ return [
             'driver' => 'session',
             'provider' => 'lydopers',
         ],
+        'sanctum' => [
+            'driver' => 'sanctum',
+            'provider' => null,
+        ],
     ],
 
     'providers' => [

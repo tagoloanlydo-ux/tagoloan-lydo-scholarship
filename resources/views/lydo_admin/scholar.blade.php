@@ -397,7 +397,7 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">Course</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Academic Year</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Documents</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Document</th>
                                 </tr>
                             </thead>
                            <tbody>
@@ -429,13 +429,16 @@
                                             <div class="text-sm text-gray-900">{{ $scholar->applicant_acad_year ?? 'N/A' }}</div>
                                         </td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $scholar->scholar_status == 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $scholar->scholar_status == 'active' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
                                                 {{ ucfirst($scholar->scholar_status) }}
                                             </span>
                                         </td>
-
-
-                                    </tr>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <button class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors" onclick="openDocumentModal({{ $scholar->scholar_id }})">
+                                                View Document
+                                            </button>
+                                        </td>
+                                   </tr>
                                 @empty
                                     <tr>
                                         <td colspan="9" class="text-center py-4 border border-gray-200 text-gray-500">No scholars found.</td>
@@ -557,7 +560,112 @@
                 </div>
             </div>
 
+<!-- Document Modal -->
+<div id="documentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-5 mx-auto p-6 border w-full max-w-4xl shadow-2xl rounded-xl bg-white max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 sticky top-0 bg-white">
+            <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                <i class="fas fa-file-alt text-blue-600 mr-3"></i>
+                Scholar Documents
+            </h3>
+            <button type="button" id="closeDocumentModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
 
+        <div class="space-y-6">
+            <!-- Scholar Information -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-blue-800 mb-2">Scholar Information</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <span class="text-sm font-medium text-blue-700">Name:</span>
+                        <span id="docScholarName" class="text-sm text-blue-900 ml-2">-</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-blue-700">Academic Year:</span>
+                        <span id="docAcademicYear" class="text-sm text-blue-900 ml-2">-</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-blue-700">Semester:</span>
+                        <span id="docSemester" class="text-sm text-blue-900 ml-2">-</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-blue-700">Date Submitted:</span>
+                        <span id="docDateSubmitted" class="text-sm text-blue-900 ml-2">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Section -->
+            <div>
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">Renewal Documents</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Document 1: Certificate of Registration -->
+                    <div class="border border-gray-300 rounded-lg p-4 bg-white">
+                        <div class="flex justify-between items-center mb-3">
+                            <h5 class="font-semibold text-gray-700">Certificate of Registration</h5>
+                            <button id="expandDoc1" class="text-blue-600 hover:text-blue-800 text-sm" title="Expand Document">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <div id="doc1Preview" class="mb-3 min-h-[200px] max-h-[200px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden">
+                            <span class="text-gray-500 text-sm">No document available</span>
+                        </div>
+                        <a id="doc1Download" href="#" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
+                            <i class="fas fa-download mr-2"></i>Download
+                        </a>
+                    </div>
+
+                    <!-- Document 2: Grade Slip -->
+                    <div class="border border-gray-300 rounded-lg p-4 bg-white">
+                        <div class="flex justify-between items-center mb-3">
+                            <h5 class="font-semibold text-gray-700">Grade Slip</h5>
+                            <button id="expandDoc2" class="text-blue-600 hover:text-blue-800 text-sm" title="Expand Document">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <div id="doc2Preview" class="mb-3 min-h-[200px] max-h-[200px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden">
+                            <span class="text-gray-500 text-sm">No document available</span>
+                        </div>
+                        <a id="doc2Download" href="#" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
+                            <i class="fas fa-download mr-2"></i>Download
+                        </a>
+                    </div>
+
+                    <!-- Document 3: Barangay Indigency -->
+                    <div class="border border-gray-300 rounded-lg p-4 bg-white">
+                        <div class="flex justify-between items-center mb-3">
+                            <h5 class="font-semibold text-gray-700">Barangay Indigency</h5>
+                            <button id="expandDoc3" class="text-blue-600 hover:text-blue-800 text-sm" title="Expand Document">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <div id="doc3Preview" class="mb-3 min-h-[200px] max-h-[200px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden">
+                            <span class="text-gray-500 text-sm">No document available</span>
+                        </div>
+                        <a id="doc3Download" href="#" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
+                            <i class="fas fa-download mr-2"></i>Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Documents Message -->
+            <div id="noDocumentsMessage" class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center hidden">
+                <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl mb-3"></i>
+                <h4 class="text-lg font-semibold text-yellow-800 mb-2">No Renewal Documents Found</h4>
+                <p class="text-yellow-700">This scholar hasn't submitted any renewal documents yet.</p>
+            </div>
+
+            <div class="flex justify-end pt-4 border-t border-gray-200">
+                <button type="button" id="closeDocument" class="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const selectAll = document.getElementById('selectAll');
@@ -856,6 +964,154 @@ document.getElementById('printPdfBtn').addEventListener('click', function() {
 
     // Open PDF in new tab
     window.open(`/lydo_admin/scholars/pdf?${params.toString()}`, '_blank');
+});
+
+// Document Modal functionality
+function openDocumentModal(scholarId) {
+    const modal = document.getElementById('documentModal');
+    const scholarName = document.getElementById('docScholarName');
+    const academicYear = document.getElementById('docAcademicYear');
+    const semester = document.getElementById('docSemester');
+    const dateSubmitted = document.getElementById('docDateSubmitted');
+    const noDocumentsMessage = document.getElementById('noDocumentsMessage');
+
+    // Reset modal content
+    scholarName.textContent = '-';
+    academicYear.textContent = '-';
+    semester.textContent = '-';
+    dateSubmitted.textContent = '-';
+    noDocumentsMessage.classList.add('hidden');
+
+    // Clear previous document previews
+    for (let i = 1; i <= 3; i++) {
+        const preview = document.getElementById(`doc${i}Preview`);
+        const download = document.getElementById(`doc${i}Download`);
+        preview.innerHTML = '<span class="text-gray-500 text-sm">No document available</span>';
+        download.classList.add('hidden');
+    }
+
+    // Get scholar name from table
+    const scholarRow = document.querySelector(`.scholar-checkbox[data-scholar-id="${scholarId}"]`).closest('tr');
+    const scholarNameFromTable = scholarRow.querySelector('td:nth-child(2) div').textContent.trim();
+    scholarName.textContent = scholarNameFromTable;
+
+    // Show modal
+    modal.classList.remove('hidden');
+
+    // Fetch scholar documents
+    fetch(`/lydo_admin/get-scholar-documents/${scholarId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.documents.length > 0) {
+                // Get the latest renewal record
+                const latestRenewal = data.documents[0];
+
+                // Update scholar information
+                academicYear.textContent = latestRenewal.renewal_acad_year || 'N/A';
+                semester.textContent = latestRenewal.renewal_semester || 'N/A';
+                dateSubmitted.textContent = latestRenewal.date_submitted || 'N/A';
+
+                // Update document previews
+                const documents = [
+                    { key: 'renewal_cert_of_reg', name: 'Certificate of Registration' },
+                    { key: 'renewal_grade_slip', name: 'Grade Slip' },
+                    { key: 'renewal_brgy_indigency', name: 'Barangay Indigency' }
+                ];
+
+                documents.forEach((doc, index) => {
+                    const docNumber = index + 1;
+                    const preview = document.getElementById(`doc${docNumber}Preview`);
+                    const download = document.getElementById(`doc${docNumber}Download`);
+
+                    if (latestRenewal[doc.key]) {
+                        const fileUrl = latestRenewal[doc.key]; // Already processed URL from controller
+                        preview.innerHTML = `<iframe src="${fileUrl}" class="w-full h-full border-0" style="min-height: 200px;"></iframe>`;
+                        download.href = fileUrl;
+                        download.classList.remove('hidden');
+                    } else {
+                        preview.innerHTML = '<span class="text-gray-500 text-sm">No document available</span>';
+                        download.classList.add('hidden');
+                    }
+                });
+            } else {
+                noDocumentsMessage.classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching documents:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Failed to load scholar documents.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        });
+}
+
+// Close document modal
+document.getElementById('closeDocumentModal').addEventListener('click', function() {
+    document.getElementById('documentModal').classList.add('hidden');
+});
+
+document.getElementById('closeDocument').addEventListener('click', function() {
+    document.getElementById('documentModal').classList.add('hidden');
+});
+
+// Close modal when clicking outside
+window.addEventListener('click', function(e) {
+    const modal = document.getElementById('documentModal');
+    if (e.target === modal) {
+        modal.classList.add('hidden');
+    }
+});
+
+// Document expand functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Expand button event listeners
+    const expandButtons = ['expandDoc1', 'expandDoc2', 'expandDoc3'];
+
+    expandButtons.forEach((buttonId, index) => {
+        const button = document.getElementById(buttonId);
+        const preview = document.getElementById(`doc${index + 1}Preview`);
+        const icon = button.querySelector('i');
+
+        // Set initial expanded state
+        preview.classList.add('expanded');
+        preview.style.maxHeight = '600px';
+        icon.className = 'fas fa-compress';
+        button.title = 'Collapse Document';
+
+        button.addEventListener('click', function() {
+            const isExpanded = preview.classList.contains('expanded');
+            const container = preview.closest('.border');
+            const documentsGrid = container.closest('.grid');
+            const modal = document.getElementById('documentModal');
+
+            if (isExpanded) {
+                // Collapse
+                preview.classList.remove('expanded');
+                preview.style.maxHeight = '200px';
+                container.classList.remove('md:col-span-3', 'col-span-1');
+                documentsGrid.classList.remove('grid-cols-1');
+                documentsGrid.classList.add('md:grid-cols-3');
+                modal.classList.add('max-h-[90vh]');
+                modal.classList.remove('max-h-screen');
+                icon.className = 'fas fa-expand';
+                button.title = 'Expand Document';
+            } else {
+                // Expand - make it full width and allow full height
+                preview.classList.add('expanded');
+                preview.style.maxHeight = 'none';
+                container.classList.add('md:col-span-3', 'col-span-1');
+                documentsGrid.classList.remove('md:grid-cols-3');
+                documentsGrid.classList.add('grid-cols-1');
+                modal.classList.remove('max-h-[90vh]');
+                modal.classList.add('max-h-screen');
+                icon.className = 'fas fa-compress';
+                button.title = 'Collapse Document';
+            }
+        });
+    });
 });
             </script>
             <script src="{{ asset('js/filter_paginate.js') }}"></script>

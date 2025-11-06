@@ -1510,6 +1510,8 @@ private function getDocumentUrl($filePath)
     // For other cases, try to generate URL
     return asset('storage/' . ltrim($filePath, '/'));
 }
+
+
 public function generateScholarsPdf(Request $request)
 {
     try {

@@ -161,4 +161,10 @@ class AnnouncementController extends Controller
             return $this->errorResponse('Failed to delete announcement: ' . $e->getMessage(), 500);
         }
     }
+
+    public function getScholarAnnouncements(Request $request)
+    {
+        $request->merge(['type' => 'scholars']);
+        return $this->index($request);
+    }
 }

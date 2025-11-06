@@ -39,6 +39,7 @@ Route::prefix('staging')->group(function () {
     // Scholar-specific routes
     Route::prefix('scholar')->middleware('auth:sanctum')->group(function () {
         Route::get('/profile', [AuthController::class, 'profile']);
+        Route::get('/announcements', [AnnouncementController::class, 'getScholarAnnouncements']);
     });
 });
 
