@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
@@ -1111,7 +1112,7 @@
             </div>
         </div>
 
-        <form id="updateRemarksForm" method="POST">
+<form id="updateRemarksForm" method="POST" action="">
             @csrf
             <input type="hidden" name="id" id="remarks_id">
             <input type="hidden" id="modal_mode" value="edit">
@@ -1358,7 +1359,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Other Income</label>
-                                <input type="number" step="0.01" name="other_income" id="other_income" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" placeholder="0.00">
+                                <input type="number" step="0.01" name="other_income" id="other_income" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" placeholder="0.00" oninput="calculateIncomes()">
                                 <p class="text-xs text-gray-500 mt-2">Additional income not from family members</p>
                             </div>
                             <div>
@@ -1379,35 +1380,37 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">House</label>
-                                <select name="house_house" id="house_house" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200">
+                                <select name="house_house" id="house_house" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" onchange="toggleHouseRent()">
                                     <option value="">Select</option>
                                     <option value="Owned">Owned</option>
-                                    <option value="Rent">Rent</option>
+                                    <option value="Rent">Rented</option>
                                 </select>
-                                <div id="house_rent_group" style="display: none;" class="mt-3">
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">House Rent</label>
-                                    <input type="number" step="0.01" name="house_rent" id="house_rent" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" placeholder="0.00">
-                                </div>
+<!-- In the House Rent field, fix the name attribute -->
+<div id="house_rent_group" style="display: none;" class="mt-3">
+    <label class="block text-sm font-semibold text-gray-700 mb-2">House Rent</label>
+    <!-- Change name from "hhouse_rent" to "house_rent" -->
+    <input type="number" step="0.01" name="house_rent" id="house_rent" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" placeholder="0.00" oninput="calculateIncomes()">
+</div>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Lot</label>
-                                <select name="house_lot" id="house_lot" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200">
+                                <select name="house_lot" id="house_lot" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" onchange="toggleLotRent()">
                                     <option value="">Select</option>
                                     <option value="Owned">Owned</option>
-                                    <option value="Rent">Rent</option>
+                                    <option value="Rent">Rented</option>
                                 </select>
                                 <div id="lot_rent_group" style="display: none;" class="mt-3">
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Lot Rent</label>
-                                    <input type="number" step="0.01" name="lot_rent" id="lot_rent" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" placeholder="0.00">
+                                    <input type="number" step="0.01" name="lot_rent" id="lot_rent" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" placeholder="0.00" oninput="calculateIncomes()">
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Water</label>
-                                <input type="number" step="0.01" name="house_water" id="house_water" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" placeholder="0.00">
+                                <input type="number" step="0.01" name="house_water" id="house_water" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" placeholder="0.00" oninput="calculateIncomes()">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Electric</label>
-                                <input type="number" step="0.01" name="house_electric" id="house_electric" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" placeholder="0.00">
+                                <input type="number" step="0.01" name="house_electric" id="house_electric" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200" placeholder="0.00" oninput="calculateIncomes()">
                             </div>
                         </div>
                     </div>
@@ -1444,7 +1447,7 @@
                         <i class="fas fa-arrow-left mr-2"></i>
                         Previous
                     </button>
-                    <button type="button" id="additional-next-btn" onclick="showTab('social-service')" class="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center" disabled>
+                    <button type="button" id="additional-next-btn" onclick="showTab('social-service')" class="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center">
                         Next
                         <i class="fas fa-arrow-right ml-2"></i>
                     </button>
@@ -1591,7 +1594,7 @@
                         <button type="button" onclick="saveAsDraft()" class="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-xl font-medium transition-all duration-200">
                             Save as Draft
                         </button>
-                        <button type="submit" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center">
+                        <button type="button" onclick="confirmSubmitForm()" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center">
                             <i class="fas fa-check mr-2"></i>
                             Submit Form
                         </button>
@@ -1971,56 +1974,174 @@ function debounce(func, wait) {
             }
 
             // Open Edit Remarks Modal
-            function openEditRemarksModal(button) {
-                const id = button.getAttribute("data-id");
-                const name = button.getAttribute("data-name");
-                const fname = button.getAttribute("data-fname");
-                const mname = button.getAttribute("data-mname");
-                const lname = button.getAttribute("data-lname");
-                const suffix = button.getAttribute("data-suffix");
-                const bdate = button.getAttribute("data-bdate");
-                const brgy = button.getAttribute("data-brgy");
-                const gender = button.getAttribute("data-gender");
-                const pob = button.getAttribute("data-pob");
+ // Open Edit Remarks Modal - UPDATED VERSION
+// IMPROVED openEditRemarksModal function
+function openEditRemarksModal(button) {
+    console.log('Opening modal for button:', button);
+    
+    try {
+        const id = button.getAttribute("data-id");
+        const name = button.getAttribute("data-name");
+        const fname = button.getAttribute("data-fname");
+        const mname = button.getAttribute("data-mname");
+        const lname = button.getAttribute("data-lname");
+        const suffix = button.getAttribute("data-suffix");
+        const bdate = button.getAttribute("data-bdate");
+        const brgy = button.getAttribute("data-brgy");
+        const gender = button.getAttribute("data-gender");
+        const pob = button.getAttribute("data-pob");
 
-                // Set the values in the modal form
-                document.getElementById('remarks_id').value = id;
-                document.getElementById('applicant_fname').value = fname || '';
-                document.getElementById('applicant_mname').value = mname || '';
-                document.getElementById('applicant_lname').value = lname || '';
-                document.getElementById('applicant_suffix').value = suffix || '';
-                document.getElementById('head_dob').value = bdate || '';
-                document.getElementById('head_barangay').value = brgy || '';
+        console.log('Applicant data:', { id, name, fname, brgy });
+            const form = document.getElementById('updateRemarksForm');
+    form.action = `/lydo_staff/update-intake-sheet/${id}`;
 
-                // Generate serial number and location
-                document.getElementById('serial_number').value = 'SN-' + Date.now();
+        // Set basic values in the modal form
+        document.getElementById('remarks_id').value = id || '';
+        document.getElementById('applicant_full_name').textContent = name || 'Applicant';
+        document.getElementById('applicant_fname').value = fname || '';
+        document.getElementById('applicant_mname').value = mname || '';
+        document.getElementById('applicant_lname').value = lname || '';
+        document.getElementById('applicant_suffix').value = suffix || '';
+        document.getElementById('head_dob').value = bdate || '';
+        document.getElementById('head_barangay').value = brgy || '';
+        
+        if (gender) {
+            document.getElementById('applicant_gender').value = gender;
+        }
 
+        // Generate serial number
+        document.getElementById('serial_number').value = 'SN-' + Date.now();
 
-                // Set current date for Date Entry
-                setCurrentDate();
+        // Set current date for Date Entry
+        setCurrentDate();
 
-                // Clear previous family members and service records
-                document.getElementById('family_members_tbody').innerHTML = '';
-                document.getElementById('rv_service_records_tbody').innerHTML = '';
+        // Clear previous data
+        document.getElementById('family_members_tbody').innerHTML = '';
+        document.getElementById('rv_service_records_tbody').innerHTML = '';
 
-                // Fetch existing intake sheet data and populate form
-                fetch(`/lydo_staff/intake-sheet/${id}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data) {
-                            populateEditModal(data);
-                        }
-                    })
-                    .catch(err => console.error('Error fetching intake sheet data:', err))
-                    .finally(() => {
-                        // Show the modal
-                        document.getElementById('editRemarksModal').classList.remove('hidden');
-                        document.body.classList.add('modal-open');
+        // Show the modal FIRST
+        const modal = document.getElementById('editRemarksModal');
+        if (!modal) {
+            throw new Error('Modal element not found');
+        }
+        
+        modal.classList.remove('hidden');
+        document.body.classList.add('modal-open');
 
-                        // Reset to first tab
-                        showTab('family');
-                    });
+        // Reset to first tab
+        showTab('family');
+
+        // Show loading message
+        Swal.fire({
+            title: 'Loading...',
+            text: 'Fetching intake sheet data',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
             }
+        });
+
+        // Fetch existing intake sheet data
+        fetch(`/lydo_staff/intake-sheet/${id}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                Swal.close();
+                console.log('Successfully fetched data:', data);
+                
+                if (data && Object.keys(data).length > 0) {
+                    populateEditModal(data);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Data Loaded!',
+                        text: 'Intake sheet data loaded successfully',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'New Intake Sheet',
+                        text: 'Starting new intake sheet form',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            })
+            .catch(err => {
+                Swal.close();
+                console.error('Error fetching intake sheet data:', err);
+                
+                // Show modal anyway with empty form
+                Swal.fire({
+                    icon: 'info',
+                    title: 'New Form',
+                    text: 'Starting new intake sheet. You can fill out the form now.',
+                    confirmButtonText: 'OK'
+                });
+            });
+
+    } catch (error) {
+        console.error('Error in openEditRemarksModal:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to open modal: ' + error.message,
+            confirmButtonText: 'OK'
+        });
+    }
+}
+
+// Helper function to reset modal form
+function resetModalForm() {
+    // Reset all form fields to default values
+    const defaultValues = {
+        'head_4ps': '',
+        'head_ipno': '',
+        'head_address': '',
+        'head_zone': '',
+        'head_pob': '',
+        'head_educ': '',
+        'head_occ': '',
+        'head_religion': '',
+        'other_income': '',
+        'house_house': '',
+        'house_rent': '',
+        'house_lot': '',
+        'lot_rent': '',
+        'house_water': '',
+        'house_electric': '',
+        'remarks': '',
+        'officer_name': '',
+        'signature_worker': '',
+        'signature_officer': ''
+    };
+
+    Object.keys(defaultValues).forEach(key => {
+        const element = document.getElementById(key);
+        if (element) {
+            element.value = defaultValues[key];
+        }
+    });
+
+    // Reset signature buttons
+    const signatureButtons = document.querySelectorAll('button[onclick*="openSignatureModal"]');
+    signatureButtons.forEach(button => {
+        const span = button.querySelector('span');
+        if (span) {
+            span.textContent = 'Click to Sign';
+        }
+        button.classList.remove('bg-green-100', 'hover:bg-green-200', 'text-green-800');
+        button.classList.add('bg-white', 'hover:bg-gray-50');
+    });
+
+    // Reset progress
+    updateProgress('family');
+}
 
             // Close Edit Remarks Modal
             function closeEditRemarksModal() {
@@ -2320,7 +2441,7 @@ function debounce(func, wait) {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td class="border px-2 py-1">
-                        <input type="text" name="family_member_name[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" placeholder="Full Name">
+                        <input type="text" name="family_member_name[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" placeholder="Full Name" oninput="calculateIncomes()">
                     </td>
                     <td class="border px-2 py-1">
                         <select name="family_member_relation[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
@@ -2374,7 +2495,7 @@ function debounce(func, wait) {
                         <input type="text" name="family_member_occupation[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" placeholder="Occupation">
                     </td>
                     <td class="border px-2 py-1">
-                        <input type="number" step="0.01" name="family_member_income[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" placeholder="0.00">
+                        <input type="number" step="0.01" name="family_member_income[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" placeholder="0.00" oninput="calculateIncomes()">
                     </td>
                     <td class="border px-2 py-1">
                         <select name="family_member_remarks[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
@@ -2390,7 +2511,7 @@ function debounce(func, wait) {
                         </select>
                     </td>
                     <td class="border px-2 py-1 text-center">
-                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors duration-200">
+                        <button type="button" onclick="this.parentElement.parentElement.remove(); calculateIncomes();" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors duration-200">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -2496,23 +2617,32 @@ function debounce(func, wait) {
                 });
             }
 
-            // Update the calculateIncomes function with proper calculation
+            // TODO PROCESS FOR ADDITIONAL INFO TAB - IMPLEMENTED
+            // Calculate Total Family Income, Expenses, and Net Income
             function calculateIncomes() {
-                // Calculate total family income from family members
+                console.log('Calculating incomes...');
+                
+                // 1. Calculate Total Family Income from Family Members
                 let totalFamilyIncome = 0;
                 const incomeInputs = document.querySelectorAll('input[name="family_member_income[]"]');
                 incomeInputs.forEach(input => {
-                    totalFamilyIncome += parseFloat(input.value) || 0;
+                    const incomeValue = parseFloat(input.value) || 0;
+                    totalFamilyIncome += incomeValue;
                 });
+                console.log('Total Family Income from members:', totalFamilyIncome);
 
-                // Add other income
+                // 2. Get Other Income and add to Total Income
                 const otherIncome = parseFloat(document.getElementById('other_income').value) || 0;
+                console.log('Other Income:', otherIncome);
+                
+                // 3. Calculate Total Income (Family Members Income + Other Income)
                 const houseTotalIncome = totalFamilyIncome + otherIncome;
+                console.log('Total Income (Family + Other):', houseTotalIncome);
                 
                 // Set total income
                 document.getElementById('house_total_income').value = houseTotalIncome.toFixed(2);
 
-                // Calculate expenses (house rent, lot rent, water, electric)
+                // 4. Calculate Total Expenses
                 const houseRent = parseFloat(document.getElementById('house_rent').value) || 0;
                 const lotRent = parseFloat(document.getElementById('lot_rent').value) || 0;
                 const houseWater = parseFloat(document.getElementById('house_water').value) || 0;
@@ -2520,114 +2650,76 @@ function debounce(func, wait) {
                 
                 // Total expenses (house rent + lot rent + water + electric)
                 const totalExpenses = houseRent + lotRent + houseWater + houseElectric;
+                console.log('Total Expenses:', totalExpenses);
                 
-                // Calculate net income (total income minus total expenses)
+                // 5. Calculate Net Income (Total Income - Total Expenses)
                 const netIncome = houseTotalIncome - totalExpenses;
+                console.log('Net Income:', netIncome);
                 
                 document.getElementById('house_net_income').value = netIncome.toFixed(2);
+
+                // 6. Enable the Next button (removed disabled attribute)
+                const additionalNextBtn = document.getElementById('additional-next-btn');
+                if (additionalNextBtn) {
+                    additionalNextBtn.disabled = false;
+                }
+            }
+
+            // Toggle house rent field visibility
+            function toggleHouseRent() {
+                const houseSelect = document.getElementById('house_house');
+                const houseRentGroup = document.getElementById('house_rent_group');
+                
+                if (houseSelect.value === 'Rent') {
+                    houseRentGroup.style.display = 'block';
+                } else {
+                    houseRentGroup.style.display = 'none';
+                    document.getElementById('house_rent').value = '';
+                }
+                calculateIncomes();
+            }
+
+            // Toggle lot rent field visibility
+            function toggleLotRent() {
+                const lotSelect = document.getElementById('house_lot');
+                const lotRentGroup = document.getElementById('lot_rent_group');
+                
+                if (lotSelect.value === 'Rent') {
+                    lotRentGroup.style.display = 'block';
+                } else {
+                    lotRentGroup.style.display = 'none';
+                    document.getElementById('lot_rent').value = '';
+                }
+                calculateIncomes();
             }
 
             // Form submission handling
-            document.addEventListener('DOMContentLoaded', function() {
-                // Set current date when page loads
-                setCurrentDate();
+// Debugging - Check if modal elements exist
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded - checking modal elements:');
+    console.log('editRemarksModal:', document.getElementById('editRemarksModal'));
+    console.log('openEditRemarksModal function:', typeof openEditRemarksModal);
 
-                // Add event listeners for house and lot toggles
- // FIX: Properly handle rent field display based on saved data
-const houseSelect = document.getElementById('house_house');
-const lotSelect = document.getElementById('house_lot');
-const houseRentGroup = document.getElementById('house_rent_group');
-const lotRentGroup = document.getElementById('lot_rent_group');
+    // Test if buttons have correct event listeners
+    const buttons = document.querySelectorAll('button[onclick*="openEditRemarksModal"]');
+    console.log('Found buttons:', buttons.length);
+    buttons.forEach((btn, index) => {
+        console.log(`Button ${index}:`, btn.getAttribute('onclick'));
+    });
+});
 
-// Show/hide house rent field based on saved value
-if (data.house_house === 'Rent') {
-    houseRentGroup.style.display = 'block';
-} else {
-    houseRentGroup.style.display = 'none';
-}
-
-// Show/hide lot rent field based on saved value
-if (data.house_lot === 'Rent') {
-    lotRentGroup.style.display = 'block';
-} else {
-    lotRentGroup.style.display = 'none';
-}
-
-// Trigger change events to ensure proper initialization
-if (houseSelect) {
-    houseSelect.dispatchEvent(new Event('change'));
-}
-if (lotSelect) {
-    lotSelect.dispatchEvent(new Event('change'));
-}
-
-               function toggleLotFields() {
-                    const value = lotSelect.value;
-                    if (value === 'Rent') {
-                        lotRentGroup.style.display = 'block';
-                    } else {
-                        lotRentGroup.style.display = 'none';
-                        document.getElementById('lot_rent').value = '';
-                        calculateIncomes(); // Recalculate when field changes
-                    }
-                }
-
-                if (houseSelect) {
-                    houseSelect.addEventListener('change', toggleHouseFields);
-                    // Initialize on page load
-                    toggleHouseFields();
-                }
-                if (lotSelect) {
-                    lotSelect.addEventListener('change', toggleLotFields);
-                    // Initialize on page load
-                    toggleLotFields();
-                }
-
-                // Add event listeners for all income and expense fields
-                document.addEventListener('input', function(e) {
-                    if (e.target.name === 'family_member_income[]' ||
-                        e.target.id === 'other_income' ||
-                        e.target.id === 'house_rent' ||
-                        e.target.id === 'lot_rent' ||
-                        e.target.id === 'house_water' ||
-                        e.target.id === 'house_electric') {
-                        calculateIncomes();
-                    }
-                });
-
-                // Enable/disable next button based on remarks selection
-                const remarksSelect = document.getElementById('remarks');
-                const additionalNextBtn = document.getElementById('additional-next-btn');
-
-                function checkRemarksSelection() {
-                    if (remarksSelect && remarksSelect.value) {
-                        additionalNextBtn.disabled = false;
-                        additionalNextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                        additionalNextBtn.classList.add('hover:bg-blue-700');
-                    } else {
-                        additionalNextBtn.disabled = true;
-                        additionalNextBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                        additionalNextBtn.classList.remove('hover:bg-blue-700');
-                    }
-                }
-
-                if (remarksSelect) {
-                    remarksSelect.addEventListener('change', checkRemarksSelection);
-                    // Initial check
-                    checkRemarksSelection();
-                }
-
-                // Add confirmation for modal form submit
-                const modalForm = document.getElementById('updateRemarksForm');
-                if (modalForm) {
-                    modalForm.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const selectedRemarks = document.getElementById('remarks').value;
-                        if (!selectedRemarks) {
-                            Swal.fire('Error', 'Please select a remark before updating.', 'error');
-                            return;
-                        }
-
+            // Updated confirmSubmitForm to use AJAX for better UX
+            function confirmSubmitForm() {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Do you want to submit this intake sheet? This action cannot be undone.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, submit it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
                         // Serialize family members data
                         let familyMembers = [];
                         const familyRows = document.querySelectorAll('#family_members_tbody tr');
@@ -2667,11 +2759,11 @@ if (lotSelect) {
                         document.getElementById('rv_service_records').value = JSON.stringify(serviceRecords);
 
                         const id = document.getElementById('remarks_id').value;
-                        modalForm.action = "/lydo_staff/update-intake-sheet/" + id;
+                        const formData = new FormData(document.getElementById('updateRemarksForm'));
 
                         // Show loading state
                         Swal.fire({
-                            title: 'Saving Intake Sheet',
+                            title: 'Submitting Intake Sheet',
                             text: 'Please wait...',
                             allowOutsideClick: false,
                             didOpen: () => {
@@ -2679,202 +2771,242 @@ if (lotSelect) {
                             }
                         });
 
-                        // Submit form via AJAX to handle errors better
-                        fetch(modalForm.action, {
+                        // Submit form via AJAX
+                        fetch(`/lydo_staff/update-intake-sheet/${id}`, {
                             method: 'POST',
-                            body: new FormData(modalForm),
+                            body: formData,
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest'
                             }
                         })
                         .then(response => {
                             if (!response.ok) {
+                                throw new Error('Network response was not ok');
                             }
-                            return response.text();
+                            return response.json();
                         })
                         .then(data => {
                             Swal.close();
 
                             // Check if response contains success message
-                            if (data.includes('success')) {
+                            if (data.success) {
                                 Swal.fire({
                                     icon: 'success',
-                                    title: 'Success!',
-                                    text: 'Intake sheet updated successfully!',
+                                    title: 'Intake Sheet Submitted!',
+                                    text: 'The intake sheet has been successfully submitted.',
                                     confirmButtonText: 'OK'
                                 }).then(() => {
+                                    // Close modal and reload page to stay on screening
                                     closeEditRemarksModal();
-                                    location.reload(); // Reload to reflect changes
+                                    location.reload();
                                 });
                             } else {
-                                throw new Error('Unexpected response');
+                                throw new Error(data.message || 'Unexpected response');
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Error',
-                                text: 'Failed to update intake sheet: ' + error.message,
+                                title: 'Submission Failed',
+                                text: 'Failed to submit intake sheet: ' + error.message,
                                 confirmButtonText: 'OK'
                             });
                         });
-                    });
-                }
-
-                // Add event listeners for real-time filtering
-                 document.getElementById('nameSearch').addEventListener('input', debounce(filterTable, 300));
-                document.getElementById('barangayFilter').addEventListener('change', filterTable);
-                document.getElementById('listNameSearch').addEventListener('input', debounce(filterList, 300));
-                document.getElementById('listBarangayFilter').addEventListener('change', filterList);
-
-                // Close modals when clicking outside
-                window.addEventListener('click', function(event) {
-                    const editModal = document.getElementById('editRemarksModal');
-                    const reviewModal = document.getElementById('reviewModal');
-                    
-                    if (event.target === editModal) {
-                        closeEditRemarksModal();
-                    }
-                    if (event.target === reviewModal) {
-                        closeReviewModal();
                     }
                 });
-
-                // Initial calculation
-                calculateIncomes();
-            });
+            }
 
             // Populate Edit Modal with existing data
- // Populate Edit Modal with existing data
+// UPDATED populateEditModal function
+// UPDATED populateEditModal function with proper field mapping
 function populateEditModal(data) {
-    // Populate head of family details
+    console.log('Populating modal with data:', data);
+    
+    if (!data) {
+        console.warn('No data provided to populateEditModal');
+        return;
+    }
 
-    console.log('Received data for populateEditModal:', data);
-    console.log('house_house:', data.house_house);
-    console.log('house_lot:', data.house_lot);
-    console.log('house_rent:', data.house_rent);
-    console.log('lot_rent:', data.lot_rent);
+    // Safe population function
+    function safeSetValue(elementId, value, defaultValue = '') {
+        const element = document.getElementById(elementId);
+        if (element && value !== undefined && value !== null) {
+            element.value = value;
+        } else if (element) {
+            element.value = defaultValue;
+        }
+    }
 
-    document.getElementById('head_4ps').value = data.head_4ps || '';
-    document.getElementById('head_ipno').value = data.head_ipno || '';
-    document.getElementById('head_address').value = data.head_address || '';
-    document.getElementById('head_zone').value = data.head_zone || '';
-    document.getElementById('head_educ').value = data.head_educ || '';
-    document.getElementById('head_occ').value = data.head_occ || '';
-    document.getElementById('head_religion').value = data.head_religion || '';
+    function safeSetSelect(elementId, value, defaultValue = '') {
+        const element = document.getElementById(elementId);
+        if (element && value !== undefined && value !== null) {
+            // Handle different value formats (Rented vs Rent)
+            if (value === 'Rented') {
+                element.value = 'Rent';
+            } else {
+                element.value = value;
+            }
+            // Trigger change event for select elements
+            element.dispatchEvent(new Event('change'));
+        } else if (element) {
+            element.value = defaultValue;
+        }
+    }
 
-    // Only populate Place of Birth and Gender if intake sheet has saved values
+    // Populate head of family details - SAFELY
+    safeSetSelect('head_4ps', data.head_4ps, '');
+    safeSetValue('head_ipno', data.head_ipno, '');
+    safeSetValue('head_address', data.head_address, '');
+    safeSetValue('head_zone', data.head_zone, '');
+    safeSetSelect('head_educ', data.head_educ, '');
+    safeSetSelect('head_occ', data.head_occ, '');
+    safeSetSelect('head_religion', data.head_religion, '');
+
+    // Only populate if data exists
     if (data.head_pob) {
-        document.getElementById('head_pob').value = data.head_pob;
+        safeSetValue('head_pob', data.head_pob);
     }
     if (data.applicant_gender) {
-        document.getElementById('applicant_gender').value = data.applicant_gender;
+        safeSetSelect('applicant_gender', data.applicant_gender);
     }
 
-    // Populate household information
-    document.getElementById('other_income').value = data.other_income || '';
-    document.getElementById('house_total_income').value = data.house_total_income || '';
-    document.getElementById('house_net_income').value = data.house_net_income || '';
-    document.getElementById('house_house').value = data.house_house || '';
-    document.getElementById('house_rent').value = data.house_rent || '';
-    document.getElementById('house_lot').value = data.house_lot || '';
-    document.getElementById('lot_rent').value = data.lot_rent || '';
-    document.getElementById('house_water').value = data.house_water || '';
-    document.getElementById('house_electric').value = data.house_electric || '';
+    // Populate household information - WITH PROPER FIELD MAPPING
+    safeSetValue('other_income', data.other_income, '0');
+    safeSetValue('house_total_income', data.house_total_income, '0');
+    safeSetValue('house_net_income', data.house_net_income, '0');
+    
+    // Handle house and lot with proper value mapping
+    safeSetSelect('house_house', data.house_house, '');
+    safeSetValue('house_rent', data.house_rent, '0');
+    safeSetSelect('house_lot', data.house_lot, '');
+    safeSetValue('lot_rent', data.lot_rent, '0');
+    safeSetValue('house_water', data.house_water, '0');
+    safeSetValue('house_electric', data.house_electric, '0');
 
-    // FIX: Properly handle rent field display based on saved data
+    // Handle conditional fields for house and lot - FIXED
     const houseSelect = document.getElementById('house_house');
     const lotSelect = document.getElementById('house_lot');
-    const houseRentGroup = document.getElementById('house_rent_group');
-    const lotRentGroup = document.getElementById('lot_rent_group');
 
-    // Show/hide house rent field based on saved value
-    if (data.house_house === 'Rent') {
-        houseRentGroup.style.display = 'block';
-    } else {
-        houseRentGroup.style.display = 'none';
+    // Show rent fields if data exists and value is 'Rent' or 'Rented'
+    if (data.house_house === 'Rent' || data.house_house === 'Rented') {
+        const houseRentGroup = document.getElementById('house_rent_group');
+        if (houseRentGroup) {
+            houseRentGroup.style.display = 'block';
+        }
+        // Ensure rent value is set
+        if (data.house_rent) {
+            document.getElementById('house_rent').value = data.house_rent;
+        }
     }
 
-    // Show/hide lot rent field based on saved value
-    if (data.house_lot === 'Rent') {
-        lotRentGroup.style.display = 'block';
-    } else {
-        lotRentGroup.style.display = 'none';
+    if (data.house_lot === 'Rent' || data.house_lot === 'Rented') {
+        const lotRentGroup = document.getElementById('lot_rent_group');
+        if (lotRentGroup) {
+            lotRentGroup.style.display = 'block';
+        }
+        // Ensure rent value is set
+        if (data.lot_rent) {
+            document.getElementById('lot_rent').value = data.lot_rent;
+        }
     }
 
     // Populate remarks
-    document.getElementById('remarks').value = data.remarks || '';
+    safeSetSelect('remarks', data.remarks, '');
 
     // Populate health & signatures
-    // Only overwrite worker_name if the intake record actually has a value.
-    // Otherwise keep the readonly session-provided name already rendered in the input.
     if (data.worker_name && String(data.worker_name).trim() !== '') {
-        document.getElementById('worker_name').value = data.worker_name;
+        safeSetValue('worker_name', data.worker_name);
     }
-    // Officer name may be edited every time — keep existing logic
     if (data.officer_name && String(data.officer_name).trim() !== '') {
-        document.getElementById('officer_name').value = data.officer_name;
+        safeSetValue('officer_name', data.officer_name);
     }
 
-    // Populate family members
+    // Populate family members - WITH ERROR HANDLING
     if (data.family_members) {
-        let familyMembers = data.family_members;
-        if (typeof familyMembers === 'string') {
-            try {
+        try {
+            let familyMembers = data.family_members;
+            if (typeof familyMembers === 'string') {
                 familyMembers = JSON.parse(familyMembers);
-            } catch (e) {
-                familyMembers = [];
             }
-        }
-        if (Array.isArray(familyMembers)) {
-            familyMembers.forEach(member => {
-                addFamilyMemberRow();
-                const rows = document.querySelectorAll('#family_members_tbody tr');
-                const lastRow = rows[rows.length - 1];
-                lastRow.cells[0].querySelector('input').value = member.name || '';
-                lastRow.cells[1].querySelector('select').value = member.relationship || member.relation || '';
-                lastRow.cells[2].querySelector('input').value = member.birthdate || member.birth || '';
-                lastRow.cells[3].querySelector('input').value = member.age || '';
-                lastRow.cells[4].querySelector('select').value = member.sex || '';
-                lastRow.cells[5].querySelector('select').value = member.civil_status || member.civil || '';
-                lastRow.cells[6].querySelector('select').value = member.education || member.educ || '';
-                lastRow.cells[7].querySelector('input').value = member.occupation || member.occ || '';
-                lastRow.cells[8].querySelector('input').value = member.monthly_income || member.income || '';
-                lastRow.cells[9].querySelector('select').value = member.remarks || '';
-            });
+            
+            if (Array.isArray(familyMembers) && familyMembers.length > 0) {
+                familyMembers.forEach(member => {
+                    addFamilyMemberRow();
+                    const rows = document.querySelectorAll('#family_members_tbody tr');
+                    const lastRow = rows[rows.length - 1];
+                    
+                    if (lastRow && lastRow.cells) {
+                        const cells = lastRow.cells;
+                        safeSetValueInCell(cells[0], member.name || member.Name || '');
+                        safeSetSelectInCell(cells[1], member.relationship || member.relation || '');
+                        safeSetValueInCell(cells[2], member.birthdate || member.birth || '');
+                        safeSetValueInCell(cells[3], member.age || '');
+                        safeSetSelectInCell(cells[4], member.sex || '');
+                        safeSetSelectInCell(cells[5], member.civil_status || member.civil || '');
+                        safeSetSelectInCell(cells[6], member.education || member.educ || '');
+                        safeSetValueInCell(cells[7], member.occupation || member.occ || '');
+                        safeSetValueInCell(cells[8], member.monthly_income || member.income || '0');
+                        safeSetSelectInCell(cells[9], member.remarks || '');
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Error parsing family members:', e);
         }
     }
 
-    // Populate service records
+    // Populate service records - WITH ERROR HANDLING
     if (data.rv_service_records) {
-        let serviceRecords = data.rv_service_records;
-        if (typeof serviceRecords === 'string') {
-            try {
+        try {
+            let serviceRecords = data.rv_service_records;
+            if (typeof serviceRecords === 'string') {
                 serviceRecords = JSON.parse(serviceRecords);
-            } catch (e) {
-                serviceRecords = [];
             }
-        }
-        if (Array.isArray(serviceRecords)) {
-            serviceRecords.forEach(record => {
-                addRvServiceRecordRow();
-                const rows = document.querySelectorAll('#rv_service_records_tbody tr');
-                const lastRow = rows[rows.length - 1];
-                // Only set the date if it's not already set to current date
-                if (!lastRow.cells[0].querySelector('input').value) {
-                    lastRow.cells[0].querySelector('input').value = record.date || '';
-                }
-                lastRow.cells[1].querySelector('input').value = record.problem || '';
-                lastRow.cells[2].querySelector('input').value = record.action || '';
-                lastRow.cells[3].querySelector('select').value = record.remarks || '';
-            });
+            
+            if (Array.isArray(serviceRecords) && serviceRecords.length > 0) {
+                serviceRecords.forEach(record => {
+                    addRvServiceRecordRow();
+                    const rows = document.querySelectorAll('#rv_service_records_tbody tr');
+                    const lastRow = rows[rows.length - 1];
+                    
+                    if (lastRow && lastRow.cells) {
+                        const cells = lastRow.cells;
+                        // Only set date if not empty
+                        if (record.date) {
+                            safeSetValueInCell(cells[0], record.date);
+                        }
+                        safeSetValueInCell(cells[1], record.problem || '');
+                        safeSetValueInCell(cells[2], record.action || '');
+                        safeSetSelectInCell(cells[3], record.remarks || '');
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Error parsing service records:', e);
         }
     }
 
     // Calculate incomes after populating data
-    setTimeout(calculateIncomes, 100);
+    setTimeout(calculateIncomes, 500);
+    
+    console.log('Modal populated successfully');
 }
+// Helper functions for cell population
+function safeSetValueInCell(cell, value) {
+    const input = cell.querySelector('input');
+    if (input) {
+        input.value = value || '';
+    }
+}
+
+function safeSetSelectInCell(cell, value) {
+    const select = cell.querySelector('select');
+    if (select) {
+        select.value = value || '';
+    }
+}
+
             // Signature modal variables
             let signaturePad = null;
             let currentSignatureType = '';
