@@ -1607,7 +1607,7 @@ public function updatePersonalInfo(Request $request, $id)
         // Save email message to database
         DB::table('tbl_document_email_messages')->insert([
             'application_personnel_id' => $request->application_personnel_id,
-            'email_content' => "Document update email sent for documents: " . implode(', ', $documentNames),
+            'email_content' => "Document update email sent for documents: Grade Slip",
             'sent_at' => now(),
             'created_at' => now(),
             'updated_at' => now()

@@ -13,6 +13,7 @@
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 </head>
 <style>
+
 /* Pagination Styles */
 .pagination {
     display: flex;
@@ -562,15 +563,23 @@
 
 <!-- Document Modal -->
 <div id="documentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-5 mx-auto p-6 border w-full max-w-4xl shadow-2xl rounded-xl bg-white max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 sticky top-0 bg-white">
+    <div class="relative top-1 mx-auto p-4 md:p-6 border w-full max-w-6xl shadow-2xl rounded-xl bg-white max-h-[98vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 sticky top-0 bg-white z-10">
             <h3 class="text-xl font-bold text-gray-900 flex items-center">
                 <i class="fas fa-file-alt text-blue-600 mr-3"></i>
                 Scholar Documents
+                <span id="currentDocIndicator" class="ml-3 text-sm font-normal text-gray-600 hidden">
+                    (Viewing: <span id="currentDocName" class="font-medium text-blue-600"></span>)
+                </span>
             </h3>
-            <button type="button" id="closeDocumentModal" class="text-gray-400 hover:text-gray-600 transition-colors">
-                <i class="fas fa-times text-xl"></i>
-            </button>
+            <div class="flex items-center space-x-2">
+                <button id="fullscreenBtn" class="text-gray-400 hover:text-gray-600 transition-colors p-2" title="Toggle Fullscreen">
+                    <i class="fas fa-expand text-lg"></i>
+                </button>
+                <button type="button" id="closeDocumentModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
         </div>
 
         <div class="space-y-6">
@@ -602,14 +611,17 @@
                 <h4 class="text-lg font-semibold text-gray-800 mb-4">Renewal Documents</h4>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Document 1: Certificate of Registration -->
-                    <div class="border border-gray-300 rounded-lg p-4 bg-white">
+                    <div class="border-2 border-gray-300 rounded-lg p-4 bg-white transition-all duration-300 hover:border-blue-300 document-container" data-doc-id="1">
                         <div class="flex justify-between items-center mb-3">
-                            <h5 class="font-semibold text-gray-700">Certificate of Registration</h5>
-                            <button id="expandDoc1" class="text-blue-600 hover:text-blue-800 text-sm" title="Expand Document">
+                            <h5 class="font-semibold text-gray-700 flex items-center">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded mr-2">1</span>
+                                Certificate of Registration
+                            </h5>
+                            <button id="expandDoc1" class="text-blue-600 hover:text-blue-800 text-sm transition-colors expand-btn" title="Expand Document">
                                 <i class="fas fa-expand"></i>
                             </button>
                         </div>
-                        <div id="doc1Preview" class="mb-3 min-h-[200px] max-h-[200px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden">
+                        <div id="doc1Preview" class="mb-3 min-h-[400px] max-h-[400px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300">
                             <span class="text-gray-500 text-sm">No document available</span>
                         </div>
                         <a id="doc1Download" href="#" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
@@ -618,14 +630,17 @@
                     </div>
 
                     <!-- Document 2: Grade Slip -->
-                    <div class="border border-gray-300 rounded-lg p-4 bg-white">
+                    <div class="border-2 border-gray-300 rounded-lg p-4 bg-white transition-all duration-300 hover:border-blue-300 document-container" data-doc-id="2">
                         <div class="flex justify-between items-center mb-3">
-                            <h5 class="font-semibold text-gray-700">Grade Slip</h5>
-                            <button id="expandDoc2" class="text-blue-600 hover:text-blue-800 text-sm" title="Expand Document">
+                            <h5 class="font-semibold text-gray-700 flex items-center">
+                                <span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded mr-2">2</span>
+                                Grade Slip
+                            </h5>
+                            <button id="expandDoc2" class="text-blue-600 hover:text-blue-800 text-sm transition-colors expand-btn" title="Expand Document">
                                 <i class="fas fa-expand"></i>
                             </button>
                         </div>
-                        <div id="doc2Preview" class="mb-3 min-h-[200px] max-h-[200px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden">
+                        <div id="doc2Preview" class="mb-3 min-h-[400px] max-h-[400px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300">
                             <span class="text-gray-500 text-sm">No document available</span>
                         </div>
                         <a id="doc2Download" href="#" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
@@ -634,14 +649,17 @@
                     </div>
 
                     <!-- Document 3: Barangay Indigency -->
-                    <div class="border border-gray-300 rounded-lg p-4 bg-white">
+                    <div class="border-2 border-gray-300 rounded-lg p-4 bg-white transition-all duration-300 hover:border-blue-300 document-container" data-doc-id="3">
                         <div class="flex justify-between items-center mb-3">
-                            <h5 class="font-semibold text-gray-700">Barangay Indigency</h5>
-                            <button id="expandDoc3" class="text-blue-600 hover:text-blue-800 text-sm" title="Expand Document">
+                            <h5 class="font-semibold text-gray-700 flex items-center">
+                                <span class="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-1 rounded mr-2">3</span>
+                                Barangay Indigency
+                            </h5>
+                            <button id="expandDoc3" class="text-blue-600 hover:text-blue-800 text-sm transition-colors expand-btn" title="Expand Document">
                                 <i class="fas fa-expand"></i>
                             </button>
                         </div>
-                        <div id="doc3Preview" class="mb-3 min-h-[200px] max-h-[200px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden">
+                        <div id="doc3Preview" class="mb-3 min-h-[200px] max-h-[200px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300">
                             <span class="text-gray-500 text-sm">No document available</span>
                         </div>
                         <a id="doc3Download" href="#" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
@@ -1067,6 +1085,8 @@ window.addEventListener('click', function(e) {
 
 // Document expand functionality
 document.addEventListener('DOMContentLoaded', function() {
+    let currentlyExpandedDoc = null; // Track which document is currently expanded
+
     // Expand button event listeners
     const expandButtons = ['expandDoc1', 'expandDoc2', 'expandDoc3'];
 
@@ -1074,41 +1094,60 @@ document.addEventListener('DOMContentLoaded', function() {
         const button = document.getElementById(buttonId);
         const preview = document.getElementById(`doc${index + 1}Preview`);
         const icon = button.querySelector('i');
+        const container = preview.closest('.border');
+        const documentsGrid = container.closest('.grid');
+        const modal = document.getElementById('documentModal');
 
-        // Set initial expanded state
-        preview.classList.add('expanded');
-        preview.style.maxHeight = '600px';
-        icon.className = 'fas fa-compress';
-        button.title = 'Collapse Document';
+        // Set initial collapsed state
+        preview.classList.remove('expanded');
+        preview.style.maxHeight = '200px';
+        icon.className = 'fas fa-expand';
+        button.title = 'Expand Document';
 
         button.addEventListener('click', function() {
             const isExpanded = preview.classList.contains('expanded');
-            const container = preview.closest('.border');
-            const documentsGrid = container.closest('.grid');
-            const modal = document.getElementById('documentModal');
 
             if (isExpanded) {
-                // Collapse
+                // Collapse current document
                 preview.classList.remove('expanded');
-                preview.style.maxHeight = '200px';
+                preview.style.maxHeight = '800px';
                 container.classList.remove('md:col-span-3', 'col-span-1');
                 documentsGrid.classList.remove('grid-cols-1');
                 documentsGrid.classList.add('md:grid-cols-3');
                 modal.classList.add('max-h-[90vh]');
                 modal.classList.remove('max-h-screen');
+                modal.style.maxHeight = '';
                 icon.className = 'fas fa-expand';
                 button.title = 'Expand Document';
+                currentlyExpandedDoc = null;
             } else {
-                // Expand - make it full width and allow full height
+                // If another document is expanded, collapse it first
+                if (currentlyExpandedDoc && currentlyExpandedDoc !== index) {
+                    const prevButton = document.getElementById(`expandDoc${currentlyExpandedDoc + 1}`);
+                    const prevPreview = document.getElementById(`doc${currentlyExpandedDoc + 1}Preview`);
+                    const prevContainer = prevPreview.closest('.border');
+                    const prevIcon = prevButton.querySelector('i');
+
+                    prevPreview.classList.remove('expanded');
+                    prevPreview.style.maxHeight = '200px';
+                    prevContainer.classList.remove('md:col-span-3', 'col-span-1');
+                    modal.classList.add('max-h-[90vh]');
+                    modal.style.maxHeight = '';
+                    prevIcon.className = 'fas fa-expand';
+                    prevButton.title = 'Expand Document';
+                }
+
+                // Expand current document
                 preview.classList.add('expanded');
                 preview.style.maxHeight = 'none';
                 container.classList.add('md:col-span-3', 'col-span-1');
                 documentsGrid.classList.remove('md:grid-cols-3');
                 documentsGrid.classList.add('grid-cols-1');
-                modal.classList.remove('max-h-[90vh]');
-                modal.classList.add('max-h-screen');
+                modal.classList.remove('max-h-[900vh]');
+                modal.style.maxHeight = 'none';
                 icon.className = 'fas fa-compress';
                 button.title = 'Collapse Document';
+                currentlyExpandedDoc = index;
             }
         });
     });
