@@ -497,7 +497,7 @@
                     <div class="p-2 md:p-4 border-t">
                         <form method="POST" action="{{ route('logout') }}" id="logoutForm">
                             @csrf
-                                <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
+                                <button type="button" onclick="confirmLogout()" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
                                     <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
                                     <span class="hidden md:block text-red-600">Logout</span>
                                 </button>
@@ -1913,6 +1913,24 @@ function printCurrentTable() {
         printWindow.close();
     };
 }
+
+// Logout confirmation function
+function confirmLogout() {
+    Swal.fire({
+        title: 'Are you sure you want to log out?',
+        text: 'You will be redirected to the login page.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#EF4444',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: 'Yes, Log Out',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('logoutForm').submit();
+        }
+    });
+}
     </script>
 
 <script>
@@ -1930,7 +1948,6 @@ function printCurrentTable() {
         }
     });
 </script>
-// ...existing code...
 <script>
 function toggleDropdown(id) {
     const el = document.getElementById(id);
@@ -1989,6 +2006,5 @@ if (document.readyState === 'loading') {
     initializeSidebarDropdown();
 }
 </script>
-// ...existing code...
 </body>
 </html>
