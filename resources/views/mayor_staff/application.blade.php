@@ -1154,41 +1154,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
             function checkAllDocumentsRated() {
                 const documentTypes = ['application_letter', 'cert_of_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
-                
+
                 if (ratedDocuments && ratedDocuments.size === 5) {
-                    // Count good, bad, and updated documents
-                    let goodCount = 0;
-                    let badCount = 0;
-                    let updatedCount = updatedDocuments ? updatedDocuments.size : 0;
-                    
-                    documentTypes.forEach(docType => {
-                        // We'll check the actual status from the database
-                        const applicationPersonnelId = currentApplicationId;
-                        
-                        // Make an API call to get the actual status
-                        fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    const statuses = data.statuses || {};
+                    // Make a single API call to get all statuses
+                    const applicationPersonnelId = currentApplicationId;
+
+                    fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const statuses = data.statuses || {};
+                                let goodCount = 0;
+                                let badCount = 0;
+                                let updatedCount = updatedDocuments ? updatedDocuments.size : 0;
+
+                                // Count good and bad documents from the response
+                                documentTypes.forEach(docType => {
                                     const status = statuses[`${docType}_status`];
-                                    
                                     if (status === 'good') {
                                         goodCount++;
                                     } else if (status === 'bad') {
                                         badCount++;
                                     }
-                                    
-                                    // After checking all documents, update the UI
-                                    if (goodCount + badCount === 5) {
-                                        updateActionButtons(goodCount, badCount, updatedCount);
-                                    }
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error checking document status:', error);
-                            });
-                    });
+                                });
+
+                                console.log(`Final counts - Good: ${goodCount}, Bad: ${badCount}, Updated: ${updatedCount}`);
+
+                                // Update the action buttons based on the counts
+                                updateActionButtons(goodCount, badCount, updatedCount);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error checking document status:', error);
+                        });
                 } else {
                     console.log(`Not all documents rated: ${ratedDocuments ? ratedDocuments.size : 0}/5`);
                 }
@@ -1197,29 +1195,29 @@ document.addEventListener('DOMContentLoaded', function() {
             // MODIFIED: Function to update action buttons with new logic
             function updateActionButtons(goodCount, badCount, updatedCount = 0) {
                 console.log(`Good: ${goodCount}, Bad: ${badCount}, Updated: ${updatedCount}`);
-                
+
                 // Show action buttons
                 const actionButtons = document.getElementById('actionButtons');
                 const approveBtn = document.getElementById('approveBtn');
                 const rejectBtn = document.getElementById('rejectBtn');
                 const sendEmailBtn = document.getElementById('sendEmailBtn');
-                
+
                 actionButtons.classList.remove('hidden');
                 document.getElementById('reviewMessage').style.display = 'none';
-                
-                // NEW LOGIC: Always show reject button, but conditionally show approve button
-                if (badCount > 0 || updatedCount > 0) {
-                    // If there are bad documents OR updated documents, hide approve button
+
+                // Show buttons based on document status
+                if (goodCount === 5) {
+                    // All documents are good - show only approve button
+                    approveBtn.style.display = 'flex';
+                    rejectBtn.style.display = 'none';
+                    sendEmailBtn.style.display = 'none';
+                    console.log('All documents good - showing only Approve button');
+                } else {
+                    // There are bad documents - show reject and send email buttons
                     approveBtn.style.display = 'none';
                     rejectBtn.style.display = 'flex';
                     sendEmailBtn.style.display = 'flex';
-                    console.log('Bad or updated documents found - showing Reject button only');
-                } else {
-                    // If all documents are good and no updates, show both buttons
-                    approveBtn.style.display = 'flex';
-                    rejectBtn.style.display = 'flex'; // ALWAYS show reject button
-                    sendEmailBtn.style.display = 'flex';
-                    console.log('All documents good - showing both Approve and Reject buttons');
+                    console.log('Not all documents good - showing Reject and Send Email buttons');
                 }
             }
 
@@ -1236,26 +1234,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     cancelButtonText: 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Save status
-                        saveDocumentStatus(documentType, 'good');
-                        
-                        // Track that this document has been rated
-                        trackRatedDocument(documentType);
-                        
-                        // Remove from updated documents if it was there
-                        if (updatedDocuments && updatedDocuments.has(documentType)) {
-                            updatedDocuments.delete(documentType);
-                        }
-                        
-                        // Update the badge - remove NEW and show Good
-                        updateDocumentBadges(documentType, 'good', false);
-                        
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Document marked as good.',
-                            icon: 'success',
-                            showConfirmButton: true,
-                            allowOutsideClick: false
+                        // Save status and wait for it to complete
+                        saveDocumentStatus(documentType, 'good')
+                        .then(() => {
+                            // Track that this document has been rated
+                            trackRatedDocument(documentType);
+
+                            // Remove from updated documents if it was there
+                            if (updatedDocuments && updatedDocuments.has(documentType)) {
+                                updatedDocuments.delete(documentType);
+                            }
+
+                            // Update the badge - remove NEW and show Good
+                            updateDocumentBadges(documentType, 'good', false);
+
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Document marked as good.',
+                                icon: 'success',
+                                showConfirmButton: true,
+                                allowOutsideClick: false
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error saving status:', error);
+                            Swal.fire('Error', 'Failed to save document status.', 'error');
                         });
                     }
                 });
@@ -1301,10 +1304,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             function saveDocumentStatus(documentType, status) {
                 const applicationPersonnelId = currentApplicationId;
-                
+
                 console.log('Saving status:', { applicationPersonnelId, documentType, status });
 
-                fetch('/mayor_staff/save-document-status', {
+                return fetch('/mayor_staff/save-document-status', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1323,19 +1326,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Save status response:', data);
                     if (!data.success) {
-                        console.error('Failed to save status:', data.message);
-                        Swal.fire('Error', 'Failed to save document status.', 'error');
-                    } else {
-                        console.log('Status saved successfully');
-                        // Update the UI in the document modal
-                        updateDocumentModalUI(documentType);
+                        throw new Error(data.message || 'Failed to save status');
                     }
-                })
-                .catch(error => {
-                    console.error('Error saving status:', error);
-                    Swal.fire('Error', 'Failed to save document status.', 'error');
+                    console.log('Status saved successfully');
+                    // Update the UI in the document modal
+                    updateDocumentModalUI(documentType);
+                    return data;
                 });
             }
 
@@ -2266,7 +2263,7 @@ function goToPage(viewType, page) {
 
 
 </script>
-<script src="{{ asset('js/spinner.js') }}"></script>
+<script src="{{ asset('js/app_spinner.js') }}"></script>
 
     </body>
     </html>
