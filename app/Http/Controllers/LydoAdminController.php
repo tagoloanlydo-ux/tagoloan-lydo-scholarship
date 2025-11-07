@@ -171,47 +171,49 @@ class LydoAdminController extends Controller
             'schoolDistribution'
         ));
     }
-    public function lydo()
-    {
-        $notifications = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select(
-                'tbl_applicant.applicant_fname as name',
-                'tbl_application_personnel.status as status',
-                'tbl_application_personnel.updated_at as created_at',
-                DB::raw("'application' as type")
-            )
-            ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-            
-            ->unionAll(
-                DB::table('tbl_renewal')
-                    ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                    ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                    ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                    ->select(
-                        'tbl_applicant.applicant_fname as name',
-                        'tbl_renewal.renewal_status as status',
-                        'tbl_renewal.updated_at as created_at',
-                        DB::raw("'renewal' as type")
-                    )
-                    ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-            )
-            ->orderBy('created_at', 'desc')
-            ->get(); 
+public function lydo()
+{
+    $notifications = DB::table('tbl_application_personnel')
+        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
+        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+        ->select(
+            'tbl_applicant.applicant_fname as name',
+            'tbl_application_personnel.status as status',
+            'tbl_application_personnel.updated_at as created_at',
+            DB::raw("'application' as type")
+        )
+        ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
+        
+        ->unionAll(
+            DB::table('tbl_renewal')
+                ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
+                ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
+                ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+                ->select(
+                    'tbl_applicant.applicant_fname as name',
+                    'tbl_renewal.renewal_status as status',
+                    'tbl_renewal.updated_at as created_at',
+                    DB::raw("'renewal' as type")
+                )
+                ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
+        )
+        ->orderBy('created_at', 'desc')
+        ->get(); 
 
-        $inactiveStaff = DB::table('tbl_lydopers')
-            ->where('lydopers_role', 'lydo_staff')
-            ->where('lydopers_status', 'inactive')
-            ->get();
+    // Change from get() to paginate()
+    $inactiveStaff = DB::table('tbl_lydopers')
+        ->where('lydopers_role', 'lydo_staff')
+        ->where('lydopers_status', 'inactive')
+        ->paginate(15); // Add pagination
 
-        $activeStaff = DB::table('tbl_lydopers')
-            ->where('lydopers_role', 'lydo_staff')
-            ->where('lydopers_status', 'active')
-            ->get();
+    // Change from get() to paginate()
+    $activeStaff = DB::table('tbl_lydopers')
+        ->where('lydopers_role', 'lydo_staff')
+        ->where('lydopers_status', 'active')
+        ->paginate(15); // Add pagination
 
-        return view('lydo_admin.lydo', compact('notifications', 'inactiveStaff', 'activeStaff'));
-    }
+    return view('lydo_admin.lydo', compact('notifications', 'inactiveStaff', 'activeStaff'));
+}
 
    
     public function toggleStatus($id)
