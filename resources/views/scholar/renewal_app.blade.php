@@ -221,9 +221,9 @@
                 <div class="p-6 border-b">
                     <div class="flex justify-between items-center">
                         <h3 class="text-2xl font-bold text-violet-700">Renewal Application Form</h3>
-                        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-                            <i class="fa-solid fa-times text-2xl"></i>
-                        </button>
+                        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition duration-200">
+    <i class="fa-solid fa-times text-2xl"></i>
+</button>
                     </div>
                 </div>
 
@@ -240,12 +240,9 @@
                         <!-- Semester -->
                         <div>
                             <label for="renewal_semester" class="block text-sm font-semibold text-gray-800 mb-2">Semester</label>
-                            <select name="renewal_semester" id="renewal_semester" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent bg-white shadow-sm">
-                                <option value="">Select Semester</option>
-                                <option value="1st Semester" {{ ($renewal ? $renewal->renewal_semester : $settings->renewal_semester) == '1st Semester' ? 'selected' : '' }}>1st Semester</option>
-                                <option value="2nd Semester" {{ ($renewal ? $renewal->renewal_semester : $settings->renewal_semester) == '2nd Semester' ? 'selected' : '' }}>2nd Semester</option>
-                                <option value="Summer" {{ ($renewal ? $renewal->renewal_semester : $settings->renewal_semester) == 'Summer' ? 'selected' : '' }}>Summer</option>
-                            </select>
+                            <input type="text" name="renewal_semester" id="renewal_semester" required readonly
+                                value="{{ $settings->renewal_semester ?? '1st Semester' }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed shadow-sm">
                         </div>
 
                         <!-- Academic Year -->
@@ -259,14 +256,8 @@
                         <!-- Year Level -->
                         <div>
                             <label for="applicant_year_level" class="block text-sm font-semibold text-gray-800 mb-2">Year Level</label>
-                            <select name="applicant_year_level" id="applicant_year_level" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent bg-white shadow-sm">
-                                <option value="">Select Year Level</option>
-                                <option value="1st Year" {{ $renewal && session('scholar')->applicant->applicant_year_level == '1st Year' ? 'selected' : '' }}>1st Year</option>
-                                <option value="2nd Year" {{ $renewal && session('scholar')->applicant->applicant_year_level == '2nd Year' ? 'selected' : '' }}>2nd Year</option>
-                                <option value="3rd Year" {{ $renewal && session('scholar')->applicant->applicant_year_level == '3rd Year' ? 'selected' : '' }}>3rd Year</option>
-                                <option value="4th Year" {{ $renewal && session('scholar')->applicant->applicant_year_level == '4th Year' ? 'selected' : '' }}>4th Year</option>
-                                <option value="5th Year" {{ $renewal && session('scholar')->applicant->applicant_year_level == '5th Year' ? 'selected' : '' }}>5th Year</option>
-                            </select>
+                            <input type="text" name="applicant_year_level" id="applicant_year_level" required readonly
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed shadow-sm">
                         </div>
                     </div>
 
@@ -399,7 +390,7 @@
     </script>
 
     <script>
- // Sa openModal function, dagdag ng validation
+// Modal functions
 function openModal() {
     // Check if scholar has approved renewal for current academic year
     const hasApprovedRenewal = {{ $hasApprovedRenewal ? 'true' : 'false' }};
@@ -416,7 +407,26 @@ function openModal() {
     }
     
     document.getElementById('renewalModal').classList.remove('hidden');
-    setCurrentAcademicYear();
+    setCurrentAcademicYearAndYearLevel();
+}
+
+function closeModal() {
+    document.getElementById('renewalModal').classList.add('hidden');
+    
+    // Reset form validation states
+    resetFormValidation();
+}
+
+// Reset form validation when closing modal
+function resetFormValidation() {
+    const errorDivs = document.querySelectorAll('[id$="_error"]');
+    errorDivs.forEach(div => {
+        div.classList.add('hidden');
+    });
+    
+    const submitButton = document.querySelector('button[type="submit"]');
+    submitButton.disabled = false;
+    submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
 }
         // Set current academic year
         function setCurrentAcademicYear() {
@@ -497,16 +507,24 @@ function openModal() {
         });
 
         // Initial validation check
-        document.addEventListener('DOMContentLoaded', function() {
-            checkFormValidation();
-
-            // Check if renewal status is approved and change button to blue
-            @if($renewal && $renewal->renewal_status == 'Approved')
-                const renewalButton = document.getElementById('renewalButton');
-                renewalButton.classList.remove('bg-violet-600', 'hover:bg-violet-700');
-                renewalButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
-            @endif
-        });
+// Close modal when clicking outside or pressing ESC
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('renewalModal');
+    
+    // Close when clicking outside modal content
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+    
+    // Close when pressing ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+});
 
         // Handle form submission success and reset button text
         document.querySelector('form').addEventListener('submit', function(e) {
@@ -530,6 +548,89 @@ function openModal() {
                 }, 1000);
             };
         });
+// Improved version with better year level calculation
+function setCurrentAcademicYearAndYearLevel() {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    let academicYear;
+    if (currentMonth >= 6) { // June onwards
+        academicYear = currentYear + '-' + (currentYear + 1);
+    } else { // Before June
+        academicYear = (currentYear - 1) + '-' + currentYear;
+    }
+
+    document.getElementById('renewal_acad_year').value = academicYear;
+    
+    // Calculate year level
+    calculateYearLevel(academicYear);
+}
+
+function calculateYearLevel(currentAcademicYear) {
+    const startingAcademicYear = "{{ session('scholar')->applicant->applicant_acad_year }}";
+    const startingYearLevel = "{{ session('scholar')->applicant->applicant_year_level }}";
+    
+    // Parse academic years
+    const [startYear1, startYear2] = startingAcademicYear.split('-').map(Number);
+    const [currentYear1, currentYear2] = currentAcademicYear.split('-').map(Number);
+    
+    // Calculate total years of study
+    let yearsOfStudy;
+    
+    if (currentMonth >= 6) {
+        // If current month is June or later, count from startYear1
+        yearsOfStudy = currentYear1 - startYear1 + 1;
+    } else {
+        // If current month is before June, count from startYear1 but adjust
+        yearsOfStudy = currentYear1 - startYear1;
+    }
+    
+    // Map to year levels
+    const yearLevelMap = {
+        1: '1st Year',
+        2: '2nd Year', 
+        3: '3rd Year',
+        4: '4th Year',
+        5: '5th Year'
+    };
+    
+    const yearLevel = yearLevelMap[yearsOfStudy] || '5th Year';
+    document.getElementById('applicant_year_level').value = yearLevel;
+}
+
+// Calculate year level based on starting academic year
+function calculateYearLevel(currentAcademicYear) {
+    // Get the scholar's starting academic year from the database
+    const startingAcademicYear = "{{ session('scholar')->applicant->applicant_acad_year ?? '2024-2025' }}";
+    const startingYearLevel = "{{ session('scholar')->applicant->applicant_year_level ?? '1st Year' }}";
+    
+    // Extract years from academic year strings
+    const startYear = parseInt(startingAcademicYear.split('-')[0]);
+    const currentYear = parseInt(currentAcademicYear.split('-')[0]);
+    
+    // Calculate year difference
+    const yearDifference = currentYear - startYear;
+    
+    // Map year levels
+    const yearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
+    
+    // Find starting index
+    const startIndex = yearLevels.indexOf(startingYearLevel);
+    
+    if (startIndex !== -1) {
+        const newIndex = startIndex + yearDifference;
+        if (newIndex < yearLevels.length) {
+            document.getElementById('applicant_year_level').value = yearLevels[newIndex];
+        } else {
+            // If beyond 5th year, show maximum
+            document.getElementById('applicant_year_level').value = '5th Year';
+        }
+    } else {
+        // Fallback calculation
+        document.getElementById('applicant_year_level').value = yearLevels[yearDifference] || '2nd Year';
+    }
+}
     </script>
 </body>
 

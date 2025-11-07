@@ -362,19 +362,38 @@ public function showRenewalApp()
             ? $currentYear . '-' . ($currentYear + 1)
             : ($currentYear - 1) . '-' . $currentYear;
 
-        // Check if renewal exists for current academic year
+        // Get the renewal semester from settings
+        $renewalSemester = $settings->renewal_semester ?? '1st Semester';
+
+        // Check if renewal exists for current academic year AND the same semester
         $renewal = \App\Models\Renewal::where('scholar_id', $scholar->scholar_id)
             ->where('renewal_acad_year', $academicYear)
+            ->where('renewal_semester', $renewalSemester)
             ->first();
 
-        // Check if there's an APPROVED renewal for current academic year
+        // Check if there's an APPROVED renewal for current academic year AND the same semester
         $approvedRenewalExists = \App\Models\Renewal::where('scholar_id', $scholar->scholar_id)
             ->where('renewal_acad_year', $academicYear)
+            ->where('renewal_semester', $renewalSemester)
             ->where('renewal_status', 'Approved')
             ->exists();
     }
 
     return view('scholar.renewal_app', compact('renewal', 'settings', 'approvedRenewalExists'));
+}
+
+// Add this helper method to determine current semester
+private function getCurrentSemester()
+{
+    $month = now()->month;
+    
+    if ($month >= 1 && $month <= 5) {
+        return '2nd Semester'; // January to May
+    } elseif ($month >= 6 && $month <= 10) {
+        return '1st Semester'; // June to October
+    } else {
+        return 'Summer'; // November to December
+    }
 }
 public function submitRenewal(Request $request)
 {
@@ -408,6 +427,17 @@ public function submitRenewal(Request $request)
         return redirect()->route('scholar.login')->withErrors(['error' => 'Please login to submit renewal.']);
     }
 
+    // Check if scholar already has an APPROVED renewal for the same academic year AND semester
+    $existingApprovedRenewal = \App\Models\Renewal::where('scholar_id', $scholar->scholar_id)
+        ->where('renewal_acad_year', $request->renewal_acad_year)
+        ->where('renewal_semester', $request->renewal_semester)
+        ->where('renewal_status', 'Approved')
+        ->exists();
+
+    if ($existingApprovedRenewal && !$isUpdate) {
+        return redirect()->back()->withErrors(['error' => 'You already have an approved renewal for ' . $request->renewal_semester . ' of Academic Year ' . $request->renewal_acad_year . '.']);
+    }
+
     // Check renewal deadline
     $settings = \App\Models\Settings::first();
     $now = now();
@@ -430,6 +460,7 @@ public function submitRenewal(Request $request)
     $applicant->applicant_year_level = $request->input('applicant_year_level');
     $applicant->save();
 
+    // ... rest of your existing code for handling the renewal submission/update
     if ($isUpdate) {
         // Update existing renewal
         $renewal = \App\Models\Renewal::find($request->renewal_id);
