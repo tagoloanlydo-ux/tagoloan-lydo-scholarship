@@ -1197,29 +1197,35 @@ document.addEventListener('DOMContentLoaded', function() {
             // MODIFIED: Function to update action buttons with new logic
             function updateActionButtons(goodCount, badCount, updatedCount = 0) {
                 console.log(`Good: ${goodCount}, Bad: ${badCount}, Updated: ${updatedCount}`);
-                
+
                 // Show action buttons
                 const actionButtons = document.getElementById('actionButtons');
                 const approveBtn = document.getElementById('approveBtn');
                 const rejectBtn = document.getElementById('rejectBtn');
                 const sendEmailBtn = document.getElementById('sendEmailBtn');
-                
+
                 actionButtons.classList.remove('hidden');
                 document.getElementById('reviewMessage').style.display = 'none';
-                
-                // NEW LOGIC: Always show reject button, but conditionally show approve button
+
+                // NEW LOGIC: Show buttons based on document status
                 if (badCount > 0 || updatedCount > 0) {
-                    // If there are bad documents OR updated documents, hide approve button
+                    // If there are bad documents OR updated documents, show reject and send email buttons
                     approveBtn.style.display = 'none';
                     rejectBtn.style.display = 'flex';
                     sendEmailBtn.style.display = 'flex';
-                    console.log('Bad or updated documents found - showing Reject button only');
-                } else {
-                    // If all documents are good and no updates, show both buttons
+                    console.log('Bad or updated documents found - showing Reject and Send Email buttons');
+                } else if (goodCount === 5) {
+                    // If all 5 documents are good, show only approve button
                     approveBtn.style.display = 'flex';
-                    rejectBtn.style.display = 'flex'; // ALWAYS show reject button
-                    sendEmailBtn.style.display = 'flex';
-                    console.log('All documents good - showing both Approve and Reject buttons');
+                    rejectBtn.style.display = 'none';
+                    sendEmailBtn.style.display = 'none';
+                    console.log('All documents good - showing only Approve button');
+                } else {
+                    // If not all documents are rated yet, hide all buttons
+                    approveBtn.style.display = 'none';
+                    rejectBtn.style.display = 'none';
+                    sendEmailBtn.style.display = 'none';
+                    console.log('Not all documents rated - hiding all buttons');
                 }
             }
 
