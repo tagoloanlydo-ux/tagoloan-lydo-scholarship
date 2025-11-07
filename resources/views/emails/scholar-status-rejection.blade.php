@@ -3,74 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scholarship Application Rejection - LYDO Scholarship</title>
+    <title>Scholarship Application Update</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
             max-width: 600px;
             margin: 0 auto;
+            background-color: #f4f4f4;
             padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
         .header {
-            background-color: #dc3545;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
             color: white;
-            padding: 20px;
+            padding: 30px 20px;
             text-align: center;
-            border-radius: 5px 5px 0 0;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
         }
         .content {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 0 0 5px 5px;
+            padding: 30px 20px;
         }
-        .reason-box {
-            background-color: #fff;
-            border-left: 4px solid #dc3545;
-            padding: 15px;
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 20px;
+        }
+        .message {
+            background-color: #fef2f2;
+            border-left: 4px solid #dc2626;
+            padding: 20px;
             margin: 20px 0;
-            border-radius: 3px;
+            border-radius: 4px;
+        }
+        .reason-section {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .reason-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .reason-text {
+            background-color: white;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 15px;
+            color: #4b5563;
+            line-height: 1.5;
         }
         .footer {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #dee2e6;
-            font-size: 12px;
-            color: #6c757d;
+            background-color: #f9fafb;
+            padding: 20px;
             text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer-text {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 0;
+        }
+        .contact-info {
+            background-color: #f3f4f6;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .contact-info p {
+            margin: 5px 0;
+            color: #374151;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo img {
+            max-width: 120px;
+            height: auto;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>LYDO Scholarship</h1>
-        <h2>Application Status Update</h2>
-    </div>
-
-    <div class="content">
-        <p>Dear {{ $applicant_fname }} {{ $applicant_lname }},</p>
-
-        <p>After careful review of your scholarship application, we regret to inform you that you are not applicable to become a LYDO scholar at this time.</p>
-
-        <div class="reason-box">
-            <strong>Reason:</strong><br>
-            {{ $reason }}
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <img src="{{ asset('images/LYDO.png') }}" alt="LYDO Scholarship Logo">
+            </div>
+            <h1>Scholarship Application Update</h1>
         </div>
 
-        <p>We appreciate your interest in the LYDO Scholarship program and encourage you to consider other educational opportunities that may be available to you.</p>
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">
+                Dear {{ $applicant_fname }} {{ $applicant_lname }},
+            </div>
 
-        <p>If you believe this decision was made in error or if you have additional information that may support your application, please contact us for further assistance.</p>
+            <div class="message">
+                <p>We regret to inform you that after careful review of your scholarship application, we are unable to approve your request at this time.</p>
+            </div>
 
-        <p>Thank you for your understanding.</p>
+            <div class="reason-section">
+                <span class="reason-label">Reason for Rejection:</span>
+                <div class="reason-text">
+                    {{ $reason }}
+                </div>
+            </div>
 
-        <p>Best regards,<br>
-        LYDO Scholarship Committee</p>
-    </div>
+            <p>We appreciate your interest in the LYDO Scholarship Program and encourage you to consider reapplying in future application cycles when you meet the eligibility requirements.</p>
 
-    <div class="footer">
-        <p>This is an automated message. Please do not reply to this email.</p>
-        <p>For inquiries, contact us at support@lydoscholarship.com</p>
+            <p>If you have any questions about this decision or need clarification regarding the rejection reason, please don't hesitate to contact our office.</p>
+
+            <div class="contact-info">
+                <p><strong>LYDO Scholarship Office</strong></p>
+                <p>Tagoloan, Misamis Oriental</p>
+                <p>Email: scholarship@lydo.gov.ph</p>
+                <p>Phone: (088) 123-4567</p>
+            </div>
+
+            <p>Thank you for your understanding.</p>
+
+            <p>Best regards,<br>
+            <strong>LYDO Scholarship Committee</strong><br>
+            Local Youth Development Office<br>
+            Municipality of Tagoloan</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p class="footer-text">
+                This is an automated message from the LYDO Scholarship Management System.<br>
+                Please do not reply to this email.
+            </p>
+        </div>
     </div>
 </body>
 </html>

@@ -183,4 +183,92 @@ class RenewalController extends Controller
 
         return $this->successResponse(['pending_count' => $pendingCount], 'Pending count retrieved successfully');
     }
+
+    public function getScholarRenewals(Request $request)
+    {
+        try {
+            // Get the authenticated scholar
+            $user = auth()->user();
+            if (!$user) {
+                return $this->errorResponse('Unauthorized', 401);
+            }
+
+            // Assuming scholar_id is stored in user table or related
+            // You may need to adjust based on your user-scholar relationship
+            $scholarId = $user->scholar_id ?? $user->id; // Adjust as needed
+
+            $renewals = Renewal::where('scholar_id', $scholarId)
+                ->with(['scholar.applicant'])
+                ->orderBy('date_submitted', 'desc')
+                ->get();
+
+            return $this->successResponse($renewals, 'Scholar renewals retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to retrieve renewals: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function submitScholarRenewal(Request $request)
+    {
+        try {
+            // Get the authenticated scholar
+            $user = auth()->user();
+            if (!$user) {
+                return $this->errorResponse('Unauthorized', 401);
+            }
+
+            $scholarId = $user->scholar_id ?? $user->id; // Adjust as needed
+
+            $validator = Validator::make($request->all(), [
+                'semester' => 'required|string|max:20',
+                'academic_year' => 'required|string|max:20',
+                'year_level' => 'required|string|max:20',
+                'document_types' => 'required|array',
+                'document_types.*' => 'string',
+                // Files will be handled separately
+            ]);
+
+            if ($validator->fails()) {
+                return $this->validationErrorResponse($validator);
+            }
+
+            // Handle file uploads
+            $uploadedFiles = [];
+            $documentTypes = $request->input('document_types', []);
+
+            // Map document types to file fields (adjust based on your needs)
+            $fileFields = [
+                'cert_of_reg' => 'cor_file',
+                'grade_slip' => 'grade_slip_file',
+                'brgy_indigency' => 'indigency_file',
+            ];
+
+            foreach ($documentTypes as $type) {
+                if (isset($fileFields[$type]) && $request->hasFile($fileFields[$type])) {
+                    $file = $request->file($fileFields[$type]);
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs('renewals', $filename, 'public');
+                    $uploadedFiles[$type] = $path;
+                }
+            }
+
+            // Create renewal record
+            $renewal = Renewal::create([
+                'scholar_id' => $scholarId,
+                'renewal_cert_of_reg' => $uploadedFiles['cert_of_reg'] ?? null,
+                'renewal_grade_slip' => $uploadedFiles['grade_slip'] ?? null,
+                'renewal_brgy_indigency' => $uploadedFiles['brgy_indigency'] ?? null,
+                'renewal_semester' => $request->input('semester'),
+                'renewal_acad_year' => $request->input('academic_year'),
+                'renewal_year_level' => $request->input('year_level'),
+                'date_submitted' => now(),
+                'renewal_status' => 'Pending',
+            ]);
+
+            return $this->successResponse($renewal, 'Renewal submitted successfully', 201);
+
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to submit renewal: ' . $e->getMessage(), 500);
+        }
+    }
 }

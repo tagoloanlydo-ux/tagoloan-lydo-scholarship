@@ -17,7 +17,7 @@ return [
         ],
         'sanctum' => [
             'driver' => 'sanctum',
-            'provider' => null,
+            'provider' => 'scholars',
         ],
     ],
 
@@ -25,6 +25,10 @@ return [
         'lydopers' => [
             'driver' => 'eloquent',
             'model' => App\Models\Lydopers::class,
+        ],
+        'scholars' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Scholar::class,
         ],
     ],
 

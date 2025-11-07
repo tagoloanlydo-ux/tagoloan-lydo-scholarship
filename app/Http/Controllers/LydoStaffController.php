@@ -399,8 +399,7 @@ $pendingScreening = DB::table("tbl_application_personnel")
             ->where("tbl_application_personnel.initial_screening", "Approved")
             ->where("tbl_application_personnel.remarks", "waiting")
             ->whereNotNull("family_intake_sheets.application_personnel_id")
-            ->paginate()
-    ->appends($request->all());
+            ->get();
 
         $currentAcadYear = DB::table("tbl_applicant")
             ->select("applicant_acad_year")
@@ -443,8 +442,7 @@ $listApplicants = DB::table("tbl_applicant as a")
     })
     ->whereIn("ap.remarks", ["Poor", "Non Poor", "Ultra Poor"])
     ->where("a.applicant_acad_year", $currentAcadYear)
-    ->paginate()
-    ->appends($request->all());
+    ->get();
 
         return view(
             "lydo_staff.screening",
@@ -507,39 +505,67 @@ $listApplicants = DB::table("tbl_applicant as a")
         );
     }
 
+public function showIntakeSheet($application_personnel_id)
+{
+    $intakeSheet = \App\Models\FamilyIntakeSheet::where('application_personnel_id', $application_personnel_id)->first();
 
+    $remarks = DB::table('tbl_application_personnel')->where('application_personnel_id', $application_personnel_id)->value('remarks');
 
-    public function showIntakeSheet($application_personnel_id)
-    {
-        $intakeSheet = \App\Models\FamilyIntakeSheet::where('application_personnel_id', $application_personnel_id)->first();
+    // Retrieve applicant gender and place of birth
+    $applicantData = DB::table('tbl_application_personnel')
+        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
+        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+        ->where('tbl_application_personnel.application_personnel_id', $application_personnel_id)
+        ->select('tbl_applicant.applicant_gender', 'tbl_applicant.applicant_pob')
+        ->first();
 
-        $remarks = DB::table('tbl_application_personnel')->where('application_personnel_id', $application_personnel_id)->value('remarks');
+    $applicantGender = $applicantData ? $applicantData->applicant_gender : null;
+    $applicantPob = $applicantData ? $applicantData->applicant_pob : null;
 
-        // Retrieve applicant gender and place of birth
-        $applicantData = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->where('tbl_application_personnel.application_personnel_id', $application_personnel_id)
-            ->select('tbl_applicant.applicant_gender', 'tbl_applicant.applicant_pob')
-            ->first();
-
-        $applicantGender = $applicantData ? $applicantData->applicant_gender : null;
-        $applicantPob = $applicantData ? $applicantData->applicant_pob : null;
-
-        if ($intakeSheet) {
-            $data = $intakeSheet->toArray();
-            $data['remarks'] = $remarks;
-            $data['applicant_gender'] = $applicantGender;
-            $data['applicant_pob'] = $applicantPob;
-            return response()->json($data);
-        } else {
-            return response()->json([
-                'remarks' => $remarks,
-                'applicant_gender' => $applicantGender,
-                'applicant_pob' => $applicantPob
-            ]);
-        }
+    if ($intakeSheet) {
+        $data = $intakeSheet->toArray();
+        $data['remarks'] = $remarks;
+        $data['applicant_gender'] = $applicantGender;
+        $data['applicant_pob'] = $applicantPob;
+        
+        // CORRECTED: Ensure all fields are properly mapped
+        $data['house_house'] = $intakeSheet->house_house;
+        $data['house_lot'] = $intakeSheet->house_lot;
+        $data['house_rent'] = $intakeSheet->house_rent;
+        $data['lot_rent'] = $intakeSheet->lot_rent;
+        $data['house_water'] = $intakeSheet->house_water;
+        $data['house_electric'] = $intakeSheet->house_electric;
+        $data['other_income'] = $intakeSheet->other_income;
+        $data['house_total_income'] = $intakeSheet->house_total_income;
+        $data['house_net_income'] = $intakeSheet->house_net_income;
+        
+        // Debug log to verify data
+        \Log::info('Intake Sheet Data:', [
+            'house_house' => $data['house_house'],
+            'house_lot' => $data['house_lot'],
+            'house_rent' => $data['house_rent'],
+            'lot_rent' => $data['lot_rent']
+        ]);
+        
+        return response()->json($data);
+    } else {
+        return response()->json([
+            'remarks' => $remarks,
+            'applicant_gender' => $applicantGender,
+            'applicant_pob' => $applicantPob,
+            // Include empty values for house fields if no intake sheet exists
+            'house_house' => null,
+            'house_lot' => null,
+            'house_rent' => null,
+            'lot_rent' => null,
+            'house_water' => null,
+            'house_electric' => null,
+            'other_income' => null,
+            'house_total_income' => null,
+            'house_net_income' => null,
+        ]);
     }
+}
 
 public function updateIntakeSheet(Request $request, $application_personnel_id)
 {
@@ -562,13 +588,11 @@ public function updateIntakeSheet(Request $request, $application_personnel_id)
         'house_net_income' => 'nullable|numeric',
         'other_income' => 'nullable|numeric',
         'house_house' => 'nullable|string|max:255',
-        'house_value' => 'nullable|numeric',
         'house_lot' => 'nullable|string|max:255',
-        'lot_value' => 'nullable|numeric',
         'house_rent' => 'nullable|numeric',
         'lot_rent' => 'nullable|numeric',
-        'house_water' => 'nullable|string|max:255',
-        'house_electric' => 'nullable|string|max:255',
+        'house_water' => 'nullable|numeric',
+        'house_electric' => 'nullable|numeric',
         'house_remarks' => 'nullable|string',
 
         // JSON fields
@@ -619,7 +643,7 @@ public function updateIntakeSheet(Request $request, $application_personnel_id)
             'head_4ps','head_ipno','head_address','head_zone','head_pob','head_dob','head_educ','head_occ','head_religion',
             'serial_number','location',
             'other_income','house_total_income','house_net_income','house_house','house_value','house_lot','lot_value',
-            'house_rent','lot_rent','house_water','house_electric','house_remarks',
+            'house_rent','lot_rent','house_water','house_electric','house_remarks', // Updated field names
             'family_members','social_service_records','rv_service_records',
             'signature_client','signature_worker','signature_officer'
         ];

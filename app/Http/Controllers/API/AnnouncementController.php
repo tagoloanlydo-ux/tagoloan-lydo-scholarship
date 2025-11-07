@@ -84,7 +84,7 @@ class AnnouncementController extends Controller
         $validator = Validator::make($request->all(), [
             'announce_title' => 'required|string|max:255',
             'announce_content' => 'required|string',
-            'announce_type' => 'required|string|in:applicant,scholar',
+            'announce_type' => 'required|string|in:applicants,scholars',
         ]);
 
         if ($validator->fails()) {
@@ -93,7 +93,7 @@ class AnnouncementController extends Controller
 
         try {
             $announcement = Announce::create([
-                'lydopers_id' => auth()->id() ?? 1, // Default to 1 if not authenticated
+                'lydopers_id' => auth()->id() ?? 1,
                 'announce_title' => $request->announce_title,
                 'announce_content' => $request->announce_content,
                 'announce_type' => $request->announce_type,
@@ -164,7 +164,29 @@ class AnnouncementController extends Controller
 
     public function getScholarAnnouncements(Request $request)
     {
-        $request->merge(['type' => 'scholar']);
-        return $this->index($request);
+        try {
+            $query = Announce::query();
+
+            // Get announcements for scholars
+            $query->where('announce_type', 'scholars')
+                  ->orWhere('announce_type', 'both');
+
+            // Apply search if provided
+            if ($request->has('search') && !empty($request->search)) {
+                $query->where(function($q) use ($request) {
+                    $q->where('announce_title', 'like', '%' . $request->search . '%')
+                      ->orWhere('announce_content', 'like', '%' . $request->search . '%');
+                });
+            }
+
+            $announcements = $query->orderBy('date_posted', 'desc')
+                                   ->orderBy('created_at', 'desc')
+                                   ->paginate(15);
+
+            return $this->paginatedResponse($announcements, 'Scholar announcements retrieved successfully');
+
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to fetch scholar announcements: ' . $e->getMessage(), 500);
+        }
     }
 }

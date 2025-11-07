@@ -703,13 +703,45 @@
         const serial = `FIS-${year}${month}${day}-${hours}${minutes}${seconds}`;
         return serial;
       }
+// Save form data to localStorage
+function saveFormData() {
+  try {
+    const data = collectData();
+    
+    // Optimize signature data for storage
+    if (data.signatures && data.signatures.client) {
+      data.signatures.client = optimizeSignatureData(data.signatures.client);
+    }
+    
+    data.currentStep = currentStep;
+    
+    // Check if data is too large
+    const dataString = JSON.stringify(data);
+    if (dataString.length > 5000000) { // 5MB limit
+      console.warn('Data too large, clearing signatures');
+      data.signatures.client = null; // Remove signature if too large
+    }
+    
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.error('Error saving to localStorage:', e);
+    // Fallback: save without signatures
+    const data = collectData();
+    data.signatures.client = null;
+    data.currentStep = currentStep;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+}
 
-      // Save form data to localStorage
-      function saveFormData() {
-        const data = collectData();
-        data.currentStep = currentStep;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      }
+function optimizeSignatureData(dataURL) {
+  // Basic optimization - you can enhance this later
+  // For now, just ensure it's not empty and return as-is
+  if (!dataURL || dataURL === 'data:,') {
+    return null;
+  }
+  return dataURL;
+}
+      
 
       // Load form data from localStorage
       function loadFormData() {
@@ -981,19 +1013,31 @@
       }
 
       // Signature setup
-      function resizeCanvasForSignature(canvas) {
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext("2d").scale(ratio, ratio);
-      }
-      function setupSignatures() {
-        const c = document.getElementById("signatureClient");
-        if (c) {
-          resizeCanvasForSignature(c);
-          signaturePads.client = new SignaturePad(c);
-        }
-      }
+function resizeCanvasForSignature(canvas) {
+  const ratio = Math.max(window.devicePixelRatio || 1, 1);
+  const parent = canvas.parentElement;
+  
+  // Set explicit dimensions
+  canvas.width = parent.offsetWidth * ratio;
+  canvas.height = parent.offsetHeight * ratio;
+  canvas.getContext("2d").scale(ratio, ratio);
+  
+  // Re-initialize SignaturePad after resize if it exists
+  if (signaturePads.client) {
+    signaturePads.client.clear();
+  }
+}
+// Sa setupSignatures() function, siguraduhin na properly initialized
+function setupSignatures() {
+  const c = document.getElementById("signatureClient");
+  if (c) {
+    resizeCanvasForSignature(c);
+    signaturePads.client = new SignaturePad(c);
+    
+    // Add event listener to save when signature is drawn
+    signaturePads.client.addEventListener('endStroke', saveFormData);
+  }
+}
       function clearSignature(who) {
         signaturePads[who]?.clear();
       }
@@ -1014,6 +1058,11 @@
           gender: document.querySelector('input[name="applicant_gender"]:checked')?.value || "",
         };
         
+          const signatures = {
+    client: signaturePads.client && !signaturePads.client.isEmpty()
+      ? signaturePads.client.toDataURL()
+      : null,
+  };
         const head = {
           _4ps: getVal("head_4ps"),
           ipno: getVal("head_ipno"),

@@ -218,7 +218,7 @@
                             <i class="bx bx-chevron-down ml-2"></i>
                         </button>
 
-                        <!-- Dropdown Menu -->
+                        <!-- Dropdown Menul -->
                         <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
                             <li>
                                 <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-white bg-violet-600">
