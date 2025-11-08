@@ -38,6 +38,7 @@ Route::prefix('staging')->group(function () {
         // Scholar-specific routes
         Route::prefix('scholar')->group(function () {
             Route::get('/profile', [AuthController::class, 'profile']);
+            Route::put('/profile', [AuthController::class, 'updateProfile']);
             Route::get('/announcements', [AnnouncementController::class, 'getScholarAnnouncements']);
             Route::get('/renewals', [RenewalController::class, 'getScholarRenewals']);
             Route::post('/renewals/submit', [RenewalController::class, 'submitScholarRenewal']);
