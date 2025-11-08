@@ -4,6 +4,15 @@ let currentApplicationName = null;
 let currentView = 'table';
 let currentDocumentUrls = {};
 
+// Document titles mapping
+const documentTitles = {
+    application_letter: 'Application Letter',
+    cert_reg: 'Certificate of Registration',
+    grade_slip: 'Grade Slip',
+    brgy_indigency: 'Barangay Indigency',
+    student_id: 'Student ID'
+};
+
 // Pagination state
 const paginationState = {
     table: {
@@ -445,38 +454,60 @@ function setupDocumentButtons(data) {
         student_id: data.doc_student_id || null
     };
 
-    // Setup each document button
-    setupDocumentButton('application_letter', data.doc_application_letter, 'modal-doc-application-letter-status', 'modal-doc-application-letter-btn');
-    setupDocumentButton('cert_reg', data.doc_cert_reg, 'modal-doc-cert-reg-status', 'modal-doc-cert-reg-btn');
-    setupDocumentButton('grade_slip', data.doc_grade_slip, 'modal-doc-grade-slip-status', 'modal-doc-grade-slip-btn');
-    setupDocumentButton('brgy_indigency', data.doc_brgy_indigency, 'modal-doc-brgy-indigency-status', 'modal-doc-brgy-indigency-btn');
-    setupDocumentButton('student_id', data.doc_student_id, 'modal-doc-student-id-status', 'modal-doc-student-id-btn');
-}
+    // Define document order
+    const documentOrder = ['application_letter', 'cert_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
 
-function setupDocumentButton(docType, docUrl, statusElementId, buttonElementId) {
-    const statusElement = document.getElementById(statusElementId);
-    const buttonElement = document.getElementById(buttonElementId);
-    
-    if (docUrl) {
-        statusElement.textContent = 'Available';
-        statusElement.className = 'text-green-600 font-semibold';
-        buttonElement.classList.remove('hidden');
-    } else {
-        statusElement.textContent = 'Not Available';
-        statusElement.className = 'text-red-600';
-        buttonElement.classList.add('hidden');
+    // Get the documents container
+    const documentsContainer = document.getElementById('modal-documents-container');
+    if (!documentsContainer) return;
+
+    // Clear existing content
+    documentsContainer.innerHTML = '';
+
+    // Collect available documents
+    const availableDocuments = documentOrder.filter(docType => currentDocumentUrls[docType]);
+
+    if (availableDocuments.length === 0) {
+        documentsContainer.innerHTML = '<p class="text-center text-gray-500 py-8">No documents available for viewing.</p>';
+        return;
     }
-}
 
-function openDocument(docType) {
-    const docUrl = currentDocumentUrls[docType];
+    // Create grid container
+    const gridContainer = document.createElement('div');
+    gridContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6';
 
-    if (docUrl) {
-        // Open document in new tab
-        window.open(docUrl, '_blank');
-    } else {
-        Swal.fire('Document Not Available', 'This document is not available for viewing.', 'warning');
-    }
+    // Create document cards
+    availableDocuments.forEach(docType => {
+        const docUrl = currentDocumentUrls[docType];
+        const title = documentTitles[docType];
+
+        const documentDiv = document.createElement('div');
+        documentDiv.className = 'document-section bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden';
+
+        documentDiv.innerHTML = `
+            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                <h4 class="text-lg font-semibold text-gray-800">${title}</h4>
+            </div>
+            <div class="p-4">
+                <div class="border border-gray-300 rounded-lg overflow-hidden">
+                    <iframe
+                        src="${docUrl}"
+                        width="100%"
+                        height="400"
+                        style="border: none;"
+                        title="${title}">
+                        <p class="p-4 text-center text-gray-500">Your browser does not support iframes.
+                            <a href="${docUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 underline">Click here to view the document</a>
+                        </p>
+                    </iframe>
+                </div>
+            </div>
+        `;
+
+        gridContainer.appendChild(documentDiv);
+    });
+
+    documentsContainer.appendChild(gridContainer);
 }
 
 // Function to format date

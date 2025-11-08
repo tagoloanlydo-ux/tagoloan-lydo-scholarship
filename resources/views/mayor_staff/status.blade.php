@@ -456,7 +456,7 @@
 
                     <!-- Health & Signatures Section -->
                     <div class="intake-section">
-                        <h3 class="intake-section-title">Lydo Personeel Name</h3>
+                        <h3 class="intake-section-title">Lydo Personnel Name</h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                             <!-- Left column: Worker -->
@@ -499,77 +499,10 @@
                     </div>
 
                     <!-- Documents Section -->
-                    <div class="intake-section">
+                    <div class="intake-section" id="documents-section">
                         <h3 class="intake-section-title">Documents</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <!-- Application Letter -->
-                                <div class="mb-3">
-                                    <p><strong>Application Letter:</strong> 
-                                        <span id="modal-doc-application-letter-status">-</span>
-                                    </p>
-                                    <button type="button" 
-                                            id="modal-doc-application-letter-btn"
-                                            class="doc-btn hidden mt-1 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm"
-                                            onclick="openDocument('application_letter')">
-                                        <i class="fas fa-external-link-alt mr-1"></i> Open Document
-                                    </button>
-                                </div>
-                                
-                                <!-- Certificate of Registration -->
-                                <div class="mb-3">
-                                    <p><strong>Certificate of Registration:</strong> 
-                                        <span id="modal-doc-cert-reg-status">-</span>
-                                    </p>
-                                    <button type="button" 
-                                            id="modal-doc-cert-reg-btn"
-                                            class="doc-btn hidden mt-1 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm"
-                                            onclick="openDocument('cert_reg')">
-                                        <i class="fas fa-external-link-alt mr-1"></i> Open Document
-                                    </button>
-                                </div>
-                                
-                                <!-- Grade Slip -->
-                                <div class="mb-3">
-                                    <p><strong>Grade Slip:</strong> 
-                                        <span id="modal-doc-grade-slip-status">-</span>
-                                    </p>
-                                    <button type="button" 
-                                            id="modal-doc-grade-slip-btn"
-                                            class="doc-btn hidden mt-1 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm"
-                                            onclick="openDocument('grade_slip')">
-                                        <i class="fas fa-external-link-alt mr-1"></i> Open Document
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <!-- Barangay Indigency -->
-                                <div class="mb-3">
-                                    <p><strong>Barangay Indigency:</strong> 
-                                        <span id="modal-doc-brgy-indigency-status">-</span>
-                                    </p>
-                                    <button type="button" 
-                                            id="modal-doc-brgy-indigency-btn"
-                                            class="doc-btn hidden mt-1 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm"
-                                            onclick="openDocument('brgy_indigency')">
-                                        <i class="fas fa-external-link-alt mr-1"></i> Open Document
-                                    </button>
-                                </div>
-                                
-                                <!-- Student ID -->
-                                <div class="mb-3">
-                                    <p><strong>Student ID:</strong> 
-                                        <span id="modal-doc-student-id-status">-</span>
-                                    </p>
-                                    <button type="button" 
-                                            id="modal-doc-student-id-btn"
-                                            class="doc-btn hidden mt-1 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm"
-                                            onclick="openDocument('student_id')">
-                                        <i class="fas fa-external-link-alt mr-1"></i> Open Document
-                                    </button>
-                                </div>
-                            </div>
+                        <div id="modal-documents-container">
+                            <!-- Documents will be populated here by JavaScript -->
                         </div>
                     </div>
 

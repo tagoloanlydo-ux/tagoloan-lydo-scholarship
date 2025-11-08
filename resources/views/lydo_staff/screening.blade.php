@@ -48,34 +48,7 @@
             --radius-md: 0.75rem;
             --radius-lg: 1rem;
         }
-/* Add these styles to match renewal.blade.php */
-.dashboard-grid {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-}
 
-.content-scrollable {
-    overflow-y: auto;
-    height: calc(100vh - 80px); /* Adjust based on header height */
-}
-
-/* Ensure proper scrolling */
-.main-content-area {
-    overflow-y: auto;
-    max-height: calc(100vh - 80px);
-}
-
-/* Sidebar height adjustment */
-.w-16.md\\:w-64 {
-    height: 100%;
-    min-height: calc(100vh - 80px);
-}
-
-/* Make sure the flex container takes full height */
-.flex-1.overflow-hidden {
-    height: calc(100vh - 80px);
-}
         /* Modern Tab Styling */
         .tab {
             cursor: pointer;
@@ -929,8 +902,8 @@
 
             </div>
         </header>
-<div class="flex flex-1 overflow-hidden"> 
-    <div class="w-16 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
+        <div class="flex flex-1 overflow-hidden"> 
+            <div class="w-16 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
                 <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
                     <ul class="side-menu top space-y-4">
                         <li>
@@ -989,7 +962,7 @@
                     </form>
                 </div>
             </div>
-    <div class="flex-1 overflow-hidden p-4 md:p-2 text-[16px] content-scrollable">
+            <div class="flex-1 main-content-area p-4 md:p-5 text-[16px]">
                 <div class="p-4 bg-gray-50 min-h-screen rounded-lg shadow">
                     <div class="flex justify-between items-center mb-6">
                         <h5 class="text-3xl font-bold text-gray-800">Screening Applicants</h5>
@@ -1056,7 +1029,7 @@
                                             data-suffix="{{ $app->applicant_suffix }}"
                                             data-bdate="{{ $app->applicant_bdate }}"
                                             data-brgy="{{ $app->applicant_brgy }}"
-                                                                                       onclick="openEditRemarksModal(this)">
+                                            data-gender="{{ $app->applicant_gender }}"                                            onclick="openEditRemarksModal(this)">
                                             <i class="fas fa-plus mr-1"></i> Intake Sheet
                                         </button>
                                     </td>
@@ -1294,6 +1267,14 @@
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Place of Birth</label>
                             <input type="text" name="head_pob" id="head_pob" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Gender <span class="text-red-500">*</span></label>
+                            <select name="applicant_gender" id="applicant_gender" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
                         </div>
                     </div>
                     
@@ -1538,10 +1519,10 @@
                         <i class="fas fa-arrow-left mr-2"></i>
                         Previous
                     </button>
-<button type="button" id="additional-next-btn" onclick="showTab('social-service')" class="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center" disabled>
-    Next
-    <i class="fas fa-arrow-right ml-2"></i>
-</button>
+                    <button type="button" id="additional-next-btn" onclick="showTab('social-service')" class="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center">
+                        Next
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
                 </div>
             </div>
 
@@ -2087,6 +2068,7 @@ function openEditRemarksModal(button) {
         const suffix = button.getAttribute("data-suffix");
         const bdate = button.getAttribute("data-bdate");
         const brgy = button.getAttribute("data-brgy");
+        const gender = button.getAttribute("data-gender");
         const pob = button.getAttribute("data-pob");
 
         console.log('Applicant data:', { id, name, fname, brgy });
@@ -2103,7 +2085,9 @@ function openEditRemarksModal(button) {
         document.getElementById('head_dob').value = bdate || '';
         document.getElementById('head_barangay').value = brgy || '';
         
-
+        if (gender) {
+            document.getElementById('applicant_gender').value = gender;
+        }
 
         // Generate serial number
         document.getElementById('serial_number').value = 'SN-' + Date.now();
@@ -2126,63 +2110,6 @@ function openEditRemarksModal(button) {
 
         // Show loading message
         Swal.fire({
-            title: 'Loading...',
-            text: 'Fetching intake sheet data',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        // Fetch existing intake sheet data
-        fetch(`/lydo_staff/intake-sheet/${id}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                Swal.close();
-                console.log('Successfully fetched data:', data);
-
-                if (data && Object.keys(data).length > 0) {
-                    populateEditModal(data);
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Data Loaded!',
-                        text: 'Intake sheet data loaded successfully',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'New Intake Sheet',
-                        text: 'Starting new intake sheet form',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                }
-
-                // Always set current date for Date Entry after loading data
-                setCurrentDate();
-            })
-            .catch(err => {
-                Swal.close();
-                console.error('Error fetching intake sheet data:', err);
-
-                // Show modal anyway with empty form
-                Swal.fire({
-                    icon: 'info',
-                    title: 'New Form',
-                    text: 'Starting new intake sheet. You can fill out the form now.',
-                    confirmButtonText: 'OK'
-                });
-
-                // Set current date for new forms
-                setCurrentDate();
-            });
 
     } catch (error) {
         console.error('Error in openEditRemarksModal:', error);
@@ -2718,73 +2645,51 @@ function resetModalForm() {
 
             // TODO PROCESS FOR ADDITIONAL INFO TAB - IMPLEMENTED
             // Calculate Total Family Income, Expenses, and Net Income
-          function calculateIncomes() {
-    console.log('Calculating incomes...');
-    
-    // 1. Calculate Total Family Income from Family Members
-    let totalFamilyIncome = 0;
-    const incomeInputs = document.querySelectorAll('input[name="family_member_income[]"]');
-    incomeInputs.forEach(input => {
-        const incomeValue = parseFloat(input.value) || 0;
-        totalFamilyIncome += incomeValue;
-    });
-    console.log('Total Family Income from members:', totalFamilyIncome);
+            function calculateIncomes() {
+                console.log('Calculating incomes...');
+                
+                // 1. Calculate Total Family Income from Family Members
+                let totalFamilyIncome = 0;
+                const incomeInputs = document.querySelectorAll('input[name="family_member_income[]"]');
+                incomeInputs.forEach(input => {
+                    const incomeValue = parseFloat(input.value) || 0;
+                    totalFamilyIncome += incomeValue;
+                });
+                console.log('Total Family Income from members:', totalFamilyIncome);
 
-    // 2. Get Other Income and add to Total Income
-    const otherIncome = parseFloat(document.getElementById('other_income').value) || 0;
-    console.log('Other Income:', otherIncome);
-    
-    // 3. Calculate Total Income (Family Members Income + Other Income)
-    const houseTotalIncome = totalFamilyIncome + otherIncome;
-    console.log('Total Income (Family + Other):', houseTotalIncome);
-    
-    // Set total income
-    document.getElementById('house_total_income').value = houseTotalIncome.toFixed(2);
+                // 2. Get Other Income and add to Total Income
+                const otherIncome = parseFloat(document.getElementById('other_income').value) || 0;
+                console.log('Other Income:', otherIncome);
+                
+                // 3. Calculate Total Income (Family Members Income + Other Income)
+                const houseTotalIncome = totalFamilyIncome + otherIncome;
+                console.log('Total Income (Family + Other):', houseTotalIncome);
+                
+                // Set total income
+                document.getElementById('house_total_income').value = houseTotalIncome.toFixed(2);
 
-    // 4. Calculate Total Expenses
-    const houseRent = parseFloat(document.getElementById('house_rent').value) || 0;
-    const lotRent = parseFloat(document.getElementById('lot_rent').value) || 0;
-    const houseWater = parseFloat(document.getElementById('house_water').value) || 0;
-    const houseElectric = parseFloat(document.getElementById('house_electric').value) || 0;
-    
-    // Total expenses (house rent + lot rent + water + electric)
-    const totalExpenses = houseRent + lotRent + houseWater + houseElectric;
-    console.log('Total Expenses:', totalExpenses);
-    
-    // 5. Calculate Net Income (Total Income - Total Expenses)
-    const netIncome = houseTotalIncome - totalExpenses;
-    console.log('Net Income:', netIncome);
-    
-    document.getElementById('house_net_income').value = netIncome.toFixed(2);
+                // 4. Calculate Total Expenses
+                const houseRent = parseFloat(document.getElementById('house_rent').value) || 0;
+                const lotRent = parseFloat(document.getElementById('lot_rent').value) || 0;
+                const houseWater = parseFloat(document.getElementById('house_water').value) || 0;
+                const houseElectric = parseFloat(document.getElementById('house_electric').value) || 0;
+                
+                // Total expenses (house rent + lot rent + water + electric)
+                const totalExpenses = houseRent + lotRent + houseWater + houseElectric;
+                console.log('Total Expenses:', totalExpenses);
+                
+                // 5. Calculate Net Income (Total Income - Total Expenses)
+                const netIncome = houseTotalIncome - totalExpenses;
+                console.log('Net Income:', netIncome);
+                
+                document.getElementById('house_net_income').value = netIncome.toFixed(2);
 
-    // 6. Check if remarks field has a value to enable Next button
-    const additionalNextBtn = document.getElementById('additional-next-btn');
-    const remarksField = document.getElementById('remarks');
-    
-    if (additionalNextBtn && remarksField) {
-        // Enable button only if remarks field has a selected value
-        const hasRemarks = remarksField.value !== '';
-        additionalNextBtn.disabled = !hasRemarks;
-        
-        console.log('Remarks selected:', hasRemarks, 'Value:', remarksField.value);
-        console.log('Next button disabled:', additionalNextBtn.disabled);
-    }
-}
-
-// Add event listener for remarks field change
-document.addEventListener('DOMContentLoaded', function() {
-    const remarksField = document.getElementById('remarks');
-    if (remarksField) {
-        remarksField.addEventListener('change', function() {
-            const additionalNextBtn = document.getElementById('additional-next-btn');
-            if (additionalNextBtn) {
-                // Enable button only if remarks has a value
-                additionalNextBtn.disabled = this.value === '';
-                console.log('Remarks changed - Next button disabled:', additionalNextBtn.disabled);
+                // 6. Enable the Next button (removed disabled attribute)
+                const additionalNextBtn = document.getElementById('additional-next-btn');
+                if (additionalNextBtn) {
+                    additionalNextBtn.disabled = false;
+                }
             }
-        });
-    }
-});
 
             // Toggle house rent field visibility
             function toggleHouseRent() {
@@ -3005,16 +2910,10 @@ if (data.signature_officer) {
 
 // Populate worker and officer names
 safeSetValue('worker_name', data.worker_name);
-safeSetSelect('remarks', data.remarks, '');
 safeSetValue('officer_name', data.officer_name);
 safeSetValue('date_entry', data.date_entry);
 
 // In the populateEditModal function, add this:
-    const remarksField = document.getElementById('remarks');
-    const additionalNextBtn = document.getElementById('additional-next-btn');
-    if (remarksField && additionalNextBtn) {
-        additionalNextBtn.disabled = remarksField.value === '';
-    }
 
 // Populate worker and officer names
 if (data.worker_name && data.worker_name.trim() !== '') {
@@ -3030,6 +2929,10 @@ if (data.worker_name && data.worker_name.trim() !== '') {
 if (data.officer_name && data.officer_name.trim() !== '') {
     safeSetValue('officer_name', data.officer_name);
 }
+if (data.applicant_gender) {
+    safeSetSelect('applicant_gender', data.applicant_gender);
+}
+
 
     function safeSetSelect(elementId, value, defaultValue = '') {
         const element = document.getElementById(elementId);
@@ -3060,7 +2963,9 @@ if (data.officer_name && data.officer_name.trim() !== '') {
     if (data.head_pob) {
         safeSetValue('head_pob', data.head_pob);
     }
-
+    if (data.applicant_gender) {
+        safeSetSelect('applicant_gender', data.applicant_gender);
+    }
 
     // Populate household information - WITH PROPER FIELD MAPPING
     safeSetValue('other_income', data.other_income, '0');

@@ -41,8 +41,9 @@ Route::prefix('staging')->group(function () {
             Route::get('/profile', [AuthController::class, 'profile']);
             Route::put('/profile', [AuthController::class, 'updateProfile']);
             Route::get('/announcements', [AnnouncementController::class, 'getScholarAnnouncements']);
+            Route::get('/renewal_app', [RenewalController::class, 'getScholarRenewals']);
             Route::get('/renewals', [RenewalController::class, 'getScholarRenewals']);
-            Route::post('/renewals/submit', [RenewalController::class, 'submitScholarRenewal']);
+            Route::post('/submit_renewal', [RenewalController::class, 'submitScholarRenewal']);
         });
 
         // API Resources

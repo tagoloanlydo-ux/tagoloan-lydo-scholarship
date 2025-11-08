@@ -1,3 +1,9 @@
-- [x] Edit public/css/status-modal.css to set dark backgrounds for intake-table headers and rows, and white text color for table cells.
-- [x] Adjust CSS for tbody to have white background and black text.
-- [x] Remove hover effect from table rows.
+1. Sa loop kung saan mo pinapakita ang documents, imbes na button, palitan mo ng:
+
+<iframe> (recommended) or
+
+<embed>
+
+2, Ilagay ang width na 100% at height around 400px – 600px para maganda ang scroll.
+
+3. Auto-display na lahat ng documents sa order na gusto mo
