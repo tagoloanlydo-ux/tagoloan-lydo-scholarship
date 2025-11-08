@@ -291,7 +291,6 @@ $percentageReviewed = $totalApplications > 0
 
         $tableApplicants = $query->get();
 
-// Sa application() method, hanapin ang $listApplicants query at palitan ng:
 $listApplicants = DB::table("tbl_applicant as a")
     ->join(
         "tbl_application as app",
@@ -323,7 +322,7 @@ $listApplicants = DB::table("tbl_applicant as a")
                 ->addYear()
                 ->format("Y"),
     )
-    ->whereIn("ap.initial_screening", ["Approved", "Rejected"]) // DITO ANG PALIT - tanggalin ang "Pending"
+    ->whereIn("ap.initial_screening", ["Approved", "Rejected", "Pending"]) // ✅ FIX: Include Pending status
     ->when($request->filled("search"), function ($q) use ($request) {
         $q->where(function ($q) use ($request) {
             $q->where(
@@ -341,7 +340,7 @@ $listApplicants = DB::table("tbl_applicant as a")
         $q->where("a.applicant_brgy", $request->barangay);
     })
     ->get();
-
+    
         $barangays = DB::table("tbl_applicant")
             ->pluck("applicant_brgy")
             ->unique();

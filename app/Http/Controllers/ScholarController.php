@@ -49,9 +49,7 @@ class ScholarController extends Controller
             'applicant_fname' => 'required|string|max:255',
             'applicant_mname' => 'nullable|string|max:255',
             'applicant_lname' => 'required|string|max:255',
-            'applicant_suffix' => 'nullable|string|max:10',
-            'applicant_gender' => 'required|in:male,female,other',
-            'applicant_bdate' => 'required|date|before:today',
+            'applicant_suffix' => 'nullable|string|max:10',            'applicant_bdate' => 'required|date|before:today',
             'applicant_civil_status' => 'required|in:single,married,widowed,divorced',
             'applicant_brgy' => 'required|string|max:255',
             'applicant_email' => 'required|email|unique:tbl_applicant,applicant_email,' . $scholar->applicant->applicant_id . ',applicant_id',
@@ -67,9 +65,7 @@ class ScholarController extends Controller
         $applicant->applicant_fname = $request->input('applicant_fname');
         $applicant->applicant_mname = $request->input('applicant_mname');
         $applicant->applicant_lname = $request->input('applicant_lname');
-        $applicant->applicant_suffix = $request->input('applicant_suffix');
-        $applicant->applicant_gender = $request->input('applicant_gender');
-        $applicant->applicant_bdate = $request->input('applicant_bdate');
+        $applicant->applicant_suffix = $request->input('applicant_suffix');        $applicant->applicant_bdate = $request->input('applicant_bdate');
         $applicant->applicant_civil_status = $request->input('applicant_civil_status');
         $applicant->applicant_brgy = $request->input('applicant_brgy');
         $applicant->applicant_email = $request->input('applicant_email');
@@ -181,7 +177,6 @@ class ScholarController extends Controller
             'applicant_mname' => 'nullable|string|max:255',
             'applicant_lname' => 'required|string|max:255',
             'applicant_suffix' => 'nullable|string|max:10',
-            'applicant_gender' => 'required|in:male,female,other',
             'applicant_bdate' => 'required|date|before:today',
             'applicant_civil_status' => 'required|in:single,married,widowed,divorced',
             'applicant_brgy' => 'required|string|max:255',
@@ -209,8 +204,7 @@ class ScholarController extends Controller
             'applicant_fname' => $request->applicant_fname,
             'applicant_mname' => $request->applicant_mname,
             'applicant_lname' => $request->applicant_lname,
-            'applicant_suffix' => $request->applicant_suffix,
-            'applicant_gender' => $request->applicant_gender,
+            'applicant_suffix' => $request->applicant_suffix,        
             'applicant_bdate' => $request->applicant_bdate,
             'applicant_civil_status' => $request->applicant_civil_status,
             'applicant_brgy' => $request->applicant_brgy,

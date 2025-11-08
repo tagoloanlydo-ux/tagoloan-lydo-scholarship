@@ -921,26 +921,51 @@ function optimizeSignatureData(dataURL) {
       }
 
       // Calculate age from birthdate
-      function calculateAge(birthdate) {
-        if (!birthdate) return "";
-        const today = new Date();
-        const birth = new Date(birthdate);
-        let age = today.getFullYear() - birth.getFullYear();
-        const monthDiff = today.getMonth() - birth.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-          age--;
-        }
-        return age;
-      }
+function calculateAge(birthdate) {
+  if (!birthdate) return "";
+  const today = new Date();
+  const birth = new Date(birthdate);
+  
+  // VALIDATION ADDED
+  if (isNaN(birth.getTime())) {
+    return "Invalid date";
+  }
+  if (birth > today) {
+    return "Future date";
+  }
+  
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+}
 
-      // Attach listener to birthdate input
-      function attachBirthdateListener(birthInput) {
-        birthInput.addEventListener('change', function() {
-          const ageInput = this.closest('tr').querySelector('.fm-age');
-          ageInput.value = calculateAge(this.value);
-        });
-      }
-
+function attachBirthdateListener(birthInput) {
+  birthInput.addEventListener('change', function() {
+    updateAgeFromBirthdate(this);
+  });
+  
+  // INPUT EVENT LISTENER ADDED
+  birthInput.addEventListener('input', function() {
+    updateAgeFromBirthdate(this);
+  });
+}
+function updateAgeFromBirthdate(birthInput) {
+  const ageInput = birthInput.closest('tr').querySelector('.fm-age');
+  const age = calculateAge(birthInput.value);
+  ageInput.value = age;
+  
+  // VISUAL FEEDBACK ADDED
+  if (age === "Invalid date" || age === "Future date") {
+    ageInput.style.color = 'red';
+    ageInput.title = age;
+  } else {
+    ageInput.style.color = '';
+    ageInput.title = '';
+  }
+}
       // Calculate total family income and net income
       function calculateTotalFamilyIncome() {
         let familyTotal = 0;
@@ -988,20 +1013,22 @@ function optimizeSignatureData(dataURL) {
         const table = document
           .getElementById("familyTable")
           .querySelector("tbody");
-        const row = table.rows[0].cloneNode(true);
-        row.querySelectorAll("input").forEach((i) => (i.value = ""));
-        row.querySelectorAll("select").forEach((s) => (s.selectedIndex = 0));
-        // Make age readonly
-        row.querySelector('.fm-age').readOnly = true;
-        // Attach listener to new birthdate
-        attachBirthdateListener(row.querySelector('.fm-birth'));
-        // Attach listener to new income input
-        row.querySelector('.fm-income').addEventListener('input', calculateTotalFamilyIncome);
-        // Attach validation listeners to new row fields
-        row.querySelectorAll('.fm-name, .fm-relation, .fm-birth, .fm-age, .fm-sex, .fm-civil, .fm-educ, .fm-occ, .fm-remarks, .fm-income').forEach(el => {
-          el.addEventListener('input', validateStep2);
-          el.addEventListener('change', validateStep2);
-        });
+       const row = table.rows[0].cloneNode(true);
+row.querySelectorAll("input").forEach((i) => (i.value = ""));
+row.querySelectorAll("select").forEach((s) => (s.selectedIndex = 0));
+// Make age readonly WITH PLACEHOLDER
+const ageInput = row.querySelector('.fm-age');
+ageInput.readOnly = true;
+ageInput.placeholder = "Auto-calculated"; // PLACEHOLDER ADDED
+// Attach listener to new birthdate
+attachBirthdateListener(row.querySelector('.fm-birth'));
+
+// In window load - WITH PLACEHOLDER
+document.querySelectorAll('.fm-birth').forEach(attachBirthdateListener);
+document.querySelectorAll('.fm-age').forEach(ageInput => {
+  ageInput.readOnly = true;
+  ageInput.placeholder = "Auto-calculated"; // PLACEHOLDER ADDED
+});
         table.appendChild(row);
         validateStep2();
       }

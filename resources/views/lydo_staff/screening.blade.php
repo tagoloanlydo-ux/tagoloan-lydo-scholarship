@@ -1029,7 +1029,7 @@
                                             data-suffix="{{ $app->applicant_suffix }}"
                                             data-bdate="{{ $app->applicant_bdate }}"
                                             data-brgy="{{ $app->applicant_brgy }}"
-                                            data-gender="{{ $app->applicant_gender }}"                                            onclick="openEditRemarksModal(this)">
+                                                                                       onclick="openEditRemarksModal(this)">
                                             <i class="fas fa-plus mr-1"></i> Intake Sheet
                                         </button>
                                     </td>
@@ -1267,14 +1267,6 @@
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Place of Birth</label>
                             <input type="text" name="head_pob" id="head_pob" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Gender <span class="text-red-500">*</span></label>
-                            <select name="applicant_gender" id="applicant_gender" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" required>
-                                <option value="">Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                            </select>
                         </div>
                     </div>
                     
@@ -1519,10 +1511,10 @@
                         <i class="fas fa-arrow-left mr-2"></i>
                         Previous
                     </button>
-                    <button type="button" id="additional-next-btn" onclick="showTab('social-service')" class="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center">
-                        Next
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
+<button type="button" id="additional-next-btn" onclick="showTab('social-service')" class="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center" disabled>
+    Next
+    <i class="fas fa-arrow-right ml-2"></i>
+</button>
                 </div>
             </div>
 
@@ -1625,10 +1617,10 @@
                     
                     <!-- Date Entry and Signature Client -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Date Entry</label>
-                            <input type="date" name="date_entry" id="date_entry" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
-                        </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">Date Entry</label>
+        <input type="date" name="date_entry" id="date_entry" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
+    </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Signature Client</label>
                             <input type="text" name="signature_client" id="signature_client" class="w-full border border-gray-300 rounded-xl p-3 bg-gray-100 text-gray-600" readonly>
@@ -2050,8 +2042,11 @@ function showList() {
                 }
             }
 
-            // Open Edit Remarks Modal
- // Open Edit Remarks Modal - UPDATED VERSION
+function setCurrentDate() {
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format for date input
+    document.getElementById('date_entry').value = formattedDate;
+}
 // IMPROVED openEditRemarksModal function
 function openEditRemarksModal(button) {
     console.log('Opening modal for button:', button);
@@ -2065,7 +2060,6 @@ function openEditRemarksModal(button) {
         const suffix = button.getAttribute("data-suffix");
         const bdate = button.getAttribute("data-bdate");
         const brgy = button.getAttribute("data-brgy");
-        const gender = button.getAttribute("data-gender");
         const pob = button.getAttribute("data-pob");
 
         console.log('Applicant data:', { id, name, fname, brgy });
@@ -2082,15 +2076,10 @@ function openEditRemarksModal(button) {
         document.getElementById('head_dob').value = bdate || '';
         document.getElementById('head_barangay').value = brgy || '';
         
-        if (gender) {
-            document.getElementById('applicant_gender').value = gender;
-        }
+
 
         // Generate serial number
         document.getElementById('serial_number').value = 'SN-' + Date.now();
-
-        // Set current date for Date Entry
-        setCurrentDate();
 
         // Clear previous data
         document.getElementById('family_members_tbody').innerHTML = '';
@@ -2101,7 +2090,7 @@ function openEditRemarksModal(button) {
         if (!modal) {
             throw new Error('Modal element not found');
         }
-        
+
         modal.classList.remove('hidden');
         document.body.classList.add('modal-open');
 
@@ -2129,7 +2118,7 @@ function openEditRemarksModal(button) {
             .then(data => {
                 Swal.close();
                 console.log('Successfully fetched data:', data);
-                
+
                 if (data && Object.keys(data).length > 0) {
                     populateEditModal(data);
                     Swal.fire({
@@ -2148,11 +2137,14 @@ function openEditRemarksModal(button) {
                         showConfirmButton: false
                     });
                 }
+
+                // Always set current date for Date Entry after loading data
+                setCurrentDate();
             })
             .catch(err => {
                 Swal.close();
                 console.error('Error fetching intake sheet data:', err);
-                
+
                 // Show modal anyway with empty form
                 Swal.fire({
                     icon: 'info',
@@ -2160,6 +2152,9 @@ function openEditRemarksModal(button) {
                     text: 'Starting new intake sheet. You can fill out the form now.',
                     confirmButtonText: 'OK'
                 });
+
+                // Set current date for new forms
+                setCurrentDate();
             });
 
     } catch (error) {
@@ -2696,51 +2691,73 @@ function resetModalForm() {
 
             // TODO PROCESS FOR ADDITIONAL INFO TAB - IMPLEMENTED
             // Calculate Total Family Income, Expenses, and Net Income
-            function calculateIncomes() {
-                console.log('Calculating incomes...');
-                
-                // 1. Calculate Total Family Income from Family Members
-                let totalFamilyIncome = 0;
-                const incomeInputs = document.querySelectorAll('input[name="family_member_income[]"]');
-                incomeInputs.forEach(input => {
-                    const incomeValue = parseFloat(input.value) || 0;
-                    totalFamilyIncome += incomeValue;
-                });
-                console.log('Total Family Income from members:', totalFamilyIncome);
+          function calculateIncomes() {
+    console.log('Calculating incomes...');
+    
+    // 1. Calculate Total Family Income from Family Members
+    let totalFamilyIncome = 0;
+    const incomeInputs = document.querySelectorAll('input[name="family_member_income[]"]');
+    incomeInputs.forEach(input => {
+        const incomeValue = parseFloat(input.value) || 0;
+        totalFamilyIncome += incomeValue;
+    });
+    console.log('Total Family Income from members:', totalFamilyIncome);
 
-                // 2. Get Other Income and add to Total Income
-                const otherIncome = parseFloat(document.getElementById('other_income').value) || 0;
-                console.log('Other Income:', otherIncome);
-                
-                // 3. Calculate Total Income (Family Members Income + Other Income)
-                const houseTotalIncome = totalFamilyIncome + otherIncome;
-                console.log('Total Income (Family + Other):', houseTotalIncome);
-                
-                // Set total income
-                document.getElementById('house_total_income').value = houseTotalIncome.toFixed(2);
+    // 2. Get Other Income and add to Total Income
+    const otherIncome = parseFloat(document.getElementById('other_income').value) || 0;
+    console.log('Other Income:', otherIncome);
+    
+    // 3. Calculate Total Income (Family Members Income + Other Income)
+    const houseTotalIncome = totalFamilyIncome + otherIncome;
+    console.log('Total Income (Family + Other):', houseTotalIncome);
+    
+    // Set total income
+    document.getElementById('house_total_income').value = houseTotalIncome.toFixed(2);
 
-                // 4. Calculate Total Expenses
-                const houseRent = parseFloat(document.getElementById('house_rent').value) || 0;
-                const lotRent = parseFloat(document.getElementById('lot_rent').value) || 0;
-                const houseWater = parseFloat(document.getElementById('house_water').value) || 0;
-                const houseElectric = parseFloat(document.getElementById('house_electric').value) || 0;
-                
-                // Total expenses (house rent + lot rent + water + electric)
-                const totalExpenses = houseRent + lotRent + houseWater + houseElectric;
-                console.log('Total Expenses:', totalExpenses);
-                
-                // 5. Calculate Net Income (Total Income - Total Expenses)
-                const netIncome = houseTotalIncome - totalExpenses;
-                console.log('Net Income:', netIncome);
-                
-                document.getElementById('house_net_income').value = netIncome.toFixed(2);
+    // 4. Calculate Total Expenses
+    const houseRent = parseFloat(document.getElementById('house_rent').value) || 0;
+    const lotRent = parseFloat(document.getElementById('lot_rent').value) || 0;
+    const houseWater = parseFloat(document.getElementById('house_water').value) || 0;
+    const houseElectric = parseFloat(document.getElementById('house_electric').value) || 0;
+    
+    // Total expenses (house rent + lot rent + water + electric)
+    const totalExpenses = houseRent + lotRent + houseWater + houseElectric;
+    console.log('Total Expenses:', totalExpenses);
+    
+    // 5. Calculate Net Income (Total Income - Total Expenses)
+    const netIncome = houseTotalIncome - totalExpenses;
+    console.log('Net Income:', netIncome);
+    
+    document.getElementById('house_net_income').value = netIncome.toFixed(2);
 
-                // 6. Enable the Next button (removed disabled attribute)
-                const additionalNextBtn = document.getElementById('additional-next-btn');
-                if (additionalNextBtn) {
-                    additionalNextBtn.disabled = false;
-                }
+    // 6. Check if remarks field has a value to enable Next button
+    const additionalNextBtn = document.getElementById('additional-next-btn');
+    const remarksField = document.getElementById('remarks');
+    
+    if (additionalNextBtn && remarksField) {
+        // Enable button only if remarks field has a selected value
+        const hasRemarks = remarksField.value !== '';
+        additionalNextBtn.disabled = !hasRemarks;
+        
+        console.log('Remarks selected:', hasRemarks, 'Value:', remarksField.value);
+        console.log('Next button disabled:', additionalNextBtn.disabled);
+    }
+}
+
+// Add event listener for remarks field change
+document.addEventListener('DOMContentLoaded', function() {
+    const remarksField = document.getElementById('remarks');
+    if (remarksField) {
+        remarksField.addEventListener('change', function() {
+            const additionalNextBtn = document.getElementById('additional-next-btn');
+            if (additionalNextBtn) {
+                // Enable button only if remarks has a value
+                additionalNextBtn.disabled = this.value === '';
+                console.log('Remarks changed - Next button disabled:', additionalNextBtn.disabled);
             }
+        });
+    }
+});
 
             // Toggle house rent field visibility
             function toggleHouseRent() {
@@ -2928,6 +2945,64 @@ function populateEditModal(data) {
             element.value = defaultValue;
         }
     }
+    if (data.signature_client) {
+    document.getElementById('signature_client').value = data.signature_client;
+    // Update the signature button to show it's saved
+    const clientSignatureBtn = document.querySelector('button[onclick*="signature"]');
+    if (clientSignatureBtn) {
+        clientSignatureBtn.textContent = 'Signature Saved ✓';
+        clientSignatureBtn.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+        clientSignatureBtn.classList.add('bg-green-100', 'hover:bg-green-200', 'text-green-800');
+    }
+}
+
+if (data.signature_worker) {
+    document.getElementById('signature_worker').value = data.signature_worker;
+    document.getElementById('worker-signature-text').textContent = 'Signature Saved ✓';
+    const workerBtn = document.querySelector('button[onclick="openSignatureModal(\'worker\')"]');
+    if (workerBtn) {
+        workerBtn.classList.remove('bg-white', 'hover:bg-gray-50');
+        workerBtn.classList.add('bg-green-100', 'hover:bg-green-200', 'text-green-800');
+    }
+}
+
+if (data.signature_officer) {
+    document.getElementById('signature_officer').value = data.signature_officer;
+    document.getElementById('officer-signature-text').textContent = 'Signature Saved ✓';
+    const officerBtn = document.querySelector('button[onclick="openSignatureModal(\'officer\')"]');
+    if (officerBtn) {
+        officerBtn.classList.remove('bg-white', 'hover:bg-gray-50');
+        officerBtn.classList.add('bg-green-100', 'hover:bg-green-200', 'text-green-800');
+    }
+}
+
+// Populate worker and officer names
+safeSetValue('worker_name', data.worker_name);
+safeSetSelect('remarks', data.remarks, '');
+safeSetValue('officer_name', data.officer_name);
+safeSetValue('date_entry', data.date_entry);
+
+// In the populateEditModal function, add this:
+    const remarksField = document.getElementById('remarks');
+    const additionalNextBtn = document.getElementById('additional-next-btn');
+    if (remarksField && additionalNextBtn) {
+        additionalNextBtn.disabled = remarksField.value === '';
+    }
+
+// Populate worker and officer names
+if (data.worker_name && data.worker_name.trim() !== '') {
+    safeSetValue('worker_name', data.worker_name);
+} else {
+    // Fallback to current session staff name
+    const currentStaffName = "{{ session('lydopers') ? (session('lydopers')->lydopers_fname . ' ' . session('lydopers')->lydopers_lname) : '' }}";
+    if (currentStaffName.trim() !== '') {
+        safeSetValue('worker_name', currentStaffName);
+    }
+}
+
+if (data.officer_name && data.officer_name.trim() !== '') {
+    safeSetValue('officer_name', data.officer_name);
+}
 
     function safeSetSelect(elementId, value, defaultValue = '') {
         const element = document.getElementById(elementId);
@@ -2958,9 +3033,7 @@ function populateEditModal(data) {
     if (data.head_pob) {
         safeSetValue('head_pob', data.head_pob);
     }
-    if (data.applicant_gender) {
-        safeSetSelect('applicant_gender', data.applicant_gender);
-    }
+
 
     // Populate household information - WITH PROPER FIELD MAPPING
     safeSetValue('other_income', data.other_income, '0');
