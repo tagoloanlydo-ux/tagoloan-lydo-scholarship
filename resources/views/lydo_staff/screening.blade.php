@@ -48,7 +48,34 @@
             --radius-md: 0.75rem;
             --radius-lg: 1rem;
         }
+/* Add these styles to match renewal.blade.php */
+.dashboard-grid {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
 
+.content-scrollable {
+    overflow-y: auto;
+    height: calc(100vh - 80px); /* Adjust based on header height */
+}
+
+/* Ensure proper scrolling */
+.main-content-area {
+    overflow-y: auto;
+    max-height: calc(100vh - 80px);
+}
+
+/* Sidebar height adjustment */
+.w-16.md\\:w-64 {
+    height: 100%;
+    min-height: calc(100vh - 80px);
+}
+
+/* Make sure the flex container takes full height */
+.flex-1.overflow-hidden {
+    height: calc(100vh - 80px);
+}
         /* Modern Tab Styling */
         .tab {
             cursor: pointer;
@@ -902,8 +929,8 @@
 
             </div>
         </header>
-        <div class="flex flex-1 overflow-hidden"> 
-            <div class="w-16 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
+<div class="flex flex-1 overflow-hidden"> 
+    <div class="w-16 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
                 <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
                     <ul class="side-menu top space-y-4">
                         <li>
@@ -962,7 +989,7 @@
                     </form>
                 </div>
             </div>
-            <div class="flex-1 main-content-area p-4 md:p-5 text-[16px]">
+    <div class="flex-1 overflow-hidden p-4 md:p-2 text-[16px] content-scrollable">
                 <div class="p-4 bg-gray-50 min-h-screen rounded-lg shadow">
                     <div class="flex justify-between items-center mb-6">
                         <h5 class="text-3xl font-bold text-gray-800">Screening Applicants</h5>
