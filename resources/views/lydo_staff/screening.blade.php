@@ -1029,9 +1029,7 @@
                                             data-suffix="{{ $app->applicant_suffix }}"
                                             data-bdate="{{ $app->applicant_bdate }}"
                                             data-brgy="{{ $app->applicant_brgy }}"
-                                            data-gender="{{ $app->applicant_gender }}"
-                                            data-pob="{{ $app->applicant_pob }}"
-                                            onclick="openEditRemarksModal(this)">
+                                            data-gender="{{ $app->applicant_gender }}"                                            onclick="openEditRemarksModal(this)">
                                             <i class="fas fa-plus mr-1"></i> Intake Sheet
                                         </button>
                                     </td>

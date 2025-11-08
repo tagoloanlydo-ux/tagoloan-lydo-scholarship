@@ -1412,170 +1412,199 @@ $listApplicants = DB::table("tbl_applicant as a")
         }
     }
 
-    public function getDocumentComments($applicationPersonnelId)
-    {
-        try {
-            $comments = DB::table('tbl_document_comments')
-                ->where('application_personnel_id', $applicationPersonnelId)
-                ->get()
-                ->keyBy('document_type');
-
-            // Also get document statuses from application_personnel
-            $statuses = DB::table('tbl_application_personnel')
-                ->where('application_personnel_id', $applicationPersonnelId)
-                ->select([
-                    'application_letter_status',
-                    'cert_of_reg_status',
-                    'grade_slip_status',
-                    'brgy_indigency_status',
-                    'student_id_status'
-                ])
-                ->first();
-
-            return response()->json([
-                'success' => true,
-                'comments' => $comments,
-                'statuses' => $statuses
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to load comments.'], 500);
-        }
-    }
-
-    public function saveDocumentStatus(Request $request)
-    {
-        $request->validate([
-            'application_personnel_id' => 'required|integer',
-            'document_type' => 'required|string',
-            'status' => 'required|in:good,bad'
-        ]);
-
-        try {
-            $statusColumn = $request->document_type . '_status';
-
-            // Update status in tbl_application_personnel
-            DB::table('tbl_application_personnel')
-                ->where('application_personnel_id', $request->application_personnel_id)
-                ->update([
-                    $statusColumn => $request->status,
-                    'updated_at' => now()
-                ]);
-
-            // Update is_bad in tbl_document_comments
-            DB::table('tbl_document_comments')
-                ->where('application_personnel_id', $request->application_personnel_id)
-                ->where('document_type', $request->document_type)
-                ->update([
-                    'is_bad' => $request->status === 'bad',
-                    'updated_at' => now()
-                ]);
-
-            return response()->json(['success' => true, 'message' => 'Document status updated successfully.']);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to update document status.'], 500);
-        }
-    }
-
-    public function sendDocumentEmail(Request $request)
-    {
-        $request->validate([
-            'application_personnel_id' => 'required|integer'
-        ]);
-
-        try {
-            // Get applicant details
-            $applicant = DB::table('tbl_application_personnel as ap')
-                ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-                ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-                ->where('ap.application_personnel_id', $request->application_personnel_id)
-                ->select('app.applicant_id', 'app.applicant_fname', 'app.applicant_lname', 'app.applicant_email', 'ap.update_token')
-                ->first();
-
-        if (!$applicant) {
-            return response()->json(['success' => false, 'message' => 'Applicant not found.']);
-        }
-
-        // Get bad documents from both tbl_document_comments and tbl_application_personnel status columns
-        $badDocumentsFromComments = DB::table('tbl_document_comments')
-            ->where('application_personnel_id', $request->application_personnel_id)
-            ->where('is_bad', true)
-            ->pluck('document_type')
-            ->toArray();
-
-        // Also check document status columns in tbl_application_personnel
+public function getDocumentComments($applicationPersonnelId)
+{
+    try {
+        // Get document statuses and reason from application_personnel
         $applicationPersonnel = DB::table('tbl_application_personnel')
-            ->where('application_personnel_id', $request->application_personnel_id)
+            ->where('application_personnel_id', $applicationPersonnelId)
             ->select([
                 'application_letter_status',
                 'cert_of_reg_status',
                 'grade_slip_status',
                 'brgy_indigency_status',
-                'student_id_status'
+                'student_id_status',
+                'reason'
             ])
             ->first();
 
-        $badDocumentsFromStatuses = [];
+        // Convert to comments format for frontend compatibility
+        $comments = [];
+        $statuses = [];
+        $reasons = [];
+        
         if ($applicationPersonnel) {
-            $documentTypes = [
-                'application_letter' => $applicationPersonnel->application_letter_status,
-                'cert_of_reg' => $applicationPersonnel->cert_of_reg_status,
-                'grade_slip' => $applicationPersonnel->grade_slip_status,
-                'brgy_indigency' => $applicationPersonnel->brgy_indigency_status,
-                'student_id' => $applicationPersonnel->student_id_status,
+            $statuses = [
+                'application_letter_status' => $applicationPersonnel->application_letter_status,
+                'cert_of_reg_status' => $applicationPersonnel->cert_of_reg_status,
+                'grade_slip_status' => $applicationPersonnel->grade_slip_status,
+                'brgy_indigency_status' => $applicationPersonnel->brgy_indigency_status,
+                'student_id_status' => $applicationPersonnel->student_id_status,
             ];
-
-            foreach ($documentTypes as $type => $status) {
-                if ($status === 'bad') {
-                    $badDocumentsFromStatuses[] = $type;
+            
+            // Parse individual document reasons from JSON
+            if ($applicationPersonnel->reason) {
+                $reasonsData = json_decode($applicationPersonnel->reason, true);
+                if (is_array($reasonsData)) {
+                    $reasons = $reasonsData;
                 }
             }
         }
 
-        // Combine both sources of bad documents
-        $badDocuments = array_unique(array_merge($badDocumentsFromComments, $badDocumentsFromStatuses));
+        return response()->json([
+            'success' => true,
+            'comments' => $comments,
+            'statuses' => $statuses,
+            'reasons' => $reasons // Include individual reasons
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Error loading document comments: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Failed to load document status.'], 500);
+    }
+}
+public function saveDocumentStatus(Request $request)
+{
+    $request->validate([
+        'application_personnel_id' => 'required|integer',
+        'document_type' => 'required|string',
+        'status' => 'required|in:good,bad',
+        'reason' => 'nullable|string|max:1000'
+    ]);
 
-        if (empty($badDocuments)) {
+    try {
+        $statusColumn = $request->document_type . '_status';
+        $reasonColumn = $request->document_type . '_reason'; // New column for individual document reasons
+
+        // Check if the reason column exists, if not we'll store in a JSON format in the general reason column
+        // For now, we'll store individual reasons in a JSON format in the general reason column
+        $currentReasons = DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $request->application_personnel_id)
+            ->value('reason');
+
+        $reasons = [];
+        if ($currentReasons) {
+            $reasons = json_decode($currentReasons, true) ?? [];
+        }
+
+        if ($request->status === 'bad') {
+            $reasons[$request->document_type] = $request->reason;
+        } else {
+            // Remove reason if status is good
+            unset($reasons[$request->document_type]);
+        }
+
+        // Update status and reasons in tbl_application_personnel
+        DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $request->application_personnel_id)
+            ->update([
+                $statusColumn => $request->status,
+                'reason' => !empty($reasons) ? json_encode($reasons) : null, // Store reasons as JSON
+                'updated_at' => now()
+            ]);
+
+        return response()->json(['success' => true, 'message' => 'Document status updated successfully.']);
+    } catch (\Exception $e) {
+        \Log::error('Error saving document status: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Failed to update document status.'], 500);
+    }
+}
+
+public function sendDocumentEmail(Request $request)
+{
+    $request->validate([
+        'application_personnel_id' => 'required|integer'
+    ]);
+
+    try {
+        // Get applicant details and document statuses
+        $applicant = DB::table('tbl_application_personnel as ap')
+            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+            ->where('ap.application_personnel_id', $request->application_personnel_id)
+            ->select(
+                'app.applicant_id', 
+                'app.applicant_fname', 
+                'app.applicant_lname', 
+                'app.applicant_email',
+                'ap.application_letter_status',
+                'ap.cert_of_reg_status',
+                'ap.grade_slip_status',
+                'ap.brgy_indigency_status',
+                'ap.student_id_status',
+                'ap.reason',
+                'ap.update_token'
+            )
+            ->first();
+
+        if (!$applicant) {
+            return response()->json(['success' => false, 'message' => 'Applicant not found.']);
+        }
+
+        // Get bad documents with individual reasons
+        $badDocumentsWithReasons = [];
+        $documentTypes = [];
+
+        // Check each document type
+        $documentStatuses = [
+            'application_letter' => $applicant->application_letter_status,
+            'cert_of_reg' => $applicant->cert_of_reg_status,
+            'grade_slip' => $applicant->grade_slip_status,
+            'brgy_indigency' => $applicant->brgy_indigency_status,
+            'student_id' => $applicant->student_id_status,
+        ];
+
+        // Parse individual reasons from JSON
+        $individualReasons = [];
+        if ($applicant->reason) {
+            $individualReasons = json_decode($applicant->reason, true) ?? [];
+        }
+
+        foreach ($documentStatuses as $type => $status) {
+            if ($status === 'bad') {
+                $documentName = '';
+                switch ($type) {
+                    case 'application_letter':
+                        $documentName = 'Application Letter';
+                        break;
+                    case 'cert_of_reg':
+                        $documentName = 'Certificate of Registration';
+                        break;
+                    case 'grade_slip':
+                        $documentName = 'Grade Slip';
+                        break;
+                    case 'brgy_indigency':
+                        $documentName = 'Barangay Indigency';
+                        break;
+                    case 'student_id':
+                        $documentName = 'Student ID';
+                        break;
+                }
+                
+                $badDocumentsWithReasons[] = [
+                    'name' => $documentName,
+                    'type' => $type,
+                    'reason' => $individualReasons[$type] ?? 'Document needs to be updated' // Get individual reason
+                ];
+                $documentTypes[] = $type;
+            }
+        }
+
+        if (empty($badDocumentsWithReasons)) {
             return response()->json(['success' => false, 'message' => 'No bad documents found to send email.']);
         }
 
         // Generate update token if not exists
-        $applicationPersonnelRecord = DB::table('tbl_application_personnel')
-            ->where('application_personnel_id', $request->application_personnel_id)
-            ->first();
-
-        if (!$applicationPersonnelRecord->update_token) {
+        if (!$applicant->update_token) {
             $updateToken = Str::random(64);
             DB::table('tbl_application_personnel')
                 ->where('application_personnel_id', $request->application_personnel_id)
                 ->update(['update_token' => $updateToken]);
         } else {
-            $updateToken = $applicationPersonnelRecord->update_token;
+            $updateToken = $applicant->update_token;
         }
 
-        // FIX: Use the correct route parameter name 'applicant_id' (not 'applicant_id')
-        $updateLink = route('scholar.showUpdateApplication', ['applicant_id' => $applicant->applicant_id]) . '?token=' . $updateToken . '&issues=' . implode(',', $badDocuments);
-
-        // Build email message
-        $documentNames = [];
-        foreach ($badDocuments as $doc) {
-            switch ($doc) {
-                case 'application_letter':
-                    $documentNames[] = 'Application Letter';
-                    break;
-                case 'cert_of_reg':
-                    $documentNames[] = 'Certificate of Registration';
-                    break;
-                case 'grade_slip':
-                    $documentNames[] = 'Grade Slip';
-                    break;
-                case 'brgy_indigency':
-                    $documentNames[] = 'Barangay Indigency';
-                    break;
-                case 'student_id':
-                    $documentNames[] = 'Student ID';
-                    break;
-            }
-        }
+        $documentTypesString = implode(',', $documentTypes);
+        $updateLink = route('scholar.showUpdateApplication', ['applicant_id' => $applicant->applicant_id]) . '?token=' . $updateToken . '&issues=' . $documentTypesString;
 
         // Send email using the blade template
         $emailData = [
@@ -1583,7 +1612,8 @@ $listApplicants = DB::table("tbl_applicant as a")
             'updateToken' => $updateToken,
             'applicant_fname' => $applicant->applicant_fname,
             'applicant_lname' => $applicant->applicant_lname,
-            'bad_documents' => $documentNames,
+            'bad_documents' => $badDocumentsWithReasons,
+            'document_types' => $documentTypesString
         ];
 
         Mail::send('emails.document-update-required', $emailData, function ($message) use ($applicant) {
@@ -1591,15 +1621,6 @@ $listApplicants = DB::table("tbl_applicant as a")
                 ->subject('Document Update Required - LYDO Scholarship')
                 ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
         });
-
-        // Save email message to database
-        DB::table('tbl_document_email_messages')->insert([
-            'application_personnel_id' => $request->application_personnel_id,
-            'email_content' => "Document update email sent for documents: " . implode(', ', $documentNames),
-            'sent_at' => now(),
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
 
         return response()->json(['success' => true, 'message' => 'Email sent successfully.']);
     } catch (\Exception $e) {

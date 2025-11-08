@@ -420,9 +420,7 @@ $listApplicants = DB::table("tbl_applicant as a")
         "a.applicant_course",
         "a.applicant_school_name",
         "a.applicant_bdate",
-        "a.applicant_gender",
-        "a.applicant_pob",
-        "ap.application_personnel_id",
+        "a.applicant_gender",        "ap.application_personnel_id",
         "ap.initial_screening",
         "ap.remarks",
     )
@@ -487,7 +485,6 @@ $listApplicants = DB::table("tbl_applicant as a")
                 "applicant_gender" => $request->applicant_gender,
                 "applicant_bdate" => $request->applicant_bdate,
                 "applicant_civil_status" => $request->applicant_civil_status,
-                "applicant_pob" => $request->applicant_pob,
                 "applicant_brgy" => $request->applicant_brgy,
                 "applicant_email" => $request->applicant_email,
                 "applicant_contact_number" =>
@@ -516,17 +513,15 @@ public function showIntakeSheet($application_personnel_id)
         ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
         ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
         ->where('tbl_application_personnel.application_personnel_id', $application_personnel_id)
-        ->select('tbl_applicant.applicant_gender', 'tbl_applicant.applicant_pob')
+        ->select('tbl_applicant.applicant_gender')
         ->first();
 
     $applicantGender = $applicantData ? $applicantData->applicant_gender : null;
-    $applicantPob = $applicantData ? $applicantData->applicant_pob : null;
 
     if ($intakeSheet) {
         $data = $intakeSheet->toArray();
         $data['remarks'] = $remarks;
         $data['applicant_gender'] = $applicantGender;
-        $data['applicant_pob'] = $applicantPob;
         
         // CORRECTED: Ensure all fields are properly mapped
         $data['house_house'] = $intakeSheet->house_house;
@@ -538,6 +533,7 @@ public function showIntakeSheet($application_personnel_id)
         $data['other_income'] = $intakeSheet->other_income;
         $data['house_total_income'] = $intakeSheet->house_total_income;
         $data['house_net_income'] = $intakeSheet->house_net_income;
+        
         
         // Debug log to verify data
         \Log::info('Intake Sheet Data:', [
@@ -552,7 +548,6 @@ public function showIntakeSheet($application_personnel_id)
         return response()->json([
             'remarks' => $remarks,
             'applicant_gender' => $applicantGender,
-            'applicant_pob' => $applicantPob,
             // Include empty values for house fields if no intake sheet exists
             'house_house' => null,
             'house_lot' => null,
@@ -625,7 +620,7 @@ public function updateIntakeSheet(Request $request, $application_personnel_id)
 
         if ($applicantId) {
             $applicantUpdate = [];
-            foreach (['applicant_fname','applicant_mname','applicant_lname','applicant_suffix','applicant_gender','applicant_pob'] as $k) {
+            foreach (['applicant_fname','applicant_mname','applicant_lname','applicant_suffix','applicant_gender'] as $k) {
                 if ($request->filled($k) || $request->has($k)) {
                     $applicantUpdate[$k] = $request->input($k);
                 }

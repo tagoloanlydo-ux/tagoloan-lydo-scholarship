@@ -180,7 +180,7 @@
           <h3 class="text-lg font-semibold mb-3">
             Step 1 — Head of the Family
           </h3>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div class="form-group">
               <input id="applicant_fname" placeholder=" " class="form-input" value="{{ $applicant->applicant_fname ?? '' }}" />
               <label class="form-label">First Name</label>
@@ -207,7 +207,7 @@
               /><label class="form-label">Suffix (Optional)</label>
             </div>
             <!-- 4Ps, IP No., Sex in one row -->
-            <div class="md:col-span-4 grid grid-cols-3 gap-4">
+            <div class="md:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div class="form-group">
                 <select id="head_4ps" class="form-input">
                   <option value="" disabled selected>Select</option>
@@ -231,18 +231,20 @@
               </div>
             </div>
 
-            <div class="form-group md:col-span-2">
-              <input
-                id="head_address"
-                placeholder=" "
-                class="form-input"
-              /><label class="form-label">Address <span style="color: red;">*</span></label>
-            </div>
-            <div class="form-group">
-              <input id="head_zone" placeholder=" " class="form-input" /><label
-                class="form-label"
-                >Zone <span style="color: red;">*</span></label
-              >
+            <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="form-group">
+                <input
+                  id="head_address"
+                  placeholder=" "
+                  class="form-input"
+                /><label class="form-label">Address <span style="color: red;">*</span></label>
+              </div>
+              <div class="form-group">
+                <input id="head_zone" placeholder=" " class="form-input" /><label
+                  class="form-label"
+                  >Zone <span style="color: red;">*</span></label
+                >
+              </div>
             </div>
             <div class="form-group">
               <input
@@ -330,29 +332,29 @@
           <h3 class="text-lg font-semibold mb-3">Step 2 — Family Members</h3>
           <p class="text-sm text-gray-600 mb-3">Please fill up all required fields in the family members table. Remarks should be selected based on the categories listed below.</p>
           <div class="overflow-x-auto">
-            <table id="familyTable" class="min-w-full text-sm thin-border">
+            <table id="familyTable" class="min-w-full text-xs md:text-sm thin-border">
               <thead class="bg-gray-100">
                 <tr>
-                  <th class="border px-2 py-1">Name</th>
-                  <th class="border px-2 py-1">Relation</th>
-                  <th class="border px-2 py-1">Birthdate</th>
-                  <th class="border px-2 py-1">Age</th>
-                  <th class="border px-2 py-1">Sex</th>
-                  <th class="border px-2 py-1">Civil Status</th>
-                  <th class="border px-2 py-1">Educational Attainment</th>
-                  <th class="border px-2 py-1">Occupation</th>
-                  <th class="border px-2 py-1">Monthly Income</th>
-                  <th class="border px-2 py-1">Remarks</th>
-                  <th class="border px-2 py-1">Action</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Name</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Relation</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Birthdate</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Age</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Sex</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Civil Status</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Educational Attainment</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Occupation</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Monthly Income</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Remarks</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Action</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td class="border px-2 py-1">
-                    <input class="w-full border border-gray-300 rounded px-2 py-1 text-sm fm-name" />
+                  <td class="border px-1 md:px-2 py-1">
+                    <input class="w-full border border-gray-300 rounded px-1 md:px-2 py-1 text-xs md:text-sm fm-name" />
                   </td>
-                  <td class="border px-2 py-1">
-                    <select class="w-full border border-gray-300 rounded px-2 py-1 text-sm fm-relation">
+                  <td class="border px-1 md:px-2 py-1">
+                    <select class="w-full border border-gray-300 rounded px-1 md:px-2 py-1 text-xs md:text-sm fm-relation">
                       <option value="">Select</option>
                       <option value="Spouse">Spouse</option>
                       <option value="Son">Son</option>
@@ -365,21 +367,21 @@
                       <option value="Other">Other</option>
                     </select>
                   </td>
-                  <td class="border px-2 py-1">
-                    <input type="date" class="w-full border border-gray-300 rounded px-2 py-1 text-sm fm-birth" />
+                  <td class="border px-1 md:px-2 py-1">
+                    <input type="date" class="w-full border border-gray-300 rounded px-1 md:px-2 py-1 text-xs md:text-sm fm-birth" />
                   </td>
-                  <td class="border px-2 py-1">
-                    <input type="number" class="w-full border border-gray-300 rounded px-2 py-1 text-sm fm-age" />
+                  <td class="border px-1 md:px-2 py-1">
+                    <input type="number" class="w-full border border-gray-300 rounded px-1 md:px-2 py-1 text-xs md:text-sm fm-age" />
                   </td>
-                  <td class="border px-2 py-1">
-                    <select class="w-full border border-gray-300 rounded px-2 py-1 text-sm fm-sex">
+                  <td class="border px-1 md:px-2 py-1">
+                    <select class="w-full border border-gray-300 rounded px-1 md:px-2 py-1 text-xs md:text-sm fm-sex">
                       <option value="">Select</option>
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
                     </select>
                   </td>
-                  <td class="border px-2 py-1">
-                    <select class="w-full border border-gray-300 rounded px-2 py-1 text-sm fm-civil">
+                  <td class="border px-1 md:px-2 py-1">
+                    <select class="w-full border border-gray-300 rounded px-1 md:px-2 py-1 text-xs md:text-sm fm-civil">
                       <option value="">Select</option>
                       <option value="Single">Single</option>
                       <option value="Married">Married</option>
@@ -388,8 +390,8 @@
                       <option value="Separated">Separated</option>
                     </select>
                   </td>
-                  <td class="border px-2 py-1">
-                    <select class="w-full border border-gray-300 rounded px-2 py-1 text-sm fm-educ">
+                  <td class="border px-1 md:px-2 py-1">
+                    <select class="w-full border border-gray-300 rounded px-1 md:px-2 py-1 text-xs md:text-sm fm-educ">
                       <option value="">Select</option>
                       <option value="None">None</option>
                       <option value="Elementary">Elementary</option>
@@ -399,17 +401,17 @@
                       <option value="Graduate">Graduate</option>
                     </select>
                   </td>
-                  <td class="border px-2 py-1">
-                    <input class="w-full border border-gray-300 rounded px-2 py-1 text-sm fm-occ" />
+                  <td class="border px-1 md:px-2 py-1">
+                    <input class="w-full border border-gray-300 rounded px-1 md:px-2 py-1 text-xs md:text-sm fm-occ" />
                   </td>
-                  <td class="border px-2 py-1">
+                  <td class="border px-1 md:px-2 py-1">
                     <div class="flex items-center">
-                      <span class="mr-1 text-gray-600">₱</span>
-                      <input type="number" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm fm-income" />
+                      <span class="mr-1 text-gray-600 text-xs md:text-sm">₱</span>
+                      <input type="number" class="flex-1 border border-gray-300 rounded px-1 md:px-2 py-1 text-xs md:text-sm fm-income" />
                     </div>
                   </td>
-                  <td class="border px-2 py-1">
-                    <select class="w-full border border-gray-300 rounded px-2 py-1 text-sm fm-remarks">
+                  <td class="border px-1 md:px-2 py-1">
+                    <select class="w-full border border-gray-300 rounded px-1 md:px-2 py-1 text-xs md:text-sm fm-remarks">
                       <option value="">Select</option>
                       <option value="CIC">CIC</option>
                       <option value="OSY">OSY</option>
@@ -421,11 +423,11 @@
                       <option value="Pregnant Mother">Pregnant Mother</option>
                     </select>
                   </td>
-                  <td class="border px-2 py-1">
+                  <td class="border px-1 md:px-2 py-1">
                     <button
                       type="button"
                       onclick="deleteRow(this)"
-                      class="bg-red-500 text-white px-2 py-1 rounded"
+                      class="bg-red-500 text-white px-1 md:px-2 py-1 rounded text-xs md:text-sm"
                     >
                       🗑
                     </button>
@@ -462,7 +464,7 @@
 
           <div class="space-y-4" id="householdForm">
             <!-- First line: Incomes -->
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="form-group">
                 <input
                   id="other_income"
@@ -483,7 +485,7 @@
             </div>
 
             <!-- Second line: House, Lot, Electricity, Water -->
-            <div class="grid grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <div class="form-group">
                   <select id="house_house" class="form-input">
@@ -588,49 +590,51 @@
               <div class="space-y-4">
                 <h2 class="text-xl font-bold">Family Intake Sheet Review</h2>
                 <div class="print-box p-4">
-                  <p><strong>Serial No.:</strong> <span id="rv_serial"></span></p>
-                  <p><strong>Name:</strong> <span id="rv_head_name"></span></p>
+                  <p class="text-sm md:text-base"><strong>Serial No.:</strong> <span id="rv_serial"></span></p>
+                  <p class="text-sm md:text-base"><strong>Name:</strong> <span id="rv_head_name"></span></p>
                   <div id="rv_head_table"></div>
                 </div>
                 <div class="print-box p-4">
-                  <h4 class="font-semibold">Family Members</h4>
-                  <table id="rv_family_table" class="min-w-full text-sm thin-border">
-                    <thead class="bg-gray-100">
-                      <tr>
-                        <th class="border px-2 py-1">Name</th>
-                        <th class="border px-2 py-1">Relation</th>
-                        <th class="border px-2 py-1">Birthdate</th>
-                        <th class="border px-2 py-1">Age</th>
-                        <th class="border px-2 py-1">Sex</th>
-                        <th class="border px-2 py-1">Civil Status</th>
-                        <th class="border px-2 py-1">Educational Attainment</th>
-                        <th class="border px-2 py-1">Occupation</th>
-                        <th class="border px-2 py-1">Monthly Income</th>
-                        <th class="border px-2 py-1">Remarks</th>
-                      </tr>
-                    </thead>
-                    <tbody></tbody>
-                  </table>
+                  <h4 class="font-semibold text-sm md:text-base">Family Members</h4>
+                  <div class="overflow-x-auto">
+                    <table id="rv_family_table" class="min-w-full text-xs md:text-sm thin-border">
+                      <thead class="bg-gray-100">
+                        <tr>
+                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Name</th>
+                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Relation</th>
+                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Birthdate</th>
+                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Age</th>
+                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Sex</th>
+                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Civil Status</th>
+                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Educational Attainment</th>
+                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Occupation</th>
+                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Monthly Income</th>
+                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Remarks</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
                 </div>
                 <div id="rv_household_table" class="print-box p-4">
-                  <h4 class="font-semibold">Household Information</h4>
-                  <table class="min-w-full text-sm">
+                  <h4 class="font-semibold text-sm md:text-base">Household Information</h4>
+                  <table class="min-w-full text-xs md:text-sm">
                     <tr>
-                        <td><strong>Other Source of Income:</strong> ₱<span id="rv_other_income"></span></td>
-                      <td><strong>Total Family Income (Monthly):</strong> ₱<span id="rv_total_income"></span></td>
-                      <td><strong>Total Family Net Income (Monthly):</strong> ₱<span id="rv_net_income"></span></td>
+                        <td class="px-1 md:px-2 py-1"><strong>Other Source of Income:</strong> ₱<span id="rv_other_income"></span></td>
+                      <td class="px-1 md:px-2 py-1"><strong>Total Family Income (Monthly):</strong> ₱<span id="rv_total_income"></span></td>
+                      <td class="px-1 md:px-2 py-1"><strong>Total Family Net Income (Monthly):</strong> ₱<span id="rv_net_income"></span></td>
 
                     </tr>
     <tr>
-      <td><strong>House (Owned/Rented):</strong> <span id="rv_house"></span><br><span id="rv_house_rent_display"></span></td>
-      <td><strong>Lot (Owned/Rented):</strong> <span id="rv_lot"></span><br><span id="rv_lot_rent_display"></span></td>
-      <td><strong>Water Monthly Billing:</strong> ₱<span id="rv_water"></span></td>
-      <td><strong>Electricity Monthly Billing:</strong> ₱<span id="rv_electric"></span></td>
+      <td class="px-1 md:px-2 py-1"><strong>House (Owned/Rented):</strong> <span id="rv_house"></span><br><span id="rv_house_rent_display"></span></td>
+      <td class="px-1 md:px-2 py-1"><strong>Lot (Owned/Rented):</strong> <span id="rv_lot"></span><br><span id="rv_lot_rent_display"></span></td>
+      <td class="px-1 md:px-2 py-1"><strong>Water Monthly Billing:</strong> ₱<span id="rv_water"></span></td>
+      <td class="px-1 md:px-2 py-1"><strong>Electricity Monthly Billing:</strong> ₱<span id="rv_electric"></span></td>
     </tr>
     <tr id="rv_value_row" style="display: none;">
-      <td><strong>House Value:</strong> ₱<span id="rv_house_value"></span></td>
-      <td><strong>Lot Value:</strong> ₱<span id="rv_lot_value"></span></td>
-      <td colspan="2"></td>
+      <td class="px-1 md:px-2 py-1"><strong>House Value:</strong> ₱<span id="rv_house_value"></span></td>
+      <td class="px-1 md:px-2 py-1"><strong>Lot Value:</strong> ₱<span id="rv_lot_value"></span></td>
+      <td colspan="2" class="px-1 md:px-2 py-1"></td>
     </tr>
                   </table>
                 </div>
@@ -1057,12 +1061,7 @@ function setupSignatures() {
           suffix: suffix,
           gender: document.querySelector('input[name="applicant_gender"]:checked')?.value || "",
         };
-        
-          const signatures = {
-    client: signaturePads.client && !signaturePads.client.isEmpty()
-      ? signaturePads.client.toDataURL()
-      : null,
-  };
+
         const head = {
           _4ps: getVal("head_4ps"),
           ipno: getVal("head_ipno"),
@@ -1204,16 +1203,16 @@ function setupSignatures() {
         d.family.forEach((f) => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
-          <td class="border px-2 py-1 text-center">${escapeHtml(f.name)}</td>
-          <td class="border px-2 py-1 text-center">${escapeHtml(f.relation)}</td>
-          <td class="border px-2 py-1 text-center">${formatDate(f.birth)}</td>
-          <td class="border px-2 py-1 text-center">${escapeHtml(f.age)}</td>
-          <td class="border px-2 py-1 text-center">${escapeHtml(f.sex)}</td>
-          <td class="border px-2 py-1 text-center">${escapeHtml(f.civil)}</td>
-          <td class="border px-2 py-1 text-center">${escapeHtml(f.educ)}</td>
-          <td class="border px-2 py-1 text-center">${escapeHtml(f.occ)}</td>
-          <td class="border px-2 py-1 text-center">₱${escapeHtml(f.income)}</td>
-          <td class="border px-2 py-1 text-center">${escapeHtml(f.remarks)}</td>
+          <td class="border px-1 md:px-2 py-1 text-center text-xs md:text-sm">${escapeHtml(f.name)}</td>
+          <td class="border px-1 md:px-2 py-1 text-center text-xs md:text-sm">${escapeHtml(f.relation)}</td>
+          <td class="border px-1 md:px-2 py-1 text-center text-xs md:text-sm">${formatDate(f.birth)}</td>
+          <td class="border px-1 md:px-2 py-1 text-center text-xs md:text-sm">${escapeHtml(f.age)}</td>
+          <td class="border px-1 md:px-2 py-1 text-center text-xs md:text-sm">${escapeHtml(f.sex)}</td>
+          <td class="border px-1 md:px-2 py-1 text-center text-xs md:text-sm">${escapeHtml(f.civil)}</td>
+          <td class="border px-1 md:px-2 py-1 text-center text-xs md:text-sm">${escapeHtml(f.educ)}</td>
+          <td class="border px-1 md:px-2 py-1 text-center text-xs md:text-sm">${escapeHtml(f.occ)}</td>
+          <td class="border px-1 md:px-2 py-1 text-center text-xs md:text-sm">₱${escapeHtml(f.income)}</td>
+          <td class="border px-1 md:px-2 py-1 text-center text-xs md:text-sm">${escapeHtml(f.remarks)}</td>
         `;
           tbody.appendChild(tr);
         });
@@ -1342,13 +1341,23 @@ function setupSignatures() {
         nextBtn.style.opacity = allFilled ? '1' : '0.5';
       }
 
-      // Validate Step 2: Disable Next if any row has empty name
+      // Validate Step 2: Disable Next if any row has data but empty name
       function validateStep2() {
         const nextBtn = document.getElementById('nextBtn');
         let canProceed = true;
         document.querySelectorAll('#familyTable tbody tr').forEach(tr => {
           const name = tr.querySelector('.fm-name')?.value.trim() || '';
-          if (!name) {
+          const relation = tr.querySelector('.fm-relation')?.value || '';
+          const birth = tr.querySelector('.fm-birth')?.value || '';
+          const age = tr.querySelector('.fm-age')?.value || '';
+          const sex = tr.querySelector('.fm-sex')?.value || '';
+          const civil = tr.querySelector('.fm-civil')?.value || '';
+          const educ = tr.querySelector('.fm-educ')?.value || '';
+          const occ = tr.querySelector('.fm-occ')?.value || '';
+          const income = tr.querySelector('.fm-income')?.value || '';
+          const remarks = tr.querySelector('.fm-remarks')?.value || '';
+          const hasData = name || relation || birth || age || sex || civil || educ || occ || income || remarks;
+          if (hasData && !name) {
             canProceed = false;
           }
         });

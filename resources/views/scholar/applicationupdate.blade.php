@@ -430,6 +430,25 @@
       clip-path: polygon(100% 0, 100% 100%, 0 100%);
     }
 
+    /* Reason Section Styles */
+    .reason-section {
+      animation: fadeIn 0.3s ease-out;
+      margin-bottom: 1rem;
+    }
+
+    .reason-section .flex {
+      align-items: flex-start;
+    }
+
+    .reason-section i {
+      margin-top: 0.125rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     /* Mobile Responsive Styles */
     @media (max-width: 1024px) {
       .documents-grid {
@@ -702,11 +721,11 @@
         <!-- Application Requirements - Only show bad documents -->
         @php
           $documentMapping = [
-            'Application Letter' => ['key' => 'application_letter', 'description' => 'A formal letter expressing your interest in the scholarship program', 'icon' => 'fas fa-file-alt'],
-            'Certificate of Registration' => ['key' => 'cert_of_reg', 'description' => 'Your current certificate of registration from your school', 'icon' => 'fas fa-file-certificate'],
-            'Grade Slip' => ['key' => 'grade_slip', 'description' => 'Your most recent grade slip or transcript of records', 'icon' => 'fas fa-chart-line'],
-            'Barangay Indigency' => ['key' => 'brgy_indigency', 'description' => 'Certificate of indigency from your barangay', 'icon' => 'fas fa-home'],
-            'Student ID' => ['key' => 'student_id', 'description' => 'A clear copy of your valid student identification card', 'icon' => 'fas fa-id-card']
+            'application_letter' => ['name' => 'Application Letter', 'description' => 'A formal letter expressing your interest in the scholarship program', 'icon' => 'fas fa-file-alt'],
+            'cert_of_reg' => ['name' => 'Certificate of Registration', 'description' => 'Your current certificate of registration from your school', 'icon' => 'fas fa-file-certificate'],
+            'grade_slip' => ['name' => 'Grade Slip', 'description' => 'Your most recent grade slip or transcript of records', 'icon' => 'fas fa-chart-line'],
+            'brgy_indigency' => ['name' => 'Barangay Indigency', 'description' => 'Certificate of indigency from your barangay', 'icon' => 'fas fa-home'],
+            'student_id' => ['name' => 'Student ID', 'description' => 'A clear copy of your valid student identification card', 'icon' => 'fas fa-id-card']
           ];
         @endphp
 
@@ -719,19 +738,35 @@
                   <div class="document-card-icon">
                     <i class="{{ $docInfo['icon'] }}"></i>
                   </div>
-                  <h3 class="document-card-title">{{ $badDoc }}</h3>
+                  <h3 class="document-card-title">{{ $docInfo['name'] }}</h3>
                 </div>
                 <p class="document-card-description">{{ $docInfo['description'] }}</p>
-                <div class="input-group">
-                  <input type="file" id="{{ $docInfo['key'] }}" name="{{ $docInfo['key'] }}" accept="application/pdf" required class="input-file"/>
+                
+                <!-- REASON SECTION - SHOWS WHY DOCUMENT IS BAD -->
+                @if(isset($documentReasons[$badDoc]))
+                  <div class="reason-section">
+                    <div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <div class="flex items-start">
+                        <i class="fas fa-exclamation-triangle text-red-500 mt-1 mr-2"></i>
+                        <div>
+                          <p class="text-sm font-semibold text-red-800">Document Issue:</p>
+                          <p class="text-sm text-red-700 mt-1">{{ $documentReasons[$badDoc] }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                @endif
+
+                <div class="input-group mt-3">
+                  <input type="file" id="{{ $badDoc }}" name="{{ $badDoc }}" accept="application/pdf" required class="input-file"/>
                   <small class="error-message"></small>
                 </div>
                 <div class="document-actions mt-3">
                   @php
-                    $dbField = $docInfo['key'];
+                    $dbField = $badDoc;
                   @endphp
                   @if($application && $application->$dbField)
-                    <button type="button" onclick="openDocumentModal('{{ asset('storage/' . $application->$dbField) }}', '{{ $badDoc }}')" class="view-document-btn">
+                    <button type="button" onclick="openDocumentModal('{{ asset('storage/' . $application->$dbField) }}', '{{ $docInfo['name'] }}')" class="view-document-btn">
                       <i class="fas fa-eye"></i>View Current Document
                     </button>
                   @endif
@@ -848,10 +883,9 @@
     // Attach validation to all file inputs
     @foreach($issues as $badDoc)
       @if(isset($documentMapping[$badDoc]))
-        @php $docInfo = $documentMapping[$badDoc]; @endphp
-        const input{{ $docInfo['key'] }} = document.getElementById('{{ $docInfo['key'] }}');
-        if (input{{ $docInfo['key'] }}) {
-          input{{ $docInfo['key'] }}.addEventListener("change", function () {
+        const input{{ $badDoc }} = document.getElementById('{{ $badDoc }}');
+        if (input{{ $badDoc }}) {
+          input{{ $badDoc }}.addEventListener("change", function () {
             validateFile(this);
           });
         }
@@ -870,9 +904,8 @@
 
       @foreach($issues as $badDoc)
         @if(isset($documentMapping[$badDoc]))
-          @php $docInfo = $documentMapping[$badDoc]; @endphp
-          const input{{ $docInfo['key'] }} = document.getElementById('{{ $docInfo['key'] }}');
-          if (input{{ $docInfo['key'] }} && !validateFile(input{{ $docInfo['key'] }})) {
+          const input{{ $badDoc }} = document.getElementById('{{ $badDoc }}');
+          if (input{{ $badDoc }} && !validateFile(input{{ $badDoc }})) {
             allValid = false;
           }
         @endif
