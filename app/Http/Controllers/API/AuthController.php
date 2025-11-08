@@ -182,6 +182,55 @@ class AuthController extends Controller
     }
 
     /**
+     * Change password for authenticated user
+     */
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator);
+        }
+
+        try {
+            // Check if it's a scholar
+            if ($user instanceof Scholar) {
+                // Verify current password for scholar
+                if (!Hash::check($request->current_password, $user->scholar_pass)) {
+                    return $this->errorResponse('Current password is incorrect', 400);
+                }
+
+                // Update scholar password
+                $user->update(['scholar_pass' => Hash::make($request->new_password)]);
+            } else {
+                // For other users (staff/admin), check lydopers table
+                $lydopers = Lydopers::where('lydopers_id', $user->lydopers_id ?? $user->id)->first();
+
+                if (!$lydopers) {
+                    return $this->errorResponse('User not found', 404);
+                }
+
+                if (!Hash::check($request->current_password, $lydopers->lydopers_pass)) {
+                    return $this->errorResponse('Current password is incorrect', 400);
+                }
+
+                // Update lydopers password
+                $lydopers->update(['lydopers_pass' => Hash::make($request->new_password)]);
+            }
+
+            return $this->successResponse(null, 'Password changed successfully');
+
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to change password: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
      * Update scholar profile
      */
     public function updateProfile(Request $request)

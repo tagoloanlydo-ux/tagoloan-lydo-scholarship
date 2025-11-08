@@ -32,6 +32,7 @@ Route::prefix('staging')->group(function () {
         // Auth routes
         Route::prefix('auth')->group(function () {
             Route::get('/profile', [AuthController::class, 'profile']);
+            Route::post('/change-password', [AuthController::class, 'changePassword']);
             Route::post('/logout', [AuthController::class, 'logout']);
         });
 
