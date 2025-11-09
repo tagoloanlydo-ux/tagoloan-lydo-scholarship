@@ -478,6 +478,46 @@ class AdminController extends Controller
     }
 
     /**
+     * Get application settings
+     */
+    public function getSettings(Request $request)
+    {
+        try {
+            $settings = \App\Models\Settings::first();
+
+            if (!$settings) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'renewal_start_date' => null,
+                        'renewal_deadline' => null,
+                        'application_start_date' => null,
+                        'application_deadline' => null,
+                        'renewal_semester' => null,
+                    ]
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'renewal_start_date' => $settings->renewal_start_date,
+                    'renewal_deadline' => $settings->renewal_deadline,
+                    'application_start_date' => $settings->application_start_date,
+                    'application_deadline' => $settings->application_deadline,
+                    'renewal_semester' => $settings->renewal_semester,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch settings: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Test endpoint
      */
     public function testEndpoint(Request $request)

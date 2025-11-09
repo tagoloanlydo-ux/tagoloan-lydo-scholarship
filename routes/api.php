@@ -51,11 +51,14 @@ Route::prefix('staging')->group(function () {
         Route::apiResource('/applications', ApplicationController::class);
         Route::apiResource('/scholars', ScholarController::class);
         Route::apiResource('/renewals', RenewalController::class);
-        Route::apiResource('/disbursements', DisbursementController::class);
+        Route::apiResource('/disbursements', DisburseController::class);
         Route::apiResource('/announcements', AnnouncementController::class);
         Route::apiResource('/reports', ReportController::class);
         Route::apiResource('/notifications', NotificationController::class);
         Route::apiResource('/admins', AdminController::class);
         Route::apiResource('/application-personnels', ApplicationPersonnelController::class);
+
+        // Settings endpoint
+        Route::get('/settings', [AdminController::class, 'getSettings']);
     });
 });
