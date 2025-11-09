@@ -14,7 +14,7 @@
   </head>
   <style>
   .banner-grad {
-    background: #7c3aed; /* solid light purple */
+        background: linear-gradient(90deg, #4c1d95 0%, #7e22ce 100%);
     height: 100px;
     position: relative;
 }

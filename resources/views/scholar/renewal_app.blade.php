@@ -53,34 +53,15 @@
                         </li>
                     </ul>
                 </nav>
-                <div class="p-2 md:p-4 border-t">
-                    <form method="POST" action="{{ route('logout') }}" id="logoutForm">
-                        @csrf
-                        <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
-                            <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
-                            <span class="hidden md:block text-red-600">Logout</span>
-                        </button>
-                    </form>
-
-                    <script>
-                        document.getElementById('logoutForm').addEventListener('submit', function(e) {
-                            e.preventDefault();
-                            Swal.fire({
-                                title: 'Are you sure you want to logout?',
-                                icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonColor: '#d33',
-                                cancelButtonColor: '#3085d6',
-                                confirmButtonText: 'Yes, logout',
-                                cancelButtonText: 'Cancel'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    e.target.submit();
-                                }
-                            });
-                        });
-                    </script>
-                </div>
+<div class="p-2 md:p-4 border-t">
+    <form method="POST" action="{{ route('logout') }}" id="logoutForm">
+        @csrf
+        <button type="submit" class="flex items-center p-2 text-red-600 hover:bg-violet-600 hover:text-white rounded-lg w-full text-left transition duration-200">
+            <i class="fas fa-sign-out-alt mx-auto md:mx-0 md:mr-2 text-red-600 hover:text-white"></i>
+            <span class="hidden md:block text-red-600 hover:text-white">Logout</span>
+        </button>
+    </form>
+</div>
             </div>
 
             <div class="flex-1 overflow-y-auto p-4 md:p-6">
@@ -92,95 +73,95 @@
                             <p class="text-gray-600 text-lg">We're excited to help you continue your scholarship journey. Please submit your renewal application with the required documents.</p>
                         </div>
 
-<div class="text-center">
-    @php
-        $now = now();
-        $isWithinRenewalPeriod = true;
-        $deadlineMessage = '';
+                    <div class="text-center">
+                        @php
+                            $now = now();
+                            $isWithinRenewalPeriod = true;
+                            $deadlineMessage = '';
 
-        if ($settings && $settings->renewal_deadline && $now->isAfter($settings->renewal_deadline)) {
-            $isWithinRenewalPeriod = false;
-            $deadlineMessage = 'Renewal submission deadline has passed.';
-        } elseif ($settings && $settings->renewal_start_date && $now->isBefore($settings->renewal_start_date)) {
-            $isWithinRenewalPeriod = false;
-            $deadlineMessage = 'Renewal submission has not started yet.';
-        }
+                            if ($settings && $settings->renewal_deadline && $now->isAfter($settings->renewal_deadline)) {
+                                $isWithinRenewalPeriod = false;
+                                $deadlineMessage = 'Renewal submission deadline has passed.';
+                            } elseif ($settings && $settings->renewal_start_date && $now->isBefore($settings->renewal_start_date)) {
+                                $isWithinRenewalPeriod = false;
+                                $deadlineMessage = 'Renewal submission has not started yet.';
+                            }
 
-        // Check if scholar has approved renewal for current academic year
-        $hasApprovedRenewal = $approvedRenewalExists ?? false;
-        $canSubmitRenewal = $isWithinRenewalPeriod && !$hasApprovedRenewal;
-    @endphp
+                            // Check if scholar has approved renewal for current academic year
+                            $hasApprovedRenewal = $approvedRenewalExists ?? false;
+                            $canSubmitRenewal = $isWithinRenewalPeriod && !$hasApprovedRenewal;
+                        @endphp
 
-    @if(!$isWithinRenewalPeriod)
-        <div class="mb-4">
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
-                <i class="fa-solid fa-exclamation-triangle mr-2"></i>
-                {{ $deadlineMessage }}
-                @if($settings && $settings->renewal_start_date)
-                    <br><small>Renewal period starts: {{ $settings->renewal_start_date->format('M d, Y') }}</small>
-                @endif
-                @if($settings && $settings->renewal_deadline)
-                    <br><small>Deadline: {{ $settings->renewal_deadline->format('M d, Y') }}</small>
-                @endif
-            </div>
-        </div>
-    @endif
+                        @if(!$isWithinRenewalPeriod)
+                            <div class="mb-4">
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+                                    <i class="fa-solid fa-exclamation-triangle mr-2"></i>
+                                    {{ $deadlineMessage }}
+                                    @if($settings && $settings->renewal_start_date)
+                                        <br><small>Renewal period starts: {{ $settings->renewal_start_date->format('M d, Y') }}</small>
+                                    @endif
+                                    @if($settings && $settings->renewal_deadline)
+                                        <br><small>Deadline: {{ $settings->renewal_deadline->format('M d, Y') }}</small>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
 
-    @if($hasApprovedRenewal)
-        <div class="mb-4">
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
-                <i class="fa-solid fa-check-circle mr-2"></i>
-                Congratulations! Your renewal application for this academic year has been approved.
-            </div>
-        </div>
-        <button disabled class="bg-gray-400 cursor-not-allowed text-white font-bold py-4 px-8 rounded-xl shadow-lg">
-            <i class="fa-solid fa-check-circle mr-2"></i>
-            Renewal Approved
-        </button>
-    @elseif($renewal && $renewal->renewal_status == 'Approved')
-        <div class="mb-4">
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
-                <i class="fa-solid fa-check-circle mr-2"></i>
-                Congratulations! Your renewal application has been approved.
-            </div>
-        </div>
-        @if($canSubmitRenewal)
-            <button onclick="openModal()" id="renewalButton" class="bg-violet-600 hover:bg-violet-700 text-white font-bold py-4 px-8 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg">
-                <i class="fa-solid fa-plus-circle mr-2"></i>
-                Apply for Renewal
-            </button>
-        @else
-            <button disabled class="bg-gray-400 cursor-not-allowed text-white font-bold py-4 px-8 rounded-xl shadow-lg">
-                <i class="fa-solid fa-plus-circle mr-2"></i>
-                Apply for Renewal
-            </button>
-        @endif
-    @elseif($renewal)
-        @if($canSubmitRenewal)
-            <button onclick="openModal()" id="renewalButton" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-4 px-8 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg">
-                <i class="fa-solid fa-edit mr-2"></i>
-                Your Application Is Pending
-            </button>
-        @else
-            <button disabled class="bg-gray-400 cursor-not-allowed text-white font-bold py-4 px-8 rounded-xl shadow-lg">
-                <i class="fa-solid fa-edit mr-2"></i>
-                Your Application Is Pending
-            </button>
-        @endif
-    @else
-        @if($canSubmitRenewal)
-            <button onclick="openModal()" id="renewalButton" class="bg-violet-600 hover:bg-violet-700 text-white font-bold py-4 px-8 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg">
-                <i class="fa-solid fa-plus-circle mr-2"></i>
-                Apply for Renewal
-            </button>
-        @else
-            <button disabled class="bg-gray-400 cursor-not-allowed text-white font-bold py-4 px-8 rounded-xl shadow-lg">
-                <i class="fa-solid fa-plus-circle mr-2"></i>
-                Apply for Renewal
-            </button>
-        @endif
-    @endif
-</div>
+                        @if($hasApprovedRenewal)
+                            <div class="mb-4">
+                                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
+                                    <i class="fa-solid fa-check-circle mr-2"></i>
+                                    Congratulations! Your renewal application for this academic year has been approved.
+                                </div>
+                            </div>
+                            <button disabled class="bg-gray-400 cursor-not-allowed text-white font-bold py-4 px-8 rounded-xl shadow-lg">
+                                <i class="fa-solid fa-check-circle mr-2"></i>
+                                Renewal Approved
+                            </button>
+                        @elseif($renewal && $renewal->renewal_status == 'Approved')
+                            <div class="mb-4">
+                                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
+                                    <i class="fa-solid fa-check-circle mr-2"></i>
+                                    Congratulations! Your renewal application has been approved.
+                                </div>
+                            </div>
+                            @if($canSubmitRenewal)
+                                <button onclick="openModal()" id="renewalButton" class="bg-violet-600 hover:bg-violet-700 text-white font-bold py-4 px-8 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg">
+                                    <i class="fa-solid fa-plus-circle mr-2"></i>
+                                    Apply for Renewal
+                                </button>
+                            @else
+                                <button disabled class="bg-gray-400 cursor-not-allowed text-white font-bold py-4 px-8 rounded-xl shadow-lg">
+                                    <i class="fa-solid fa-plus-circle mr-2"></i>
+                                    Apply for Renewal
+                                </button>
+                            @endif
+                        @elseif($renewal)
+                            @if($canSubmitRenewal)
+                                <button onclick="openModal()" id="renewalButton" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-4 px-8 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg">
+                                    <i class="fa-solid fa-edit mr-2"></i>
+                                    Your Application Is Pending
+                                </button>
+                            @else
+                                <button disabled class="bg-gray-400 cursor-not-allowed text-white font-bold py-4 px-8 rounded-xl shadow-lg">
+                                    <i class="fa-solid fa-edit mr-2"></i>
+                                    Your Application Is Pending
+                                </button>
+                            @endif
+                        @else
+                            @if($canSubmitRenewal)
+                                <button onclick="openModal()" id="renewalButton" class="bg-violet-600 hover:bg-violet-700 text-white font-bold py-4 px-8 rounded-xl transition duration-300 transform hover:scale-105 shadow-lg">
+                                    <i class="fa-solid fa-plus-circle mr-2"></i>
+                                    Apply for Renewal
+                                </button>
+                            @else
+                                <button disabled class="bg-gray-400 cursor-not-allowed text-white font-bold py-4 px-8 rounded-xl shadow-lg">
+                                    <i class="fa-solid fa-plus-circle mr-2"></i>
+                                    Apply for Renewal
+                                </button>
+                            @endif
+                        @endif
+                    </div>
                     </div>
 
                     <!-- Requirements Section -->
@@ -390,16 +371,27 @@
     </script>
 
     <script>
-// Modal functions
 function openModal() {
     // Check if scholar has approved renewal for current academic year
     const hasApprovedRenewal = {{ $hasApprovedRenewal ? 'true' : 'false' }};
+    const canSubmitRenewal = {{ $canSubmitRenewal ? 'true' : 'false' }};
     
     if (hasApprovedRenewal) {
         Swal.fire({
             title: 'Renewal Already Approved',
             text: 'You already have an approved renewal application for this academic year.',
             icon: 'info',
+            confirmButtonColor: '#7c3aed',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+    
+    if (!canSubmitRenewal) {
+        Swal.fire({
+            title: 'Renewal Not Available',
+            text: '{{ $deadlineMessage }}',
+            icon: 'warning',
             confirmButtonColor: '#7c3aed',
             confirmButtonText: 'OK'
         });
@@ -632,6 +624,24 @@ function calculateYearLevel(currentAcademicYear) {
     }
 }
     </script>
+<script>
+    document.getElementById('logoutForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Are you sure you want to logout?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, logout',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                e.target.submit();
+            }
+        });
+    });
+</script>
 </body>
 
 </html>

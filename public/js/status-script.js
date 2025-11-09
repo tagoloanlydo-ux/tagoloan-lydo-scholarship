@@ -472,17 +472,13 @@ function setupDocumentButtons(data) {
         return;
     }
 
-    // Create grid container
-    const gridContainer = document.createElement('div');
-    gridContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6';
-
-    // Create document cards
+    // Create document sections in rows
     availableDocuments.forEach(docType => {
         const docUrl = currentDocumentUrls[docType];
         const title = documentTitles[docType];
 
         const documentDiv = document.createElement('div');
-        documentDiv.className = 'document-section bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden';
+        documentDiv.className = 'document-section mb-6 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden';
 
         documentDiv.innerHTML = `
             <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
@@ -493,7 +489,7 @@ function setupDocumentButtons(data) {
                     <iframe
                         src="${docUrl}"
                         width="100%"
-                        height="400"
+                        height="500"
                         style="border: none;"
                         title="${title}">
                         <p class="p-4 text-center text-gray-500">Your browser does not support iframes.
@@ -504,10 +500,8 @@ function setupDocumentButtons(data) {
             </div>
         `;
 
-        gridContainer.appendChild(documentDiv);
+        documentsContainer.appendChild(documentDiv);
     });
-
-    documentsContainer.appendChild(gridContainer);
 }
 
 // Function to format date

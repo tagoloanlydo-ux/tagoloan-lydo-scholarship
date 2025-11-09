@@ -8,71 +8,122 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="{{ asset('css/login.css') }}" />
-    <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
+    <style>
+      /* Custom CSS for responsiveness */
+      .banner-grad {
+        background: linear-gradient(90deg, #4c1d95 0%, #7e22ce 100%);
+      }
+      
+      @media (max-width: 768px) {
+        .responsive-container {
+          padding-left: 1rem;
+          padding-right: 1rem;
+        }
+        
+        .responsive-heading {
+          font-size: 2.5rem;
+        }
+        
+        .responsive-text {
+          font-size: 1.125rem;
+        }
+        
+        .responsive-form {
+          width: 100%;
+          max-width: 100%;
+        }
+      }
+      
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .responsive-container {
+          padding-left: 2rem;
+          padding-right: 2rem;
+        }
+        
+        .responsive-heading {
+          font-size: 3rem;
+        }
+        
+        .responsive-text {
+          font-size: 1.25rem;
+        }
+      }
+      
+      @media (min-width: 1025px) {
+        .responsive-container {
+          padding-left: 3rem;
+          padding-right: 3rem;
+        }
+        
+        .responsive-heading {
+          font-size: 3.75rem;
+        }
+        
+        .responsive-text {
+          font-size: 1.25rem;
+        }
+      }
+    </style>
   </head>
   <body class="bg-gray-50 min-h-screen flex flex-col">
     <!-- HEADER -->
     <script>
-  @if (session('success'))
-    Swal.fire({
-      title: 'Success!',
-      text: "{{ session('success') }}",
-      icon: 'success',
-      confirmButtonText: 'OK'
-    });
-  @endif
+      @if (session('success'))
+        Swal.fire({
+          title: 'Success!',
+          text: "{{ session('success') }}",
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
+      @endif
 
-  @if (session('error'))
-    Swal.fire({
-      title: 'Error!',
-      text: "{{ session('error') }}",
-      icon: 'error',
-      confirmButtonText: 'Try Again'
-    });
-  @endif
+      @if (session('error'))
+        Swal.fire({
+          title: 'Error!',
+          text: "{{ session('error') }}",
+          icon: 'error',
+          confirmButtonText: 'Try Again'
+        });
+      @endif
 
-  @if ($errors->any() && ($errors->has('error') || $errors->count() > 1 || (!$errors->has('scholar_username') && !$errors->has('scholar_pass'))))
-    Swal.fire({
-      title: 'Validation Error',
-      html: "{!! implode('<br>', $errors->all()) !!}",
-      icon: 'warning',
-      confirmButtonText: 'OK'
-    });
-  @endif
-</script>
+      @if ($errors->any() && ($errors->has('error') || $errors->count() > 1 || (!$errors->has('scholar_username') && !$errors->has('scholar_pass'))))
+        Swal.fire({
+          title: 'Validation Error',
+          html: "{!! implode('<br>', $errors->all()) !!}",
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
+      @endif
+    </script>
 
-    <header class="banner-grad flex items-center px-6 text-white shadow-md">
-         <img src="/images/LYDO.png" alt="LYDO Logo" class="h-10 mr-4"/>
-        <div>
-          <h1 class="text-3xl font-extrabold">LYDO SCHOLARSHIP</h1>
-          <p class="text-sm tracking-widest">
-            PARA SA KABATAAN, PARA SA KINABUKASAN.
-          </p>
-        </div>
+    <header class="banner-grad flex items-center px-4 md:px-6 py-3 text-white shadow-md">
+      <img src="/images/LYDO.png" alt="LYDO Logo" class="h-8 md:h-10 mr-3 md:mr-4"/>
+      <div>
+        <h1 class="text-xl md:text-3xl font-extrabold">LYDO SCHOLARSHIP</h1>
+        <p class="text-xs md:text-sm tracking-widest">
+          PARA SA KABATAAN, PARA SA KINABUKASAN.
+        </p>
+      </div>
     </header>
 
     <!-- MAIN LOGIN SECTION -->
-    <main
-      class="flex flex-1 flex-col md:flex-row items-center justify-center px-6 py-10 gap-12 flex-nowrap">
+    <main class="flex flex-1 flex-col md:flex-row items-center justify-center responsive-container py-8 md:py-10 gap-8 md:gap-12">
       <!-- LEFT SIDE -->
-      <div class="flex flex-col items-center text-center md:text-left md:items-start max-w-lg min-w-0 md:min-w-[400px]">
-        <!-- Centered GIF with transparent background -->
-
-        <h2 class="text-5xl font-extrabold mb-4 text-purple-700 leading-tight">
+      <div class="flex flex-col items-center text-center md:text-left md:items-start w-full md:max-w-lg md:min-w-[400px] px-4">
+        <h2 class="responsive-heading font-extrabold mb-4 text-purple-700 leading-tight">
           Welcome Back, Scholars!
         </h2>
-        <p class="text-xl leading-relaxed text-gray-700 mb-4">
+        <p class="responsive-text leading-relaxed text-gray-700 mb-4">
           Access your scholarship dashboard, track your application, and explore
           new opportunities for your future.
         </p>
-          <button onclick="window.location='{{ route('home') }}'" class="flex items-center gap-2 text-purple-600 hover:text-purple-800 font-semibold mt-4">
-            <i class="fa-solid fa-arrow-left"></i>Back to Portal
-          </button>
+        <button onclick="window.location='{{ route('home') }}'" class="flex items-center gap-2 text-purple-600 hover:text-purple-800 font-semibold mt-4">
+          <i class="fa-solid fa-arrow-left"></i>Back to Portal
+        </button>
       </div>
 
       <!-- RIGHT SIDE (LOGIN FORM) -->
-      <div class="w-full max-w-sm space-y-6">
+      <div class="w-full responsive-form max-w-sm space-y-6 px-4">
         <form method="POST" action="{{ route('scholar.login.submit') }}" novalidate>
           @csrf
           <div>
@@ -86,51 +137,51 @@
             @enderror
           </div>
 
-<div class="mt-5">
-  <label for="scholar_pass" class="block text-lg font-medium" style="color: #3b0066;">Password</label>
+          <div class="mt-5">
+            <label for="scholar_pass" class="block text-lg font-medium" style="color: #3b0066;">Password</label>
 
-  <div class="relative mt-2">
-    <!-- Lock icon -->
-    <i id="password-icon" class="fa-solid fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-500"></i>
+            <div class="relative mt-2">
+              <!-- Lock icon -->
+              <i id="password-icon" class="fa-solid fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-500"></i>
 
-    <!-- Password input -->
-    <input
-      id="scholar_pass"
-      name="scholar_pass"
-      type="password"
-      required
-      placeholder="Enter your password"
-      class="w-full bg-white rounded-lg pl-12 pr-12 py-3 text-gray-700 shadow-sm text-lg border
-      @error('scholar_pass') border-red-500 focus:border-red-500 focus:ring-red-200 @else border-gray-300 focus:border-purple-600 focus:ring-purple-200 @enderror
-      focus:outline-none focus:ring-2"
-    />
+              <!-- Password input -->
+              <input
+                id="scholar_pass"
+                name="scholar_pass"
+                type="password"
+                required
+                placeholder="Enter your password"
+                class="w-full bg-white rounded-lg pl-12 pr-12 py-3 text-gray-700 shadow-sm text-lg border
+                @error('scholar_pass') border-red-500 focus:border-red-500 focus:ring-red-200 @else border-gray-300 focus:border-purple-600 focus:ring-purple-200 @enderror
+                focus:outline-none focus:ring-2"
+              />
 
-    <!-- Eye toggle button -->
-    <button
-      type="button"
-      class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-600"
-      onclick="togglePasswordVisibility()"
-      aria-label="Toggle password visibility"
-    >
-      <i id="scholar-pass-eye-icon" class="fa-solid fa-eye"></i>
-    </button>
-  </div>
+              <!-- Eye toggle button -->
+              <button
+                type="button"
+                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-600"
+                onclick="togglePasswordVisibility()"
+                aria-label="Toggle password visibility"
+              >
+                <i id="scholar-pass-eye-icon" class="fa-solid fa-eye"></i>
+              </button>
+            </div>
 
-  <!-- Error message -->
-  @error('scholar_pass')
-    <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
-      <i class="fa-solid fa-circle-exclamation"></i>
-      {{ $message == 'Incorrect password.' ? 'incorrect password' : $message }}
-    </p>
-  @enderror
-</div>
+            <!-- Error message -->
+            @error('scholar_pass')
+              <p class="text-red-600 text-sm mt-1 flex items-center gap-1">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ $message == 'Incorrect password.' ? 'incorrect password' : $message }}
+              </p>
+            @enderror
+          </div>
 
           <a href="{{ route('scholar.forgot-password') }}" class="text-sm text-purple-600 hover:underline mt-3 block text-right">
             Forgot Password?
           </a>
           <button type="submit" id="loginBtn" class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700 transition shadow-md text-lg mt-4 flex justify-center items-center">
             <span id="btnText">Log In</span>
-             <svg id="btnSpinner" class="hidden animate-spin h-5 w-5 ml-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" >
+            <svg id="btnSpinner" class="hidden animate-spin h-5 w-5 ml-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" >
               <circle class="opacity-25" cx="12" cy="12"r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
             </svg>
@@ -210,12 +261,11 @@
         btnSpinner.classList.remove("hidden");
       });
     </script>
-<script>
-  // Initialize Feather icons
-  document.addEventListener('DOMContentLoaded', function() {
-    feather.replace();
-  });
-</script>
-
+    <script>
+      // Initialize Feather icons
+      document.addEventListener('DOMContentLoaded', function() {
+        feather.replace();
+      });
+    </script>
   </body>
 </html>
