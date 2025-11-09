@@ -32,7 +32,7 @@
     }
 
     .banner-grad {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        background: linear-gradient(90deg, #4c1d95 0%, #7e22ce 100%);
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 

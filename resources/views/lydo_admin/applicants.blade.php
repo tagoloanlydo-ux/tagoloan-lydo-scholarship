@@ -95,7 +95,7 @@
 </div>
 
     <!-- Header -->
-    <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans flex-shrink-0">
+<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
             <div class="flex items-center">
                 <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
                 <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
