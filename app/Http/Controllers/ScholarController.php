@@ -340,6 +340,7 @@ public function showRenewalApp()
     $renewal = null;
     $approvedRenewalExists = false;
     $settings = \App\Models\Settings::first();
+    $badDocuments = [];
 
     if ($scholar) {
         // Ensure applicant relationship is loaded
@@ -371,9 +372,18 @@ public function showRenewalApp()
             ->where('renewal_semester', $renewalSemester)
             ->where('renewal_status', 'Approved')
             ->exists();
+
+        // Get bad documents status if renewal exists - FIXED FIELD NAMES
+        if ($renewal) {
+            $badDocuments = [
+                'renewal_cert_of_reg' => $renewal->cert_of_reg_status === 'bad', // FIXED
+                'renewal_grade_slip' => $renewal->grade_slip_status === 'bad',   // FIXED  
+                'renewal_brgy_indigency' => $renewal->brgy_indigency_status === 'bad', // FIXED
+            ];
+        }
     }
 
-    return view('scholar.renewal_app', compact('renewal', 'settings', 'approvedRenewalExists'));
+    return view('scholar.renewal_app', compact('renewal', 'settings', 'approvedRenewalExists', 'badDocuments'));
 }
 
 // Add this helper method to determine current semester

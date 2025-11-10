@@ -86,6 +86,84 @@
         height: 60px;
     }
 }
+
+/* Document status badges */
+.document-status-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border: 2px solid white;
+}
+
+.badge-new {
+    background-color: #8b5cf6;
+    color: white;
+    width: 24px;
+}
+
+.badge-good {
+    background-color: #10b981;
+    color: white;
+}
+
+.badge-bad {
+    background-color: #ef4444;
+    color: white;
+}
+
+.badge-updated {
+    background-color: #f59e0b;
+    color: white;
+}
+
+.document-item-wrapper {
+    position: relative;
+}
+
+/* Responsive document viewer */
+@media (max-width: 768px) {
+    #documentViewerModal .bg-white {
+        margin: 1rem;
+        max-height: calc(100vh - 2rem);
+    }
+    
+    #documentViewer {
+        min-height: 300px;
+    }
+    
+    .document-status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #documentViewerModal .bg-white {
+        margin: 0.5rem;
+        max-height: calc(100vh - 1rem);
+        border-radius: 1rem;
+    }
+    
+    #documentViewer {
+        min-height: 250px;
+    }
+    
+    #documentReviewControls .flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    #documentReviewControls button {
+        width: 100%;
+    }
+}
    
     </style>
 
@@ -519,9 +597,9 @@
     </div>
 
     <!-- Document Viewer Modal -->
-    <div id="documentViewerModal" class="fixed inset-0 hidden bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-white w-full max-w-7xl max-h-8xl rounded-2xl shadow-2xl animate-fadeIn">
-            <div class="flex items-center justify-between px-6 py-4 border-b">
+    <div id="documentViewerModal" class="fixed inset-0 hidden bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white w-full max-w-7xl h-full max-h-[95vh] rounded-2xl shadow-2xl animate-fadeIn flex flex-col">
+            <div class="flex items-center justify-between px-6 py-4 border-b flex-shrink-0">
                 <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                     <i class="fas fa-file-alt text-blue-600"></i>
                     <span id="documentTitle">Document Viewer</span>
@@ -532,31 +610,26 @@
                 </button>
             </div>
 
-            <div class="p-6">
-                <!-- Make the viewer area scrollable so the review controls are reachable -->
-                <div class="overflow-auto max-h-[80vh]">
-                    <iframe id="documentViewer" src="" class="w-full h-[70vh] border rounded-lg" style="display: none;"></iframe>
-                    <div id="documentLoading" class="flex items-center justify-center h-[55vh] text-gray-500">
-                        <div class="text-center">
-                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                            <p>Loading document...</p>
+            <div class="flex-1 p-6 overflow-hidden">
+                <div class="h-full flex flex-col">
+                    <!-- Make the viewer area scrollable so the review controls are reachable -->
+                    <div class="flex-1 overflow-auto">
+                        <iframe id="documentViewer" src="" class="w-full h-full min-h-[400px] border rounded-lg" style="display: none;"></iframe>
+                        <div id="documentLoading" class="flex items-center justify-center h-full text-gray-500">
+                            <div class="text-center">
+                                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                <p>Loading document...</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Document Review Controls (will be visible after scrolling) -->
-                    <div id="documentReviewControls" class="mt-4 pb-6"></div>
+                        <!-- Document Review Controls (will be visible after scrolling) -->
+                        <div id="documentReviewControls" class="mt-4"></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-                <a id="downloadDocument" href="" target="_blank" download class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-2">
-                    <i class="fas fa-download"></i>
-                    Download
-                </a>
-                <!-- Close button removed -->
-            </div>
+            <!-- Download button removed as requested -->
         </div>
-
     </div>
      
     <script>

@@ -126,7 +126,7 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::post('/lydo_staff/mark-document-updated/{renewalId}', [RenewalController::class, 'markDocumentAsUpdated']);
     Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments']);
     Route::put('/lydo_staff/update-password', [LydoStaffController::class, 'updatePassword'])->name('lydo_staff.updatePassword');
-
+     Route::post('/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments']) ->name('lydo_staff.renewal.send_email');
 });
 
 // Mayor Staff Routes - Only accessible by mayor_staff role
