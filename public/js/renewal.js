@@ -8,14 +8,13 @@ let selectedRenewalId = null;
 // Track document updates and show new/updated badges
 let documentUpdateTracker = {};
 
-// Save document ratings to localStorage
-function saveRenewalRatingsToStorage(renewalId, documentType, status, comment = '') {
+function saveRenewalRatingsToStorage(renewalId, documentType, status, reason = '') {
     const storageKey = `renewal_ratings_${renewalId}`;
     let ratings = JSON.parse(localStorage.getItem(storageKey)) || {};
     
     ratings[documentType] = {
         status: status,
-        comment: comment,
+        reason: reason,
         timestamp: new Date().toISOString()
     };
     
@@ -70,15 +69,6 @@ function openRenewalDocumentViewer(documentUrl, title, documentType, renewalId) 
                 Document Review
                 ${isUpdated ? '<span class="ml-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">UPDATED</span>' : ''}
             </h4>
-            
-            <!-- Comment Section -->
-            <div class="mb-4">
-                <label for="comment_${documentType}" class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-comment mr-1"></i> Comments
-                </label>
-                <textarea id="comment_${documentType}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3" placeholder="Add your comments about this document..."></textarea>
-                <div class="text-xs text-gray-500 mt-1">Comments are auto-saved</div>
-            </div>
 
             <!-- Rating Buttons -->
             <div class="flex gap-3">
@@ -142,10 +132,7 @@ function openRenewalDocumentViewer(documentUrl, title, documentType, renewalId) 
         // Load current status and update UI
         updateRenewalDocumentModalUI(documentType);
         
-        // Load existing comment
-        loadRenewalDocumentComment(documentType);
-        
-        // Load comments and show update button if document is bad
+        // Load comments
         loadDocumentComments(renewalId);
         
         // Reset update status when document is viewed
@@ -450,13 +437,26 @@ function markRenewalDocumentAsBad(documentType) {
         title: 'Mark as Bad?',
         text: 'Are you sure you want to mark this document as bad?',
         icon: 'question',
+        input: 'textarea',
+        inputLabel: 'Reason for marking as bad:',
+        inputPlaceholder: 'Please explain why this document is bad...',
+        inputAttributes: {
+            'aria-label': 'Enter reason for marking document as bad'
+        },
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
         cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, Mark as Bad',
-        cancelButtonText: 'Cancel'
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Please provide a reason for marking this document as bad!';
+            }
+        }
     }).then((result) => {
         if (result.isConfirmed) {
+            const reason = result.value;
+            
             // Track the bad rating for update detection
             if (documentUpdateTracker[documentType]) {
                 documentUpdateTracker[documentType].lastStatus = 'bad';
@@ -464,11 +464,11 @@ function markRenewalDocumentAsBad(documentType) {
             }
             
             // Save status to server
-            saveRenewalDocumentStatus(documentType, 'bad');
+            saveRenewalDocumentStatus(documentType, 'bad', reason);
             
             // Save status to localStorage
             const comment = document.getElementById(`comment_${documentType}`)?.value || '';
-            saveRenewalRatingsToStorage(currentRenewalId, documentType, 'bad', comment);
+            saveRenewalRatingsToStorage(currentRenewalId, documentType, 'bad', reason);
             
             // Track that this document has been rated
             ratedRenewalDocuments.add(documentType);
@@ -477,7 +477,7 @@ function markRenewalDocumentAsBad(documentType) {
             // Update the badge
             updateRenewalDocumentBadge(documentType, 'bad');
             
-            // Handle the status change (show update button, etc.)
+            // Handle the status change
             handleDocumentStatusChange(documentType, 'bad');
             
             // Check if all documents are rated
@@ -498,7 +498,7 @@ function markRenewalDocumentAsBad(documentType) {
 }
 
 // Save document status to server
-function saveRenewalDocumentStatus(documentType, status) {
+function saveRenewalDocumentStatus(documentType, status, reason = '') {
     fetch('/lydo_staff/save-renewal-document-status', {
         method: 'POST',
         headers: {
@@ -508,7 +508,8 @@ function saveRenewalDocumentStatus(documentType, status) {
         body: JSON.stringify({
             renewal_id: currentRenewalId,
             document_type: documentType,
-            status: status
+            status: status,
+            reason: reason
         })
     })
     .then(response => response.json())
@@ -799,108 +800,6 @@ function initializePersistentRatings() {
     }
 }
 
-// NEW FUNCTIONS FOR BAD DOCUMENT HANDLING
-
-// Function to show update request button for bad documents
-function showUpdateRequestButton(documentType, renewalId) {
-    const hasBadDocument = renewalDocumentStatuses[documentType] === 'bad';
-    
-    if (hasBadDocument) {
-        // Add update request button to the document viewer
-        const reviewControls = document.getElementById('documentReviewControls');
-        const existingUpdateBtn = document.getElementById(`updateRequestBtn-${documentType}`);
-        
-        if (!existingUpdateBtn) {
-            const updateBtn = document.createElement('button');
-            updateBtn.id = `updateRequestBtn-${documentType}`;
-            updateBtn.className = 'mt-3 w-full bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors duration-200 flex items-center justify-center gap-2';
-            updateBtn.innerHTML = `
-                <i class="fas fa-sync-alt"></i>
-                Request Document Update from Applicant
-            `;
-            updateBtn.onclick = () => openUpdateRequestModal(documentType, renewalId);
-            
-            reviewControls.appendChild(updateBtn);
-        }
-    }
-}
-
-// Open modal to request document update
-function openUpdateRequestModal(documentType, renewalId) {
-    const documentNames = {
-        'cert_of_reg': 'Certificate of Registration',
-        'grade_slip': 'Grade Slip',
-        'brgy_indigency': 'Barangay Indigency'
-    };
-
-    Swal.fire({
-        title: 'Request Document Update',
-        html: `
-            <div class="text-left">
-                <p class="mb-4 text-gray-600">You are requesting an update for: <strong>${documentNames[documentType]}</strong></p>
-                <textarea id="updateComment" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="4" placeholder="Enter comments for the applicant explaining what needs to be updated..."></textarea>
-            </div>
-        `,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#f59e0b',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Send Update Request',
-        cancelButtonText: 'Cancel',
-        preConfirm: () => {
-            const comment = document.getElementById('updateComment').value;
-            if (!comment) {
-                Swal.showValidationMessage('Please enter comments for the applicant');
-                return false;
-            }
-            return { comment: comment };
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            sendUpdateRequest(documentType, renewalId, result.value.comment);
-        }
-    });
-}
-
-// Send update request to server
-function sendUpdateRequest(documentType, renewalId, comment) {
-    fetch(`/lydo_staff/request-document-update/${renewalId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-        },
-        body: JSON.stringify({
-            document_type: documentType,
-            comment: comment
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            Swal.fire({
-                title: 'Success!',
-                text: 'Update request sent to applicant',
-                icon: 'success',
-                confirmButtonColor: '#10b981'
-            });
-            
-            // Update the document status to show it's been actioned
-            renewalDocumentStatuses[documentType] = 'bad';
-            updateRenewalDocumentBadge(documentType, 'bad');
-            
-            // Hide approve button if there are bad documents
-            checkAllRenewalDocumentsRated();
-        } else {
-            Swal.fire('Error', data.message || 'Failed to send update request', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error sending update request:', error);
-        Swal.fire('Error', 'Failed to send update request', 'error');
-    });
-}
-
 // Load document comments
 function loadDocumentComments(renewalId) {
     fetch(`/lydo_staff/get-document-comments/${renewalId}`)
@@ -910,13 +809,6 @@ function loadDocumentComments(renewalId) {
                 // Store comments for later use
                 window.documentComments = data.comments;
                 window.documentStatuses = data.statuses;
-                
-                // Show update buttons for bad documents
-                Object.keys(data.statuses).forEach(docType => {
-                    if (data.statuses[docType] === 'bad') {
-                        showUpdateRequestButton(docType, renewalId);
-                    }
-                });
             }
         })
         .catch(error => {
@@ -926,11 +818,8 @@ function loadDocumentComments(renewalId) {
 
 // Enhanced function to handle document status changes
 function handleDocumentStatusChange(documentType, status) {
+    // Hide approve button when there are bad documents
     if (status === 'bad') {
-        // Show the update request button
-        showUpdateRequestButton(documentType, currentRenewalId);
-        
-        // Hide approve button when there are bad documents
         const approveBtn = document.getElementById('approveBtn');
         if (approveBtn) {
             approveBtn.style.display = 'none';
@@ -1017,6 +906,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 });
+
+// ... rest of the code remains the same (tab switching, filter functions, update renewal status, etc.)
 
 // Tab switching functions
 function showTable() {

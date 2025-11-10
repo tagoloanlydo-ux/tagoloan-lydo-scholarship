@@ -423,11 +423,6 @@
             </div>
 
             <div class="flex justify-between items-center gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-                <button onclick="closeApplicationModal()" 
-                        class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-                    Cancel
-                </button>
-
                 <div class="flex gap-3" id="actionButtons" style="display: none;">
                     <button onclick="sendEmailForBadDocuments()"
                             class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-2"
@@ -494,14 +489,7 @@
             </div>
 
             <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-                <button onclick="closeEditRenewalModal()" 
-                        class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-                    Cancel
-                </button>
-                <button onclick="saveEditRenewalStatus()" 
-                        class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
-                    Save
-                </button>
+                <!-- Save button removed -->
             </div>
         </div>
     </div>
@@ -525,10 +513,7 @@
             </div>
 
             <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-                <button onclick="closeViewRenewalModal()"
-                        class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-                    Close
-                </button>
+                <!-- Close button removed -->
             </div>
         </div>
     </div>
@@ -549,8 +534,8 @@
 
             <div class="p-6">
                 <!-- Make the viewer area scrollable so the review controls are reachable -->
-                <div class="overflow-auto max-h-[70vh]">
-                    <iframe id="documentViewer" src="" class="w-full h-[55vh] border rounded-lg" style="display: none;"></iframe>
+                <div class="overflow-auto max-h-[80vh]">
+                    <iframe id="documentViewer" src="" class="w-full h-[70vh] border rounded-lg" style="display: none;"></iframe>
                     <div id="documentLoading" class="flex items-center justify-center h-[55vh] text-gray-500">
                         <div class="text-center">
                             <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
@@ -568,10 +553,7 @@
                     <i class="fas fa-download"></i>
                     Download
                 </a>
-                <button onclick="closeDocumentViewerModal()"
-                        class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-                    Close
-                </button>
+                <!-- Close button removed -->
             </div>
         </div>
 
@@ -590,9 +572,9 @@
 
     <!-- I-include ang modal.js -->
         
-        <script src="{{ asset('js/renewal.js') }}"></script>
-        <script src="{{ asset('js/spinner.js') }}"></script>
-        <script src="{{ asset('js/renewal_paginate.js') }}"></script>
-        <script src="{{ asset('js/logout.js') }}"></script>
+    <script src="{{ asset('js/renewal.js') }}"></script>
+    <script src="{{ asset('js/spinner.js') }}"></script>
+    <script src="{{ asset('js/renewal_paginate.js') }}"></script>
+    <script src="{{ asset('js/logout.js') }}"></script>
 </body>
 </html>

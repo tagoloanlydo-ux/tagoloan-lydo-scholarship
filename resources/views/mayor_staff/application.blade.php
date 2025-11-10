@@ -2426,6 +2426,326 @@ function goToPage(viewType, page) {
 
 </script>
 <script src="{{ asset('js/app_spinner.js') }}"></script>
+<!-- Add Pusher JS (if not already included) -->
+<script src="https://js.pusher.com/7.0/pusher.min.js"></script>
+<script>
+// Pusher Notification Manager
+class PusherNotificationManager {
+    constructor() {
+        this.pusher = null;
+        this.channel = null;
+        this.notificationSound = new Audio('{{ asset("sounds/notification.wav") }}');
+        this.unreadNotifications = new Set();
+        this.initializePusher();
+        this.loadUnreadNotifications();
+    }
+
+    initializePusher() {
+        try {
+            console.log('Initializing Pusher...');
+            
+            // Initialize Pusher
+            this.pusher = new Pusher('{{ env('PUSHER_APP_KEY') }}', {
+                cluster: '{{ env('PUSHER_APP_CLUSTER') }}',
+                forceTLS: true,
+                authEndpoint: '/broadcasting/auth' // If you have private channels
+            });
+
+            // Subscribe to notifications channel
+            this.channel = this.pusher.subscribe('notifications.mayor_staff');
+
+            // Listen for new notifications
+            this.channel.bind('new.notification', (data) => {
+                console.log('📢 New notification received:', data);
+                this.handleNewNotification(data.notification);
+            });
+
+            // Connection events for debugging
+            this.pusher.connection.bind('connected', () => {
+                console.log('✅ Pusher connected successfully');
+            });
+
+            this.pusher.connection.bind('error', (err) => {
+                console.error('❌ Pusher connection error:', err);
+            });
+
+            this.channel.bind('subscription_succeeded', () => {
+                console.log('✅ Subscribed to notifications channel');
+            });
+
+        } catch (error) {
+            console.error('❌ Pusher initialization error:', error);
+        }
+    }
+
+    handleNewNotification(notification) {
+        console.log('Processing notification:', notification);
+        
+        // Play notification sound
+        this.playNotificationSound();
+        
+        // Add to unread notifications
+        const notificationId = this.generateNotificationId(notification);
+        this.unreadNotifications.add(notificationId);
+        this.saveUnreadNotifications();
+        this.updateBadge();
+        
+        // Update UI
+        this.updateNotificationDropdown(notification);
+        this.showToastNotification(notification);
+        
+        // Show desktop notification if permitted
+        if (Notification.permission === 'granted') {
+            this.showDesktopNotification(notification);
+        }
+    }
+
+    generateNotificationId(notification) {
+        return `${notification.type}-${notification.name}-${notification.id}`;
+    }
+
+    playNotificationSound() {
+        try {
+            this.notificationSound.currentTime = 0;
+            this.notificationSound.play().catch(e => {
+                console.log('Audio play failed:', e);
+            });
+        } catch (error) {
+            console.log('Sound play error:', error);
+        }
+    }
+
+    updateNotificationDropdown(newNotification) {
+        const dropdown = document.getElementById('notifDropdown');
+        const notificationList = dropdown.querySelector('ul');
+        
+        if (!notificationList) {
+            console.error('Notification list not found');
+            return;
+        }
+
+        // Create new notification element
+        const newListItem = document.createElement('li');
+        newListItem.className = 'px-4 py-2 hover:bg-gray-50 text-base border-b';
+        newListItem.innerHTML = `
+            <p class="${this.getNotificationColor(newNotification.type)} font-medium">
+                ${this.getNotificationIcon(newNotification.type)} 
+                ${this.formatNotificationMessage(newNotification)}
+            </p>
+            <p class="text-xs text-gray-500">
+                Just now
+            </p>
+        `;
+        
+        // Add to top of list
+        if (notificationList.firstChild) {
+            notificationList.insertBefore(newListItem, notificationList.firstChild);
+        } else {
+            notificationList.appendChild(newListItem);
+        }
+        
+        // Remove "No new notifications" message if present
+        const emptyMessage = notificationList.querySelector('li:only-child');
+        if (emptyMessage && emptyMessage.textContent.includes('No new notifications')) {
+            emptyMessage.remove();
+        }
+    }
+
+    showToastNotification(notification) {
+        if (typeof Swal !== 'undefined') {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 5000,
+                timerProgressBar: true,
+            });
+
+            Toast.fire({
+                icon: 'info',
+                title: this.formatNotificationMessage(notification),
+                background: '#f0f9ff',
+            });
+        }
+    }
+
+    showDesktopNotification(notification) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('LYDO Scholarship', {
+                body: this.formatNotificationMessage(notification),
+                icon: '{{ asset("images/LYDO.png") }}'
+            });
+        }
+    }
+
+    formatNotificationMessage(notification) {
+        if (notification.type === 'application') {
+            return `📝 ${notification.name} submitted a new application`;
+        } else if (notification.type === 'remark') {
+            return `💬 New remark for ${notification.name}: ${notification.remarks}`;
+        }
+        return 'New notification received';
+    }
+
+    getNotificationColor(type) {
+        const colors = {
+            'application': 'text-blue-600',
+            'remark': 'text-purple-600'
+        };
+        return colors[type] || 'text-gray-600';
+    }
+
+    getNotificationIcon(type) {
+        const icons = {
+            'application': '📝',
+            'remark': '💬'
+        };
+        return icons[type] || '🔔';
+    }
+
+    loadUnreadNotifications() {
+        const stored = localStorage.getItem('unreadNotifications');
+        if (stored) {
+            this.unreadNotifications = new Set(JSON.parse(stored));
+        }
+        this.updateBadge();
+    }
+
+    saveUnreadNotifications() {
+        localStorage.setItem('unreadNotifications', JSON.stringify([...this.unreadNotifications]));
+    }
+
+    updateBadge() {
+        const badge = document.getElementById('notifCount');
+        if (badge) {
+            if (this.unreadNotifications.size > 0) {
+                badge.textContent = this.unreadNotifications.size;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+
+    markNotificationsAsRead() {
+        this.unreadNotifications.clear();
+        this.saveUnreadNotifications();
+        this.updateBadge();
+        
+        // Mark as viewed on server
+        fetch('/mayor_staff/mark-notifications-viewed', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            }
+        });
+    }
+
+    requestNotificationPermission() {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+
+    // Test method for development
+    testNotification(type = 'application') {
+        const testNotifications = {
+            application: {
+                type: 'application',
+                name: 'Juan Dela Cruz',
+                remarks: null,
+                id: 'test-' + Date.now(),
+                created_at: new Date().toISOString()
+            },
+            remark: {
+                type: 'remark', 
+                name: 'Maria Santos',
+                remarks: 'Poor',
+                id: 'test-' + Date.now(),
+                created_at: new Date().toISOString()
+            }
+        };
+        
+        this.handleNewNotification(testNotifications[type]);
+    }
+}
+
+// Initialize the notification system
+let notificationManager;
+
+document.addEventListener('DOMContentLoaded', function() {
+    notificationManager = new PusherNotificationManager();
+    notificationManager.requestNotificationPermission();
+    
+    // Notification bell click handler
+    const notifBell = document.getElementById('notifBell');
+    if (notifBell) {
+        notifBell.addEventListener('click', function() {
+            const dropdown = document.getElementById('notifDropdown');
+            const isHidden = dropdown.classList.contains('hidden');
+            
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+                notificationManager.markNotificationsAsRead();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        });
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const notifBell = document.getElementById('notifBell');
+        const dropdown = document.getElementById('notifDropdown');
+        
+        if (dropdown && !dropdown.classList.contains('hidden') && 
+            notifBell && !notifBell.contains(event.target) && 
+            dropdown && !dropdown.contains(event.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
+    // Add test buttons for development (remove in production)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        addTestButtons();
+    }
+});
+
+function addTestButtons() {
+    const testContainer = document.createElement('div');
+    testContainer.className = 'fixed bottom-4 right-4 z-50 flex flex-col gap-2';
+    testContainer.innerHTML = `
+        <button onclick="notificationManager.testNotification('application')" 
+                class="bg-blue-500 text-white px-3 py-2 rounded text-sm">
+            Test New Application
+        </button>
+        <button onclick="notificationManager.testNotification('remark')" 
+                class="bg-purple-500 text-white px-3 py-2 rounded text-sm">
+            Test Review Remark
+        </button>
+    `;
+    document.body.appendChild(testContainer);
+}
+// When a new application is submitted
+public function storeApplication(Request $request)
+{
+    // Your existing application submission logic...
+    
+    // After saving the application
+    $applicationId = $savedApplication->application_id;
+    $this->triggerNewApplicationNotification($applicationId);
+}
+
+// When an application is reviewed
+public function reviewApplication($applicationPersonnelId)
+{
+    // Your existing review logic...
+    
+    // After reviewing
+    $this->triggerReviewedApplicationNotification($applicationPersonnelId);
+}
+</script>
 
     </body>
     </html>

@@ -569,7 +569,6 @@ public function showIntakeSheet($application_personnel_id)
         $data['officer_name'] = $intakeSheet->officer_name ?: '';
         
         // Date entry - use saved date or default to today, formatted as "October 23, 2003"
-        $data['date_entry'] = $intakeSheet->date_entry ? \Carbon\Carbon::parse($intakeSheet->date_entry)->format('F j, Y') : now()->format('F j, Y');
         
         return response()->json($data);
     } else {
@@ -601,8 +600,8 @@ public function showIntakeSheet($application_personnel_id)
             // Worker and officer names with current staff as default
             'worker_name' => $currentStaffName,
             'officer_name' => null,
-            // Date entry defaults to today, formatted as "October 23, 2003"
-            'date_entry' => now()->format('F j, Y'),
+            // Date entry defaults to today
+            'date_entry' => $defaultDateEntry,
         ]);
     }
 }
