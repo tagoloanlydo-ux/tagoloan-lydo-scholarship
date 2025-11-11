@@ -510,7 +510,7 @@
                                         </td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">
                                             <button class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors" onclick="openDocumentModal({{ $scholar->scholar_id }})">
-                                                View Document
+                                                Renewal history
                                             </button>
                                         </td>
                                    </tr>
@@ -666,88 +666,30 @@
                         <span id="docScholarName" class="text-sm text-blue-900 ml-2">-</span>
                     </div>
                     <div>
-                        <span class="text-sm font-medium text-blue-700">Academic Year:</span>
-                        <span id="docAcademicYear" class="text-sm text-blue-900 ml-2">-</span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-blue-700">Semester:</span>
-                        <span id="docSemester" class="text-sm text-blue-900 ml-2">-</span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-blue-700">Date Submitted:</span>
-                        <span id="docDateSubmitted" class="text-sm text-blue-900 ml-2">-</span>
+                        <span class="text-sm font-medium text-blue-700">Email:</span>
+                        <span id="docScholarEmail" class="text-sm text-blue-900 ml-2">-</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Documents Section -->
-            <div>
-                <h4 class="text-lg font-semibold text-gray-800 mb-4">Renewal Documents</h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Document 1: Certificate of Registration -->
-                    <div class="border-2 border-gray-300 rounded-lg p-4 bg-white transition-all duration-300 hover:border-blue-300 document-container" data-doc-id="1">
-                        <div class="flex justify-between items-center mb-3">
-                            <h5 class="font-semibold text-gray-700 flex items-center">
-                                <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded mr-2">1</span>
-                                Certificate of Registration
-                            </h5>
-                            <button id="expandDoc1" class="text-blue-600 hover:text-blue-800 text-sm transition-colors expand-btn" title="Expand Document">
-                                <i class="fas fa-expand"></i>
-                            </button>
-                        </div>
-                        <div id="doc1Preview" class="mb-3 min-h-[700px] max-h-[800px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300">
-                            <span class="text-gray-500 text-sm">No document available</span>
-                        </div>
-                        <a id="doc1Download" href="#" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
-                            <i class="fas fa-download mr-2"></i>Download
-                        </a>
-                    </div>
-
-                    <!-- Document 2: Grade Slip -->
-                    <div class="border-2 border-gray-300 rounded-lg p-4 bg-white transition-all duration-300 hover:border-blue-300 document-container" data-doc-id="2">
-                        <div class="flex justify-between items-center mb-3">
-                            <h5 class="font-semibold text-gray-700 flex items-center">
-                                <span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded mr-2">2</span>
-                                Grade Slip
-                            </h5>
-                            <button id="expandDoc2" class="text-blue-600 hover:text-blue-800 text-sm transition-colors expand-btn" title="Expand Document">
-                                <i class="fas fa-expand"></i>
-                            </button>
-                        </div>
-                        <div id="doc2Preview" class="mb-3 min-h-[700px] max-h-[800px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300">
-                            <span class="text-gray-500 text-sm">No document available</span>
-                        </div>
-                        <a id="doc2Download" href="#" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
-                            <i class="fas fa-download mr-2"></i>Download
-                        </a>
-                    </div>
-
-                    <!-- Document 3: Barangay Indigency -->
-                    <div class="border-2 border-gray-300 rounded-lg p-4 bg-white transition-all duration-300 hover:border-blue-300 document-container" data-doc-id="3">
-                        <div class="flex justify-between items-center mb-3">
-                            <h5 class="font-semibold text-gray-700 flex items-center">
-                                <span class="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-1 rounded mr-2">3</span>
-                                Barangay Indigency
-                            </h5>
-                            <button id="expandDoc3" class="text-blue-600 hover:text-blue-800 text-sm transition-colors expand-btn" title="Expand Document">
-                                <i class="fas fa-expand"></i>
-                            </button>
-                        </div>
-                        <div id="doc3Preview" class="mb-3 min-h-[700px] max-h-[800px] border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300">
-                            <span class="text-gray-500 text-sm">No document available</span>
-                        </div>
-                        <a id="doc3Download" href="#" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
-                            <i class="fas fa-download mr-2"></i>Download
-                        </a>
-                    </div>
+            <!-- Academic Period Selection -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">Select Academic Period</h4>
+                <div class="flex flex-wrap gap-4" id="academicPeriodTabs">
+                    <!-- Tabs will be dynamically generated here -->
                 </div>
+            </div>
+
+            <!-- Documents Section -->
+            <div id="documentsSection">
+                <!-- Documents will be dynamically loaded here based on selected academic period -->
             </div>
 
             <!-- No Documents Message -->
             <div id="noDocumentsMessage" class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center hidden">
                 <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl mb-3"></i>
-                <h4 class="text-lg font-semibold text-yellow-800 mb-2">No Renewal Documents Found</h4>
-                <p class="text-yellow-700">This scholar hasn't submitted any renewal documents yet.</p>
+                <h4 class="text-lg font-semibold text-yellow-800 mb-2">No Documents Found</h4>
+                <p class="text-yellow-700">No documents submitted for this academic period.</p>
             </div>
 
             <div class="flex justify-end pt-4 border-t border-gray-200">
@@ -1062,69 +1004,45 @@ document.getElementById('printPdfBtn').addEventListener('click', function() {
 function openDocumentModal(scholarId) {
     const modal = document.getElementById('documentModal');
     const scholarName = document.getElementById('docScholarName');
-    const academicYear = document.getElementById('docAcademicYear');
-    const semester = document.getElementById('docSemester');
-    const dateSubmitted = document.getElementById('docDateSubmitted');
+    const scholarEmail = document.getElementById('docScholarEmail');
+    const academicPeriodTabs = document.getElementById('academicPeriodTabs');
+    const documentsSection = document.getElementById('documentsSection');
     const noDocumentsMessage = document.getElementById('noDocumentsMessage');
 
     // Reset modal content
     scholarName.textContent = '-';
-    academicYear.textContent = '-';
-    semester.textContent = '-';
-    dateSubmitted.textContent = '-';
+    scholarEmail.textContent = '-';
+    academicPeriodTabs.innerHTML = '';
+    documentsSection.innerHTML = '';
     noDocumentsMessage.classList.add('hidden');
 
-    // Clear previous document previews
-    for (let i = 1; i <= 3; i++) {
-        const preview = document.getElementById(`doc${i}Preview`);
-        const download = document.getElementById(`doc${i}Download`);
-        preview.innerHTML = '<span class="text-gray-500 text-sm">No document available</span>';
-        download.classList.add('hidden');
-    }
-
-    // Get scholar name from table
+    // Get scholar info from table
     const scholarRow = document.querySelector(`.scholar-checkbox[data-scholar-id="${scholarId}"]`).closest('tr');
     const scholarNameFromTable = scholarRow.querySelector('td:nth-child(2) div').textContent.trim();
+    const scholarEmailFromTable = scholarRow.querySelector('td:nth-child(4) div').textContent.trim();
+    
     scholarName.textContent = scholarNameFromTable;
+    scholarEmail.textContent = scholarEmailFromTable;
 
     // Show modal
     modal.classList.remove('hidden');
 
-    // Fetch scholar documents
+    // Fetch scholar documents grouped by academic period
     fetch(`/lydo_admin/get-scholar-documents/${scholarId}`)
         .then(response => response.json())
         .then(data => {
             if (data.success && data.documents.length > 0) {
-                // Get the latest renewal record
-                const latestRenewal = data.documents[0];
-
-                // Update scholar information
-                academicYear.textContent = latestRenewal.renewal_acad_year || 'N/A';
-                semester.textContent = latestRenewal.renewal_semester || 'N/A';
-                dateSubmitted.textContent = latestRenewal.date_submitted || 'N/A';
-
-                // Update document previews
-                const documents = [
-                    { key: 'renewal_cert_of_reg', name: 'Certificate of Registration' },
-                    { key: 'renewal_grade_slip', name: 'Grade Slip' },
-                    { key: 'renewal_brgy_indigency', name: 'Barangay Indigency' }
-                ];
-
-                documents.forEach((doc, index) => {
-                    const docNumber = index + 1;
-                    const preview = document.getElementById(`doc${docNumber}Preview`);
-                    const download = document.getElementById(`doc${docNumber}Download`);
-
-                    if (latestRenewal[doc.key]) {
-                        const fileUrl = latestRenewal[doc.key]; // Already processed URL from controller
-                        preview.innerHTML = `<iframe src="${fileUrl}" class="w-full h-full border-0" style="min-height: 200px;"></iframe>`;
-                        download.href = fileUrl;
-                        download.classList.remove('hidden');
-                    } else {
-                        preview.innerHTML = '<span class="text-gray-500 text-sm">No document available</span>';
-                        download.classList.add('hidden');
-                    }
-                });
+                // Group documents by academic year and semester
+                const groupedDocuments = groupDocumentsByAcademicPeriod(data.documents);
+                
+                // Create tabs for each academic period
+                createAcademicPeriodTabs(groupedDocuments, scholarId);
+                
+                // Load first tab by default
+                if (Object.keys(groupedDocuments).length > 0) {
+                    const firstPeriod = Object.keys(groupedDocuments)[0];
+                    loadDocumentsForPeriod(groupedDocuments[firstPeriod], firstPeriod);
+                }
             } else {
                 noDocumentsMessage.classList.remove('hidden');
             }
@@ -1140,6 +1058,321 @@ function openDocumentModal(scholarId) {
         });
 }
 
+// Group documents by academic year and semester
+function groupDocumentsByAcademicPeriod(documents) {
+    const grouped = {};
+    
+    documents.forEach(doc => {
+        const key = `${doc.renewal_acad_year}-${doc.renewal_semester}`;
+        if (!grouped[key]) {
+            grouped[key] = {
+                academicYear: doc.renewal_acad_year,
+                semester: doc.renewal_semester,
+                dateSubmitted: doc.date_submitted,
+                documents: []
+            };
+        }
+        grouped[key].documents.push(doc);
+    });
+    
+    return grouped;
+}
+
+// Create tabs for academic periods
+function createAcademicPeriodTabs(groupedDocuments, scholarId) {
+    const tabsContainer = document.getElementById('academicPeriodTabs');
+    
+    Object.keys(groupedDocuments).forEach((periodKey, index) => {
+        const period = groupedDocuments[periodKey];
+        const tab = document.createElement('button');
+        tab.className = `px-4 py-2 rounded-lg border transition-colors ${
+            index === 0 
+            ? 'bg-blue-600 text-white border-blue-600' 
+            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+        }`;
+        tab.textContent = `${period.semester} - ${period.academicYear}`;
+        tab.setAttribute('data-period', periodKey);
+        
+        tab.addEventListener('click', function() {
+            // Update active tab
+            document.querySelectorAll('#academicPeriodTabs button').forEach(btn => {
+                btn.className = 'px-4 py-2 rounded-lg border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 transition-colors';
+            });
+            this.className = 'px-4 py-2 rounded-lg border bg-blue-600 text-white border-blue-600 transition-colors';
+            
+            // Load documents for selected period
+            loadDocumentsForPeriod(groupedDocuments[periodKey], periodKey);
+        });
+        
+        tabsContainer.appendChild(tab);
+    });
+}
+
+// Load documents for specific academic period
+function loadDocumentsForPeriod(periodData, periodKey) {
+    const documentsSection = document.getElementById('documentsSection');
+    const noDocumentsMessage = document.getElementById('noDocumentsMessage');
+    
+    documentsSection.innerHTML = '';
+    
+    if (periodData.documents.length === 0) {
+        noDocumentsMessage.classList.remove('hidden');
+        return;
+    }
+    
+    noDocumentsMessage.classList.add('hidden');
+    
+    // Create period info
+    const periodInfo = document.createElement('div');
+    periodInfo.className = 'bg-green-50 border border-green-200 rounded-lg p-4 mb-4';
+    periodInfo.innerHTML = `
+        <h4 class="text-lg font-semibold text-green-800 mb-2">Academic Period: ${periodData.semester} - ${periodData.academicYear}</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+            <div><span class="font-medium text-green-700">Date Submitted:</span> ${periodData.dateSubmitted || 'N/A'}</div>
+        </div>
+    `;
+    documentsSection.appendChild(periodInfo);
+    
+    // Create documents grid
+    const documentsGrid = document.createElement('div');
+    documentsGrid.className = 'grid grid-cols-1 md:grid-cols-3 gap-4';
+    documentsGrid.id = 'documentsGrid';
+    
+    const documentTypes = [
+        { key: 'renewal_cert_of_reg', name: 'Certificate of Registration', color: 'blue' },
+        { key: 'renewal_grade_slip', name: 'Grade Slip', color: 'green' },
+        { key: 'renewal_brgy_indigency', name: 'Barangay Indigency', color: 'purple' }
+    ];
+    
+    documentTypes.forEach((docType, index) => {
+        const docContainer = document.createElement('div');
+        docContainer.className = 'border-2 border-gray-300 rounded-lg p-4 bg-white transition-all duration-300 hover:border-blue-300 document-container';
+        docContainer.setAttribute('data-doc-id', index + 1);
+        
+        const latestDocument = periodData.documents[0]; // Get the latest submission for this period
+        
+        const colorClasses = {
+            blue: 'bg-blue-100 text-blue-800',
+            green: 'bg-green-100 text-green-800',
+            purple: 'bg-purple-100 text-purple-800'
+        };
+        
+        let previewContent = '<span class="text-gray-500 text-sm">No document available</span>';
+        let downloadButton = '';
+        
+        if (latestDocument[docType.key]) {
+            const fileUrl = latestDocument[docType.key];
+            previewContent = `<iframe src="${fileUrl}" class="w-full h-full border-0" style="min-height: 200px;"></iframe>`;
+            downloadButton = `
+                <a href="${fileUrl}" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center mt-3">
+                    <i class="fas fa-download mr-2"></i>Download
+                </a>
+            `;
+        }
+        
+       // Gawing almost full height agad
+docContainer.innerHTML = `
+    <div class="flex justify-between items-center mb-3">
+        <h5 class="font-semibold text-gray-700 flex items-center">
+            <span class="${colorClasses[docType.color]} text-xs font-bold px-2 py-1 rounded mr-2">${index + 1}</span>
+            ${docType.name}
+        </h5>
+        <button class="text-blue-600 hover:text-blue-800 text-sm transition-colors expand-btn" title="Expand Document">
+            <i class="fas fa-expand"></i>
+        </button>
+    </div>
+    <div class="mb-3 h-96 border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300 document-preview">
+        ${previewContent}
+    </div>
+    ${downloadButton}
+`; 
+        documentsGrid.appendChild(docContainer);
+    });
+    
+    documentsSection.appendChild(documentsGrid);
+    
+    // Re-attach expand functionality
+    attachExpandFunctionality();
+}
+
+// Attach expand functionality to document previews
+function attachExpandFunctionality() {
+    let currentlyExpandedDoc = null;
+    
+    document.querySelectorAll('.expand-btn').forEach((button, index) => {
+        const preview = button.closest('.document-container').querySelector('.document-preview');
+        const icon = button.querySelector('i');
+        const container = preview.closest('.border-2');
+        const documentsGrid = document.getElementById('documentsGrid');
+        const modal = document.getElementById('documentModal');
+        
+        // Set initial collapsed state
+        preview.classList.remove('expanded');
+        preview.style.maxHeight = '200px';
+        icon.className = 'fas fa-expand';
+        button.title = 'Expand Document';
+        
+        button.addEventListener('click', function() {
+            const isExpanded = preview.classList.contains('expanded');
+            
+            if (isExpanded) {
+                // Collapse current document
+                preview.classList.remove('expanded');
+                preview.style.maxHeight = '200px';
+                container.classList.remove('md:col-span-3', 'col-span-1');
+                documentsGrid.classList.remove('grid-cols-1');
+                documentsGrid.classList.add('md:grid-cols-3');
+                icon.className = 'fas fa-expand';
+                button.title = 'Expand Document';
+                currentlyExpandedDoc = null;
+            } else {
+                // If another document is expanded, collapse it first
+                if (currentlyExpandedDoc !== null && currentlyExpandedDoc !== index) {
+                    const prevButton = document.querySelectorAll('.expand-btn')[currentlyExpandedDoc];
+                    const prevPreview = prevButton.closest('.document-container').querySelector('.document-preview');
+                    const prevContainer = prevPreview.closest('.border-2');
+                    const prevIcon = prevButton.querySelector('i');
+                    
+                    prevPreview.classList.remove('expanded');
+                    prevPreview.style.maxHeight = '200px';
+                    prevContainer.classList.remove('md:col-span-3', 'col-span-1');
+                    prevIcon.className = 'fas fa-expand';
+                    prevButton.title = 'Expand Document';
+                }
+                
+                // Expand current document
+                preview.classList.add('expanded');
+                preview.style.maxHeight = 'none';
+                container.classList.add('md:col-span-3', 'col-span-1');
+                documentsGrid.classList.remove('md:grid-cols-3');
+                documentsGrid.classList.add('grid-cols-1');
+                icon.className = 'fas fa-compress';
+                button.title = 'Collapse Document';
+                currentlyExpandedDoc = index;
+            }
+        });
+    });
+}
+// Add this to your existing JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Get filter elements
+    const searchInput = document.getElementById('searchInput');
+    const barangaySelect = document.getElementById('barangaySelect');
+    const academicYearSelect = document.getElementById('academicYearSelect');
+    const statusSelect = document.getElementById('statusSelect');
+    
+    // Add event listeners for real-time filtering
+    searchInput.addEventListener('input', debounce(applyFilters, 500));
+    barangaySelect.addEventListener('change', applyFilters);
+    academicYearSelect.addEventListener('change', applyFilters);
+    statusSelect.addEventListener('change', applyFilters);
+    
+function applyFilters() {
+    const searchValue = searchInput.value.toLowerCase();
+    const barangayValue = barangaySelect.value;
+    const academicYearValue = academicYearSelect.value;
+    const statusValue = statusSelect.value;
+    
+    const rows = document.querySelectorAll('.scholar-row');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const name = row.querySelector('td:nth-child(2) div').textContent.toLowerCase();
+        const barangay = row.querySelector('td:nth-child(3) div').textContent;
+        const academicYear = row.querySelector('td:nth-child(7) div').textContent;
+        const statusElement = row.querySelector('td:nth-child(8) span');
+        
+        // Get status and normalize to lowercase for comparison
+        let statusText = '';
+        if (statusElement) {
+            statusText = statusElement.textContent.trim().toLowerCase();
+        }
+        
+        // Debug logging
+        console.log('Row status:', statusText, 'Filter status:', statusValue);
+        
+        // Check if row matches all filters
+        const matchesSearch = !searchValue || name.includes(searchValue);
+        const matchesBarangay = !barangayValue || barangay === barangayValue;
+        const matchesAcademicYear = !academicYearValue || academicYear === academicYearValue;
+        
+        // Fixed status matching logic
+        let matchesStatus = true;
+        if (statusValue !== 'all') {
+            matchesStatus = statusText === statusValue.toLowerCase();
+        }
+        
+        console.log('Status match:', matchesStatus);
+        
+        if (matchesSearch && matchesBarangay && matchesAcademicYear && matchesStatus) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show no results message if needed
+    showNoResultsMessage(visibleCount === 0);
+    
+    // Update select all checkbox
+    updateSelectAllCheckbox();
+    updateSendButton();
+}
+
+    function showNoResultsMessage(show) {
+        let noResultsRow = document.querySelector('.no-results-row');
+        
+        if (show && !noResultsRow) {
+            noResultsRow = document.createElement('tr');
+            noResultsRow.className = 'no-results-row';
+            noResultsRow.innerHTML = `
+                <td colspan="9" class="text-center py-4 border border-gray-200 text-gray-500">
+                    No scholars found matching your filters.
+                </td>
+            `;
+            document.querySelector('tbody').appendChild(noResultsRow);
+        } else if (!show && noResultsRow) {
+            noResultsRow.remove();
+        }
+    }
+    
+    function updateSelectAllCheckbox() {
+        const selectAll = document.getElementById('selectAll');
+        const visibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox');
+        const checkedVisibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox:checked');
+        
+        if (visibleCheckboxes.length === 0) {
+            selectAll.checked = false;
+            selectAll.indeterminate = false;
+        } else if (checkedVisibleCheckboxes.length === visibleCheckboxes.length) {
+            selectAll.checked = true;
+            selectAll.indeterminate = false;
+        } else if (checkedVisibleCheckboxes.length > 0) {
+            selectAll.checked = false;
+            selectAll.indeterminate = true;
+        } else {
+            selectAll.checked = false;
+            selectAll.indeterminate = false;
+        }
+    }
+    
+    // Debounce function to limit how often the filter runs during typing
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    // Initialize filters on page load
+    applyFilters();
+});
 // Close document modal
 document.getElementById('closeDocumentModal').addEventListener('click', function() {
     document.getElementById('documentModal').classList.add('hidden');
