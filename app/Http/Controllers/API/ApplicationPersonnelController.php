@@ -223,14 +223,14 @@ class ApplicationPersonnelController extends Controller
         try {
             $userId = $request->auth_user_id;
 
-            // Get applications assigned to this mayor staff (remove remarks filter for new applications)
+            // Get applications assigned to this mayor staff (filter by qualifying remarks)
             $applications = ApplicationPersonnel::with(['application.applicant'])
                 ->where('lydopers_id', $userId)
                 ->where('status', 'Waiting')
                 ->where('initial_screening', 'Reviewed')
-                // Remove or adjust the remarks filter to include 'Pending' status
+                // Include remarks that qualify for further processing
                 ->where(function($query) {
-                    $query->whereIn('remarks', ['Poor', 'Ultra Poor'])
+                    $query->whereIn('remarks', ['Poor', 'Non-Poor', 'Ultra Poor', 'Indigenous'])
                           ->orWhere('remarks', 'Pending');
                 })
                 ->orderBy('created_at', 'desc')
