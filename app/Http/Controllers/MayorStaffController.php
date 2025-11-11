@@ -13,6 +13,8 @@ use App\Models\Scholar;
 use App\Models\Announce;
 use App\Models\FamilyIntakeSheet;
 use App\Http\Controllers\SmsController;
+use App\Events\NewApplicationNotification;
+
 
 class MayorStaffController extends Controller
 {
@@ -1412,170 +1414,199 @@ $listApplicants = DB::table("tbl_applicant as a")
         }
     }
 
-    public function getDocumentComments($applicationPersonnelId)
-    {
-        try {
-            $comments = DB::table('tbl_document_comments')
-                ->where('application_personnel_id', $applicationPersonnelId)
-                ->get()
-                ->keyBy('document_type');
-
-            // Also get document statuses from application_personnel
-            $statuses = DB::table('tbl_application_personnel')
-                ->where('application_personnel_id', $applicationPersonnelId)
-                ->select([
-                    'application_letter_status',
-                    'cert_of_reg_status',
-                    'grade_slip_status',
-                    'brgy_indigency_status',
-                    'student_id_status'
-                ])
-                ->first();
-
-            return response()->json([
-                'success' => true,
-                'comments' => $comments,
-                'statuses' => $statuses
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to load comments.'], 500);
-        }
-    }
-
-    public function saveDocumentStatus(Request $request)
-    {
-        $request->validate([
-            'application_personnel_id' => 'required|integer',
-            'document_type' => 'required|string',
-            'status' => 'required|in:good,bad'
-        ]);
-
-        try {
-            $statusColumn = $request->document_type . '_status';
-
-            // Update status in tbl_application_personnel
-            DB::table('tbl_application_personnel')
-                ->where('application_personnel_id', $request->application_personnel_id)
-                ->update([
-                    $statusColumn => $request->status,
-                    'updated_at' => now()
-                ]);
-
-            // Update is_bad in tbl_document_comments
-            DB::table('tbl_document_comments')
-                ->where('application_personnel_id', $request->application_personnel_id)
-                ->where('document_type', $request->document_type)
-                ->update([
-                    'is_bad' => $request->status === 'bad',
-                    'updated_at' => now()
-                ]);
-
-            return response()->json(['success' => true, 'message' => 'Document status updated successfully.']);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to update document status.'], 500);
-        }
-    }
-
-    public function sendDocumentEmail(Request $request)
-    {
-        $request->validate([
-            'application_personnel_id' => 'required|integer'
-        ]);
-
-        try {
-            // Get applicant details
-            $applicant = DB::table('tbl_application_personnel as ap')
-                ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-                ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-                ->where('ap.application_personnel_id', $request->application_personnel_id)
-                ->select('app.applicant_id', 'app.applicant_fname', 'app.applicant_lname', 'app.applicant_email', 'ap.update_token')
-                ->first();
-
-        if (!$applicant) {
-            return response()->json(['success' => false, 'message' => 'Applicant not found.']);
-        }
-
-        // Get bad documents from both tbl_document_comments and tbl_application_personnel status columns
-        $badDocumentsFromComments = DB::table('tbl_document_comments')
-            ->where('application_personnel_id', $request->application_personnel_id)
-            ->where('is_bad', true)
-            ->pluck('document_type')
-            ->toArray();
-
-        // Also check document status columns in tbl_application_personnel
+public function getDocumentComments($applicationPersonnelId)
+{
+    try {
+        // Get document statuses and reason from application_personnel
         $applicationPersonnel = DB::table('tbl_application_personnel')
-            ->where('application_personnel_id', $request->application_personnel_id)
+            ->where('application_personnel_id', $applicationPersonnelId)
             ->select([
                 'application_letter_status',
                 'cert_of_reg_status',
                 'grade_slip_status',
                 'brgy_indigency_status',
-                'student_id_status'
+                'student_id_status',
+                'reason'
             ])
             ->first();
 
-        $badDocumentsFromStatuses = [];
+        // Convert to comments format for frontend compatibility
+        $comments = [];
+        $statuses = [];
+        $reasons = [];
+        
         if ($applicationPersonnel) {
-            $documentTypes = [
-                'application_letter' => $applicationPersonnel->application_letter_status,
-                'cert_of_reg' => $applicationPersonnel->cert_of_reg_status,
-                'grade_slip' => $applicationPersonnel->grade_slip_status,
-                'brgy_indigency' => $applicationPersonnel->brgy_indigency_status,
-                'student_id' => $applicationPersonnel->student_id_status,
+            $statuses = [
+                'application_letter_status' => $applicationPersonnel->application_letter_status,
+                'cert_of_reg_status' => $applicationPersonnel->cert_of_reg_status,
+                'grade_slip_status' => $applicationPersonnel->grade_slip_status,
+                'brgy_indigency_status' => $applicationPersonnel->brgy_indigency_status,
+                'student_id_status' => $applicationPersonnel->student_id_status,
             ];
-
-            foreach ($documentTypes as $type => $status) {
-                if ($status === 'bad') {
-                    $badDocumentsFromStatuses[] = $type;
+            
+            // Parse individual document reasons from JSON
+            if ($applicationPersonnel->reason) {
+                $reasonsData = json_decode($applicationPersonnel->reason, true);
+                if (is_array($reasonsData)) {
+                    $reasons = $reasonsData;
                 }
             }
         }
 
-        // Combine both sources of bad documents
-        $badDocuments = array_unique(array_merge($badDocumentsFromComments, $badDocumentsFromStatuses));
+        return response()->json([
+            'success' => true,
+            'comments' => $comments,
+            'statuses' => $statuses,
+            'reasons' => $reasons // Include individual reasons
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Error loading document comments: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Failed to load document status.'], 500);
+    }
+}
+public function saveDocumentStatus(Request $request)
+{
+    $request->validate([
+        'application_personnel_id' => 'required|integer',
+        'document_type' => 'required|string',
+        'status' => 'required|in:good,bad',
+        'reason' => 'nullable|string|max:1000'
+    ]);
 
-        if (empty($badDocuments)) {
+    try {
+        $statusColumn = $request->document_type . '_status';
+        $reasonColumn = $request->document_type . '_reason'; // New column for individual document reasons
+
+        // Check if the reason column exists, if not we'll store in a JSON format in the general reason column
+        // For now, we'll store individual reasons in a JSON format in the general reason column
+        $currentReasons = DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $request->application_personnel_id)
+            ->value('reason');
+
+        $reasons = [];
+        if ($currentReasons) {
+            $reasons = json_decode($currentReasons, true) ?? [];
+        }
+
+        if ($request->status === 'bad') {
+            $reasons[$request->document_type] = $request->reason;
+        } else {
+            // Remove reason if status is good
+            unset($reasons[$request->document_type]);
+        }
+
+        // Update status and reasons in tbl_application_personnel
+        DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $request->application_personnel_id)
+            ->update([
+                $statusColumn => $request->status,
+                'reason' => !empty($reasons) ? json_encode($reasons) : null, // Store reasons as JSON
+                'updated_at' => now()
+            ]);
+
+        return response()->json(['success' => true, 'message' => 'Document status updated successfully.']);
+    } catch (\Exception $e) {
+        \Log::error('Error saving document status: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Failed to update document status.'], 500);
+    }
+}
+
+public function sendDocumentEmail(Request $request)
+{
+    $request->validate([
+        'application_personnel_id' => 'required|integer'
+    ]);
+
+    try {
+        // Get applicant details and document statuses
+        $applicant = DB::table('tbl_application_personnel as ap')
+            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+            ->where('ap.application_personnel_id', $request->application_personnel_id)
+            ->select(
+                'app.applicant_id', 
+                'app.applicant_fname', 
+                'app.applicant_lname', 
+                'app.applicant_email',
+                'ap.application_letter_status',
+                'ap.cert_of_reg_status',
+                'ap.grade_slip_status',
+                'ap.brgy_indigency_status',
+                'ap.student_id_status',
+                'ap.reason',
+                'ap.update_token'
+            )
+            ->first();
+
+        if (!$applicant) {
+            return response()->json(['success' => false, 'message' => 'Applicant not found.']);
+        }
+
+        // Get bad documents with individual reasons
+        $badDocumentsWithReasons = [];
+        $documentTypes = [];
+
+        // Check each document type
+        $documentStatuses = [
+            'application_letter' => $applicant->application_letter_status,
+            'cert_of_reg' => $applicant->cert_of_reg_status,
+            'grade_slip' => $applicant->grade_slip_status,
+            'brgy_indigency' => $applicant->brgy_indigency_status,
+            'student_id' => $applicant->student_id_status,
+        ];
+
+        // Parse individual reasons from JSON
+        $individualReasons = [];
+        if ($applicant->reason) {
+            $individualReasons = json_decode($applicant->reason, true) ?? [];
+        }
+
+        foreach ($documentStatuses as $type => $status) {
+            if ($status === 'bad') {
+                $documentName = '';
+                switch ($type) {
+                    case 'application_letter':
+                        $documentName = 'Application Letter';
+                        break;
+                    case 'cert_of_reg':
+                        $documentName = 'Certificate of Registration';
+                        break;
+                    case 'grade_slip':
+                        $documentName = 'Grade Slip';
+                        break;
+                    case 'brgy_indigency':
+                        $documentName = 'Barangay Indigency';
+                        break;
+                    case 'student_id':
+                        $documentName = 'Student ID';
+                        break;
+                }
+                
+                $badDocumentsWithReasons[] = [
+                    'name' => $documentName,
+                    'type' => $type,
+                    'reason' => $individualReasons[$type] ?? 'Document needs to be updated' // Get individual reason
+                ];
+                $documentTypes[] = $type;
+            }
+        }
+
+        if (empty($badDocumentsWithReasons)) {
             return response()->json(['success' => false, 'message' => 'No bad documents found to send email.']);
         }
 
         // Generate update token if not exists
-        $applicationPersonnelRecord = DB::table('tbl_application_personnel')
-            ->where('application_personnel_id', $request->application_personnel_id)
-            ->first();
-
-        if (!$applicationPersonnelRecord->update_token) {
+        if (!$applicant->update_token) {
             $updateToken = Str::random(64);
             DB::table('tbl_application_personnel')
                 ->where('application_personnel_id', $request->application_personnel_id)
                 ->update(['update_token' => $updateToken]);
         } else {
-            $updateToken = $applicationPersonnelRecord->update_token;
+            $updateToken = $applicant->update_token;
         }
 
-        // FIX: Use the correct route parameter name 'applicant_id' (not 'applicant_id')
-        $updateLink = route('scholar.showUpdateApplication', ['applicant_id' => $applicant->applicant_id]) . '?token=' . $updateToken . '&issues=' . implode(',', $badDocuments);
-
-        // Build email message
-        $documentNames = [];
-        foreach ($badDocuments as $doc) {
-            switch ($doc) {
-                case 'application_letter':
-                    $documentNames[] = 'Application Letter';
-                    break;
-                case 'cert_of_reg':
-                    $documentNames[] = 'Certificate of Registration';
-                    break;
-                case 'grade_slip':
-                    $documentNames[] = 'Grade Slip';
-                    break;
-                case 'brgy_indigency':
-                    $documentNames[] = 'Barangay Indigency';
-                    break;
-                case 'student_id':
-                    $documentNames[] = 'Student ID';
-                    break;
-            }
-        }
+        $documentTypesString = implode(',', $documentTypes);
+        $updateLink = route('scholar.showUpdateApplication', ['applicant_id' => $applicant->applicant_id]) . '?token=' . $updateToken . '&issues=' . $documentTypesString;
 
         // Send email using the blade template
         $emailData = [
@@ -1583,7 +1614,8 @@ $listApplicants = DB::table("tbl_applicant as a")
             'updateToken' => $updateToken,
             'applicant_fname' => $applicant->applicant_fname,
             'applicant_lname' => $applicant->applicant_lname,
-            'bad_documents' => $documentNames,
+            'bad_documents' => $badDocumentsWithReasons,
+            'document_types' => $documentTypesString
         ];
 
         Mail::send('emails.document-update-required', $emailData, function ($message) use ($applicant) {
@@ -1591,15 +1623,6 @@ $listApplicants = DB::table("tbl_applicant as a")
                 ->subject('Document Update Required - LYDO Scholarship')
                 ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
         });
-
-        // Save email message to database
-        DB::table('tbl_document_email_messages')->insert([
-            'application_personnel_id' => $request->application_personnel_id,
-            'email_content' => "Document update email sent for documents: " . implode(', ', $documentNames),
-            'sent_at' => now(),
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
 
         return response()->json(['success' => true, 'message' => 'Email sent successfully.']);
     } catch (\Exception $e) {
@@ -1640,94 +1663,93 @@ $listApplicants = DB::table("tbl_applicant as a")
         return view('intake_sheet.form', compact('applicant'));
     }
 
-    public function submitIntakeSheetPublic(Request $request)
-    {
-        $request->validate([
-            'application_personnel_id' => 'required|integer',
-            'token' => 'required|string',
-            'head' => 'required|array',
-            'family' => 'required|array',
-            'house' => 'required|array',
-            'signatures' => 'array',
-        ]);
+public function submitIntakeSheetPublic(Request $request)
+{
+    $request->validate([
+        'application_personnel_id' => 'required|integer',
+        'token' => 'required|string',
+        'head' => 'required|array',
+        'family' => 'required|array',
+        'house' => 'required|array',
+        'signatures' => 'array',
+        'signature_filename' => 'nullable|string',
+    ]);
 
-        // Verify token
-        $applicationPersonnel = DB::table('tbl_application_personnel')
-            ->where('application_personnel_id', $request->application_personnel_id)
-            ->where('intake_sheet_token', $request->token)
-            ->first();
+    // Verify token
+    $applicationPersonnel = DB::table('tbl_application_personnel')
+        ->where('application_personnel_id', $request->application_personnel_id)
+        ->where('intake_sheet_token', $request->token)
+        ->first();
 
-        if (!$applicationPersonnel) {
-            return response()->json(['success' => false, 'message' => 'Invalid token or application not found.']);
-        }
-
-        // Check if intake sheet already submitted
-        $existingSheet = FamilyIntakeSheet::where('application_personnel_id', $request->application_personnel_id)->first();
-        if ($existingSheet) {
-            return response()->json(['success' => false, 'message' => 'Intake sheet already submitted.']);
-        }
-
-        // Handle signature storage
-        $signaturePaths = [];
-        if (isset($request->signatures) && is_array($request->signatures)) {
-            foreach ($request->signatures as $key => $signatureData) {
-                if ($signatureData && strpos($signatureData, 'data:image') === 0) {
-                    // Decode base64 image
-                    $imageData = explode(',', $signatureData);
-                    $image = base64_decode($imageData[1]);
-
-                    // Generate filename
-                    $filename = 'signature_' . $request->application_personnel_id . '_' . $key . '_' . time() . '.png';
-
-                    // Store in storage/app/public/signature so files are accessible via /storage/signature/...
-                    Storage::put('public/signature/' . $filename, $image);
-                    $signaturePaths[$key] = 'signature/' . $filename;
-                }
-            }
-        }
-
-        // Prepare data for insertion
-        $data = [
-            'application_personnel_id' => $request->application_personnel_id,
-            'head_4ps' => $request->head['_4ps'] ?? null,
-            'head_ipno' => $request->head['ipno'] ?? null,
-            'head_address' => $request->head['address'] ?? null,
-            'head_zone' => $request->head['zone'] ?? null,
-            'head_pob' => $request->head['pob'] ?? null,
-            'head_dob' => $request->head['dob'] ?? null,
-            'head_educ' => $request->head['educ'] ?? null,
-            'head_occ' => $request->head['occ'] ?? null,
-            'head_religion' => $request->head['religion'] ?? null,
-            'serial_number' => $request->head['serial'] ?? null,
-            'location' => $request->location ?? null,
-            'house_total_income' => $request->house['total_income'] ?? null,
-            'house_net_income' => $request->house['net_income'] ?? null,
-            'other_income' => $request->house['other_income'] ?? null,
-            'house_house' => $request->house['house'] ?? null,
-            'house_value' => $request->house['house_value'] ?? null,
-            'house_lot' => $request->house['lot'] ?? null,
-            'lot_value' => $request->house['lot_value'] ?? null,
-            'house_rent' => $request->house['house_rent'] ?? null,
-            'lot_rent' => $request->house['lot_rent'] ?? null,
-            'house_water' => $request->house['water'] ?? null,
-            'house_electric' => $request->house['electric'] ?? null,
-            'family_members' => json_encode($request->family),
-            'signature_client' => $signaturePaths['client'] ?? null,
-            'signature_worker' => $signaturePaths['worker'] ?? null,
-            'signature_officer' => $signaturePaths['officer'] ?? null,
-            'date_entry' => now(),
-        ];
-
-        // Create the intake sheet
-        FamilyIntakeSheet::create($data);
-
-        // Optionally update application_personnel to mark as submitted
-        DB::table('tbl_application_personnel')
-            ->where('application_personnel_id', $request->application_personnel_id)
-            ->update(['intake_sheet_submitted' => true, 'updated_at' => now()]);
-
-        return response()->json(['success' => true, 'message' => 'Family intake sheet submitted successfully.']);
+    if (!$applicationPersonnel) {
+        return response()->json(['success' => false, 'message' => 'Invalid token or application not found.']);
     }
+
+    // Check if intake sheet already submitted
+    $existingSheet = FamilyIntakeSheet::where('application_personnel_id', $request->application_personnel_id)->first();
+    if ($existingSheet) {
+        return response()->json(['success' => false, 'message' => 'Intake sheet already submitted.']);
+    }
+
+    // Handle signature storage
+    $signaturePath = null;
+    if (isset($request->signatures['client']) && !empty($request->signatures['client'])) {
+        $signatureData = $request->signatures['client'];
+        
+        // Decode base64 image
+        if (strpos($signatureData, 'data:image') === 0) {
+            $imageData = explode(',', $signatureData);
+            $image = base64_decode($imageData[1]);
+
+            // Generate filename or use provided filename
+            $filename = $request->signature_filename ?? 'signature_' . $request->application_personnel_id . '_' . time() . '.png';
+
+            // Store in storage/app/public/signatures
+            Storage::put('public/signatures/' . $filename, $image);
+            $signaturePath = 'signatures/' . $filename;
+        }
+    }
+
+    // Prepare data for insertion
+    $data = [
+        'application_personnel_id' => $request->application_personnel_id,
+        'head_4ps' => $request->head['_4ps'] ?? null,
+        'head_ipno' => $request->head['ipno'] ?? null,
+        'head_address' => $request->head['address'] ?? null,
+        'head_zone' => $request->head['zone'] ?? null,
+        'head_pob' => $request->head['pob'] ?? null,
+        'head_dob' => $request->head['dob'] ?? null,
+        'head_educ' => $request->head['educ'] ?? null,
+        'head_occ' => $request->head['occ'] ?? null,
+        'head_religion' => $request->head['religion'] ?? null,
+        'serial_number' => $request->head['serial'] ?? null,
+        'location' => $request->location ?? null,
+        'house_total_income' => $request->house['total_income'] ?? null,
+        'house_net_income' => $request->house['net_income'] ?? null,
+        'other_income' => $request->house['other_income'] ?? null,
+        'house_house' => $request->house['house'] ?? null,
+        'house_value' => $request->house['house_value'] ?? null,
+        'house_lot' => $request->house['lot'] ?? null,
+        'lot_value' => $request->house['lot_value'] ?? null,
+        'house_rent' => $request->house['house_rent'] ?? null,
+        'lot_rent' => $request->house['lot_rent'] ?? null,
+        'house_water' => $request->house['water'] ?? null,
+        'house_electric' => $request->house['electric'] ?? null,
+        'family_members' => json_encode($request->family),
+        'signature_client' => $signaturePath, // Store the file path
+        'date_entry' => now(),
+    ];
+
+    // Create the intake sheet
+    FamilyIntakeSheet::create($data);
+
+    // Optionally update application_personnel to mark as submitted
+    DB::table('tbl_application_personnel')
+        ->where('application_personnel_id', $request->application_personnel_id)
+        ->update(['intake_sheet_submitted' => true, 'updated_at' => now()]);
+
+    return response()->json(['success' => true, 'message' => 'Family intake sheet submitted successfully.']);
+}
 
     public function getIntakeSheet($applicationPersonnelId)
     {
@@ -1881,5 +1903,68 @@ $listApplicants = DB::table("tbl_applicant as a")
             return response()->json(['success' => false, 'message' => 'Error loading intake sheet data.'], 500);
         }
     }
+private function broadcastNotification($type, $applicantName, $remarks = null, $applicationId = null)
+{
+    $notification = [
+        'type' => $type,
+        'name' => $applicantName,
+        'remarks' => $remarks,
+        'application_id' => $applicationId,
+        'created_at' => now()->toISOString(),
+        'id' => uniqid()
+    ];
+
+    // Broadcast the notification
+    broadcast(new NewApplicationNotification($notification));
+    
+    \Log::info("Pusher notification sent", $notification);
+}
+
+// Call this when a new application is submitted
+public function triggerNewApplicationNotification($applicationId)
+{
+    $application = DB::table('tbl_application as app')
+        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+        ->where('app.application_id', $applicationId)
+        ->select('a.applicant_fname', 'a.applicant_lname')
+        ->first();
+
+    if ($application) {
+        $this->broadcastNotification(
+            'application', 
+            $application->applicant_fname . ' ' . $application->applicant_lname,
+            null,
+            $applicationId
+        );
+        
+        return response()->json(['success' => true, 'message' => 'New application notification sent']);
+    }
+    
+    return response()->json(['success' => false, 'message' => 'Application not found']);
+}
+
+// Call this when application is reviewed with Poor/Ultra Poor remarks
+public function triggerReviewedApplicationNotification($applicationPersonnelId)
+{
+    $application = DB::table('tbl_application_personnel as ap')
+        ->join('tbl_application as app', 'ap.application_id', '=', 'app.application_id')
+        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+        ->where('ap.application_personnel_id', $applicationPersonnelId)
+        ->select('a.applicant_fname', 'a.applicant_lname', 'ap.remarks')
+        ->first();
+
+    if ($application && in_array($application->remarks, ['Poor', 'Ultra Poor'])) {
+        $this->broadcastNotification(
+            'remark', 
+            $application->applicant_fname . ' ' . $application->applicant_lname,
+            $application->remarks,
+            $applicationPersonnelId
+        );
+        
+        return response()->json(['success' => true, 'message' => 'Review notification sent']);
+    }
+    
+    return response()->json(['success' => false, 'message' => 'Application not found or not Poor/Ultra Poor']);
+}
 }
 

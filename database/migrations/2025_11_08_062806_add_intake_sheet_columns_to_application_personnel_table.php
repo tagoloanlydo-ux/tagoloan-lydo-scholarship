@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tbl_application_personnel', function (Blueprint $table) {
-            $table->text('reviewer_comment')->nullable()->after('rejection_reason');
-            $table->boolean('is_bad')->default(false)->after('reviewer_comment');
+            // Add the missing columns for intake sheet functionality
+            $table->string('intake_sheet_token', 64)->nullable()->after('status');
+            $table->boolean('intake_sheet_submitted')->default(false)->after('intake_sheet_token');
+            $table->string('update_token', 64)->nullable()->after('intake_sheet_submitted');
         });
     }
 
@@ -23,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tbl_application_personnel', function (Blueprint $table) {
-            $table->dropColumn(['reviewer_comment', 'is_bad']);
+            $table->dropColumn(['intake_sheet_token', 'intake_sheet_submitted', 'update_token']);
         });
     }
 };

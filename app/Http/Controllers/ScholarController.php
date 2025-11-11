@@ -49,9 +49,7 @@ class ScholarController extends Controller
             'applicant_fname' => 'required|string|max:255',
             'applicant_mname' => 'nullable|string|max:255',
             'applicant_lname' => 'required|string|max:255',
-            'applicant_suffix' => 'nullable|string|max:10',
-            'applicant_gender' => 'required|in:male,female,other',
-            'applicant_bdate' => 'required|date|before:today',
+            'applicant_suffix' => 'nullable|string|max:10',            'applicant_bdate' => 'required|date|before:today',
             'applicant_civil_status' => 'required|in:single,married,widowed,divorced',
             'applicant_brgy' => 'required|string|max:255',
             'applicant_email' => 'required|email|unique:tbl_applicant,applicant_email,' . $scholar->applicant->applicant_id . ',applicant_id',
@@ -67,9 +65,7 @@ class ScholarController extends Controller
         $applicant->applicant_fname = $request->input('applicant_fname');
         $applicant->applicant_mname = $request->input('applicant_mname');
         $applicant->applicant_lname = $request->input('applicant_lname');
-        $applicant->applicant_suffix = $request->input('applicant_suffix');
-        $applicant->applicant_gender = $request->input('applicant_gender');
-        $applicant->applicant_bdate = $request->input('applicant_bdate');
+        $applicant->applicant_suffix = $request->input('applicant_suffix');        $applicant->applicant_bdate = $request->input('applicant_bdate');
         $applicant->applicant_civil_status = $request->input('applicant_civil_status');
         $applicant->applicant_brgy = $request->input('applicant_brgy');
         $applicant->applicant_email = $request->input('applicant_email');
@@ -181,7 +177,6 @@ class ScholarController extends Controller
             'applicant_mname' => 'nullable|string|max:255',
             'applicant_lname' => 'required|string|max:255',
             'applicant_suffix' => 'nullable|string|max:10',
-            'applicant_gender' => 'required|in:male,female,other',
             'applicant_bdate' => 'required|date|before:today',
             'applicant_civil_status' => 'required|in:single,married,widowed,divorced',
             'applicant_brgy' => 'required|string|max:255',
@@ -265,16 +260,15 @@ class ScholarController extends Controller
         return redirect()->route('scholar.login')->with('success', 'Application submitted successfully!');
     }
 
-    /**
-     * ✅ Helper: Move uploaded files into storage/documents/
-     */
-    private function moveFileToStorage($file)
-    {
-        $fileName = uniqid() . '_' . $file->getClientOriginalName();
-        $file->move(storage_path('documents'), $fileName);
-        return 'documents/' . $fileName;
-    }
-
+/**
+ * ✅ Helper: Move uploaded files into storage/documents/
+ */
+private function moveFileToStorage($file)
+{
+    $fileName = uniqid() . '_' . $file->getClientOriginalName();
+    $path = Storage::disk('local')->putFileAs('documents', $file, $fileName);
+    return $path;
+}
 
     public function registerScholar(Request $request)
     {
@@ -346,6 +340,7 @@ public function showRenewalApp()
     $renewal = null;
     $approvedRenewalExists = false;
     $settings = \App\Models\Settings::first();
+    $badDocuments = [];
 
     if ($scholar) {
         // Ensure applicant relationship is loaded
@@ -377,9 +372,18 @@ public function showRenewalApp()
             ->where('renewal_semester', $renewalSemester)
             ->where('renewal_status', 'Approved')
             ->exists();
+
+        // Get bad documents status if renewal exists - FIXED FIELD NAMES
+        if ($renewal) {
+            $badDocuments = [
+                'renewal_cert_of_reg' => $renewal->cert_of_reg_status === 'bad', // FIXED
+                'renewal_grade_slip' => $renewal->grade_slip_status === 'bad',   // FIXED  
+                'renewal_brgy_indigency' => $renewal->brgy_indigency_status === 'bad', // FIXED
+            ];
+        }
     }
 
-    return view('scholar.renewal_app', compact('renewal', 'settings', 'approvedRenewalExists'));
+    return view('scholar.renewal_app', compact('renewal', 'settings', 'approvedRenewalExists', 'badDocuments'));
 }
 
 // Add this helper method to determine current semester
@@ -694,6 +698,7 @@ private function moveFileToRenewals($file)
         return redirect()->route('scholar.login')->with('success', 'Your password has been reset successfully!');
     }
 
+
 public function showUpdateApplication($applicant_id)
 {
     $applicant = Applicant::findOrFail($applicant_id);
@@ -720,15 +725,51 @@ public function showUpdateApplication($applicant_id)
         }
     }
 
-    // Handle issues query param
+    // Get bad documents from database - USING THE STATUS FIELDS
     $issues = [];
-    if (request()->has('issues')) {
-        $issues = explode(',', request()->query('issues'));
-        $issues = array_map('trim', $issues);
+    $documentReasons = [];
+
+    // Check each document status field for bad documents (using lowercase 'bad')
+    $documentStatuses = [
+        'application_letter_status' => 'Application Letter',
+        'cert_of_reg_status' => 'Certificate of Registration',
+        'grade_slip_status' => 'Grade Slip',
+        'brgy_indigency_status' => 'Barangay Indigency',
+        'student_id_status' => 'Student ID'
+    ];
+
+    // Parse individual reasons from JSON if exists
+    $individualReasons = [];
+    if ($applicationPersonnel->reason) {
+        $individualReasons = json_decode($applicationPersonnel->reason, true) ?? [];
     }
 
-    return view('scholar.applicationupdate', compact('applicant', 'application', 'issues'));
-}
+    foreach ($documentStatuses as $statusField => $documentName) {
+        // Check if status is 'bad' (lowercase)
+        if ($applicationPersonnel->$statusField === 'bad') {
+            $docKey = str_replace('_status', '', $statusField);
+            $issues[] = $docKey;
+            
+            // Get the specific reason for this document or use default
+            $documentReasons[$docKey] = $individualReasons[$docKey] ?? 'Document needs to be updated. Please upload an updated version.';
+        }
+    }
+
+    // Debug logging
+    \Log::info("Applicant ID: $applicant_id");
+    \Log::info("Application Personnel Statuses: " . json_encode([
+        'application_letter_status' => $applicationPersonnel->application_letter_status,
+        'cert_of_reg_status' => $applicationPersonnel->cert_of_reg_status,
+        'grade_slip_status' => $applicationPersonnel->grade_slip_status,
+        'brgy_indigency_status' => $applicationPersonnel->brgy_indigency_status,
+        'student_id_status' => $applicationPersonnel->student_id_status,
+        'reason' => $applicationPersonnel->reason
+    ]));
+    \Log::info("Final Issues: " . json_encode($issues));
+    \Log::info("Document Reasons: " . json_encode($documentReasons));
+
+    return view('scholar.applicationupdate', compact('applicant', 'application', 'issues', 'documentReasons'));
+} 
 
 public function updateApplication(Request $request, $applicant_id)
 {
@@ -739,88 +780,53 @@ public function updateApplication(Request $request, $applicant_id)
         abort(404, 'Application not found.');
     }
 
-    // Get issues to determine required files
+    // Get application personnel record to determine issues
+    $applicationPersonnel = \DB::table('tbl_application_personnel')
+        ->where('application_id', $application->application_id)
+        ->first();
+
+    // Get issues from database based on status fields
     $issues = [];
-    if ($request->has('issues')) {
-        $issues = explode(',', $request->query('issues'));
-        $issues = array_map('trim', $issues);
-    }
+    if ($applicationPersonnel) {
+        $documentStatuses = [
+            'application_letter_status' => 'application_letter',
+            'cert_of_reg_status' => 'cert_of_reg',
+            'grade_slip_status' => 'grade_slip',
+            'brgy_indigency_status' => 'brgy_indigency',
+            'student_id_status' => 'student_id'
+        ];
 
-    // Base validation for personal fields (optional for update)
-    $personalValidation = [
-        'applicant_fname' => 'sometimes|required|string|max:255',
-        'applicant_mname' => 'sometimes|nullable|string|max:255',
-        'applicant_lname' => 'sometimes|required|string|max:255',
-        'applicant_suffix' => 'sometimes|nullable|string|max:10',
-        'applicant_gender' => 'sometimes|required|in:male,female,other',
-        'applicant_bdate' => 'sometimes|required|date|before:today',
-        'applicant_civil_status' => 'sometimes|required|in:single,married,widowed,divorced',
-        'applicant_brgy' => 'sometimes|required|string|max:255',
-        'applicant_email' => 'sometimes|required|email|unique:tbl_applicant,applicant_email,' . $applicant_id . ',applicant_id',
-        'applicant_contact_number' => 'sometimes|required|string|max:15',
-        'applicant_school_name' => 'sometimes|required|string|max:255',
-        'applicant_school_name_other' => 'sometimes|nullable|string|max:255',
-        'applicant_year_level' => 'sometimes|required|string|max:50',
-        'applicant_course' => 'sometimes|required|string|max:255',
-        'applicant_acad_year' => 'sometimes|required|string|max:20',
-    ];
-
-    // File validation: required only if in issues
-    $fileValidation = [
-        'application_letter' => in_array('application_letter', $issues) ? 'required|file|mimes:pdf|max:5120' : 'nullable|file|mimes:pdf|max:5120',
-        'certificate_of_registration' => in_array('cert_of_reg', $issues) ? 'required|file|mimes:pdf|max:5120' : 'nullable|file|mimes:pdf|max:5120',
-        'grade_slip' => in_array('grade_slip', $issues) ? 'required|file|mimes:pdf|max:5120' : 'nullable|file|mimes:pdf|max:5120',
-        'barangay_indigency' => in_array('brgy_indigency', $issues) ? 'required|file|mimes:pdf|max:5120' : 'nullable|file|mimes:pdf|max:5120',
-        'student_id' => in_array('student_id', $issues) ? 'required|file|mimes:pdf|max:5120' : 'nullable|file|mimes:pdf|max:5120',
-    ];
-
-    $request->validate(array_merge($personalValidation, $fileValidation));
-
-    // Update personal fields if provided
-    foreach ($personalValidation as $field => $rule) {
-        if ($request->filled($field)) {
-            $applicant->{$field} = $request->input($field);
-        }
-    }
-
-    // Handle school name
-    if ($request->filled('applicant_school_name')) {
-        $schoolName = $request->input('applicant_school_name');
-        if ($schoolName === 'Others' && $request->filled('applicant_school_name_other')) {
-            $schoolName = $request->input('applicant_school_name_other');
-        }
-        $applicant->applicant_school_name = $schoolName;
-    }
-
-    $applicant->save();
-
-    // Update files if uploaded, move manually to storage/documents
-    $fileFields = [
-        'application_letter' => 'application_letter',
-        'certificate_of_registration' => 'cert_of_reg',
-        'grade_slip' => 'grade_slip',
-        'barangay_indigency' => 'brgy_indigency',
-        'student_id' => 'student_id',
-    ];
-
-    foreach ($fileFields as $inputName => $dbField) {
-        if ($request->hasFile($inputName)) {
-            // Delete old file if exists
-            if ($application->{$dbField} && file_exists(storage_path($application->{$dbField}))) {
-                unlink(storage_path($application->{$dbField}));
+        foreach ($documentStatuses as $statusField => $dbField) {
+            if ($applicationPersonnel->$statusField === 'bad') {
+                $issues[] = $dbField;
             }
-            // Move new file
-            $application->{$dbField} = $this->moveFileToStorage($request->file($inputName));
+        }
+    }
+
+    // Validate only the files that need to be updated (the bad ones)
+    $validationRules = [];
+    foreach ($issues as $issue) {
+        $validationRules[$issue] = 'required|file|mimes:pdf|max:5120';
+    }
+
+    $request->validate($validationRules);
+
+    // Update application documents - replace bad documents with new files
+    foreach ($issues as $dbField) {
+        if ($request->hasFile($dbField)) {
+            // Delete old file if exists
+            if ($application->$dbField && Storage::exists($application->$dbField)) {
+                Storage::delete($application->$dbField);
+            }
+            
+            // Store new file and update database
+            $application->$dbField = $this->moveFileToStorage($request->file($dbField));
         }
     }
 
     $application->save();
 
-    // Update document statuses to 'updated' for updated files
-    $applicationPersonnel = \DB::table('tbl_application_personnel')
-        ->where('application_id', $application->application_id)
-        ->first();
-
+    // Update document statuses to 'good' for updated files and clear reason
     if ($applicationPersonnel) {
         $statusColumns = [
             'application_letter' => 'application_letter_status',
@@ -830,30 +836,31 @@ public function updateApplication(Request $request, $applicant_id)
             'student_id' => 'student_id_status',
         ];
 
-        foreach ($fileFields as $inputName => $dbField) {
-            if ($request->hasFile($inputName) && isset($statusColumns[$dbField])) {
-                // Update status to 'updated'
-                \DB::table('tbl_application_personnel')
-                    ->where('application_personnel_id', $applicationPersonnel->application_personnel_id)
-                    ->update([$statusColumns[$dbField] => 'updated']);
+        $updates = ['reason' => null]; // Clear the reason
+
+        foreach ($issues as $dbField) {
+            if ($request->hasFile($dbField) && isset($statusColumns[$dbField])) {
+                // Update status to 'good' when file is updated
+                $updates[$statusColumns[$dbField]] = 'New';
             }
         }
+
+        \DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $applicationPersonnel->application_personnel_id)
+            ->update($updates);
+
+        // Log the update for debugging
+        \Log::info("Application updated for Applicant ID: $applicant_id");
+        \Log::info("Updated statuses: " . json_encode($updates));
+        \Log::info("Files updated: " . json_encode(array_keys($request->allFiles())));
     }
 
-    // Clear the update token after successful update
-    \DB::table('tbl_application_personnel')
-        ->where('application_id', $application->application_id)
-        ->update(['update_token' => null]);
-
-    // Broadcast applicant update
-    broadcast(new ApplicantUpdated('applicant_updated', $applicant->applicant_id))->toOthers();
-
-    return redirect()->route('scholar.login')->with('success', 'Application updated successfully!');
+return redirect()->route('home')->with('success', 'Application documents updated successfully!');
 }
 
     public function logout(Request $request)
     {
-        // Clear the scholar session
+           // Clear the scholar session
         $request->session()->forget('scholar');
 
         // Redirect to login page with success message

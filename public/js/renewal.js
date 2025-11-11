@@ -8,14 +8,13 @@ let selectedRenewalId = null;
 // Track document updates and show new/updated badges
 let documentUpdateTracker = {};
 
-// Save document ratings to localStorage
-function saveRenewalRatingsToStorage(renewalId, documentType, status, comment = '') {
+function saveRenewalRatingsToStorage(renewalId, documentType, status, reason = '') {
     const storageKey = `renewal_ratings_${renewalId}`;
     let ratings = JSON.parse(localStorage.getItem(storageKey)) || {};
     
     ratings[documentType] = {
         status: status,
-        comment: comment,
+        reason: reason,
         timestamp: new Date().toISOString()
     };
     
@@ -42,7 +41,7 @@ function initializeDocumentUpdateTracker() {
         documentUpdateTracker[docType] = {
             lastStatus: null,
             hasUpdate: false,
-            isNew: true
+            isNew: false
         };
     });
 }
@@ -54,9 +53,8 @@ function openRenewalDocumentViewer(documentUrl, title, documentType, renewalId) 
     
     document.getElementById('documentTitle').textContent = title;
     document.getElementById('documentViewer').src = documentUrl;
-    document.getElementById('downloadDocument').href = documentUrl;
-    document.getElementById('documentViewerModal').classList.remove('hidden');
     document.getElementById('documentLoading').style.display = 'flex';
+    document.getElementById('documentViewerModal').classList.remove('hidden');
 
     // Check if this document has been updated
     const isUpdated = documentUpdateTracker[documentType] && documentUpdateTracker[documentType].hasUpdate;
@@ -70,15 +68,6 @@ function openRenewalDocumentViewer(documentUrl, title, documentType, renewalId) 
                 Document Review
                 ${isUpdated ? '<span class="ml-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">UPDATED</span>' : ''}
             </h4>
-            
-            <!-- Comment Section -->
-            <div class="mb-4">
-                <label for="comment_${documentType}" class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-comment mr-1"></i> Comments
-                </label>
-                <textarea id="comment_${documentType}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3" placeholder="Add your comments about this document..."></textarea>
-                <div class="text-xs text-gray-500 mt-1">Comments are auto-saved</div>
-            </div>
 
             <!-- Rating Buttons -->
             <div class="flex gap-3">
@@ -142,10 +131,7 @@ function openRenewalDocumentViewer(documentUrl, title, documentType, renewalId) 
         // Load current status and update UI
         updateRenewalDocumentModalUI(documentType);
         
-        // Load existing comment
-        loadRenewalDocumentComment(documentType);
-        
-        // Load comments and show update button if document is bad
+        // Load comments
         loadDocumentComments(renewalId);
         
         // Reset update status when document is viewed
@@ -271,6 +257,43 @@ function openRenewalModal(scholarId) {
     document.getElementById('openRenewalModal').classList.remove('hidden');
 }
 
+// Enhanced update document badge based on status
+function updateRenewalDocumentBadge(documentType, status) {
+    const badge = document.getElementById(`badge-${documentType}`);
+    const icon = document.getElementById(`icon-${documentType}`);
+    
+    // Reset all styles first
+    badge.classList.remove('badge-new', 'badge-good', 'badge-bad', 'badge-updated', 'hidden');
+    icon.classList.remove('text-red-600', 'text-green-600', 'text-gray-500', 'text-purple-600', 'text-orange-500');
+    
+    // Apply new status
+    if (status === 'good') {
+        badge.classList.add('badge-good');
+        badge.innerHTML = '✓';
+        icon.classList.add('text-green-600');
+        badge.classList.remove('hidden');
+    } else if (status === 'bad') {
+        badge.classList.add('badge-bad');
+        badge.innerHTML = '✗';
+        icon.classList.add('text-red-600');
+        badge.classList.remove('hidden');
+    } else if (status === 'updated') {
+        badge.classList.add('badge-updated');
+        badge.innerHTML = '🔄';
+        icon.classList.add('text-orange-500');
+        badge.classList.remove('hidden');
+    } else if (status === 'Updated') {
+        badge.classList.add('badge-new');
+        badge.innerHTML = 'NEW';
+        icon.classList.add('text-purple-600');
+        badge.classList.remove('hidden');
+    } else {
+        // No status, hide the badge
+        badge.classList.add('hidden');
+        icon.classList.add('text-purple-600');
+    }
+}
+
 // Load existing document statuses
 function loadRenewalDocumentStatuses(renewalId) {
     // First check localStorage for existing ratings
@@ -312,12 +335,12 @@ function loadRenewalDocumentStatuses(renewalId) {
                         }
                     }
                     
-                    // Update document badges - show updated badge if applicable
+                    // Update document badges - show "New" badge if status is "New"
                     let badgeStatus = status;
                     if (documentUpdateTracker[docType] && documentUpdateTracker[docType].hasUpdate) {
                         badgeStatus = 'updated';
-                    } else if (!status && (!documentUpdateTracker[docType] || documentUpdateTracker[docType].isNew)) {
-                        badgeStatus = 'new';
+                    } else if (status === 'New') {
+                        badgeStatus = 'New';
                     }
                     
                     updateRenewalDocumentBadge(docType, badgeStatus);
@@ -335,43 +358,6 @@ function loadRenewalDocumentStatuses(renewalId) {
         .catch(error => {
             console.error('Error loading renewal document statuses:', error);
         });
-}
-
-// Enhanced update document badge based on status
-function updateRenewalDocumentBadge(documentType, status) {
-    const badge = document.getElementById(`badge-${documentType}`);
-    const icon = document.getElementById(`icon-${documentType}`);
-    
-    // Reset all styles first
-    badge.classList.remove('badge-new', 'badge-good', 'badge-bad', 'badge-updated', 'hidden');
-    icon.classList.remove('text-red-600', 'text-green-600', 'text-gray-500', 'text-purple-600', 'text-orange-500');
-    
-    // Apply new status
-    if (status === 'good') {
-        badge.classList.add('badge-good');
-        badge.innerHTML = '✓';
-        icon.classList.add('text-green-600');
-        badge.classList.remove('hidden');
-    } else if (status === 'bad') {
-        badge.classList.add('badge-bad');
-        badge.innerHTML = '✗';
-        icon.classList.add('text-red-600');
-        badge.classList.remove('hidden');
-    } else if (status === 'updated') {
-        badge.classList.add('badge-updated');
-        badge.innerHTML = '🔄';
-        icon.classList.add('text-orange-500');
-        badge.classList.remove('hidden');
-    } else if (status === 'new') {
-        badge.classList.add('badge-new');
-        badge.innerHTML = 'NEW';
-        icon.classList.add('text-purple-600');
-        badge.classList.remove('hidden');
-    } else {
-        // No status, hide the badge
-        badge.classList.add('hidden');
-        icon.classList.add('text-purple-600');
-    }
 }
 
 // Enhanced mark document as good with update tracking
@@ -396,7 +382,6 @@ function markRenewalDocumentAsGood(documentType) {
                 documentUpdateTracker[documentType].lastStatus = 'good';
                 if (wasPreviouslyBad) {
                     documentUpdateTracker[documentType].hasUpdate = true;
-                    documentUpdateTracker[documentType].isNew = false;
                 }
             }
             
@@ -450,55 +435,61 @@ function markRenewalDocumentAsBad(documentType) {
         title: 'Mark as Bad?',
         text: 'Are you sure you want to mark this document as bad?',
         icon: 'question',
+        input: 'textarea',
+        inputLabel: 'Reason for marking as bad:',
+        inputPlaceholder: 'Please explain why this document is bad...',
+        inputAttributes: {
+            'aria-label': 'Enter reason for marking document as bad'
+        },
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
         cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, Mark as Bad',
-        cancelButtonText: 'Cancel'
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Please provide a reason for marking this document as bad'
+            }
+        }
     }).then((result) => {
         if (result.isConfirmed) {
-            // Track the bad rating for update detection
-            if (documentUpdateTracker[documentType]) {
-                documentUpdateTracker[documentType].lastStatus = 'bad';
-                documentUpdateTracker[documentType].hasUpdate = false;
-            }
+            const comment = result.value;
             
-            // Save status to server
-            saveRenewalDocumentStatus(documentType, 'bad');
+            // Save status as bad
+            saveRenewalDocumentStatus(documentType, 'bad', comment);
             
-            // Save status to localStorage
-            const comment = document.getElementById(`comment_${documentType}`)?.value || '';
-            saveRenewalRatingsToStorage(currentRenewalId, documentType, 'bad', comment);
+            // IMPORTANT: Also save the comment to the database
+            saveRenewalDocumentComment(documentType, comment);
             
-            // Track that this document has been rated
+            // Update tracking
             ratedRenewalDocuments.add(documentType);
             renewalDocumentStatuses[documentType] = 'bad';
             
-            // Update the badge
+            // Update badge
             updateRenewalDocumentBadge(documentType, 'bad');
-            
-            // Handle the status change (show update button, etc.)
-            handleDocumentStatusChange(documentType, 'bad');
-            
-            // Check if all documents are rated
-            checkAllRenewalDocumentsRated();
             
             // Update modal UI
             updateRenewalDocumentModalUI(documentType);
             
+            // Check if all documents are rated
+            checkAllRenewalDocumentsRated();
+            
+            // Close document viewer
+            closeDocumentViewerModal();
+            
+            // Show success
             Swal.fire({
-                title: 'Success!',
-                text: 'Document marked as bad.',
                 icon: 'success',
-                showConfirmButton: true,
-                allowOutsideClick: false
+                title: 'Marked as Bad',
+                text: 'Document marked as bad and comment saved.',
+                timer: 1500
             });
         }
     });
 }
 
 // Save document status to server
-function saveRenewalDocumentStatus(documentType, status) {
+function saveRenewalDocumentStatus(documentType, status, reason = '') {
     fetch('/lydo_staff/save-renewal-document-status', {
         method: 'POST',
         headers: {
@@ -508,7 +499,8 @@ function saveRenewalDocumentStatus(documentType, status) {
         body: JSON.stringify({
             renewal_id: currentRenewalId,
             document_type: documentType,
-            status: status
+            status: status,
+            reason: reason
         })
     })
     .then(response => response.json())
@@ -524,8 +516,10 @@ function saveRenewalDocumentStatus(documentType, status) {
     });
 }
 
-// Save document comment
+// In saveRenewalDocumentComment function - UPDATE THIS:
 function saveRenewalDocumentComment(documentType, comment) {
+    console.log('Saving comment for:', documentType, 'Comment:', comment);
+    
     // Save to server
     fetch('/lydo_staff/save-renewal-document-comment', {
         method: 'POST',
@@ -541,6 +535,7 @@ function saveRenewalDocumentComment(documentType, comment) {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Save comment response:', data);
         if (!data.success) {
             console.error('Failed to save comment:', data.message);
             Swal.fire('Error', 'Failed to save comment.', 'error');
@@ -555,6 +550,29 @@ function saveRenewalDocumentComment(documentType, comment) {
         console.error('Error saving comment:', error);
         Swal.fire('Error', 'Failed to save comment.', 'error');
     });
+}
+
+// In loadDocumentComments function - ADD DEBUG LOGGING:
+function loadDocumentComments(renewalId) {
+    console.log('Loading comments for renewal:', renewalId);
+    
+    fetch(`/lydo_staff/get-document-comments/${renewalId}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Comments response:', data);
+            if (data.success) {
+                // Store comments for later use
+                window.documentComments = data.comments;
+                window.documentStatuses = data.statuses;
+                
+                // Log what we received
+                console.log('Received comments:', data.comments);
+                console.log('Received statuses:', data.statuses);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading document comments:', error);
+        });
 }
 
 // Load existing document comment
@@ -686,6 +704,24 @@ function updateRenewalDocumentModalUI(documentType) {
             statusIndicator.className = 'mt-3 text-sm font-medium text-red-600';
             statusText.textContent = 'This document has been marked as Bad.';
         }
+    } else if (status === 'New') {
+        // Document is new
+        if (goodBtn && badBtn) {
+            goodBtn.disabled = false;
+            badBtn.disabled = false;
+            
+            goodBtn.classList.remove('bg-green-700', 'cursor-not-allowed');
+            goodBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+            goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Good';
+            
+            badBtn.classList.remove('bg-red-700', 'cursor-not-allowed');
+            badBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+            badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Mark as Bad';
+        }
+        
+        if (statusIndicator) {
+            statusIndicator.classList.add('hidden');
+        }
     } else {
         // Document not rated yet
         if (goodBtn && badBtn) {
@@ -799,108 +835,6 @@ function initializePersistentRatings() {
     }
 }
 
-// NEW FUNCTIONS FOR BAD DOCUMENT HANDLING
-
-// Function to show update request button for bad documents
-function showUpdateRequestButton(documentType, renewalId) {
-    const hasBadDocument = renewalDocumentStatuses[documentType] === 'bad';
-    
-    if (hasBadDocument) {
-        // Add update request button to the document viewer
-        const reviewControls = document.getElementById('documentReviewControls');
-        const existingUpdateBtn = document.getElementById(`updateRequestBtn-${documentType}`);
-        
-        if (!existingUpdateBtn) {
-            const updateBtn = document.createElement('button');
-            updateBtn.id = `updateRequestBtn-${documentType}`;
-            updateBtn.className = 'mt-3 w-full bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors duration-200 flex items-center justify-center gap-2';
-            updateBtn.innerHTML = `
-                <i class="fas fa-sync-alt"></i>
-                Request Document Update from Applicant
-            `;
-            updateBtn.onclick = () => openUpdateRequestModal(documentType, renewalId);
-            
-            reviewControls.appendChild(updateBtn);
-        }
-    }
-}
-
-// Open modal to request document update
-function openUpdateRequestModal(documentType, renewalId) {
-    const documentNames = {
-        'cert_of_reg': 'Certificate of Registration',
-        'grade_slip': 'Grade Slip',
-        'brgy_indigency': 'Barangay Indigency'
-    };
-
-    Swal.fire({
-        title: 'Request Document Update',
-        html: `
-            <div class="text-left">
-                <p class="mb-4 text-gray-600">You are requesting an update for: <strong>${documentNames[documentType]}</strong></p>
-                <textarea id="updateComment" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="4" placeholder="Enter comments for the applicant explaining what needs to be updated..."></textarea>
-            </div>
-        `,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#f59e0b',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Send Update Request',
-        cancelButtonText: 'Cancel',
-        preConfirm: () => {
-            const comment = document.getElementById('updateComment').value;
-            if (!comment) {
-                Swal.showValidationMessage('Please enter comments for the applicant');
-                return false;
-            }
-            return { comment: comment };
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            sendUpdateRequest(documentType, renewalId, result.value.comment);
-        }
-    });
-}
-
-// Send update request to server
-function sendUpdateRequest(documentType, renewalId, comment) {
-    fetch(`/lydo_staff/request-document-update/${renewalId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-        },
-        body: JSON.stringify({
-            document_type: documentType,
-            comment: comment
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            Swal.fire({
-                title: 'Success!',
-                text: 'Update request sent to applicant',
-                icon: 'success',
-                confirmButtonColor: '#10b981'
-            });
-            
-            // Update the document status to show it's been actioned
-            renewalDocumentStatuses[documentType] = 'bad';
-            updateRenewalDocumentBadge(documentType, 'bad');
-            
-            // Hide approve button if there are bad documents
-            checkAllRenewalDocumentsRated();
-        } else {
-            Swal.fire('Error', data.message || 'Failed to send update request', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error sending update request:', error);
-        Swal.fire('Error', 'Failed to send update request', 'error');
-    });
-}
-
 // Load document comments
 function loadDocumentComments(renewalId) {
     fetch(`/lydo_staff/get-document-comments/${renewalId}`)
@@ -910,13 +844,6 @@ function loadDocumentComments(renewalId) {
                 // Store comments for later use
                 window.documentComments = data.comments;
                 window.documentStatuses = data.statuses;
-                
-                // Show update buttons for bad documents
-                Object.keys(data.statuses).forEach(docType => {
-                    if (data.statuses[docType] === 'bad') {
-                        showUpdateRequestButton(docType, renewalId);
-                    }
-                });
             }
         })
         .catch(error => {
@@ -926,11 +853,8 @@ function loadDocumentComments(renewalId) {
 
 // Enhanced function to handle document status changes
 function handleDocumentStatusChange(documentType, status) {
+    // Hide approve button when there are bad documents
     if (status === 'bad') {
-        // Show the update request button
-        showUpdateRequestButton(documentType, currentRenewalId);
-        
-        // Hide approve button when there are bad documents
         const approveBtn = document.getElementById('approveBtn');
         if (approveBtn) {
             approveBtn.style.display = 'none';
@@ -962,12 +886,23 @@ function sendEmailForBadDocuments() {
         }
     });
 
+    if (badDocuments.length === 0) {
+        Swal.fire('Error', 'No documents marked as bad to send correction request.', 'error');
+        sendEmailText.classList.remove('hidden');
+        sendEmailSpinner.classList.add('hidden');
+        sendEmailBtn.disabled = false;
+        return;
+    }
+
+    console.log('Sending email for bad documents:', badDocuments);
+    console.log('Renewal ID:', selectedRenewalId);
+
     // Send request
     fetch('/lydo_staff/send-email-for-bad-documents', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
         body: JSON.stringify({
             renewal_id: selectedRenewalId,
@@ -976,20 +911,22 @@ function sendEmailForBadDocuments() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Email response:', data);
         if (data.success) {
             Swal.fire({
-                title: 'Success!',
-                text: 'Email sent to applicant regarding bad documents.',
+                title: 'Correction Request Sent! 📧',
+                text: 'Scholar has been notified about the required document corrections.',
                 icon: 'success',
-                confirmButtonColor: '#10b981'
+                confirmButtonColor: '#10b981',
+                timer: 4000
             });
         } else {
-            Swal.fire('Error', data.message || 'Failed to send email', 'error');
+            Swal.fire('Error', data.message || 'Failed to send correction request', 'error');
         }
     })
     .catch(error => {
-        console.error('Error sending email:', error);
-        Swal.fire('Error', 'Failed to send email', 'error');
+        console.error('Error sending correction email:', error);
+        Swal.fire('Error', 'Failed to send correction request. Please try again.', 'error');
     })
     .finally(() => {
         // Reset button
@@ -998,7 +935,6 @@ function sendEmailForBadDocuments() {
         sendEmailBtn.disabled = false;
     });
 }
-
 // Initialize everything when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     initializeDocumentUpdateTracker();

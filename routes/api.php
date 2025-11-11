@@ -32,15 +32,18 @@ Route::prefix('staging')->group(function () {
         // Auth routes
         Route::prefix('auth')->group(function () {
             Route::get('/profile', [AuthController::class, 'profile']);
+            Route::post('/change-password', [AuthController::class, 'changePassword']);
             Route::post('/logout', [AuthController::class, 'logout']);
         });
 
         // Scholar-specific routes
         Route::prefix('scholar')->group(function () {
             Route::get('/profile', [AuthController::class, 'profile']);
+            Route::put('/profile', [AuthController::class, 'updateProfile']);
             Route::get('/announcements', [AnnouncementController::class, 'getScholarAnnouncements']);
+            Route::get('/renewal_app', [RenewalController::class, 'getScholarRenewals']);
             Route::get('/renewals', [RenewalController::class, 'getScholarRenewals']);
-            Route::post('/renewals/submit', [RenewalController::class, 'submitScholarRenewal']);
+            Route::post('/submit_renewal', [RenewalController::class, 'submitScholarRenewal']);
         });
 
         // API Resources
@@ -48,11 +51,14 @@ Route::prefix('staging')->group(function () {
         Route::apiResource('/applications', ApplicationController::class);
         Route::apiResource('/scholars', ScholarController::class);
         Route::apiResource('/renewals', RenewalController::class);
-        Route::apiResource('/disbursements', DisbursementController::class);
+        Route::apiResource('/disbursements', DisburseController::class);
         Route::apiResource('/announcements', AnnouncementController::class);
         Route::apiResource('/reports', ReportController::class);
         Route::apiResource('/notifications', NotificationController::class);
         Route::apiResource('/admins', AdminController::class);
         Route::apiResource('/application-personnels', ApplicationPersonnelController::class);
+
+        // Settings endpoint
+        Route::get('/settings', [AdminController::class, 'getSettings']);
     });
 });

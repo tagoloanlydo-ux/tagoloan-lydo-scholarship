@@ -420,9 +420,7 @@ $listApplicants = DB::table("tbl_applicant as a")
         "a.applicant_course",
         "a.applicant_school_name",
         "a.applicant_bdate",
-        "a.applicant_gender",
-        "a.applicant_pob",
-        "ap.application_personnel_id",
+        "a.applicant_gender",        "ap.application_personnel_id",
         "ap.initial_screening",
         "ap.remarks",
     )
@@ -487,7 +485,6 @@ $listApplicants = DB::table("tbl_applicant as a")
                 "applicant_gender" => $request->applicant_gender,
                 "applicant_bdate" => $request->applicant_bdate,
                 "applicant_civil_status" => $request->applicant_civil_status,
-                "applicant_pob" => $request->applicant_pob,
                 "applicant_brgy" => $request->applicant_brgy,
                 "applicant_email" => $request->applicant_email,
                 "applicant_contact_number" =>
@@ -511,22 +508,45 @@ public function showIntakeSheet($application_personnel_id)
 
     $remarks = DB::table('tbl_application_personnel')->where('application_personnel_id', $application_personnel_id)->value('remarks');
 
-    // Retrieve applicant gender and place of birth
+    // Retrieve applicant data including gender from tbl_applicant
     $applicantData = DB::table('tbl_application_personnel')
         ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
         ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
         ->where('tbl_application_personnel.application_personnel_id', $application_personnel_id)
-        ->select('tbl_applicant.applicant_gender', 'tbl_applicant.applicant_pob')
+        ->select(
+            'tbl_applicant.applicant_gender',
+            'tbl_applicant.applicant_fname',
+            'tbl_applicant.applicant_mname', 
+            'tbl_applicant.applicant_lname',
+            'tbl_applicant.applicant_suffix',
+            'tbl_applicant.applicant_bdate',
+            'tbl_applicant.applicant_brgy'
+        )
         ->first();
 
     $applicantGender = $applicantData ? $applicantData->applicant_gender : null;
-    $applicantPob = $applicantData ? $applicantData->applicant_pob : null;
+    
+    // Get current logged-in staff name for worker_name field
+    $currentStaff = session('lydopers');
+    $currentStaffName = $currentStaff ? $currentStaff->lydopers_fname . ' ' . $currentStaff->lydopers_lname : '';
+
+    // Set default date entry to today in YYYY-MM-DD format for HTML date input
+    $defaultDateEntry = now()->format('Y-m-d');
 
     if ($intakeSheet) {
         $data = $intakeSheet->toArray();
         $data['remarks'] = $remarks;
         $data['applicant_gender'] = $applicantGender;
-        $data['applicant_pob'] = $applicantPob;
+        
+        // Populate applicant basic info from tbl_applicant
+        if ($applicantData) {
+            $data['applicant_fname'] = $applicantData->applicant_fname;
+            $data['applicant_mname'] = $applicantData->applicant_mname;
+            $data['applicant_lname'] = $applicantData->applicant_lname;
+            $data['applicant_suffix'] = $applicantData->applicant_suffix;
+            $data['head_barangay'] = $applicantData->applicant_brgy;
+            $data['head_dob'] = $applicantData->applicant_bdate;
+        }
         
         // CORRECTED: Ensure all fields are properly mapped
         $data['house_house'] = $intakeSheet->house_house;
@@ -539,20 +559,30 @@ public function showIntakeSheet($application_personnel_id)
         $data['house_total_income'] = $intakeSheet->house_total_income;
         $data['house_net_income'] = $intakeSheet->house_net_income;
         
-        // Debug log to verify data
-        \Log::info('Intake Sheet Data:', [
-            'house_house' => $data['house_house'],
-            'house_lot' => $data['house_lot'],
-            'house_rent' => $data['house_rent'],
-            'lot_rent' => $data['lot_rent']
-        ]);
+        // ADD SIGNATURE FIELDS
+        $data['signature_client'] = $intakeSheet->signature_client;
+        $data['signature_worker'] = $intakeSheet->signature_worker;
+        $data['signature_officer'] = $intakeSheet->signature_officer;
+        
+        // Worker and officer names - prioritize intake sheet data, fallback to current session
+        $data['worker_name'] = $intakeSheet->worker_name ?: $currentStaffName;
+        $data['officer_name'] = $intakeSheet->officer_name ?: '';
+        
+        // Date entry - use saved date or default to today, formatted as "October 23, 2003"
         
         return response()->json($data);
     } else {
+        // Return empty form with current staff name as default worker_name and today's date
         return response()->json([
             'remarks' => $remarks,
             'applicant_gender' => $applicantGender,
-            'applicant_pob' => $applicantPob,
+            // Populate applicant basic info from tbl_applicant if available
+            'applicant_fname' => $applicantData ? $applicantData->applicant_fname : '',
+            'applicant_mname' => $applicantData ? $applicantData->applicant_mname : '',
+            'applicant_lname' => $applicantData ? $applicantData->applicant_lname : '',
+            'applicant_suffix' => $applicantData ? $applicantData->applicant_suffix : '',
+            'head_barangay' => $applicantData ? $applicantData->applicant_brgy : '',
+            'head_dob' => $applicantData ? $applicantData->applicant_bdate : '',
             // Include empty values for house fields if no intake sheet exists
             'house_house' => null,
             'house_lot' => null,
@@ -563,6 +593,15 @@ public function showIntakeSheet($application_personnel_id)
             'other_income' => null,
             'house_total_income' => null,
             'house_net_income' => null,
+            // Include empty signature fields
+            'signature_client' => null,
+            'signature_worker' => null,
+            'signature_officer' => null,
+            // Worker and officer names with current staff as default
+            'worker_name' => $currentStaffName,
+            'officer_name' => null,
+            // Date entry defaults to today
+            'date_entry' => $defaultDateEntry,
         ]);
     }
 }
@@ -625,7 +664,7 @@ public function updateIntakeSheet(Request $request, $application_personnel_id)
 
         if ($applicantId) {
             $applicantUpdate = [];
-            foreach (['applicant_fname','applicant_mname','applicant_lname','applicant_suffix','applicant_gender','applicant_pob'] as $k) {
+            foreach (['applicant_fname','applicant_mname','applicant_lname','applicant_suffix','applicant_gender'] as $k) {
                 if ($request->filled($k) || $request->has($k)) {
                     $applicantUpdate[$k] = $request->input($k);
                 }

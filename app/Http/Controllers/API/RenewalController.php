@@ -202,7 +202,13 @@ class RenewalController extends Controller
                 ->orderBy('date_submitted', 'desc')
                 ->get();
 
-            return $this->successResponse($renewals, 'Scholar renewals retrieved successfully');
+            // Get settings for renewal availability
+            $settings = \App\Models\Settings::first();
+
+            return $this->successResponse([
+                'renewal' => $renewals->first(), // Return the latest renewal
+                'settings' => $settings
+            ], 'Scholar renewal data retrieved successfully');
         } catch (\Exception $e) {
             return $this->errorResponse('Failed to retrieve renewals: ' . $e->getMessage(), 500);
         }

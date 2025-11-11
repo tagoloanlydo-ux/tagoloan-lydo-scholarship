@@ -182,6 +182,121 @@ class AuthController extends Controller
     }
 
     /**
+     * Change password for authenticated user
+     */
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator);
+        }
+
+        try {
+            // Check if it's a scholar
+            if ($user instanceof Scholar) {
+                // Verify current password for scholar
+                if (!Hash::check($request->current_password, $user->scholar_pass)) {
+                    return $this->errorResponse('Current password is incorrect', 400);
+                }
+
+                // Update scholar password
+                $user->update(['scholar_pass' => Hash::make($request->new_password)]);
+            } else {
+                // For other users (staff/admin), check lydopers table
+                $lydopers = Lydopers::where('lydopers_id', $user->lydopers_id ?? $user->id)->first();
+
+                if (!$lydopers) {
+                    return $this->errorResponse('User not found', 404);
+                }
+
+                if (!Hash::check($request->current_password, $lydopers->lydopers_pass)) {
+                    return $this->errorResponse('Current password is incorrect', 400);
+                }
+
+                // Update lydopers password
+                $lydopers->update(['lydopers_pass' => Hash::make($request->new_password)]);
+            }
+
+            return $this->successResponse(null, 'Password changed successfully');
+
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to change password: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Update scholar profile
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        // Only allow scholars to update their profile
+        if (!$user instanceof Scholar) {
+            return $this->errorResponse('Unauthorized', 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'applicant_fname' => 'required|string|max:255',
+            'applicant_mname' => 'nullable|string|max:255',
+            'applicant_lname' => 'required|string|max:255',
+            'applicant_suffix' => 'nullable|string|max:10',
+            'applicant_gender' => 'required|in:male,female',
+            'applicant_bdate' => 'required|date',
+            'applicant_civil_status' => 'required|in:single,married,widowed,divorced',
+            'applicant_brgy' => 'required|string|max:255',
+            'applicant_email' => 'required|email|max:255',
+            'applicant_contact_number' => 'required|string|max:20',
+            'applicant_school_name' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator);
+        }
+
+        try {
+            $applicant = $user->applicant;
+
+            if (!$applicant) {
+                return $this->errorResponse('Applicant data not found', 404);
+            }
+
+            // Update applicant data
+            $applicant->update($request->only([
+                'applicant_fname',
+                'applicant_mname',
+                'applicant_lname',
+                'applicant_suffix',
+                'applicant_gender',
+                'applicant_bdate',
+                'applicant_civil_status',
+                'applicant_brgy',
+                'applicant_email',
+                'applicant_contact_number',
+                'applicant_school_name',
+            ]));
+
+            return $this->successResponse([
+                'scholar' => [
+                    'scholar_id' => $user->scholar_id,
+                    'scholar_username' => $user->scholar_username,
+                    'scholar_status' => $user->scholar_status,
+                    'applicant' => $applicant,
+                ]
+            ], 'Profile updated successfully');
+
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to update profile: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
      * Send OTP for password reset
      */
     public function sendOtp(Request $request)

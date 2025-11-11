@@ -15,7 +15,7 @@
 </head>
 <body class="bg-gray-50">
     <div class="dashboard-grid">
-        <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
+<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
             <div class="flex items-center">
                 <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
                 <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
@@ -61,21 +61,12 @@
                         @endphp
 
                         <li>
-                            @if($renewalDisabled)
-                                <div class="flex items-center justify-between p-3 rounded-lg text-gray-400 cursor-not-allowed" title="{{ $renewalMessage }}">
-                                    <div class="flex items-center">
-                                        <i class="bx bx-refresh text-center mx-auto md:mx-0 text-xl"></i>
-                                        <span class="ml-4 hidden md:block text-lg">Renewal</span>
-                                    </div>
+                            <a href="{{ route('scholar.renewal_app') }}" class="flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                                <div class="flex items-center">
+                                    <i class="bx bx-refresh text-center mx-auto md:mx-0 text-xl"></i>
+                                    <span class="ml-4 hidden md:block text-lg">Renewal</span>
                                 </div>
-                            @else
-                                <a href="{{ route('scholar.renewal_app') }}" class="flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                    <div class="flex items-center">
-                                        <i class="bx bx-refresh text-center mx-auto md:mx-0 text-xl"></i>
-                                        <span class="ml-4 hidden md:block text-lg">Renewal</span>
-                                    </div>
-                                </a>
-                            @endif
+                            </a>
                         </li>
                         <li>
                             <a href="{{ route('scholar.settings') }}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">

@@ -1,54 +1,64 @@
-.banner-grad {
-    background: #7c3aed; /* solid light purple */
-    height: 100px;
-    clip-path: polygon(0 0, 100% 0, 100% 40%, 55% 45%, 50% 100%, 0 100%);
-    position: relative;
-}
 
-/* Mobile responsiveness adjustments */
-@media (max-width: 768px) {
-    .banner-grad {
-        height: 80px; /* Reduce height on mobile */
-        clip-path: none; /* Remove clip-path to avoid cutting the banner on mobile */
-    }
-
-    /* Reduce text sizes on mobile */
-    h1 {
-        font-size: 1.5rem; /* text-3xl equivalent smaller */
-    }
-
-    h2,
-    h3 {
-        font-size: 2rem; /* text-5xl to smaller */
-    }
-
-    p {
-        font-size: 1rem; /* text-xl to smaller */
-    }
-
-    /* Adjust main padding and gap */
-    main {
-        padding: 1rem; /* Reduce padding */
-        gap: 2rem; /* Reduce gap */
-    }
-
-    /* Form adjustments */
-    .max-w-sm {
-        max-width: 100%; /* Allow full width on mobile */
-        padding: 0 1rem; /* Add some padding */
-    }
-
-    /* Button adjustments */
-    button {
-        font-size: 1rem; /* Smaller text */
-        padding: 0.75rem; /* Adjust padding */
-    }
-
-    /* Footer */
-    footer {
-        padding: 1rem; /* Adjust padding */
-    }
-}
 .toggle-password {
     cursor: pointer;
 }
+
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 3px;
+    display: block;
+}
+      .banner-grad {
+        background: linear-gradient(90deg, #4c1d95 0%, #7e22ce 100%);
+      }
+      
+      @media (max-width: 768px) {
+        .responsive-container {
+          padding-left: 1rem;
+          padding-right: 1rem;
+        }
+        
+        .responsive-heading {
+          font-size: 2.5rem;
+        }
+        
+        .responsive-text {
+          font-size: 1.125rem;
+        }
+        
+        .responsive-form {
+          width: 100%;
+          max-width: 100%;
+        }
+      }
+      
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .responsive-container {
+          padding-left: 2rem;
+          padding-right: 2rem;
+        }
+        
+        .responsive-heading {
+          font-size: 3rem;
+        }
+        
+        .responsive-text {
+          font-size: 1.25rem;
+        }
+      }
+      
+      @media (min-width: 1025px) {
+        .responsive-container {
+          padding-left: 3rem;
+          padding-right: 3rem;
+        }
+        
+        .responsive-heading {
+          font-size: 3.75rem;
+        }
+        
+        .responsive-text {
+          font-size: 1.25rem;
+        }
+      }

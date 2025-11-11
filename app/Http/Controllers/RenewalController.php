@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\EmailService;
 use App\Events\ApplicantUpdated;
 use App\Events\RenewalUpdated;
+use Illuminate\Support\Facades\Log;
+
 
 
 class RenewalController extends Controller
@@ -438,8 +440,21 @@ public function saveRenewalDocumentStatus(Request $request)
             'status' => 'required|in:good,bad'
         ]);
 
+        // Map document types to actual column names (using correct column names)
+        $statusColumnMapping = [
+            'cert_of_reg' => 'cert_of_reg_status',
+            'grade_slip' => 'grade_slip_status', 
+            'brgy_indigency' => 'brgy_indigency_status'
+        ];
+
+        $statusColumnName = $statusColumnMapping[$request->document_type] ?? null;
+        
+        if (!$statusColumnName) {
+            return response()->json(['success' => false, 'message' => 'Invalid document type'], 400);
+        }
+
         $updateData = [
-            $request->document_type . '_status' => $request->status,
+            $statusColumnName => $request->status,
             'updated_at' => now()
         ];
 
@@ -457,58 +472,81 @@ public function saveRenewalDocumentStatus(Request $request)
 public function saveRenewalDocumentComment(Request $request)
 {
     try {
+        \Log::info('=== START saveRenewalDocumentComment ===');
+        \Log::info('Save document comment request:', $request->all());
+        
         $request->validate([
             'renewal_id' => 'required|exists:tbl_renewal,renewal_id',
             'document_type' => 'required|in:cert_of_reg,grade_slip,brgy_indigency',
             'comment' => 'nullable|string|max:1000'
         ]);
 
+        \Log::info('Validation passed');
+
+        // Map document types to actual column names
+        $columnMapping = [
+            'cert_of_reg' => 'cert_of_reg_comment',
+            'grade_slip' => 'grade_slip_comment', 
+            'brgy_indigency' => 'brgy_indigency_comment'
+        ];
+
+        $columnName = $columnMapping[$request->document_type] ?? null;
+        
+        if (!$columnName) {
+            \Log::error('Invalid document type provided: ' . $request->document_type);
+            return response()->json(['success' => false, 'message' => 'Invalid document type'], 400);
+        }
+
+        \Log::info("Using column name: {$columnName} for document type: {$request->document_type}");
+
         $updateData = [
-            $request->document_type . '_comment' => $request->comment,
+            $columnName => $request->comment,
             'updated_at' => now()
         ];
 
-        DB::table('tbl_renewal')
+        \Log::info('Attempting to update with data:', $updateData);
+        \Log::info('Renewal ID: ' . $request->renewal_id);
+
+        // First, check if the renewal exists and get current data
+        $currentData = DB::table('tbl_renewal')
             ->where('renewal_id', $request->renewal_id)
-            ->update($updateData);
-
-        return response()->json(['success' => true]);
-    } catch (\Exception $e) {
-        \Log::error('Save renewal document comment error: '.$e->getMessage());
-        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-    }
-}
-
-public function getRenewalDocumentStatuses($renewalId)
-{
-    try {
-        $renewal = DB::table('tbl_renewal')
-            ->where('renewal_id', $renewalId)
             ->first();
-
-        if (!$renewal) {
+            
+        if (!$currentData) {
+            \Log::error('Renewal not found with ID: ' . $request->renewal_id);
             return response()->json(['success' => false, 'message' => 'Renewal not found'], 404);
         }
 
-        $statuses = [
-            'cert_of_reg_status' => $renewal->cert_of_reg_status,
-            'grade_slip_status' => $renewal->grade_slip_status,
-            'brgy_indigency_status' => $renewal->brgy_indigency_status,
-            'cert_of_reg_comment' => $renewal->cert_of_reg_comment,
-            'grade_slip_comment' => $renewal->grade_slip_comment,
-            'brgy_indigency_comment' => $renewal->brgy_indigency_comment,
-        ];
+        \Log::info('Current renewal data:', (array)$currentData);
+
+        $result = DB::table('tbl_renewal')
+            ->where('renewal_id', $request->renewal_id)
+            ->update($updateData);
+
+        \Log::info('Update result - affected rows:', ['affected_rows' => $result]);
+
+        // Verify the update
+        $updatedData = DB::table('tbl_renewal')
+            ->where('renewal_id', $request->renewal_id)
+            ->first();
+            
+        \Log::info('After update - new comment value:', [
+            'column' => $columnName,
+            'value' => $updatedData->$columnName
+        ]);
 
         return response()->json([
-            'success' => true,
-            'statuses' => $statuses
+            'success' => true, 
+            'affected_rows' => $result,
+            'new_value' => $updatedData->$columnName
         ]);
+        
     } catch (\Exception $e) {
-        \Log::error('Get renewal document statuses error: '.$e->getMessage());
+        \Log::error('Save renewal document comment error: '.$e->getMessage());
+        \Log::error('Stack trace: '.$e->getTraceAsString());
         return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
     }
 }
-// Add to RenewalController.php
 
 public function getDocumentComments($renewalId)
 {
@@ -516,9 +554,9 @@ public function getDocumentComments($renewalId)
         $renewal = DB::table('tbl_renewal')
             ->where('renewal_id', $renewalId)
             ->select(
-                'cert_of_reg_comment',
-                'grade_slip_comment',
-                'brgy_indigency_comment',
+                'cert_of_reg_comment', // Changed from renewal_cert_of_reg_comment
+                'grade_slip_comment',  // Changed from renewal_grade_slip_comment
+                'brgy_indigency_comment', // Changed from renewal_brgy_indigency_comment
                 'cert_of_reg_status',
                 'grade_slip_status',
                 'brgy_indigency_status'
@@ -544,6 +582,44 @@ public function getDocumentComments($renewalId)
         ]);
     } catch (\Exception $e) {
         \Log::error('Get document comments error: '.$e->getMessage());
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
+}
+
+public function getRenewalDocumentStatuses($renewalId)
+{
+    try {
+        $renewal = DB::table('tbl_renewal')
+            ->where('renewal_id', $renewalId)
+            ->select(
+                'cert_of_reg_status',
+                'grade_slip_status',
+                'brgy_indigency_status',
+                'cert_of_reg_comment',
+                'grade_slip_comment',
+                'brgy_indigency_comment'
+            )
+            ->first();
+
+        if (!$renewal) {
+            return response()->json(['success' => false, 'message' => 'Renewal not found'], 404);
+        }
+
+        $statuses = [
+            'cert_of_reg_status' => $renewal->cert_of_reg_status,
+            'grade_slip_status' => $renewal->grade_slip_status,
+            'brgy_indigency_status' => $renewal->brgy_indigency_status,
+            'cert_of_reg_comment' => $renewal->cert_of_reg_comment,
+            'grade_slip_comment' => $renewal->grade_slip_comment,
+            'brgy_indigency_comment' => $renewal->brgy_indigency_comment,
+        ];
+
+        return response()->json([
+            'success' => true,
+            'statuses' => $statuses
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Get renewal document statuses error: '.$e->getMessage());
         return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
     }
 }
@@ -632,99 +708,110 @@ private function getDocumentTypeName($documentType)
 
     return $names[$documentType] ?? 'Document';
 }
-
 public function sendEmailForBadDocuments(Request $request)
 {
     try {
-        // Get current academic year
-        $currentAcadYear = DB::table("tbl_applicant")
-            ->select("applicant_acad_year")
-            ->orderBy("applicant_acad_year", "desc")
-            ->value("applicant_acad_year");
+        \Log::info('=== START sendEmailForBadDocuments ===');
+        \Log::info('Request data:', $request->all());
 
-        // Find all renewals with bad documents for current academic year
-        $badDocuments = DB::table('tbl_renewal as r')
+        $renewalId = $request->input('renewal_id');
+        $badDocuments = $request->input('bad_documents', []);
+        
+        \Log::info('Processing renewal ID:', ['renewal_id' => $renewalId]);
+        \Log::info('Bad documents:', $badDocuments);
+
+        // Get renewal data with scholar and applicant information
+        $renewal = DB::table('tbl_renewal as r')
             ->join('tbl_scholar as s', 'r.scholar_id', '=', 's.scholar_id')
             ->join('tbl_application as ap', 's.application_id', '=', 'ap.application_id')
             ->join('tbl_applicant as a', 'ap.applicant_id', '=', 'a.applicant_id')
-            ->where('r.renewal_acad_year', $currentAcadYear)
-            ->where(function ($query) {
-                $query->where('r.cert_of_reg_status', 'bad')
-                      ->orWhere('r.grade_slip_status', 'bad')
-                      ->orWhere('r.brgy_indigency_status', 'bad');
-            })
+            ->where('r.renewal_id', $renewalId)
             ->select(
-                'r.renewal_id',
                 'a.applicant_email',
-                'a.applicant_fname',
+                'a.applicant_fname', 
                 'a.applicant_lname',
-                'r.cert_of_reg_status',
-                'r.grade_slip_status',
-                'r.brgy_indigency_status',
                 'r.cert_of_reg_comment',
                 'r.grade_slip_comment',
                 'r.brgy_indigency_comment'
             )
-            ->get();
+            ->first();
 
-        $emailService = new EmailService();
-        $sentCount = 0;
-        $errors = [];
+        \Log::info('Renewal data retrieved:', (array)$renewal);
 
-        foreach ($badDocuments as $renewal) {
-            try {
-                // Determine which documents are bad and collect their info
-                $badDocs = [];
-                if ($renewal->cert_of_reg_status === 'bad') {
-                    $badDocs[] = [
-                        'type' => 'Certificate of Registration',
-                        'comment' => $renewal->cert_of_reg_comment
-                    ];
-                }
-                if ($renewal->grade_slip_status === 'bad') {
-                    $badDocs[] = [
-                        'type' => 'Grade Slip',
-                        'comment' => $renewal->grade_slip_comment
-                    ];
-                }
-                if ($renewal->brgy_indigency_status === 'bad') {
-                    $badDocs[] = [
-                        'type' => 'Barangay Indigency',
-                        'comment' => $renewal->brgy_indigency_comment
-                    ];
-                }
-
-                // Send email for each bad document
-                foreach ($badDocs as $doc) {
-                    $emailService->sendDocumentUpdateRequest(
-                        $renewal->applicant_email,
-                        [
-                            'applicant_fname' => $renewal->applicant_fname,
-                            'applicant_lname' => $renewal->applicant_lname,
-                            'document_type' => $doc['type'],
-                            'comment' => $doc['comment'] ?? 'Document requires update'
-                        ]
-                    );
-                }
-
-                $sentCount++;
-            } catch (\Exception $e) {
-                $errors[] = "Failed to send email to {$renewal->applicant_email}: " . $e->getMessage();
-            }
+        if (!$renewal) {
+            \Log::error('Renewal record not found for ID: ' . $renewalId);
+            return response()->json([
+                'success' => false,
+                'message' => 'Renewal record not found'
+            ], 404);
         }
-
+        
+        if (empty($badDocuments)) {
+            \Log::error('No bad documents specified');
+            return response()->json([
+                'success' => false,
+                'message' => 'No documents marked as bad'
+            ], 400);
+        }
+        
+        // Map document types to human-readable names
+        $documentNames = [
+            'cert_of_reg' => 'Certificate of Registration',
+            'grade_slip' => 'Grade Slip/Transcript of Records',
+            'brgy_indigency' => 'Barangay Certificate of Indigency'
+        ];
+        
+        // Map document types to comment columns
+        $commentColumns = [
+            'cert_of_reg' => 'cert_of_reg_comment',
+            'grade_slip' => 'grade_slip_comment',
+            'brgy_indigency' => 'brgy_indigency_comment'
+        ];
+        
+        // Prepare bad documents data with reasons
+        $badDocumentsData = [];
+        foreach ($badDocuments as $docType) {
+            $commentColumn = $commentColumns[$docType] ?? null;
+            $reason = $commentColumn ? ($renewal->$commentColumn ?? 'Document does not meet the required standards.') : 'Document does not meet the required standards.';
+            
+            $badDocumentsData[] = [
+                'type' => $docType,
+                'name' => $documentNames[$docType] ?? ucfirst(str_replace('_', ' ', $docType)),
+                'reason' => $reason
+            ];
+        }
+        
+        \Log::info('Prepared bad documents data:', $badDocumentsData);
+        
+        // Prepare email data
+        $emailData = [
+            'applicant_fname' => $renewal->applicant_fname,
+            'applicant_lname' => $renewal->applicant_lname,
+            'bad_documents' => $badDocumentsData
+        ];
+        
+        \Log::info('Attempting to send email to: ' . $renewal->applicant_email);
+        
+        // Send email using Laravel Mail facade
+        Mail::send('emails.document-correction-required', $emailData, function($message) use ($renewal) {
+            $message->to($renewal->applicant_email)
+                   ->subject('LYDO Scholarship - Document Correction Required')
+                   ->from('tagoloanlydo@gmail.com', 'LYDO Scholarship Team');
+        });
+        
+        \Log::info('Email sent successfully to: ' . $renewal->applicant_email);
+        
         return response()->json([
             'success' => true,
-            'message' => "Emails sent successfully to {$sentCount} scholars",
-            'sent_count' => $sentCount,
-            'errors' => $errors
+            'message' => 'Correction request email sent successfully to scholar'
         ]);
-
+        
     } catch (\Exception $e) {
-        \Log::error('Send email for bad documents error: ' . $e->getMessage());
+        \Log::error('Error sending document correction email: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
         return response()->json([
             'success' => false,
-            'message' => 'Failed to send emails: ' . $e->getMessage()
+            'message' => 'Failed to send correction notification email: ' . $e->getMessage()
         ], 500);
     }
 }

@@ -88,15 +88,15 @@
   </div>
     <body class="bg-gray-50 min-h-screen flex flex-col">
       <!-- HEADER -->
-      <header class="banner-grad flex items-center px-6 text-white shadow-md pt-4">
-           <img src="/images/LYDO.png" alt="LYDO Logo" class="h-10 mr-4"/>
-        <div>
-          <h1 class="text-3xl font-extrabold">LYDO SCHOLARSHIP</h1>
-          <p class="text-sm tracking-widest">
-            PARA SA KABATAAN, PARA SA KINABUKASAN.
-          </p>
-        </div>
-      </header>
+    <header class="banner-grad flex items-center px-4 md:px-6 py-3 text-white shadow-md">
+      <img src="/images/LYDO.png" alt="LYDO Logo" class="h-8 md:h-10 mr-3 md:mr-4"/>
+      <div>
+        <h1 class="text-xl md:text-3xl font-extrabold">LYDO SCHOLARSHIP</h1>
+        <p class="text-xs md:text-sm tracking-widest">
+          PARA SA KABATAAN, PARA SA KINABUKASAN.
+        </p>
+      </div>
+    </header>
   
       <!-- MAIN LOGIN SECTION -->
       <main

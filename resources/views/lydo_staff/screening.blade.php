@@ -48,7 +48,437 @@
             --radius-md: 0.75rem;
             --radius-lg: 1rem;
         }
+        /* Signature Preview Styles */
+.signature-preview {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px;
+    background: #f8fafc;
+    margin-top: 10px;
+}
 
+.signature-preview img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+}
+/* Review Modal Specific Styles */
+#reviewModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    overflow-y: auto;
+    animation: modalFadeIn 0.4s ease-out;
+}
+
+#reviewModal .modal-content {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    max-width: 95%;
+    width: 90%;
+    margin: 2% auto;
+    padding: 2rem;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+#reviewModal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 1rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    margin: -2rem -2rem 1.5rem -2rem;
+    padding: 1.5rem 2rem;
+    border-radius: 16px 16px 0 0;
+}
+
+#reviewModal .modal-header h2 {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#reviewModal .modal-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#reviewModal .modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+#reviewModal .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--border-light);
+    background: var(--background-light);
+    margin: 2rem -2rem -2rem -2rem;
+    padding: 1.5rem 2rem;
+    border-radius: 0 0 16px 16px;
+}
+
+#reviewModal .modal-actions button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#reviewModal .modal-actions button:first-child {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+}
+
+#reviewModal .modal-actions button:first-child:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+#reviewModal .modal-actions button:last-child {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+}
+
+#reviewModal .modal-actions button:last-child:hover {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
+}
+
+/* Review Content Styling */
+#modalReviewContent {
+    max-height: calc(90vh - 200px);
+    overflow-y: auto;
+    padding: 1rem 0;
+}
+
+/* Enhanced Print Box for Review Modal */
+#reviewModal .print-box {
+    background: white;
+    border: 2px solid var(--border-light);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#reviewModal .print-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+}
+
+#reviewModal .print-box:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+    border-color: var(--primary-light);
+}
+
+#reviewModal .print-box h4 {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-lighter);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#reviewModal .print-box h4::before {
+    content: '📋';
+    font-size: 1.2rem;
+}
+
+/* Table Styling for Review Modal */
+#reviewModal table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#reviewModal table th {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+    text-align: left;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#reviewModal table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-light);
+    background: white;
+}
+
+#reviewModal table tr:last-child td {
+    border-bottom: none;
+}
+
+#reviewModal table tr:hover td {
+    background: var(--primary-lighter);
+}
+
+/* Review Columns Layout */
+#reviewModal .review-columns {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+/* Signature Images in Review Modal */
+#reviewModal img {
+    max-width: 100%;
+    height: auto;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    background: white;
+}
+
+/* Status Badges in Review Modal */
+#reviewModal .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Animation Keyframes */
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Scrollbar Styling for Review Modal */
+#reviewModal ::-webkit-scrollbar {
+    width: 8px;
+}
+
+#reviewModal ::-webkit-scrollbar-track {
+    background: var(--secondary-color);
+    border-radius: 4px;
+}
+
+#reviewModal ::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+#reviewModal ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* Responsive Design for Review Modal */
+@media (max-width: 768px) {
+    #reviewModal .modal-content {
+        width: 98%;
+        margin: 1% auto;
+        padding: 1rem;
+    }
+    
+    #reviewModal .modal-header {
+        margin: -1rem -1rem 1rem -1rem;
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    #reviewModal .modal-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    #reviewModal .modal-actions {
+        margin: 1rem -1rem -1rem -1rem;
+        padding: 1rem;
+        flex-direction: column;
+    }
+    
+    #reviewModal .modal-actions button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    #reviewModal table {
+        font-size: 0.8rem;
+    }
+    
+    #reviewModal table th,
+    #reviewModal table td {
+        padding: 0.5rem;
+    }
+    
+    #reviewModal .print-box {
+        padding: 1rem;
+    }
+    
+    #reviewModal .review-columns {
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #reviewModal .modal-content {
+        width: 99%;
+        margin: 0.5% auto;
+        padding: 0.75rem;
+    }
+    
+    #reviewModal table {
+        font-size: 0.7rem;
+    }
+    
+    #reviewModal table th,
+    #reviewModal table td {
+        padding: 0.25rem;
+    }
+    
+    #reviewModal .print-box h4 {
+        font-size: 1rem;
+    }
+}
+
+/* Print Styles for Review Modal */
+@media print {
+    #reviewModal .modal-actions {
+        display: none !important;
+    }
+    
+    #reviewModal .modal-header {
+        background: white !important;
+        color: black !important;
+        border-bottom: 2px solid black;
+    }
+    
+    #reviewModal .modal-header h2 {
+        color: black !important;
+    }
+    
+    #reviewModal .modal-close {
+        display: none !important;
+    }
+    
+    #reviewModal .print-box {
+        break-inside: avoid;
+        border: 1px solid black !important;
+    }
+    
+    #reviewModal table {
+        break-inside: avoid;
+    }
+}
+
+/* Loading State for Review Modal */
+#reviewModal .loading-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+#reviewModal .loading-state::before {
+    content: '⏳';
+    margin-right: 0.5rem;
+    font-size: 1.5rem;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Error State for Review Modal */
+#reviewModal .error-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--danger-color);
+    background: var(--danger-light);
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+#reviewModal .error-state::before {
+    content: '⚠️';
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 1rem;
+}
         /* Modern Tab Styling */
         .tab {
             cursor: pointer;
@@ -841,7 +1271,7 @@
 </div>
 
     <div class="dashboard-grid">
-        <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
+<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
             <div class="flex items-center">
                 <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
                 <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
@@ -962,7 +1392,7 @@
                     </form>
                 </div>
             </div>
-            <div class="flex-1 main-content-area p-4 md:p-5 text-[16px]">
+            <div class="flex-1 overflow-hidden p-4 md:p-2 text-[16px] content-scrollable">
                 <div class="p-4 bg-gray-50 min-h-screen rounded-lg shadow">
                     <div class="flex justify-between items-center mb-6">
                         <h5 class="text-3xl font-bold text-gray-800">Screening Applicants</h5>
@@ -1029,9 +1459,7 @@
                                             data-suffix="{{ $app->applicant_suffix }}"
                                             data-bdate="{{ $app->applicant_bdate }}"
                                             data-brgy="{{ $app->applicant_brgy }}"
-                                            data-gender="{{ $app->applicant_gender }}"
-                                            data-pob="{{ $app->applicant_pob }}"
-                                            onclick="openEditRemarksModal(this)">
+                                            data-gender="{{ $app->applicant_gender }}"                                            onclick="openEditRemarksModal(this)">
                                             <i class="fas fa-plus mr-1"></i> Intake Sheet
                                         </button>
                                     </td>
@@ -1173,16 +1601,22 @@
                     Health & Signatures
                 </span>
             </button>
+            <button type="button" id="tab-remarks" class="tab-button flex-shrink-0 px-5 py-3 text-sm font-medium text-gray-600 hover:text-violet-600 border-b-2 border-transparent hover:border-violet-400 transition-all duration-200">
+                <span class="flex items-center">
+                    <i class="fas fa-tags mr-2"></i>
+                    Final Remarks
+                </span>
+            </button>
         </div>
 
         <!-- Progress indicator -->
         <div class="mb-6">
             <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
-                <span>Step <span id="current-step">1</span> of 5</span>
+                <span>Step <span id="current-step">1</span> of 6</span>
                 <span id="step-title">Family Details</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2">
-                <div id="progress-bar" class="bg-violet-600 h-2 rounded-full transition-all duration-500" style="width: 20%"></div>
+                <div id="progress-bar" class="bg-violet-600 h-2 rounded-full transition-all duration-500" style="width: 16%"></div>
             </div>
         </div>
 
@@ -1320,8 +1754,6 @@
                             </select>
                         </div>
                     </div>
-                    
-                    <!-- Row 6: Serial Number -->
                 </div>
 
                 <!-- Navigation Buttons -->
@@ -1502,15 +1934,6 @@
                                 <input type="number" step="0.01" name="house_net_income" id="house_net_income" class="w-full border border-gray-300 rounded-xl p-3 bg-gray-100 text-gray-600" readonly>
                                 <p class="text-xs text-gray-500 mt-2">Total Income - Total Expenses</p>
                             </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Remarks <span class="text-red-500">*</span></label>
-                                <select name="remarks" id="remarks" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200" required>
-                                    <option value="">Select Remarks</option>
-                                    <option value="Poor">Poor</option>
-                                    <option value="Non Poor">Non Poor</option>
-                                    <option value="Ultra Poor">Ultra Poor</option>
-                                </select>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -1627,13 +2050,14 @@
                     
                     <!-- Date Entry and Signature Client -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Date Entry</label>
-                            <input type="date" name="date_entry" id="date_entry" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
-                        </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">Date Entry</label>
+        <input type="date" name="date_entry" id="date_entry" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
+    </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Signature Client</label>
                             <input type="text" name="signature_client" id="signature_client" class="w-full border border-gray-300 rounded-xl p-3 bg-gray-100 text-gray-600" readonly>
+                        
                         </div>
                     </div>
                     
@@ -1664,1747 +2088,163 @@
                         <i class="fas fa-arrow-left mr-2"></i>
                         Previous
                     </button>
-                    <div class="flex gap-3">
-                        <button type="button" onclick="saveAsDraft()" class="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-xl font-medium transition-all duration-200">
-                            Save as Draft
+                    <button type="button" onclick="showTab('remarks')" class="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center">
+                        Next
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Final Remarks Tab -->
+            <div id="tab-remarks-content" class="tab-content hidden">
+                <!-- Final Remarks Section -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+                        <i class="fas fa-tags mr-2 text-violet-600"></i>
+                        Final Remarks
+                    </h3>
+                    
+                    <div class="mb-6 p-4 bg-green-50 rounded-xl border border-green-200">
+                        <h4 class="font-semibold text-green-800 mb-3 flex items-center">
+                            <i class="fas fa-calculator mr-2"></i>
+                            Financial Summary
+                        </h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Total Family Income</label>
+                                <input type="number" step="0.01" name="house_total_income" id="house_total_income_final" class="w-full border border-gray-300 rounded-xl p-3 bg-gray-100 text-gray-600" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Total Expenses</label>
+                                <input type="number" step="0.01" id="total_expenses_final" class="w-full border border-gray-300 rounded-xl p-3 bg-gray-100 text-gray-600" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Net Income</label>
+                                <input type="number" step="0.01" name="house_net_income" id="house_net_income_final" class="w-full border border-gray-300 rounded-xl p-3 bg-gray-100 text-gray-600" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Remarks Selection -->
+                    <div class="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                        <h4 class="font-semibold text-blue-800 mb-3 flex items-center">
+                            <i class="fas fa-tags mr-2"></i>
+                            Final Assessment
+                        </h4>
+                        
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Remarks <span class="text-red-500">*</span></label>
+                                <select name="remarks" id="remarks" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" required onchange="validateRemarks()">
+                                    <option value="">Select Remarks</option>
+                                    <option value="Poor">Poor</option>
+                                    <option value="Non Poor">Non Poor</option>
+                                    <option value="Ultra Poor">Ultra Poor</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-2">Please select a remark based on the financial assessment</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="flex justify-between mt-6 pt-4 border-t border-gray-200">
+                        <button type="button" onclick="showTab('health')" class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-xl font-medium transition-all duration-200 flex items-center">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Previous
                         </button>
-                        <button type="button" onclick="confirmSubmitForm()" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center">
-                            <i class="fas fa-check mr-2"></i>
-                            Submit Form
-                        </button>
+                        <div class="flex gap-3">
+                            <button type="button" onclick="saveAsDraft()" class="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-xl font-medium transition-all duration-200">
+                                Save as Draft
+                            </button>
+                            <button type="button" id="submitFormBtn" onclick="confirmSubmitForm()" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center" disabled>
+                                <i class="fas fa-check mr-2"></i>
+                                Submit Form
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+        </form>
+    </div>
+</div>
+
+<!-- Review Modal for Reviewed Applicants (TOP LEVEL - NOT NESTED) -->
+<div id="reviewModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="text-xl font-bold">Review Family Intake Sheet</h2>
+            <button class="modal-close" onclick="closeReviewModal()">&times;</button>
+        </div>
+
+        <div id="modalReviewContent">
+            <!-- Content will be populated here -->
+        </div>
+
+        <div class="modal-actions">
+            <button
+                type="button"
+                onclick="printReviewModal()"
+                class="bg-blue-500 text-white px-5 py-2 rounded hover:bg-blue-600 mr-2"
+            >
+                <i class="fas fa-print mr-1"></i> Print
+            </button>
+            <button
+                type="button"
+                onclick="closeReviewModal()"
+                class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600"
+            >
+                Close
+            </button>
         </div>
     </div>
+</div>
 
-    <!-- Review Modal for Reviewed Applicants (top-level, independent) -->
-    <div id="reviewModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="text-xl font-bold">Review Family Intake Sheet</h2>
-                <button class="modal-close" onclick="closeReviewModal()">&times;</button>
-            </div>
+<!-- Signature Modal (TOP LEVEL - NOT NESTED) -->
+<div id="signatureModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-gray-800" id="signatureModalTitle">Signature</h3>
+            <button type="button" onclick="closeSignatureModal()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
 
-            <div id="modalReviewContent">
-                <!-- Content will be populated here -->
-            </div>
-
-            <div class="modal-actions">
-                <button
-                    type="button"
-                    onclick="printReviewModal()"
-                    class="bg-blue-500 text-white px-5 py-2 rounded hover:bg-blue-600 mr-2"
-                >
-                    <i class="fas fa-print mr-1"></i> Print
-                </button>
-                <button
-                    type="button"
-                    onclick="closeReviewModal()"
-                    class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600"
-                >
-                    Close
-                </button>
+        <div class="mb-4">
+            <div class="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
+                <canvas id="signatureCanvas" width="400" height="200" class="border border-gray-300 rounded bg-white"></canvas>
             </div>
         </div>
-    </div>
 
-    <!-- Signature Modal (top-level, independent) -->
-    <div id="signatureModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold text-gray-800" id="signatureModalTitle">Signature</h3>
-                <button type="button" onclick="closeSignatureModal()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times text-2xl"></i>
+        <div class="flex justify-between gap-3">
+            <button type="button" onclick="clearSignature()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                <i class="fas fa-eraser mr-2"></i>Clear
+            </button>
+            <div class="flex gap-2">
+                <button type="button" onclick="closeSignatureModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                    Cancel
                 </button>
-            </div>
-
-            <div class="mb-4">
-                <div class="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
-                    <canvas id="signatureCanvas" width="400" height="200" class="border border-gray-300 rounded bg-white"></canvas>
-                </div>
-            </div>
-
-            <div class="flex justify-between gap-3">
-                <button type="button" onclick="clearSignature()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-                    <i class="fas fa-eraser mr-2"></i>Clear
+                <button type="button" onclick="saveSignature()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-save mr-2"></i>Save Signature
                 </button>
-                <div class="flex gap-2">
-                    <button type="button" onclick="closeSignatureModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
-                        Cancel
-                    </button>
-                    <button type="button" onclick="saveSignature()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        <i class="fas fa-save mr-2"></i>Save Signature
-                    </button>
-                </div>
             </div>
         </div>
     </div>
 </div>
-        <script>
-  // Pagination state - MOVED INSIDE DOMContentLoaded to ensure proper initialization
-document.addEventListener('DOMContentLoaded', function() {
-    // Pagination state
-    const paginationState = {
-        table: {
-            currentPage: 1,
-            rowsPerPage: 15,
-            allRows: [],
-            filteredRows: []
-        },
-        list: {
-            currentPage: 1,
-            rowsPerPage: 15,
-            allRows: [],
-            filteredRows: []
-        }
-    };
 
-    // Make paginationState global
-    window.paginationState = paginationState;
+<script src="{{ asset('js/screening.js') }}"></script>
+<script src="{{ asset('js/spinner.js') }}"></script>
 
-    // Initialize pagination
-    initializePagination();
-    
-    // Update the existing event listeners to use debounce
-    document.getElementById('nameSearch').addEventListener('input', debounce(filterTable, 300));
-    document.getElementById('barangayFilter').addEventListener('change', filterTable);
-    document.getElementById('listNameSearch').addEventListener('input', debounce(filterList, 300));
-    document.getElementById('listBarangayFilter').addEventListener('change', filterList);
-
-    // Initialize pagination
-    function initializePagination() {
-        console.log('Initializing pagination...');
-        
-        // Get ALL table rows (not just visible ones)
-        const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
-        paginationState.table.allRows = tableRows.filter(row => {
-            // Filter out empty state rows and ensure row has proper cells
-            const hasColspan = row.querySelector('td[colspan]');
-            const hasCells = row.cells.length > 1;
-            return !hasColspan && hasCells;
-        });
-        paginationState.table.filteredRows = [...paginationState.table.allRows];
-        
-        console.log('Table rows found:', paginationState.table.allRows.length);
-        
-        // Get ALL list rows
-        const listRows = Array.from(document.querySelectorAll('#listView tbody tr'));
-        paginationState.list.allRows = listRows.filter(row => {
-            const hasColspan = row.querySelector('td[colspan]');
-            const hasCells = row.cells.length > 1;
-            return !hasColspan && hasCells;
-        });
-        paginationState.list.filteredRows = [...paginationState.list.allRows];
-        
-        console.log('List rows found:', paginationState.list.allRows.length);
-        
-        updatePagination('table');
-        updatePagination('list');
-    }
-
-    // Update pagination display
-    function updatePagination(viewType) {
-        const state = paginationState[viewType];
-        const containerId = viewType === 'table' ? 'tablePagination' : 'listPagination';
-        const container = document.getElementById(containerId);
-        
-        if (!container) {
-            console.error('Pagination container not found:', containerId);
-            return;
-        }
-        
-        // Hide all rows first
-        state.allRows.forEach(row => {
-            row.style.display = 'none';
-        });
-        
-        // Calculate pagination for filtered rows
-        const startIndex = (state.currentPage - 1) * state.rowsPerPage;
-        const endIndex = startIndex + state.rowsPerPage;
-        const pageRows = state.filteredRows.slice(startIndex, endIndex);
-        
-        // Show only rows for current page
-        pageRows.forEach(row => {
-            row.style.display = '';
-        });
-        
-        // Update pagination controls
-        const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage) || 1;
-        
-        const startItem = state.filteredRows.length === 0 ? 0 : Math.min(startIndex + 1, state.filteredRows.length);
-        const endItem = Math.min(endIndex, state.filteredRows.length);
-        
-        container.innerHTML = `
-            <div class="pagination-info">
-                Showing ${startItem} to ${endItem} of ${state.filteredRows.length} entries
-            </div>
-            <div class="pagination-buttons">
-                <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
-                    <i class="fas fa-angle-double-left"></i>
-                </button>
-                <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
-                    <i class="fas fa-angle-left"></i>
-                </button>
-                <div class="pagination-page-info">
-                    Page <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)"> of ${totalPages}
-                </div>
-                <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                    <i class="fas fa-angle-right"></i>
-                </button>
-                <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                    <i class="fas fa-angle-double-right"></i>
-                </button>
-            </div>
-        `;
-    }
-
-    // Change page
-    function changePage(viewType, page) {
-        const state = paginationState[viewType];
-        const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage) || 1;
-        
-        if (page < 1) page = 1;
-        if (page > totalPages) page = totalPages;
-        
-        state.currentPage = page;
-        updatePagination(viewType);
-    }
-
-    // Go to specific page
-    function goToPage(viewType, page) {
-        const state = paginationState[viewType];
-        const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage) || 1;
-        
-        page = parseInt(page);
-        if (isNaN(page) || page < 1) page = 1;
-        if (page > totalPages) page = totalPages;
-        
-        state.currentPage = page;
-        updatePagination(viewType);
-    }
-
-    // Update the existing filter functions to work with pagination
-    function filterTable() {
-        const nameSearchValue = document.getElementById('nameSearch').value.toLowerCase().trim();
-        const barangayFilterValue = document.getElementById('barangayFilter').value.toLowerCase().trim();
-
-        const filteredRows = paginationState.table.allRows.filter(row => {
-            const nameCell = row.cells[1];
-            const barangayCell = row.cells[2];
-
-            if (!nameCell || !barangayCell) return false;
-
-            const name = nameCell.textContent.toLowerCase();
-            const barangay = barangayCell.textContent.toLowerCase();
-
-            const matchesName = name.includes(nameSearchValue);
-            const matchesBarangay = barangayFilterValue === '' || barangay.includes(barangayFilterValue);
-
-            return matchesName && matchesBarangay;
-        });
-
-        // Update filtered rows and reset to page 1
-        paginationState.table.filteredRows = filteredRows;
-        paginationState.table.currentPage = 1;
-        updatePagination('table');
-    }
-
-    function filterList() {
-        const nameSearchValue = document.getElementById('listNameSearch').value.toLowerCase().trim();
-        const barangayFilterValue = document.getElementById('listBarangayFilter').value.toLowerCase().trim();
-
-        const filteredRows = paginationState.list.allRows.filter(row => {
-            const nameCell = row.cells[1];
-            const barangayCell = row.cells[2];
-
-            if (!nameCell || !barangayCell) return false;
-
-            const name = nameCell.textContent.toLowerCase();
-            const barangay = barangayCell.textContent.toLowerCase();
-
-            const matchesName = name.includes(nameSearchValue);
-            const matchesBarangay = barangayFilterValue === '' || barangay.includes(barangayFilterValue);
-
-            return matchesName && matchesBarangay;
-        });
-
-        // Update filtered rows and reset to page 1
-        paginationState.list.filteredRows = filteredRows;
-        paginationState.list.currentPage = 1;
-        updatePagination('list');
-    }
-
-    // Make functions global
-    window.changePage = changePage;
-    window.goToPage = goToPage;
-    window.filterTable = filterTable;
-    window.filterList = filterList;
-    window.updatePagination = updatePagination;
-});
-
-// Debounce function for search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Update the existing showTable and showList functions
-function showTable() {
-    document.getElementById('tableView').classList.remove('hidden');
-    document.getElementById('listView').classList.add('hidden');
-    document.getElementById('tab-screening').classList.add('active');
-    document.getElementById('tab-reviewed').classList.remove('active');
-    
-    // Reset to first page
-    if (window.paginationState) {
-        window.paginationState.table.currentPage = 1;
-        updatePagination('table');
-    }
-}
-
-function showList() {
-    document.getElementById('tableView').classList.add('hidden');
-    document.getElementById('listView').classList.remove('hidden');
-    document.getElementById('tab-screening').classList.remove('active');
-    document.getElementById('tab-reviewed').classList.add('active');
-    
-    // Reset to first page
-    if (window.paginationState) {
-        window.paginationState.list.currentPage = 1;
-        updatePagination('list');
-    }
-}
-                </script>
-        <script>
-            // Add this function to set current date
-            function setCurrentDate() {
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('date_entry').value = today;
-            }
-
-            // Main Tab switching functionality
-            function showTable() {
-                document.getElementById('tableView').classList.remove('hidden');
-                document.getElementById('listView').classList.add('hidden');
-                document.getElementById('tab-screening').classList.add('active');
-                document.getElementById('tab-reviewed').classList.remove('active');
-                filterTable();
-            }
-
-            function showList() {
-                document.getElementById('tableView').classList.add('hidden');
-                document.getElementById('listView').classList.remove('hidden');
-                document.getElementById('tab-screening').classList.remove('active');
-                document.getElementById('tab-reviewed').classList.add('active');
-                filterList();
-            }
-
-            // Modal Tab switching functionality
-            function showTab(tabName) {
-                // Hide all tab contents
-                const tabContents = document.querySelectorAll('.tab-content');
-                tabContents.forEach(content => content.classList.add('hidden'));
-
-                // Remove active class from all tab buttons
-                const tabButtons = document.querySelectorAll('.tab-button');
-                tabButtons.forEach(button => {
-                    button.classList.remove('active');
-                    button.classList.remove('text-violet-600');
-                    button.classList.add('text-gray-500');
-                    button.classList.remove('border-b-2', 'border-violet-600');
-                });
-
-                // Show the selected tab content
-                document.getElementById('tab-' + tabName + '-content').classList.remove('hidden');
-
-                // Add active class to the selected tab button
-                const activeTab = document.getElementById('tab-' + tabName);
-                activeTab.classList.add('active', 'text-violet-600', 'border-b-2', 'border-violet-600');
-                activeTab.classList.remove('text-gray-500');
-
-                // Update progress bar and step indicator
-                updateProgress(tabName);
-            }
-
-            // Update progress bar and step indicator
-            function updateProgress(tabName) {nameSearch
-                const stepInfo = {
-                    'family': { step: 1, title: 'Family Details', width: '20%' },
-                    'family-members': { step: 2, title: 'Family Members', width: '40%' },
-                    'additional': { step: 3, title: 'Additional Info', width: '60%' },
-                    'social-service': { step: 4, title: 'Social Service', width: '80%' },
-                    'health': { step: 5, title: 'Health & Signatures', width: '100%' }
-                };
-
-                const info = stepInfo[tabName];
-                if (info) {
-                    document.getElementById('current-step').textContent = info.step;
-                    document.getElementById('step-title').textContent = info.title;
-                    document.getElementById('progress-bar').style.width = info.width;
-                }
-            }
-
-            // Open Edit Remarks Modal
- // Open Edit Remarks Modal - UPDATED VERSION
-// IMPROVED openEditRemarksModal function
-function openEditRemarksModal(button) {
-    console.log('Opening modal for button:', button);
-    
-    try {
-        const id = button.getAttribute("data-id");
-        const name = button.getAttribute("data-name");
-        const fname = button.getAttribute("data-fname");
-        const mname = button.getAttribute("data-mname");
-        const lname = button.getAttribute("data-lname");
-        const suffix = button.getAttribute("data-suffix");
-        const bdate = button.getAttribute("data-bdate");
-        const brgy = button.getAttribute("data-brgy");
-        const gender = button.getAttribute("data-gender");
-        const pob = button.getAttribute("data-pob");
-
-        console.log('Applicant data:', { id, name, fname, brgy });
-            const form = document.getElementById('updateRemarksForm');
-    form.action = `/lydo_staff/update-intake-sheet/${id}`;
-
-        // Set basic values in the modal form
-        document.getElementById('remarks_id').value = id || '';
-        document.getElementById('applicant_full_name').textContent = name || 'Applicant';
-        document.getElementById('applicant_fname').value = fname || '';
-        document.getElementById('applicant_mname').value = mname || '';
-        document.getElementById('applicant_lname').value = lname || '';
-        document.getElementById('applicant_suffix').value = suffix || '';
-        document.getElementById('head_dob').value = bdate || '';
-        document.getElementById('head_barangay').value = brgy || '';
-        
-        if (gender) {
-            document.getElementById('applicant_gender').value = gender;
-        }
-
-        // Generate serial number
-        document.getElementById('serial_number').value = 'SN-' + Date.now();
-
-        // Set current date for Date Entry
-        setCurrentDate();
-
-        // Clear previous data
-        document.getElementById('family_members_tbody').innerHTML = '';
-        document.getElementById('rv_service_records_tbody').innerHTML = '';
-
-        // Show the modal FIRST
-        const modal = document.getElementById('editRemarksModal');
-        if (!modal) {
-            throw new Error('Modal element not found');
-        }
-        
-        modal.classList.remove('hidden');
-        document.body.classList.add('modal-open');
-
-        // Reset to first tab
-        showTab('family');
-
-        // Show loading message
-        Swal.fire({
-            title: 'Loading...',
-            text: 'Fetching intake sheet data',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        // Fetch existing intake sheet data
-        fetch(`/lydo_staff/intake-sheet/${id}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                Swal.close();
-                console.log('Successfully fetched data:', data);
-                
-                if (data && Object.keys(data).length > 0) {
-                    populateEditModal(data);
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Data Loaded!',
-                        text: 'Intake sheet data loaded successfully',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'New Intake Sheet',
-                        text: 'Starting new intake sheet form',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                }
-            })
-            .catch(err => {
-                Swal.close();
-                console.error('Error fetching intake sheet data:', err);
-                
-                // Show modal anyway with empty form
-                Swal.fire({
-                    icon: 'info',
-                    title: 'New Form',
-                    text: 'Starting new intake sheet. You can fill out the form now.',
-                    confirmButtonText: 'OK'
-                });
-            });
-
-    } catch (error) {
-        console.error('Error in openEditRemarksModal:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Failed to open modal: ' + error.message,
-            confirmButtonText: 'OK'
-        });
-    }
-}
-
-// Helper function to reset modal form
-function resetModalForm() {
-    // Reset all form fields to default values
-    const defaultValues = {
-        'head_4ps': '',
-        'head_ipno': '',
-        'head_address': '',
-        'head_zone': '',
-        'head_pob': '',
-        'head_educ': '',
-        'head_occ': '',
-        'head_religion': '',
-        'other_income': '',
-        'house_house': '',
-        'house_rent': '',
-        'house_lot': '',
-        'lot_rent': '',
-        'house_water': '',
-        'house_electric': '',
-        'remarks': '',
-        'officer_name': '',
-        'signature_worker': '',
-        'signature_officer': ''
-    };
-
-    Object.keys(defaultValues).forEach(key => {
-        const element = document.getElementById(key);
-        if (element) {
-            element.value = defaultValues[key];
-        }
-    });
-
-    // Reset signature buttons
-    const signatureButtons = document.querySelectorAll('button[onclick*="openSignatureModal"]');
-    signatureButtons.forEach(button => {
-        const span = button.querySelector('span');
-        if (span) {
-            span.textContent = 'Click to Sign';
-        }
-        button.classList.remove('bg-green-100', 'hover:bg-green-200', 'text-green-800');
-        button.classList.add('bg-white', 'hover:bg-gray-50');
-    });
-
-    // Reset progress
-    updateProgress('family');
-}
-
-            // Close Edit Remarks Modal
-            function closeEditRemarksModal() {
-                document.getElementById('editRemarksModal').classList.add('hidden');
-                document.body.classList.remove('modal-open');
-            }
-
-            // Open Review Modal
-            function openReviewModal(button) {
-                const id = button.getAttribute("data-id");
-                if (!id) {
-                    console.error('No ID provided');
-                    return;
-                }
-                
-                // Show loading state
-                document.getElementById('modalReviewContent').innerHTML = '<div class="p-4 text-center">Loading...</div>';
-                
-                // Fetch intake sheet data with error handling
-                fetch(`/lydo_staff/intake-sheet/${id}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Fetched data:', data); // Debug log
-                        if (data) {
-                            populateReviewModal(data);
-
-                            // Ensure the review modal is visible (moved to top-level)
-                            const reviewModal = document.getElementById('reviewModal');
-                            if (reviewModal) {
-                                reviewModal.style.display = 'block';
-                            }
-
-                            document.body.classList.add('modal-open');
-                        } else {
-                            throw new Error('No data received');
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Error fetching intake sheet data:', err);
-                        document.getElementById('modalReviewContent').innerHTML = `
-                            <div class="p-4 text-center text-red-600">
-                                Error loading data: ${err.message}
-                            </div>
-                        `;
-                    });
-            }
-
-            // Close Review Modal
-            function closeReviewModal() {
-                const reviewModal = document.getElementById('reviewModal');
-                if (reviewModal) {
-                    reviewModal.style.display = 'none';
-                }
-                document.body.classList.remove('modal-open');
-            }
-
-            // Update the populateReviewModal function to handle null/undefined values and show all data
-            function populateReviewModal(d) {
-                if (!d) {
-                    console.error('No data received');
-                    return;
-                }
-
-                const modalContent = document.getElementById('modalReviewContent');
-
-                // Add console logging to debug
-                console.log('Received data:', d);
-
-                // Check if required data exists before populating
-                const fullName = [
-                    d.applicant_fname || '',
-                    d.applicant_mname || '',
-                    d.applicant_lname || '',
-                    d.applicant_suffix || ''
-                ].filter(Boolean).join(' ');
-
-                modalContent.innerHTML = `
-                    <div class="review-columns">
-                        <div class="space-y-4">
-                            <!-- Head of Family Section -->
-                            <div class="print-box p-4">
-                                <h4 class="font-semibold mb-3">Head of Family</h4>
-                                <table class="min-w-full text-sm">
-                                    <tr>
-                                        <td><strong>Serial No.:</strong> ${d.serial_number || "N/A"}</td>
-                                        <td><strong>Name:</strong> ${fullName || "N/A"}</td>
-                                        <td><strong>Sex:</strong> ${d.applicant_gender || "N/A"}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>4Ps:</strong> ${d.head_4ps || "N/A"}</td>
-                                        <td><strong>IP No.:</strong> ${d.head_ipno || "N/A"}</td>
-                                        <td><strong>Address:</strong> ${d.head_address || "N/A"}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Zone:</strong> ${d.head_zone || "N/A"}</td>
-                                        <td><strong>Barangay:</strong> ${d.head_barangay || "N/A"}</td>
-                                        <td><strong>Date of Birth:</strong> ${formatDate(d.head_dob)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Place of Birth:</strong> ${d.head_pob || "N/A"}</td>
-                                        <td><strong>Education:</strong> ${d.head_educ || "N/A"}</td>
-                                        <td><strong>Occupation:</strong> ${d.head_occ || "N/A"}</td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="3"><strong>Religion:</strong> ${d.head_religion || "N/A"}</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <!-- Family Members Section -->
-                            <div class="print-box p-4">
-                                <h4 class="font-semibold mb-3">Family Members</h4>
-                                <table class="min-w-full text-sm border border-gray-300">
-                                    <thead class="bg-gray-100">
-                                        <tr>
-                                            <th class="border px-2 py-1">Name</th>
-                                            <th class="border px-2 py-1">Relation</th>
-                                            <th class="border px-2 py-1">Birthdate</th>
-                                            <th class="border px-2 py-1">Age</th>
-                                            <th class="border px-2 py-1">Sex</th>
-                                            <th class="border px-2 py-1">Civil Status</th>
-                                            <th class="border px-2 py-1">Educational Attainment</th>
-                                            <th class="border px-2 py-1">Occupation</th>
-                                            <th class="border px-2 py-1">Income</th>
-                                            <th class="border px-2 py-1">Remarks</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${(() => {
-                                            let familyMembers = [];
-                                            if (d.family_members) {
-                                                if (typeof d.family_members === 'string') {
-                                                    try {
-                                                        familyMembers = JSON.parse(d.family_members);
-                                                    } catch (e) {
-                                                        familyMembers = [];
-                                                    }
-                                                } else if (Array.isArray(d.family_members)) {
-                                                    familyMembers = d.family_members;
-                                                }
-                                            }
-                                            return familyMembers.length > 0 ? familyMembers.map(f => `
-                                                <tr>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.name || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.relationship || f.relation || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${formatDate(f.birthdate || f.birth)}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.age || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.sex || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.civil_status || f.civil || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.education || f.educ || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.occupation || f.occ || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">₱${escapeHtml(f.monthly_income || f.income || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(f.remarks || '')}</td>
-                                                </tr>
-                                            `).join('') : '<tr><td colspan="10" class="border px-2 py-1 text-center text-gray-500">No family members found</td></tr>';
-                                        })()}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- Household Information Section -->
-                            <div class="print-box p-4">
-                                <h4 class="font-semibold mb-3">Household Information</h4>
-                                <table class="min-w-full text-sm">
-                                    <tr>
-                                        <td><strong>Other Source of Income:</strong> ₱${d.other_income || "-"}</td>
-                                        <td><strong>Total Family Income:</strong> ₱${d.house_total_income || "-"}</td>
-                                        <td><strong>Total Family Net Income:</strong> ₱${d.house_net_income || "-"}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>House (Owned/Rented):</strong> ${d.house_house || "-"} ${d.house_rent ? `(Rent: ₱${d.house_rent})` : ''}</td>
-                                        <td><strong>Lot (Owned/Rented):</strong> ${d.house_lot || "-"} ${d.lot_rent ? `(Rent: ₱${d.lot_rent})` : ''}</td>
-                                        <td><strong>Water:</strong> ₱${d.house_water || "-"}</td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="3"><strong>Electricity Source:</strong> ₱${d.house_electric || "-"}</td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="3"><strong>Remarks:</strong> ${d.remarks || "N/A"}</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <!-- Social Service Records Section -->
-                            <div class="print-box p-4">
-                                <h4 class="font-semibold mb-3">Social Service Records</h4>
-                                <table class="min-w-full text-sm thin-border">
-                                    <thead class="bg-gray-100">
-                                        <tr>
-                                            <th class="border px-2 py-1">Date</th>
-                                            <th class="border px-2 py-1">Problem/Need</th>
-                                            <th class="border px-2 py-1">Action/Assistance Given</th>
-                                            <th class="border px-2 py-1">Remarks</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${(() => {
-                                            let serviceRecords = d.rv_service_records;
-                                            if (typeof serviceRecords === 'string') {
-                                                try {
-                                                    serviceRecords = JSON.parse(serviceRecords);
-                                                } catch (e) {
-                                                    serviceRecords = [];
-                                                }
-                                            }
-                                            return Array.isArray(serviceRecords) && serviceRecords.length > 0 ? serviceRecords.map(r => `
-                                                <tr>
-                                                    <td class="border px-2 py-1 text-left">${formatDate(r.date)}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(r.problem || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(r.action || '')}</td>
-                                                    <td class="border px-2 py-1 text-left">${escapeHtml(r.remarks || '')}</td>
-                                                </tr>
-                                            `).join('') : '<tr><td colspan="4" class="border px-2 py-1 text-center text-gray-500">No social service records found</td></tr>';
-                                        })()}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- Health & Signatures Section -->
-                            <div class="print-box p-4">
-                                <h4 class="font-semibold mb-3">Health & Signatures</h4>
-                                <table class="min-w-full text-sm">
-                                    <tr>
-                                        <td><strong>Worker Name:</strong> ${d.worker_name || "N/A"}</td>
-                                        <td><strong>Officer Name:</strong> ${d.officer_name || "N/A"}</td>
-                                        <td><strong>Date Entry:</strong> ${formatDate(d.date_entry)}</td>
-                                    </tr>
-                                </table>
-                                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div>
-                                        <p><strong>Family Head Signature:</strong></p>
-                                        <div class="mt-2">
-                                            ${d.signature_client ?
-                                                `<img src="${d.signature_client}" style="max-width: 100%; height: 80px; border: 1px solid #ccc;" />` :
-                                                '<p class="text-xs text-gray-500">No signature</p>'
-                                            }
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p><strong>Worker Signature:</strong></p>
-                                        <div class="mt-2">
-                                            ${d.signature_worker ?
-                                                `<img src="${d.signature_worker}" style="max-width: 100%; height: 80px; border: 1px solid #ccc;" />` :
-                                                '<p class="text-xs text-gray-500">No signature</p>'
-                                            }
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p><strong>Officer Signature:</strong></p>
-                                        <div class="mt-2">
-                                            ${d.signature_officer ?
-                                                `<img src="${d.signature_officer}" style="max-width: 100%; height: 80px; border: 1px solid #ccc;" />` :
-                                                '<p class="text-xs text-gray-500">No signature</p>'
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            // Utility functions
-            function formatDate(dateString) {
-                if (!dateString) return "-";
-                const date = new Date(dateString);
-                if (isNaN(date)) return dateString;
-                const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                return date.toLocaleDateString('en-US', options);
-            }
-
-            function escapeHtml(s) {
-                if (!s) return "";
-                return s.replace(
-                    /[&<>"']/g,
-                    (m) =>
-                        ({
-                            "&": "&amp;",
-                            "<": "&lt;",
-                            ">": "&gt;",
-                            '"': "&quot;",
-                            "'": "&#39;",
-                        }[m])
-                );
-            }
-
-            // Family Members Functions
-            function addFamilyMemberRow() {
-                const tbody = document.getElementById('family_members_tbody');
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="border px-2 py-1">
-                        <input type="text" name="family_member_name[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" placeholder="Full Name" oninput="calculateIncomes()">
-                    </td>
-                    <td class="border px-2 py-1">
-                        <select name="family_member_relation[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
-                      <option value="">Select</option>
-                      <option value="Spouse">Spouse</option>
-                      <option value="Son">Son</option>
-                      <option value="Daughter">Daughter</option>
-                      <option value="Father">Father</option>
-                      <option value="Mother">Mother</option>
-                      <option value="Brother">Brother</option>
-                      <option value="Sister">Sister</option>
-                      <option value="Grandchild">Grandchild</option>
-                      <option value="Other">Other</option>
-                        </select>
-                    </td>
-                    <td class="border px-2 py-1">
-                        <input type="date" name="family_member_birthdate[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" onchange="calculateAge(this)">
-                    </td>
-                    <td class="border px-2 py-1">
-                        <input type="number" name="family_member_age[]" class="w-full border border-gray-300 rounded px-2 py-1 bg-gray-50 text-gray-600" placeholder="Age" readonly>
-                    </td>
-                    <td class="border px-2 py-1">
-                        <select name="family_member_sex[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
-                            <option value="">Select Sex</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                        </select>
-                    </td>
-                    <td class="border px-2 py-1">
-                        <select name="family_member_civil_status[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
-                      <option value="">Select</option>
-                      <option value="Single">Single</option>
-                      <option value="Married">Married</option>
-                      <option value="Widowed">Widowed</option>
-                      <option value="Divorced">Divorced</option>
-                      <option value="Separated">Separated</option>
-                        </select>
-                    </td>
-                    <td class="border px-2 py-1">
-                        <select name="family_member_education[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
-                      <option value="">Select</option>
-                      <option value="None">None</option>
-                      <option value="Elementary">Elementary</option>
-                      <option value="High School">High School</option>
-                      <option value="College">College</option>
-                      <option value="Vocational">Vocational</option>
-                      <option value="Graduate">Graduate</option>
-                        </select>
-                    </td>
-                    <td class="border px-2 py-1">
-                        <input type="text" name="family_member_occupation[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" placeholder="Occupation">
-                    </td>
-                    <td class="border px-2 py-1">
-                        <input type="number" step="0.01" name="family_member_income[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" placeholder="0.00" oninput="calculateIncomes()">
-                    </td>
-                    <td class="border px-2 py-1">
-                        <select name="family_member_remarks[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
-                                                 <option value="">Select</option>
-                      <option value="CIC">CIC</option>
-                      <option value="OSY">OSY</option>
-                      <option value="SP">SP</option>
-                      <option value="PWD">PWD</option>
-                      <option value="SC">SC</option>
-                      <option value="None">None</option>
-                      <option value="Lactating Mother">Lactating Mother</option>
-                      <option value="Pregnant Mother">Pregnant Mother</option>
-                        </select>
-                    </td>
-                    <td class="border px-2 py-1 text-center">
-                        <button type="button" onclick="this.parentElement.parentElement.remove(); calculateIncomes();" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors duration-200">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            }
-
-            // Function to calculate age from birthdate
-            function calculateAge(birthdateInput) {
-                const birthdate = new Date(birthdateInput.value);
-                const today = new Date();
-
-                if (isNaN(birthdate)) {
-                    return;
-                }
-
-                let age = today.getFullYear() - birthdate.getFullYear();
-                const monthDiff = today.getMonth() - birthdate.getMonth();
-
-                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthdate.getDate())) {
-                    age--;
-                }
-
-                // Find the age input in the same row
-                const row = birthdateInput.closest('tr');
-                const ageInput = row.querySelector('input[name="family_member_age[]"]');
-                if (ageInput) {
-                    ageInput.value = age;
-                }
-            }
-
-            // Service Records Functions
-            function addRvServiceRecordRow() {
-                const tbody = document.getElementById('rv_service_records_tbody');
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="border px-2 py-1">
-                        <input type="date" name="service_record_date[]" class="w-full border-none focus:ring-0" value="${new Date().toISOString().split('T')[0]}">
-                    </td>
-                    <td class="border px-2 py-1">
-                        <input type="text" name="service_record_problem[]" class="w-full border-none focus:ring-0" placeholder="Problem/Need">
-                    </td>
-                    <td class="border px-2 py-1">
-                        <input type="text" name="service_record_action[]" class="w-full border-none focus:ring-0" placeholder="Action/Assistance">
-                    </td>
-                    <td class="border px-2 py-1">
-                        <select name="service_record_remarks[]" class="w-full border-none focus:ring-0">
-                            <option value="">Select Remarks</option>
-                            <option value="A. DEAD">A. DEAD</option>
-                            <option value="B. INJURED">B. INJURED</option>
-                            <option value="C. MISSING">C. MISSING</option>
-                            <option value="D. With Illness">D. With Illness</option>
-                        </select>
-                    </td>
-                    <td class="border px-2 py-1 text-center">
-                        <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-600 hover:text-red-800">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            }
-
-            // Filtering functions
-            function filterTable() {
-                const nameSearchValue = document.getElementById('nameSearch').value.toLowerCase().trim();
-                const barangayFilterValue = document.getElementById('barangayFilter').value.toLowerCase().trim();
-
-                const tableViewRows = document.querySelectorAll('#tableView tbody tr');
-                tableViewRows.forEach(row => {
-                    const nameCell = row.cells[1].textContent.toLowerCase();
-                    const barangayCell = row.cells[2].textContent.toLowerCase();
-
-                    const matchesName = nameCell.includes(nameSearchValue);
-                    const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
-
-                    if (matchesName && matchesBarangay) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            }
-
-            function filterList() {
-                const nameSearchValue = document.getElementById('listNameSearch').value.toLowerCase().trim();
-                const barangayFilterValue = document.getElementById('listBarangayFilter').value.toLowerCase().trim();
-
-                const listViewRows = document.querySelectorAll('#listView tbody tr');
-                listViewRows.forEach(row => {
-                    const nameCell = row.cells[1].textContent.toLowerCase();
-                    const barangayCell = row.cells[2].textContent.toLowerCase();
-
-                    const matchesName = nameCell.includes(nameSearchValue);
-                    const matchesBarangay = barangayFilterValue === '' || barangayCell.includes(barangayFilterValue);
-
-                    if (matchesName && matchesBarangay) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            }
-
-            // TODO PROCESS FOR ADDITIONAL INFO TAB - IMPLEMENTED
-            // Calculate Total Family Income, Expenses, and Net Income
-            function calculateIncomes() {
-                console.log('Calculating incomes...');
-                
-                // 1. Calculate Total Family Income from Family Members
-                let totalFamilyIncome = 0;
-                const incomeInputs = document.querySelectorAll('input[name="family_member_income[]"]');
-                incomeInputs.forEach(input => {
-                    const incomeValue = parseFloat(input.value) || 0;
-                    totalFamilyIncome += incomeValue;
-                });
-                console.log('Total Family Income from members:', totalFamilyIncome);
-
-                // 2. Get Other Income and add to Total Income
-                const otherIncome = parseFloat(document.getElementById('other_income').value) || 0;
-                console.log('Other Income:', otherIncome);
-                
-                // 3. Calculate Total Income (Family Members Income + Other Income)
-                const houseTotalIncome = totalFamilyIncome + otherIncome;
-                console.log('Total Income (Family + Other):', houseTotalIncome);
-                
-                // Set total income
-                document.getElementById('house_total_income').value = houseTotalIncome.toFixed(2);
-
-                // 4. Calculate Total Expenses
-                const houseRent = parseFloat(document.getElementById('house_rent').value) || 0;
-                const lotRent = parseFloat(document.getElementById('lot_rent').value) || 0;
-                const houseWater = parseFloat(document.getElementById('house_water').value) || 0;
-                const houseElectric = parseFloat(document.getElementById('house_electric').value) || 0;
-                
-                // Total expenses (house rent + lot rent + water + electric)
-                const totalExpenses = houseRent + lotRent + houseWater + houseElectric;
-                console.log('Total Expenses:', totalExpenses);
-                
-                // 5. Calculate Net Income (Total Income - Total Expenses)
-                const netIncome = houseTotalIncome - totalExpenses;
-                console.log('Net Income:', netIncome);
-                
-                document.getElementById('house_net_income').value = netIncome.toFixed(2);
-
-                // 6. Enable the Next button (removed disabled attribute)
-                const additionalNextBtn = document.getElementById('additional-next-btn');
-                if (additionalNextBtn) {
-                    additionalNextBtn.disabled = false;
-                }
-            }
-
-            // Toggle house rent field visibility
-            function toggleHouseRent() {
-                const houseSelect = document.getElementById('house_house');
-                const houseRentGroup = document.getElementById('house_rent_group');
-                
-                if (houseSelect.value === 'Rent') {
-                    houseRentGroup.style.display = 'block';
-                } else {
-                    houseRentGroup.style.display = 'none';
-                    document.getElementById('house_rent').value = '';
-                }
-                calculateIncomes();
-            }
-
-            // Toggle lot rent field visibility
-            function toggleLotRent() {
-                const lotSelect = document.getElementById('house_lot');
-                const lotRentGroup = document.getElementById('lot_rent_group');
-                
-                if (lotSelect.value === 'Rent') {
-                    lotRentGroup.style.display = 'block';
-                } else {
-                    lotRentGroup.style.display = 'none';
-                    document.getElementById('lot_rent').value = '';
-                }
-                calculateIncomes();
-            }
-
-            // Form submission handling
-// Debugging - Check if modal elements exist
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded - checking modal elements:');
-    console.log('editRemarksModal:', document.getElementById('editRemarksModal'));
-    console.log('openEditRemarksModal function:', typeof openEditRemarksModal);
-
-    // Test if buttons have correct event listeners
-    const buttons = document.querySelectorAll('button[onclick*="openEditRemarksModal"]');
-    console.log('Found buttons:', buttons.length);
-    buttons.forEach((btn, index) => {
-        console.log(`Button ${index}:`, btn.getAttribute('onclick'));
-    });
-});
-
-            // Updated confirmSubmitForm to use AJAX for better UX
- function confirmSubmitForm() {
+@if(session('success'))
+<script>
     Swal.fire({
-        title: 'Are you sure?',
-        text: "Do you want to submit this intake sheet? This action cannot be undone.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, submit it!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Serialize family members data
-            let familyMembers = [];
-            const familyRows = document.querySelectorAll('#family_members_tbody tr');
-            familyRows.forEach(row => {
-                const cells = row.cells;
-                familyMembers.push({
-                    name: cells[0].querySelector('input')?.value || '',
-                    relationship: cells[1].querySelector('select')?.value || '',
-                    birthdate: cells[2].querySelector('input')?.value || '',
-                    age: cells[3].querySelector('input')?.value || '',
-                    sex: cells[4].querySelector('select')?.value || '',
-                    civil_status: cells[5].querySelector('select')?.value || '',
-                    education: cells[6].querySelector('select')?.value || '',
-                    occupation: cells[7].querySelector('input')?.value || '',
-                    monthly_income: cells[8].querySelector('input')?.value || '',
-                    remarks: cells[9].querySelector('select')?.value || '',
-                });
-            });
-
-            // Convert to JSON string
-            document.getElementById('family_members').value = JSON.stringify(familyMembers);
-
-            // Serialize service records data
-            let serviceRecords = [];
-            const serviceRows = document.querySelectorAll('#rv_service_records_tbody tr');
-            serviceRows.forEach(row => {
-                const cells = row.cells;
-                serviceRecords.push({
-                    date: cells[0].querySelector('input')?.value || '',
-                    problem: cells[1].querySelector('input')?.value || '',
-                    action: cells[2].querySelector('input')?.value || '',
-                    remarks: cells[3].querySelector('select')?.value || '',
-                });
-            });
-
-            // Convert to JSON string
-            document.getElementById('rv_service_records').value = JSON.stringify(serviceRecords);
-
-            const id = document.getElementById('remarks_id').value;
-            const formData = new FormData(document.getElementById('updateRemarksForm'));
-
-            // Show loading state
-            Swal.fire({
-                title: 'Submitting Intake Sheet',
-                text: 'Please wait...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            // Submit form via AJAX with better error handling
-            fetch(`/lydo_staff/update-intake-sheet/${id}`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(async response => {
-                // First, try to parse as JSON
-                const text = await response.text();
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                // Try to parse as JSON
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    // If not JSON, check if it contains success indicators
-                    if (text.toLowerCase().includes('success') || text.includes('Intake sheet submitted successfully')) {
-                        return { success: true, message: 'Intake sheet submitted successfully' };
-                    } else {
-                        throw new Error('Unexpected response format from server');
-                    }
-                }
-            })
-            .then(data => {
-                Swal.close();
-
-                // Check if response contains success message
-                if (data.success || data.message?.toLowerCase().includes('success')) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Intake Sheet Submitted!',
-                        text: data.message || 'The intake sheet has been successfully submitted.',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        // Close modal and reload page to stay on screening
-                        closeEditRemarksModal();
-                        location.reload();
-                    });
-                } else {
-                    throw new Error(data.message || 'Submission failed');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Submission Failed',
-                    text: 'Failed to submit intake sheet: ' + error.message,
-                    confirmButtonText: 'OK'
-                });
-            });
-        }
+        icon: 'success',
+        title: 'Success!',
+        text: '{{ session("success") }}',
+        confirmButtonText: 'OK'
     });
-}
-            // Populate Edit Modal with existing data
-// UPDATED populateEditModal function
-// UPDATED populateEditModal function with proper field mapping
-function populateEditModal(data) {
-    console.log('Populating modal with data:', data);
-    
-    if (!data) {
-        console.warn('No data provided to populateEditModal');
-        return;
-    }
+</script>
+@endif
 
-    // Safe population function
-    function safeSetValue(elementId, value, defaultValue = '') {
-        const element = document.getElementById(elementId);
-        if (element && value !== undefined && value !== null) {
-            element.value = value;
-        } else if (element) {
-            element.value = defaultValue;
-        }
-    }
-
-    function safeSetSelect(elementId, value, defaultValue = '') {
-        const element = document.getElementById(elementId);
-        if (element && value !== undefined && value !== null) {
-            // Handle different value formats (Rented vs Rent)
-            if (value === 'Rented') {
-                element.value = 'Rent';
-            } else {
-                element.value = value;
-            }
-            // Trigger change event for select elements
-            element.dispatchEvent(new Event('change'));
-        } else if (element) {
-            element.value = defaultValue;
-        }
-    }
-
-    // Populate head of family details - SAFELY
-    safeSetSelect('head_4ps', data.head_4ps, '');
-    safeSetValue('head_ipno', data.head_ipno, '');
-    safeSetValue('head_address', data.head_address, '');
-    safeSetValue('head_zone', data.head_zone, '');
-    safeSetSelect('head_educ', data.head_educ, '');
-    safeSetSelect('head_occ', data.head_occ, '');
-    safeSetSelect('head_religion', data.head_religion, '');
-
-    // Only populate if data exists
-    if (data.head_pob) {
-        safeSetValue('head_pob', data.head_pob);
-    }
-    if (data.applicant_gender) {
-        safeSetSelect('applicant_gender', data.applicant_gender);
-    }
-
-    // Populate household information - WITH PROPER FIELD MAPPING
-    safeSetValue('other_income', data.other_income, '0');
-    safeSetValue('house_total_income', data.house_total_income, '0');
-    safeSetValue('house_net_income', data.house_net_income, '0');
-    
-    // Handle house and lot with proper value mapping
-    safeSetSelect('house_house', data.house_house, '');
-    safeSetValue('house_rent', data.house_rent, '0');
-    safeSetSelect('house_lot', data.house_lot, '');
-    safeSetValue('lot_rent', data.lot_rent, '0');
-    safeSetValue('house_water', data.house_water, '0');
-    safeSetValue('house_electric', data.house_electric, '0');
-
-    // Handle conditional fields for house and lot - FIXED
-    const houseSelect = document.getElementById('house_house');
-    const lotSelect = document.getElementById('house_lot');
-
-    // Show rent fields if data exists and value is 'Rent' or 'Rented'
-    if (data.house_house === 'Rent' || data.house_house === 'Rented') {
-        const houseRentGroup = document.getElementById('house_rent_group');
-        if (houseRentGroup) {
-            houseRentGroup.style.display = 'block';
-        }
-        // Ensure rent value is set
-        if (data.house_rent) {
-            document.getElementById('house_rent').value = data.house_rent;
-        }
-    }
-
-    if (data.house_lot === 'Rent' || data.house_lot === 'Rented') {
-        const lotRentGroup = document.getElementById('lot_rent_group');
-        if (lotRentGroup) {
-            lotRentGroup.style.display = 'block';
-        }
-        // Ensure rent value is set
-        if (data.lot_rent) {
-            document.getElementById('lot_rent').value = data.lot_rent;
-        }
-    }
-
-    // Populate remarks
-    safeSetSelect('remarks', data.remarks, '');
-
-    // Populate health & signatures
-    if (data.worker_name && String(data.worker_name).trim() !== '') {
-        safeSetValue('worker_name', data.worker_name);
-    }
-    if (data.officer_name && String(data.officer_name).trim() !== '') {
-        safeSetValue('officer_name', data.officer_name);
-    }
-
-    // Populate family members - WITH ERROR HANDLING
-    if (data.family_members) {
-        try {
-            let familyMembers = data.family_members;
-            if (typeof familyMembers === 'string') {
-                familyMembers = JSON.parse(familyMembers);
-            }
-            
-            if (Array.isArray(familyMembers) && familyMembers.length > 0) {
-                familyMembers.forEach(member => {
-                    addFamilyMemberRow();
-                    const rows = document.querySelectorAll('#family_members_tbody tr');
-                    const lastRow = rows[rows.length - 1];
-                    
-                    if (lastRow && lastRow.cells) {
-                        const cells = lastRow.cells;
-                        safeSetValueInCell(cells[0], member.name || member.Name || '');
-                        safeSetSelectInCell(cells[1], member.relationship || member.relation || '');
-                        safeSetValueInCell(cells[2], member.birthdate || member.birth || '');
-                        safeSetValueInCell(cells[3], member.age || '');
-                        safeSetSelectInCell(cells[4], member.sex || '');
-                        safeSetSelectInCell(cells[5], member.civil_status || member.civil || '');
-                        safeSetSelectInCell(cells[6], member.education || member.educ || '');
-                        safeSetValueInCell(cells[7], member.occupation || member.occ || '');
-                        safeSetValueInCell(cells[8], member.monthly_income || member.income || '0');
-                        safeSetSelectInCell(cells[9], member.remarks || '');
-                    }
-                });
-            }
-        } catch (e) {
-            console.error('Error parsing family members:', e);
-        }
-    }
-
-    // Populate service records - WITH ERROR HANDLING
-    if (data.rv_service_records) {
-        try {
-            let serviceRecords = data.rv_service_records;
-            if (typeof serviceRecords === 'string') {
-                serviceRecords = JSON.parse(serviceRecords);
-            }
-            
-            if (Array.isArray(serviceRecords) && serviceRecords.length > 0) {
-                serviceRecords.forEach(record => {
-                    addRvServiceRecordRow();
-                    const rows = document.querySelectorAll('#rv_service_records_tbody tr');
-                    const lastRow = rows[rows.length - 1];
-                    
-                    if (lastRow && lastRow.cells) {
-                        const cells = lastRow.cells;
-                        // Only set date if not empty
-                        if (record.date) {
-                            safeSetValueInCell(cells[0], record.date);
-                        }
-                        safeSetValueInCell(cells[1], record.problem || '');
-                        safeSetValueInCell(cells[2], record.action || '');
-                        safeSetSelectInCell(cells[3], record.remarks || '');
-                    }
-                });
-            }
-        } catch (e) {
-            console.error('Error parsing service records:', e);
-        }
-    }
-
-    // Calculate incomes after populating data
-    setTimeout(calculateIncomes, 500);
-    
-    console.log('Modal populated successfully');
-}
-// Helper functions for cell population
-function safeSetValueInCell(cell, value) {
-    const input = cell.querySelector('input');
-    if (input) {
-        input.value = value || '';
-    }
-}
-
-function safeSetSelectInCell(cell, value) {
-    const select = cell.querySelector('select');
-    if (select) {
-        select.value = value || '';
-    }
-}
-
-            // Signature modal variables
-            let signaturePad = null;
-            let currentSignatureType = '';
-
-            // Signature modal functions
-            function openSignatureModal(type) {
-                currentSignatureType = type;
-                document.getElementById('signatureModalTitle').textContent = type.charAt(0).toUpperCase() + type.slice(1) + ' Signature';
-                document.getElementById('signatureModal').classList.remove('hidden');
-                document.body.classList.add('modal-open');
-
-                // Initialize signature pad
-                const canvas = document.getElementById('signatureCanvas');
-                signaturePad = new SignaturePad(canvas, {
-                    backgroundColor: 'rgb(255, 255, 255)',
-                    penColor: 'rgb(0, 0, 0)',
-                    minWidth: 1,
-                    maxWidth: 3
-                });
-
-                // Resize canvas for proper rendering
-                resizeCanvas(canvas);
-            }
-
-            function closeSignatureModal() {
-                document.getElementById('signatureModal').classList.add('hidden');
-                document.body.classList.remove('modal-open');
-                if (signaturePad) {
-                    signaturePad.clear();
-                }
-            }
-
-            function clearSignature() {
-                if (signaturePad) {
-                    signaturePad.clear();
-                }
-            }
-
-            function saveSignature() {
-                if (!signaturePad) return;
-
-                if (signaturePad.isEmpty()) {
-                    Swal.fire({
-                        title: 'No Signature',
-                        text: 'Please provide a signature before saving.',
-                        icon: 'warning',
-                        confirmButtonText: 'OK'
-                    });
-                    return;
-                }
-
-                const signatureData = signaturePad.toDataURL();
-                document.getElementById('signature_' + currentSignatureType).value = signatureData;
-
-                // Update button text to show signature is saved
-                const button = document.querySelector(`button[onclick="openSignatureModal('${currentSignatureType}')"]`);
-                if (button) {
-                    button.textContent = 'Signature Saved ✓';
-                    button.classList.remove('bg-gray-100', 'hover:bg-gray-200');
-                    button.classList.add('bg-green-100', 'hover:bg-green-200', 'text-green-800');
-                }
-
-                closeSignatureModal();
-
-                Swal.fire({
-                    title: 'Signature Saved',
-                    text: 'The signature has been saved successfully.',
-                    icon: 'success',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            }
-
-            function resizeCanvas(canvas) {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                canvas.getContext('2d').scale(ratio, ratio);
-                if (signaturePad) {
-                    signaturePad.clear();
-                }
-            }
-
-            // Logout function
-            function confirmLogout() {
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "You will be logged out of the system.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Yes, logout!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById('logoutForm').submit();
-                    }
-                });
-            }
-
-            // Save as Draft function
-            function saveAsDraft() {
-                // Serialize family members data
-                let familyMembers = [];
-                const familyRows = document.querySelectorAll('#family_members_tbody tr');
-                familyRows.forEach(row => {
-                    const cells = row.cells;
-                    familyMembers.push({
-                        name: cells[0].querySelector('input')?.value || '',
-                        relationship: cells[1].querySelector('select')?.value || '',
-                        birthdate: cells[2].querySelector('input')?.value || '',
-                        age: cells[3].querySelector('input')?.value || '',
-                        sex: cells[4].querySelector('select')?.value || '',
-                        civil_status: cells[5].querySelector('select')?.value || '',
-                        education: cells[6].querySelector('select')?.value || '',
-                        occupation: cells[7].querySelector('input')?.value || '',
-                        monthly_income: cells[8].querySelector('input')?.value || '',
-                        remarks: cells[9].querySelector('select')?.value || '',
-                    });
-                });
-
-                // Convert to JSON string
-                document.getElementById('family_members').value = JSON.stringify(familyMembers);
-
-                // Serialize service records data
-                let serviceRecords = [];
-                const serviceRows = document.querySelectorAll('#rv_service_records_tbody tr');
-                serviceRows.forEach(row => {
-                    const cells = row.cells;
-                    serviceRecords.push({
-                        date: cells[0].querySelector('input')?.value || '',
-                        problem: cells[1].querySelector('input')?.value || '',
-                        action: cells[2].querySelector('input')?.value || '',
-                        remarks: cells[3].querySelector('select')?.value || '',
-                    });
-                });
-
-                // Convert to JSON string
-                document.getElementById('rv_service_records').value = JSON.stringify(serviceRecords);
-
-                const id = document.getElementById('remarks_id').value;
-                const formData = new FormData(document.getElementById('updateRemarksForm'));
-                formData.append('is_draft', '1'); // Add draft flag
-
-                // Show loading state
-                Swal.fire({
-                    title: 'Saving Draft',
-                    text: 'Please wait...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                // Submit form via AJAX
-                fetch("/lydo_staff/update-intake-sheet/" + id, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    Swal.close();
-
-                    // Check if response contains success message
-                    if (data.includes('success')) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Draft Saved!',
-                            text: 'Intake sheet draft saved successfully!',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            // Don't close modal, allow continue editing
-                        });
-                    } else {
-                        throw new Error('Unexpected response');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to save draft: ' + error.message,
-                        confirmButtonText: 'OK'
-                    });
-                });
-            }
-
-            // Print Review Modal function
-            function printReviewModal() {
-                const modalContent = document.getElementById('modalReviewContent');
-                if (!modalContent) {
-                    console.error('Modal content not found');
-                    return;
-                }
-
-                const printContent = modalContent.innerHTML;
-                const printWindow = window.open('', '_blank', 'width=800,height=600');
-
-                printWindow.document.write(`
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Family Intake Sheet Review</title>
-                        <style>
-                            body {
-                                font-family: Arial, sans-serif;
-                                margin: 20px;
-                                color: #000;
-                                background: white;
-                            }
-                            .print-box {
-                                border: 2px solid #e2e8f0;
-                                border-radius: 8px;
-                                background: white;
-                                padding: 1rem;
-                                margin-bottom: 1rem;
-                                page-break-inside: avoid;
-                            }
-                            table {
-                                width: 100%;
-                                border-collapse: collapse;
-                                margin-bottom: 1rem;
-                            }
-                            th, td {
-                                border: 1px solid #e2e8f0;
-                                padding: 8px;
-                                text-align: left;
-                            }
-                            th {
-                                background: #f8fafc;
-                                font-weight: bold;
-                            }
-                            .review-columns {
-                                display: grid;
-                                grid-template-columns: 1fr;
-                                gap: 24px;
-                            }
-                            h1 {
-                                text-align: center;
-                                margin-bottom: 20px;
-                                color: #1e40af;
-                            }
-                            h4 {
-                                font-size: 1.1rem;
-                                margin-bottom: 0.5rem;
-                                color: #1e40af;
-                            }
-                            p {
-                                margin: 0.5rem 0;
-                            }
-                            .thin-border {
-                                border: 1px solid #e2e8f0;
-                            }
-                            @media print {
-                                body {
-                                    margin: 0;
-                                    font-size: 12px;
-                                }
-                                .print-box {
-                                    break-inside: avoid;
-                                }
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <h1>Family Intake Sheet Review</h1>
-                        ${printContent}
-                    </body>
-                    </html>
-                `);
-
-                printWindow.document.close();
-                printWindow.focus();
-
-                // Wait for content to load then print
-                printWindow.onload = function() {
-                    printWindow.print();
-                    printWindow.close();
-                };
-            }
-        </script>
-
-        @if(session('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: '{{ session("success") }}',
-                confirmButtonText: 'OK'
-            });
-        </script>
-        @endif
-        <script src="{{ asset('js/spinner.js') }}"></script>
-
-    </div>
 </body>
 </html>

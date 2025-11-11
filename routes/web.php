@@ -124,13 +124,12 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/get-document-comments/{renewalId}', [RenewalController::class, 'getDocumentComments']);
     Route::post('/lydo_staff/request-document-update/{renewalId}', [RenewalController::class, 'requestDocumentUpdate']);
     Route::post('/lydo_staff/mark-document-updated/{renewalId}', [RenewalController::class, 'markDocumentAsUpdated']);
-    Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments']);
-    Route::put('/lydo_staff/update-password', [LydoStaffController::class, 'updatePassword'])->name('lydo_staff.updatePassword');
-
+Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments'])->name('send.email.bad.documents');    Route::put('/lydo_staff/update-password', [LydoStaffController::class, 'updatePassword'])->name('lydo_staff.updatePassword');
 });
 
 // Mayor Staff Routes - Only accessible by mayor_staff role
 Route::middleware(['role:mayor_staff'])->group(function () {
+    Route::post('/mayor_staff/store-application', [MayorStaffController::class, 'storeApplication'])->name('mayor_staff.store_application');
     Route::get('/mayor_staff/dashboard', [MayorStaffController::class, 'index']) ->name('MayorStaff.dashboard');
     Route::get('/application-personnel/{id}/requirements', [MayorStaffController::class, 'getApplicationRequirements'])->name('application.requirements');
     Route::get('/mayor_staff/application', [MayorStaffController::class, 'application'])->name('MayorStaff.application');
@@ -166,6 +165,21 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::get('/mayor_staff/intake-sheet/{id}', [StatusController::class, 'getIntakeSheet'])->name('mayor_staff.intake-sheet');
     Route::put('/mayor_staff/settings/{id}', [MayorStaffController::class, 'updatePersonalInfo'])->name('MayorStaff.update');
     Route::put('/mayor_staff/update-password', [MayorStaffController::class, 'updatePassword'])->name('MayorStaff.updatePassword');
+    // Add these routes to your web.php file
+Route::post('/mayor_staff/mark-notifications-viewed', [MayorStaffController::class, 'markNotificationsViewed']);
+Route::get('/mayor_staff/check-new-notifications', [MayorStaffController::class, 'checkNewNotifications']);
+Route::get('/mayor_staff/get-unread-notification-count', [MayorStaffController::class, 'getUnreadNotificationCount']);
+Route::get('/mayor_staff/get-notification-content', [MayorStaffController::class, 'getNotificationContent']);
+// Notification test routes
+Route::post('/test/new-application/{id}', [MayorStaffController::class, 'triggerNewApplicationNotification']);
+Route::post('/test/reviewed-application/{id}', [MayorStaffController::class, 'triggerReviewedApplicationNotification']);
+
+// Quick test route
+Route::get('/test-pusher', function() {
+    $applicationId = 1; // Change to a real application ID
+    $controller = app(App\Http\Controllers\MayorStaffController::class);
+    return $controller->triggerNewApplicationNotification($applicationId);
+});
 });
 
 // Public routes for intake sheet

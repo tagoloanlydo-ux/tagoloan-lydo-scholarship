@@ -13,7 +13,7 @@ use App\Models\Application;
 use App\Models\Scholar;
 use App\Models\Announce;
 use App\Models\FamilyIntakeSheet;
-use App\Http\Controllers\SmsController; // ← Also fix this typo if it exists
+use App\Http\Controllers\SmsController;
 use Illuminate\Http\Request;
 
 class StatusController extends Controller
@@ -144,8 +144,6 @@ class StatusController extends Controller
             'showBadge'
         ));
     }
-
-
 public function getIntakeSheet($applicationPersonnelId)
 {
     try {
@@ -158,6 +156,7 @@ public function getIntakeSheet($applicationPersonnelId)
             ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
             ->where('ap.application_personnel_id', $applicationPersonnelId)
             ->select(
+                'app.applicant_id',
                 'app.applicant_fname',
                 'app.applicant_mname',
                 'app.applicant_lname',
@@ -174,6 +173,7 @@ public function getIntakeSheet($applicationPersonnelId)
             ->first();
 
         if (!$appRow) {
+            \Log::warning("No application/applicant found for application_personnel_id: {$applicationPersonnelId}");
             return response()->json(['success' => false, 'message' => 'Application not found.'], 404);
         }
 
@@ -205,7 +205,7 @@ public function getIntakeSheet($applicationPersonnelId)
                 'brgy_indigency' => $appRow->brgy_indigency ? asset('storage/documents/' . $appRow->brgy_indigency) : null,
                 'student_id' => $appRow->student_id ? asset('storage/documents/' . $appRow->student_id) : null,
                 
-                // Empty arrays
+                // Empty arrays - using frontend expected field names
                 'family_members' => [],
                 'social_service_records' => [],
             ];
@@ -221,14 +221,42 @@ public function getIntakeSheet($applicationPersonnelId)
         \Log::info("=== DATABASE VALUES DEBUG ===");
         \Log::info("Family Members DB Value: " . ($intakeSheet->family_members ?? 'NULL'));
         \Log::info("Social Service Records DB Value: " . ($intakeSheet->social_service_records ?? 'NULL'));
-        \Log::info("Family Members Type: " . gettype($intakeSheet->family_members));
-        \Log::info("Social Service Records Type: " . gettype($intakeSheet->social_service_records));
+        \Log::info("RV Service Records DB Value: " . ($intakeSheet->rv_service_records ?? 'NULL')); // ADDED THIS LINE
 
         // Enhanced JSON parsing with better NULL handling
         $familyMembers = $this->parseJsonField($intakeSheet->family_members, 'family_members');
-        $socialServiceRecords = $this->parseJsonField($intakeSheet->social_service_records, 'social_service_records');
+        
+        // FIX: Use rv_service_records instead of social_service_records
+        $socialServiceRecords = $this->parseJsonField($intakeSheet->rv_service_records, 'rv_service_records'); // CHANGED THIS LINE
 
-        \Log::info("Final Counts - Family Members: " . count($familyMembers) . ", Social Service Records: " . count($socialServiceRecords));
+        // FIXED TRANSFORMATION: Use original field names to avoid mapping issues
+        $transformedFamilyMembers = [];
+        foreach ($familyMembers as $member) {
+            $transformedFamilyMembers[] = [
+                'NAME' => $member['name'] ?? $member['NAME'] ?? '-',
+                'RELATION' => $member['relationship'] ?? $member['relation'] ?? $member['RELATION'] ?? '-',
+                'BIRTHDATE' => $member['birthdate'] ?? $member['BIRTHDATE'] ?? $member['birth_date'] ?? '-',
+                'AGE' => $member['age'] ?? $member['AGE'] ?? '-',
+                'SEX' => $member['sex'] ?? $member['gender'] ?? $member['SEX'] ?? '-',
+                'CIVIL STATUS' => $member['civil_status'] ?? $member['CIVIL STATUS'] ?? $member['civilStatus'] ?? '-',
+                'EDUCATIONAL ATTAINMENT' => $member['education'] ?? $member['EDUCATIONAL ATTAINMENT'] ?? $member['educational_attainment'] ?? '-',
+                'OCCUPATION' => $member['occupation'] ?? $member['OCCUPATION'] ?? '-',
+                'INCOME' => $member['monthly_income'] ?? $member['income'] ?? $member['INCOME'] ?? '-',
+                'REMARKS' => $member['remarks'] ?? $member['REMARKS'] ?? '-'
+            ];
+        }
+
+        $transformedServiceRecords = [];
+        foreach ($socialServiceRecords as $record) {
+            $transformedServiceRecords[] = [
+                'DATE' => $record['date'] ?? $record['DATE'] ?? '-',
+                'PROBLEM/NEED' => $record['problem'] ?? $record['PROBLEM/NEED'] ?? $record['problem_need'] ?? '-',
+                'ACTION/ASSISTANCE GIVEN' => $record['action'] ?? $record['ACTION/ASSISTANCE GIVEN'] ?? $record['action_assistance'] ?? '-',
+                'REMARKS' => $record['remarks'] ?? $record['REMARKS'] ?? '-'
+            ];
+        }
+
+        \Log::info("Final Counts - Family Members: " . count($transformedFamilyMembers) . ", Social Service Records: " . count($transformedServiceRecords));
 
         // FORMAT HOUSE AND LOT INFORMATION WITH RENT AMOUNTS
         $houseDisplay = $intakeSheet->house_house ?? null;
@@ -268,14 +296,14 @@ public function getIntakeSheet($applicationPersonnelId)
             'house_total_income' => $intakeSheet->house_total_income ?? null,
             'house_net_income' => $intakeSheet->house_net_income ?? null,
             'other_income' => $intakeSheet->other_income ?? null,
-            'house_house' => $houseDisplay, // Use formatted house display
-            'house_lot' => $lotDisplay, // Use formatted lot display
+            'house_house' => $houseDisplay,
+            'house_lot' => $lotDisplay,
             'house_electric' => $intakeSheet->house_electric ?? null,
             'house_water' => $intakeSheet->house_water ?? null,
             
-            // Family Members and Service Records
-            'family_members' => $familyMembers,
-            'social_service_records' => $socialServiceRecords,
+            // Family Members and Service Records - USING TRANSFORMED DATA
+            'family_members' => $transformedFamilyMembers,
+            'social_service_records' => $transformedServiceRecords, // This will now have data from rv_service_records
             
             // Signatures
             'worker_name' => $intakeSheet->worker_name ?? null,
@@ -284,7 +312,12 @@ public function getIntakeSheet($applicationPersonnelId)
             'signature_client' => $intakeSheet->signature_client ? asset('storage/' . $intakeSheet->signature_client) : null,
             'signature_worker' => $intakeSheet->signature_worker ? asset('storage/' . $intakeSheet->signature_worker) : null,
             'signature_officer' => $intakeSheet->signature_officer ? asset('storage/' . $intakeSheet->signature_officer) : null,
-            
+
+            // Add signature data for frontend display
+            'signature_worker_data' => $intakeSheet->signature_worker ? asset('storage/' . $intakeSheet->signature_worker) : null,
+            'signature_officer_data' => $intakeSheet->signature_officer ? asset('storage/' . $intakeSheet->signature_officer) : null,
+            'signature_client_data' => $intakeSheet->signature_client ? asset('storage/' . $intakeSheet->signature_client) : null, 
+
             // Application Documents
             'doc_application_letter' => $appRow->application_letter ? asset('storage/documents/' . $appRow->application_letter) : null,
             'doc_cert_reg' => $appRow->cert_of_reg ? asset('storage/documents/' . $appRow->cert_of_reg) : null,
@@ -304,11 +337,11 @@ public function getIntakeSheet($applicationPersonnelId)
             'intakeSheet' => $data,
             'intake_sheet' => $data,
             'debug_info' => [
-                'family_members_count' => count($familyMembers),
-                'social_service_records_count' => count($socialServiceRecords),
+                'family_members_count' => count($transformedFamilyMembers),
+                'social_service_records_count' => count($transformedServiceRecords),
                 'has_intake_sheet' => true,
-                'family_members_original' => $intakeSheet->family_members,
-                'social_service_records_original' => $intakeSheet->social_service_records
+                'family_members_original' => $familyMembers,
+                'social_service_records_original' => $socialServiceRecords
             ]
         ], 200);
         
@@ -365,7 +398,7 @@ private function parseJsonField($fieldValue, $fieldName)
         \Log::error("Exception decoding {$fieldName}: " . $e->getMessage());
         return [];
     }
-}   
+}
     public function updateStatus(Request $request, $id)
     {
         // Log the start of the update process
@@ -514,5 +547,5 @@ private function parseJsonField($fieldValue, $fieldName)
 
             return back()->with('error', 'An error occurred while updating status.');
         }
-}
+    }
 }
