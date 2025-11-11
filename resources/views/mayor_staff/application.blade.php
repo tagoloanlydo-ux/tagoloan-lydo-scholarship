@@ -20,6 +20,67 @@
     </head>
     <style>
     /* Pagination Styles */
+    /* Full-screen like Document Viewer */
+.document-viewer-container {
+    height: 90vh; /* Almost full screen */
+    min-height: 700px;
+    max-height: none; /* Remove height limit */
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background-color: #f8fafc;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.document-viewer {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: white;
+}
+
+.document-modal-content {
+    max-height: 95vh;
+    overflow-y: auto;
+    padding: 0;
+}
+
+/* Make the modal larger overall */
+.modal-content.max-w-6xl {
+    max-height: 98vh;
+    width: 95%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-content.max-w-6xl .document-modal-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .document-viewer-container {
+        height: 85vh;
+        min-height: 600px;
+    }
+}
+
+@media (max-width: 768px) {
+    .document-viewer-container {
+        height: 75vh;
+        min-height: 500px;
+    }
+}
+
+@media (max-width: 480px) {
+    .document-viewer-container {
+        height: 65vh;
+        min-height: 400px;
+    }
+}
 .pagination-container {
     display: flex;
     justify-content: center;
@@ -351,13 +412,14 @@
                                     </button>
                                 </td>
 
-                                <td class="px-6 py-4 text-center">
-                                    <form method="POST" action="/mayor_staff/application/{{ $app->application_personnel_id }}" style="display: inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" onclick="confirmDeletePending(this)" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm">
-                                            <i class="fas fa-trash mr-2"></i>Delete
-                                        </button>
+<td class="px-6 py-4 text-center">
+    <!-- I-remove ang inline form at palitan ng button na may confirmDelete function -->
+    <button type="button" 
+            onclick="confirmDeletePending({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}')" 
+            class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm">
+        <i class="fas fa-trash mr-2"></i>Delete
+    </button>
+</td>
                             </tr>
                                             @empty
                     <tr>
@@ -2039,24 +2101,45 @@ function openDocumentModal(documentUrl, title, documentType) {
                 modal.classList.add('hidden');
             }
 
-            function confirmDeletePending(button) {
-                const form = button.closest('form');
-
-                Swal.fire({
-                    title: 'Delete Application?',
-                    text: 'Are you sure you want to delete this pending application? This action cannot be undone.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, Delete',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
-            }
+function confirmDeletePending(applicationPersonnelId, applicantName) {
+    Swal.fire({
+        title: 'Delete Application?',
+        text: `Are you sure you want to delete the application for ${applicantName}? This action cannot be undone.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Delete',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Submit delete request via AJAX
+            fetch(`/mayor_staff/application/${applicationPersonnelId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Deleted!', 'Application has been deleted.', 'success')
+                        .then(() => {
+                            // Remove row from table without reload
+                            removeApplicationFromTable(applicationPersonnelId);
+                        });
+                } else {
+                    Swal.fire('Error!', 'Failed to delete application.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error!', 'Failed to delete application.', 'error');
+            });
+        }
+    });
+}
 
 function sendDocumentEmail() {
     const applicationPersonnelId = currentApplicationId;
@@ -2743,6 +2826,157 @@ function addTestButtons() {
         </button>
     `;
     document.body.appendChild(testContainer);
+}
+
+// MODIFIED: Function to mark document as good (WITH proper event prevention)
+function markDocumentAsGood(documentType) {
+    Swal.fire({
+        title: 'Mark as Good?',
+        text: 'Are you sure you want to mark this document as good?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Mark as Good',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading state
+            Swal.fire({
+                title: 'Saving...',
+                text: 'Please wait while we save your feedback',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Save status without reason for good documents
+            saveDocumentStatus(documentType, 'good', '')
+            .then(() => {
+                // Track that this document has been rated
+                trackRatedDocument(documentType);
+
+                // Remove from updated documents if it was there
+                if (updatedDocuments && updatedDocuments.has(documentType)) {
+                    updatedDocuments.delete(documentType);
+                }
+
+                // Update the badge - remove NEW and show Good
+                updateDocumentBadges(documentType, 'good', false);
+
+                // UPDATE: Use Swal.fire with proper configuration
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Document marked as good.',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        confirmButton: 'swal2-confirm-btn'
+                    }
+                }).then((result) => {
+                    // UPDATE: Only update UI when OK is clicked, no page refresh
+                    if (result.isConfirmed) {
+                        updateDocumentModalUI(documentType);
+                    }
+                });
+
+            })
+            .catch(error => {
+                console.error('Error saving status:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to save document status. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+    });
+}
+
+// MODIFIED: Function to mark document as bad (WITH proper event prevention)
+function markDocumentAsBad(documentType) {
+    Swal.fire({
+        title: 'Mark as Bad?',
+        text: 'Please provide the reason why this document is marked as bad:',
+        icon: 'warning',
+        input: 'textarea',
+        inputLabel: 'Reason for marking as bad',
+        inputPlaceholder: 'Enter the reason why this document needs to be updated...',
+        inputAttributes: {
+            'aria-label': 'Enter the reason why this document needs to be updated',
+            'rows': 3
+        },
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Mark as Bad',
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Please provide a reason for marking this document as bad';
+            }
+            if (value.length < 10) {
+                return 'Please provide a more detailed reason (at least 10 characters)';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const reason = result.value;
+            
+            // Show loading state
+            Swal.fire({
+                title: 'Saving...',
+                text: 'Please wait while we save your feedback',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Save status with reason for bad documents
+            saveDocumentStatus(documentType, 'bad', reason)
+            .then(() => {
+                // Track that this document has been rated
+                trackRatedDocument(documentType);
+                
+                // Remove from updated documents if it was there
+                if (updatedDocuments && updatedDocuments.has(documentType)) {
+                    updatedDocuments.delete(documentType);
+                }
+                
+                // Update the badge - remove NEW and show Bad
+                updateDocumentBadges(documentType, 'bad', false);
+                
+                // UPDATE: Use Swal.fire with proper configuration
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Document marked as bad with reason saved.',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        confirmButton: 'swal2-confirm-btn'
+                    }
+                }).then((result) => {
+                    // UPDATE: Only update UI when OK is clicked, no page refresh
+                    if (result.isConfirmed) {
+                        updateDocumentModalUI(documentType);
+                    }
+                });
+
+            })
+            .catch(error => {
+                console.error('Error saving status:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to save document status. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+    });
 }
 // When a new application is submitted
 public function storeApplication(Request $request)
