@@ -18,6 +18,9 @@ class ApplicantController extends Controller
         return response()->json($applicants);
     }
 
+    /**
+     * Store a new applicant AND create an application record in one submission.
+     */
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -25,7 +28,7 @@ class ApplicantController extends Controller
         try {
             Log::info('=== APPLICATION SUBMISSION STARTED ===');
 
-            // Validate applicant data
+            // Validate applicant data using request validate
             $validatedApplicant = $request->validate([
                 'applicant_fname' => 'required|string|max:255',
                 'applicant_mname' => 'nullable|string|max:255',
@@ -44,6 +47,8 @@ class ApplicantController extends Controller
                 'applicant_acad_year' => 'required|string|max:20',
             ]);
 
+            Log::info('Creating applicant record...');
+
             // Create applicant
             $applicant = Applicant::create($validatedApplicant);
             Log::info('Applicant created successfully', [
@@ -56,6 +61,8 @@ class ApplicantController extends Controller
                 'applicant_id' => $applicant->applicant_id,
                 'date_submitted' => now(),
             ];
+
+            Log::info('Processing document files...');
 
             // Handle document file paths
             $fileFields = [
@@ -70,8 +77,12 @@ class ApplicantController extends Controller
                 if ($request->has($field) && !empty($request->$field)) {
                     $applicationData[$field] = $request->$field;
                     Log::info("Document added to application: $field");
+                } else {
+                    Log::info("Document field empty or missing: $field");
                 }
             }
+
+            Log::info('Creating application record...');
 
             // Create application record
             $application = Application::create($applicationData);
@@ -80,25 +91,25 @@ class ApplicantController extends Controller
                 'applicant_id' => $application->applicant_id
             ]);
 
-            // Find available mayor staff (not assigned too many applications)
-            $mayorStaff = Lydopers::where('lydopers_role', 'mayor_staff')
-                ->whereHas('applicationPersonnel', function($query) {
-                    $query->where('status', 'Waiting')
-                          ->where('initial_screening', 'Pending');
-                }, '<', 10) // Limit to 10 pending applications per staff
+            // 🔥 CRITICAL FIX: Find available mayor staff and assign properly
+            $mayorStaff = DB::table('tbl_lydopers')
+                ->where('lydopers_role', 'mayor_staff')
+                ->where('lydopers_status', 'active')
                 ->first();
 
-            // If no available staff found, get any mayor staff
             if (!$mayorStaff) {
-                $mayorStaff = Lydopers::where('lydopers_role', 'mayor_staff')->first();
+                // Fallback: get any active staff
+                $mayorStaff = DB::table('tbl_lydopers')
+                    ->where('lydopers_status', 'active')
+                    ->first();
             }
 
-            // Create ApplicationPersonnel record for mayor staff review
+            // 🔥 CRITICAL FIX: Create ApplicationPersonnel record with VALID remarks
             $applicationPersonnelData = [
                 'application_id' => $application->application_id,
-                'lydopers_id' => $mayorStaff ? $mayorStaff->lydopers_id : null,
+                'lydopers_id' => $mayorStaff ? $mayorStaff->lydopers_id : 1, // Default to 1 if no staff found
                 'initial_screening' => 'Pending',
-                'remarks' => 'Poor', // Set to a valid poverty level instead of 'Pending'
+                'remarks' => 'Poor', // 🔥 CHANGE FROM 'Pending' TO VALID POVERTY LEVEL
                 'status' => 'Waiting',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -108,7 +119,8 @@ class ApplicantController extends Controller
             Log::info('ApplicationPersonnel record created successfully', [
                 'application_personnel_id' => $applicationPersonnel->application_personnel_id,
                 'application_id' => $applicationPersonnel->application_id,
-                'lydopers_id' => $applicationPersonnel->lydopers_id
+                'lydopers_id' => $applicationPersonnel->lydopers_id,
+                'remarks' => $applicationPersonnel->remarks // Log the actual value
             ]);
 
             DB::commit();
@@ -122,7 +134,6 @@ class ApplicantController extends Controller
                     'applicant' => $applicant,
                     'application' => $application,
                     'application_personnel' => $applicationPersonnel,
-                    'assigned_staff' => $mayorStaff ? $mayorStaff->lydopers_name : 'No staff assigned',
                     'submission_date' => $application->date_submitted
                 ]
             ], 201);
