@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Applicant;
 use App\Models\Application;
 use App\Models\ApplicationPersonnel;
+use App\Models\Lydopers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -110,10 +111,13 @@ class ApplicantController extends Controller
                 'applicant_id' => $application->applicant_id
             ]);
 
+            // Find mayor staff (assuming role is 'mayor_staff')
+            $mayorStaff = Lydopers::where('lydopers_role', 'mayor_staff')->first();
+
             // Create ApplicationPersonnel record for mayor staff review
             $applicationPersonnelData = [
                 'application_id' => $application->application_id,
-                'lydopers_id' => null, // No default staff assigned initially
+                'lydopers_id' => $mayorStaff ? $mayorStaff->lydopers_id : null,
                 'initial_screening' => 'Pending',
                 'remarks' => 'Pending',
                 'status' => 'Waiting',

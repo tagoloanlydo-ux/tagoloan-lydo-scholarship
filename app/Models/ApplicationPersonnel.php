@@ -20,7 +20,5 @@ class ApplicationPersonnel extends Model
         'initial_screening', 'remarks', 'status'
     ];
 
-    protected $attributes = [
-        'lydopers_id' => null,
-    ];
+    // Removed default attributes to allow proper assignment
 }
