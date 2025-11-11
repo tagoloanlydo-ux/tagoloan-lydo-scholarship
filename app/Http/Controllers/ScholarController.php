@@ -169,7 +169,7 @@ class ScholarController extends Controller
     return view('scholar.scholar_registration', compact('scholar'));
 }
 
-    public function storeApplicantsReg(Request $request)
+ public function storeApplicantsReg(Request $request)
     {
         // ✅ Validation
         $request->validate([
@@ -177,6 +177,7 @@ class ScholarController extends Controller
             'applicant_mname' => 'nullable|string|max:255',
             'applicant_lname' => 'required|string|max:255',
             'applicant_suffix' => 'nullable|string|max:10',
+            'applicant_gender' => 'required|in:male,female,other',
             'applicant_bdate' => 'required|date|before:today',
             'applicant_civil_status' => 'required|in:single,married,widowed,divorced',
             'applicant_brgy' => 'required|string|max:255',
@@ -257,18 +258,18 @@ class ScholarController extends Controller
 
         broadcast(new ApplicantRegistered('total_applicants', $applicantsCurrentYear))->toOthers();
 
-        return redirect()->route('home')->with('success', 'Application submitted successfully!');
+        return redirect()->route('scholar.login')->with('success', 'Application submitted successfully!');
     }
 
-/**
- * ✅ Helper: Move uploaded files into storage/documents/
- */
-private function moveFileToStorage($file)
-{
-    $fileName = uniqid() . '_' . $file->getClientOriginalName();
-    $path = Storage::disk('local')->putFileAs('documents', $file, $fileName);
-    return $path;
-}
+    /**
+     * ✅ Helper: Move uploaded files into storage/documents/
+     */
+    private function moveFileToStorage($file)
+    {
+        $fileName = uniqid() . '_' . $file->getClientOriginalName();
+        $file->move(storage_path('documents'), $fileName);
+        return 'documents/' . $fileName;
+    }
 
     public function registerScholar(Request $request)
     {

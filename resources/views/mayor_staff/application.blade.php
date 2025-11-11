@@ -28,7 +28,19 @@
     gap: 1rem;
     flex-wrap: wrap;
 }
-
+.badge-updated {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #8b5cf6;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 30px;
+    font-size: 10px;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
 .pagination-info {
     font-size: 0.9rem;
     color: #6b7280;
@@ -143,7 +155,7 @@
         </div>
 
         <!-- Header -->
-        <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
+<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
             <div class="flex items-center">
                 <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
                     <h1 class="text-2xl font-bold text-white ml-4">Lydo Scholarship</h1>
@@ -218,7 +230,7 @@
                             <i class="bx bx-chevron-down ml-2"></i>
                         </button>
 
-                        <!-- Dropdown Menu -->
+                        <!-- Dropdown Menul -->
                         <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
                             <li>
                                 <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-white bg-violet-600">
@@ -410,7 +422,6 @@
                     <th class="px-6 py-4 align-middle text-center">Gender</th>
                     <th class="px-6 py-4 align-middle text-center">Birthday</th>
                     <th class="px-6 py-4 align-middle text-center">Initial Screening</th>
-                    <th class="px-6 py-4 align-middle text-center">Remarks</th>
                     <th class="px-6 py-4 align-middle text-center">Application</th>
                     <th class="px-6 py-4 align-middle text-center">Action</th>
 
@@ -426,13 +437,19 @@
                         <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
                         <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
                         <td class="px-6 py-4 text-center">{{ $app->initial_screening }}</td>
-                        <td class="px-6 py-4 text-center">
-                            <button type="button"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
-                                onclick="openApplicationModal({{ $app->application_personnel_id }}, 'reviewed')">
-                                Review Requirements
-                            </button>
-                        </td>
+<td class="px-6 py-4 text-center">
+    <div class="relative inline-block">
+        <button type="button"
+            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm relative"
+            onclick="openApplicationModal({{ $app->application_personnel_id }}, 'reviewed')"
+            id="reviewBtn-{{ $app->application_personnel_id }}">
+            Review Requirements
+        </button>
+        <!-- Updated Badge - will be shown/hidden via JavaScript -->
+        <span id="updatedBadge-{{ $app->application_personnel_id }}" 
+              class="badge-updated hidden">Updated</span>
+    </div>
+</td>
                         <td class="px-6 py-4 text-center">
                             <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openDeleteModal({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}', true)">
                                 <i class="fas fa-trash mr-2"></i>Delete
@@ -513,51 +530,51 @@
             </div>
         </div>
 
-        <!-- FIXED: Rejection Modal -->
-        <div id="rejectionModal" class="modal-overlay hidden">
-            <div class="modal-content max-w-2xl">
-                <!-- Header -->
-                <div class="flex items-center justify-between px-6 py-4 border-b">
-                    <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                        <i class="fas fa-times-circle text-red-600"></i>
-                        Reject Initial Screening
-                    </h2>
-                    <button onclick="closeRejectionModal()"
-                            class="p-2 rounded-full hover:bg-gray-100 transition">
-                        <i class="fas fa-times text-gray-500 text-lg"></i>
-                    </button>
-                </div>
-
-                <!-- Body -->
-                <div class="p-6 space-y-4">
-                    <p class="text-gray-700">Please provide the reason for rejecting this application:</p>
-                    <form id="rejectionForm">
-                        <div class="mb-4">
-                            <label for="rejectionReason" class="block text-gray-700 font-medium mb-2">Reason for Rejection</label>
-                            <textarea id="rejectionReason" name="reason" rows="4" class="w-full border rounded px-3 py-2" placeholder="Enter the reason for rejection..." required></textarea>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Footer -->
-                <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-                    <button onclick="closeRejectionModal()"
-                            class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-                        Cancel
-                    </button>
-                    <button id="rejectSubmitBtn" onclick="submitRejection()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
-                        <i class="fas fa-times"></i>
-                        <span id="rejectSubmitBtnText">Reject Application</span>
-                        <div id="rejectSubmitBtnSpinner" class="hidden ml-2">
-                            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        </div>
-                    </button>
-                </div>
-            </div>
+<!-- FIXED: Rejection Modal -->
+<div id="rejectionModal" class="modal-overlay hidden">
+    <div class="modal-content max-w-2xl">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b">
+            <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-times-circle text-red-600"></i>
+                Reject Initial Screening
+            </h2>
+            <button onclick="closeRejectionModal()"
+                    class="p-2 rounded-full hover:bg-gray-100 transition">
+                <i class="fas fa-times text-gray-500 text-lg"></i>
+            </button>
         </div>
+
+        <!-- Body -->
+        <div class="p-6 space-y-4">
+            <p class="text-gray-700">Please provide the reason for rejecting this application:</p>
+            <form id="rejectionForm">
+                <div class="mb-4">
+                    <label for="rejectionReason" class="block text-gray-700 font-medium mb-2">Reason for Rejection</label>
+                    <textarea id="rejectionReason" name="reason" rows="4" class="w-full border rounded px-3 py-2" placeholder="Enter the reason for rejection..." required></textarea>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+            <button onclick="closeRejectionModal()"
+                    class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                Cancel
+            </button>
+            <button id="rejectSubmitBtn" onclick="submitRejection()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
+                <i class="fas fa-times"></i>
+                <span id="rejectSubmitBtnText">Reject Application</span>
+                <div id="rejectSubmitBtnSpinner" class="hidden ml-2">
+                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </button>
+        </div>
+    </div>
+</div>
 
         <!-- FIXED: Edit Initial Screening Modal -->
         <div id="editInitialScreeningModal" class="modal-overlay hidden">
@@ -793,17 +810,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize pagination
     initializePagination();
 });
-            // Hide loading spinner when page is fully loaded
-            window.addEventListener('load', function() {
-                const loadingOverlay = document.getElementById('loadingOverlay');
-                if (loadingOverlay) {
-                    loadingOverlay.classList.add('fade-out');
-                    // Remove from DOM after animation completes
-                    setTimeout(() => {
-                        loadingOverlay.style.display = 'none';
-                    }, 1000); // Match the animation duration
-                }
-            });
+
 
             // ✅ Application Modal Functions
             const applications = @json($applications);
@@ -955,24 +962,22 @@ document.addEventListener('DOMContentLoaded', function() {
                             <i class="fas fa-info-circle mr-2"></i>Please review all 5 documents before making a decision.
                         </div>
                     `;
-                } else {
-                    footerDiv.innerHTML = `
-                        <button id="sendEmailBtn" onclick="sendDocumentEmail()"
-                            class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-2">
-                            <i class="fas fa-envelope"></i>
-                            <span id="sendEmailBtnText">Send Email</span>
-                            <div id="sendEmailBtnSpinner" class="hidden ml-2">
-                                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                    </path>
-                                </svg>
-                            </div>
-                        </button>
-                    `;
-                }
-
+} else {
+    footerDiv.innerHTML = `
+        <div class="modal-footer">
+            <button id="sendEmailBtn" onclick="sendDocumentEmail()" class="btn btn-primary">
+                <i class="fas fa-envelope"></i>
+                <span id="sendEmailBtnText">Send Email</span>
+                <div id="sendEmailBtnSpinner" class="hidden ml-2">
+                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </button>
+        </div>
+    `;
+}
                 document.getElementById('applicationModal').classList.remove('hidden');
 
                 // Load existing comments and statuses
@@ -980,6 +985,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // NEW: Check for document updates to show NEW badges
                 trackDocumentUpdates(applicationPersonnelId);
+
+                // Ensure send email button is hidden when modal is opened from List view (or any non-pending source)
+                // Small timeout to ensure DOM elements rendered before toggling
+                setTimeout(() => {
+                    const sendEmailBtn = document.getElementById('sendEmailBtn');
+                    if (sendEmailBtn) {
+                        if (currentSource !== 'pending') {
+                            sendEmailBtn.style.display = 'none';
+                        } else {
+                            sendEmailBtn.style.display = '';
+                        }
+                    }
+                }, 50);
             }
 
             // NEW: Function to generate document items with status badges
@@ -1014,72 +1032,86 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
 
-            // NEW: Function to update document status badges
-            function updateDocumentBadges(documentType, status, isNew = false) {
-                const badge = document.getElementById(`badge-${documentType}`);
-                const icon = document.getElementById(`icon-${documentType}`);
-                
-                // Reset all styles first
-                badge.classList.remove('badge-new', 'badge-good', 'badge-bad', 'badge-updated', 'hidden');
-                icon.classList.remove('text-red-600', 'text-green-600', 'text-gray-500', 'text-purple-600');
-                
-                // Apply new status
-                if (status === 'good') {
-                    badge.classList.add('badge-good');
-                    badge.innerHTML = '✓';
-                    icon.classList.add('text-green-600');
-                    badge.classList.remove('hidden');
-                } else if (status === 'bad') {
-                    badge.classList.add('badge-bad');
-                    badge.innerHTML = '✗';
-                    icon.classList.add('text-red-600');
-                    badge.classList.remove('hidden');
-                } else if (isNew) {
-                    badge.classList.add('badge-new');
-                    badge.innerHTML = 'NEW';
-                    badge.classList.remove('hidden');
-                    icon.classList.add('text-purple-600');
-                } else {
-                    // No status, hide the badge
-                    badge.classList.add('hidden');
-                    icon.classList.add('text-purple-600');
-                }
-                
-                // Special case: if document was bad but has been updated
-                if (status === 'bad' && isNew) {
-                    badge.classList.remove('badge-bad');
-                    badge.classList.add('badge-updated');
-                    badge.innerHTML = 'NEW';
-                    icon.classList.remove('text-red-600');
-                    icon.classList.add('text-purple-600');
-                }
-            }
+// NEW: Function to update document status badges
+function updateDocumentBadges(documentType, status, isNew = false) {
+    const badge = document.getElementById(`badge-${documentType}`);
+    const icon = document.getElementById(`icon-${documentType}`);
+    
+    // Reset all styles first
+    badge.classList.remove('badge-new', 'badge-good', 'badge-bad', 'badge-updated', 'hidden');
+    icon.classList.remove('text-red-600', 'text-green-600', 'text-gray-500', 'text-purple-600');
+    
+    // Apply new status
+    if (status === 'good') {
+        badge.classList.add('badge-good');
+        badge.innerHTML = '✓';
+        icon.classList.add('text-green-600');
+        badge.classList.remove('hidden');
+    } else if (status === 'bad') {
+        badge.classList.add('badge-bad');
+        badge.innerHTML = '✗';
+        icon.classList.add('text-red-600');
+        badge.classList.remove('hidden');
+    } else if (status === 'New') {
+        badge.classList.add('badge-updated');
+        badge.innerHTML = 'Updated';
+        icon.classList.add('text-purple-600');
+        badge.classList.remove('hidden');
+    } else if (isNew) {
+        badge.classList.add('badge-new');
+        badge.innerHTML = 'NEW';
+        badge.classList.remove('hidden');
+        icon.classList.add('text-purple-600');
+    } else {
+        // No status, hide the badge
+        badge.classList.add('hidden');
+        icon.classList.add('text-purple-600');
+    }
+    
+    // Special case: if document was bad but has been updated
+    if (status === 'bad' && isNew) {
+        badge.classList.remove('badge-bad');
+        badge.classList.add('badge-updated');
+        badge.innerHTML = 'Updated';
+        icon.classList.remove('text-red-600');
+        icon.classList.add('text-purple-600');
+    }
+}
 
-            // NEW: Function to track document updates and show NEW badge
-            function trackDocumentUpdates(applicationPersonnelId) {
-                // Check if any documents have been updated since last review
-                fetch(`/mayor_staff/check-document-updates/${applicationPersonnelId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success && data.updated_documents) {
-                            data.updated_documents.forEach(docType => {
-                                // Show NEW badge for updated documents
-                                updateDocumentBadges(docType, null, true);
-                                
-                                // If document was previously bad and now has NEW status,
-                                // we need to track this for the reject button logic
-                                if (previousDocumentStatus && 
-                                    previousDocumentStatus[docType] === 'bad') {
-                                    markDocumentAsUpdated(docType);
-                                }
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error checking document updates:', error);
-                    });
+// NEW: Function to track document updates and show NEW badge
+function trackDocumentUpdates(applicationPersonnelId) {
+    // Check if any documents have been updated since last review
+    fetch(`/mayor_staff/check-document-updates/${applicationPersonnelId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.updated_documents) {
+                data.updated_documents.forEach(docType => {
+                    // Show NEW badge for updated documents
+                    updateDocumentBadges(docType, null, true);
+                    
+                    // If document was previously bad and now has NEW status,
+                    // we need to track this for the reject button logic
+                    if (previousDocumentStatus && 
+                        previousDocumentStatus[docType] === 'bad') {
+                        markDocumentAsUpdated(docType);
+                    }
+                });
             }
-
+            
+            // Also check for documents with 'New' status
+            if (data.success && data.statuses) {
+                Object.entries(data.statuses).forEach(([key, status]) => {
+                    if (key.endsWith('_status') && status === 'New') {
+                        const docType = key.replace('_status', '');
+                        updateDocumentBadges(docType, 'New', false);
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error checking document updates:', error);
+        });
+}
             // NEW: Function to mark a document as updated (from bad to new)
             function markDocumentAsUpdated(documentType) {
                 updatedDocuments.add(documentType);
@@ -1164,41 +1196,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
             function checkAllDocumentsRated() {
                 const documentTypes = ['application_letter', 'cert_of_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
-                
+
                 if (ratedDocuments && ratedDocuments.size === 5) {
-                    // Count good, bad, and updated documents
-                    let goodCount = 0;
-                    let badCount = 0;
-                    let updatedCount = updatedDocuments ? updatedDocuments.size : 0;
-                    
-                    documentTypes.forEach(docType => {
-                        // We'll check the actual status from the database
-                        const applicationPersonnelId = currentApplicationId;
-                        
-                        // Make an API call to get the actual status
-                        fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    const statuses = data.statuses || {};
+                    // Make a single API call to get all statuses
+                    const applicationPersonnelId = currentApplicationId;
+
+                    fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const statuses = data.statuses || {};
+                                let goodCount = 0;
+                                let badCount = 0;
+                                let updatedCount = updatedDocuments ? updatedDocuments.size : 0;
+
+                                // Count good and bad documents from the response
+                                documentTypes.forEach(docType => {
                                     const status = statuses[`${docType}_status`];
-                                    
                                     if (status === 'good') {
                                         goodCount++;
                                     } else if (status === 'bad') {
                                         badCount++;
                                     }
-                                    
-                                    // After checking all documents, update the UI
-                                    if (goodCount + badCount === 5) {
-                                        updateActionButtons(goodCount, badCount, updatedCount);
-                                    }
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error checking document status:', error);
-                            });
-                    });
+                                });
+
+                                console.log(`Final counts - Good: ${goodCount}, Bad: ${badCount}, Updated: ${updatedCount}`);
+
+                                // Update the action buttons based on the counts
+                                updateActionButtons(goodCount, badCount, updatedCount);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error checking document status:', error);
+                        });
                 } else {
                     console.log(`Not all documents rated: ${ratedDocuments ? ratedDocuments.size : 0}/5`);
                 }
@@ -1207,147 +1237,207 @@ document.addEventListener('DOMContentLoaded', function() {
             // MODIFIED: Function to update action buttons with new logic
             function updateActionButtons(goodCount, badCount, updatedCount = 0) {
                 console.log(`Good: ${goodCount}, Bad: ${badCount}, Updated: ${updatedCount}`);
-                
+
                 // Show action buttons
                 const actionButtons = document.getElementById('actionButtons');
                 const approveBtn = document.getElementById('approveBtn');
                 const rejectBtn = document.getElementById('rejectBtn');
                 const sendEmailBtn = document.getElementById('sendEmailBtn');
-                
+
                 actionButtons.classList.remove('hidden');
                 document.getElementById('reviewMessage').style.display = 'none';
-                
-                // NEW LOGIC: Always show reject button, but conditionally show approve button
-                if (badCount > 0 || updatedCount > 0) {
-                    // If there are bad documents OR updated documents, hide approve button
+
+                // Show buttons based on document status
+                if (goodCount === 5) {
+                    // All documents are good - show only approve button
+                    approveBtn.style.display = 'flex';
+                    rejectBtn.style.display = 'none';
+                    sendEmailBtn.style.display = 'none';
+                    console.log('All documents good - showing only Approve button');
+                } else {
+                    // There are bad documents - show reject and send email buttons
                     approveBtn.style.display = 'none';
                     rejectBtn.style.display = 'flex';
                     sendEmailBtn.style.display = 'flex';
-                    console.log('Bad or updated documents found - showing Reject button only');
-                } else {
-                    // If all documents are good and no updates, show both buttons
-                    approveBtn.style.display = 'flex';
-                    rejectBtn.style.display = 'flex'; // ALWAYS show reject button
-                    sendEmailBtn.style.display = 'flex';
-                    console.log('All documents good - showing both Approve and Reject buttons');
+                    console.log('Not all documents good - showing Reject and Send Email buttons');
                 }
             }
 
-            // MODIFIED: Function to mark document as good
-            function markDocumentAsGood(documentType) {
-                Swal.fire({
-                    title: 'Mark as Good?',
-                    text: 'Are you sure you want to mark this document as good?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#28a745',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, Mark as Good',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Save status
-                        saveDocumentStatus(documentType, 'good');
-                        
-                        // Track that this document has been rated
-                        trackRatedDocument(documentType);
-                        
-                        // Remove from updated documents if it was there
-                        if (updatedDocuments && updatedDocuments.has(documentType)) {
-                            updatedDocuments.delete(documentType);
-                        }
-                        
-                        // Update the badge - remove NEW and show Good
-                        updateDocumentBadges(documentType, 'good', false);
-                        
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Document marked as good.',
-                            icon: 'success',
-                            showConfirmButton: true,
-                            allowOutsideClick: false
-                        });
-                    }
-                });
-            }
+// MODIFIED: Function to mark document as good (no reason needed)
+function markDocumentAsGood(documentType) {
+    Swal.fire({
+        title: 'Mark as Good?',
+        text: 'Are you sure you want to mark this document as good?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Mark as Good',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading state
+            Swal.fire({
+                title: 'Saving...',
+                text: 'Please wait while we save your feedback',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Save status without reason for good documents
+            saveDocumentStatus(documentType, 'good', '')
+            .then(() => {
+                // Track that this document has been rated
+                trackRatedDocument(documentType);
 
-            // MODIFIED: Function to mark document as bad
-            function markDocumentAsBad(documentType) {
-                Swal.fire({
-                    title: 'Mark as Bad?',
-                    text: 'Are you sure you want to mark this document as bad?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, Mark as Bad',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Save status
-                        saveDocumentStatus(documentType, 'bad');
-                        
-                        // Track that this document has been rated
-                        trackRatedDocument(documentType);
-                        
-                        // Remove from updated documents if it was there
-                        if (updatedDocuments && updatedDocuments.has(documentType)) {
-                            updatedDocuments.delete(documentType);
-                        }
-                        
-                        // Update the badge - remove NEW and show Bad
-                        updateDocumentBadges(documentType, 'bad', false);
-                        
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Document marked as bad.',
-                            icon: 'success',
-                            showConfirmButton: true,
-                            allowOutsideClick: false
-                        });
-                    }
-                });
-            }
+                // Remove from updated documents if it was there
+                if (updatedDocuments && updatedDocuments.has(documentType)) {
+                    updatedDocuments.delete(documentType);
+                }
 
-            function saveDocumentStatus(documentType, status) {
-                const applicationPersonnelId = currentApplicationId;
+                // Update the badge - remove NEW and show Good
+                updateDocumentBadges(documentType, 'good', false);
+
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Document marked as good.',
+                    icon: 'success',
+                    showConfirmButton: true,
+                    allowOutsideClick: false
+                });
+            })
+            .catch(error => {
+                console.error('Error saving status:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to save document status. Please try again.',
+                    icon: 'error',
+                    showConfirmButton: true,
+                    allowOutsideClick: false
+                });
+            });
+        }
+    });
+}
+
+// MODIFIED: Function to mark document as bad with reason input
+function markDocumentAsBad(documentType) {
+    Swal.fire({
+        title: 'Mark as Bad?',
+        text: 'Please provide the reason why this document is marked as bad:',
+        icon: 'warning',
+        input: 'textarea',
+        inputLabel: 'Reason for marking as bad',
+        inputPlaceholder: 'Enter the reason why this document needs to be updated...',
+        inputAttributes: {
+            'aria-label': 'Enter the reason why this document needs to be updated',
+            'rows': 3
+        },
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Mark as Bad',
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Please provide a reason for marking this document as bad';
+            }
+            if (value.length < 10) {
+                return 'Please provide a more detailed reason (at least 10 characters)';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const reason = result.value;
+            
+            // Show loading state
+            Swal.fire({
+                title: 'Saving...',
+                text: 'Please wait while we save your feedback',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Save status with reason for bad documents
+            saveDocumentStatus(documentType, 'bad', reason)
+            .then(() => {
+                // Track that this document has been rated
+                trackRatedDocument(documentType);
                 
-                console.log('Saving status:', { applicationPersonnelId, documentType, status });
-
-                fetch('/mayor_staff/save-document-status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                    },
-                    body: JSON.stringify({
-                        application_personnel_id: applicationPersonnelId,
-                        document_type: documentType,
-                        status: status
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Save status response:', data);
-                    if (!data.success) {
-                        console.error('Failed to save status:', data.message);
-                        Swal.fire('Error', 'Failed to save document status.', 'error');
-                    } else {
-                        console.log('Status saved successfully');
-                        // Update the UI in the document modal
-                        updateDocumentModalUI(documentType);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error saving status:', error);
-                    Swal.fire('Error', 'Failed to save document status.', 'error');
+                // Remove from updated documents if it was there
+                if (updatedDocuments && updatedDocuments.has(documentType)) {
+                    updatedDocuments.delete(documentType);
+                }
+                
+                // Update the badge - remove NEW and show Bad
+                updateDocumentBadges(documentType, 'bad', false);
+                
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Document marked as bad with reason saved.',
+                    icon: 'success',
+                    showConfirmButton: true,
+                    allowOutsideClick: false
                 });
-            }
+            })
+            .catch(error => {
+                console.error('Error saving status:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to save document status. Please try again.',
+                    icon: 'error',
+                    showConfirmButton: true,
+                    allowOutsideClick: false
+                });
+            });
+        }
+    });
+}
+
+function saveDocumentStatus(documentType, status, reason = '') {
+    const applicationPersonnelId = currentApplicationId;
+
+    console.log('Saving status:', { applicationPersonnelId, documentType, status, reason });
+
+    return fetch('/mayor_staff/save-document-status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+        },
+        body: JSON.stringify({
+            application_personnel_id: applicationPersonnelId,
+            document_type: documentType,
+            status: status,
+            reason: reason
+        })
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error('Network response was not ok: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Save status response:', data);
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to save status');
+        }
+        console.log('Status saved successfully');
+        // Update the UI in the document modal
+        updateDocumentModalUI(documentType);
+        return data;
+    })
+    .catch(error => {
+        console.error('Error in saveDocumentStatus:', error);
+        throw error;
+    });
+}
 
             function saveDocumentComment(documentType, comment) {
                 const applicationPersonnelId = currentApplicationId;
@@ -1410,86 +1500,105 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
             }
 
-            // New function to update document modal UI based on current status
-            function updateDocumentModalUI(documentType) {
-                const applicationPersonnelId = currentApplicationId;
+// New function to update document modal UI based on current status
+function updateDocumentModalUI(documentType) {
+    const applicationPersonnelId = currentApplicationId;
+    
+    fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const statuses = data.statuses || {};
+                const status = statuses[`${documentType}_status`];
                 
-                fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            const statuses = data.statuses || {};
-                            const status = statuses[`${documentType}_status`];
-                            
-                            const goodBtn = document.querySelector(`#documentReviewControls .mark-good-btn[data-document="${documentType}"]`);
-                            const badBtn = document.querySelector(`#documentReviewControls .mark-bad-btn[data-document="${documentType}"]`);
-                            const statusIndicator = document.getElementById(`status-indicator-${documentType}`);
-                            const statusText = document.getElementById(`status-text-${documentType}`);
-                            
-                            if (status === 'good') {
-                                // Document is already marked as good
-                                if (goodBtn && badBtn) {
-                                    goodBtn.disabled = true;
-                                    goodBtn.classList.add('bg-green-700', 'cursor-not-allowed');
-                                    goodBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
-                                    goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Marked as Good';
-                                    
-                                    badBtn.disabled = false;
-                                    badBtn.classList.remove('bg-red-700', 'cursor-not-allowed');
-                                    badBtn.classList.add('bg-red-500', 'hover:bg-red-600');
-                                    badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Mark as Bad';
-                                }
-                                
-                                if (statusIndicator && statusText) {
-                                    statusIndicator.classList.remove('hidden');
-                                    statusIndicator.className = 'mt-3 text-sm font-medium text-green-600';
-                                    statusText.textContent = 'This document has been marked as Good.';
-                                }
-                            } else if (status === 'bad') {
-                                // Document is already marked as bad
-                                if (goodBtn && badBtn) {
-                                    badBtn.disabled = true;
-                                    badBtn.classList.add('bg-red-700', 'cursor-not-allowed');
-                                    badBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
-                                    badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Marked as Bad';
-                                    
-                                    goodBtn.disabled = false;
-                                    goodBtn.classList.remove('bg-green-700', 'cursor-not-allowed');
-                                    goodBtn.classList.add('bg-green-500', 'hover:bg-green-600');
-                                    goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Good';
-                                }
-                                
-                                if (statusIndicator && statusText) {
-                                    statusIndicator.classList.remove('hidden');
-                                    statusIndicator.className = 'mt-3 text-sm font-medium text-red-600';
-                                    statusText.textContent = 'This document has been marked as Bad.';
-                                }
-                            } else {
-                                // Document not rated yet
-                                if (goodBtn && badBtn) {
-                                    goodBtn.disabled = false;
-                                    badBtn.disabled = false;
-                                    
-                                    goodBtn.classList.remove('bg-green-700', 'cursor-not-allowed');
-                                    goodBtn.classList.add('bg-green-500', 'hover:bg-green-600');
-                                    goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Good';
-                                    
-                                    badBtn.classList.remove('bg-red-700', 'cursor-not-allowed');
-                                    badBtn.classList.add('bg-red-500', 'hover:bg-red-600');
-                                    badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Mark as Bad';
-                                }
-                                
-                                if (statusIndicator) {
-                                    statusIndicator.classList.add('hidden');
-                                }
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error updating document modal UI:', error);
-                    });
+                const goodBtn = document.querySelector(`#documentReviewControls .mark-good-btn[data-document="${documentType}"]`);
+                const badBtn = document.querySelector(`#documentReviewControls .mark-bad-btn[data-document="${documentType}"]`);
+                const statusIndicator = document.getElementById(`status-indicator-${documentType}`);
+                const statusText = document.getElementById(`status-text-${documentType}`);
+                
+                if (status === 'good') {
+                    // Document is already marked as good
+                    if (goodBtn && badBtn) {
+                        goodBtn.disabled = true;
+                        goodBtn.classList.add('bg-green-700', 'cursor-not-allowed');
+                        goodBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                        goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Marked as Good';
+                        
+                        badBtn.disabled = false;
+                        badBtn.classList.remove('bg-red-700', 'cursor-not-allowed');
+                        badBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                        badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Mark as Bad';
+                    }
+                    
+                    if (statusIndicator && statusText) {
+                        statusIndicator.classList.remove('hidden');
+                        statusIndicator.className = 'mt-3 text-sm font-medium text-green-600';
+                        statusText.textContent = 'This document has been marked as Good.';
+                    }
+                } else if (status === 'bad') {
+                    // Document is already marked as bad
+                    if (goodBtn && badBtn) {
+                        badBtn.disabled = true;
+                        badBtn.classList.add('bg-red-700', 'cursor-not-allowed');
+                        badBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                        badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Marked as Bad';
+                        
+                        goodBtn.disabled = false;
+                        goodBtn.classList.remove('bg-green-700', 'cursor-not-allowed');
+                        goodBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                        goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Good';
+                    }
+                    
+                    if (statusIndicator && statusText) {
+                        statusIndicator.classList.remove('hidden');
+                        statusIndicator.className = 'mt-3 text-sm font-medium text-red-600';
+                        statusText.textContent = 'This document has been marked as Bad.';
+                    }
+                } else if (status === 'New') {
+                    // Document has been updated (from bad to New)
+                    if (goodBtn && badBtn) {
+                        goodBtn.disabled = false;
+                        badBtn.disabled = false;
+                        
+                        goodBtn.classList.remove('bg-green-700', 'cursor-not-allowed');
+                        goodBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                        goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Good';
+                        
+                        badBtn.classList.remove('bg-red-700', 'cursor-not-allowed');
+                        badBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                        badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Mark as Bad';
+                    }
+                    
+                    if (statusIndicator && statusText) {
+                        statusIndicator.classList.remove('hidden');
+                        statusIndicator.className = 'mt-3 text-sm font-medium text-purple-600';
+                        statusText.textContent = 'This document has been updated and needs review.';
+                    }
+                } else {
+                    // Document not rated yet
+                    if (goodBtn && badBtn) {
+                        goodBtn.disabled = false;
+                        badBtn.disabled = false;
+                        
+                        goodBtn.classList.remove('bg-green-700', 'cursor-not-allowed');
+                        goodBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                        goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Good';
+                        
+                        badBtn.classList.remove('bg-red-700', 'cursor-not-allowed');
+                        badBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                        badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Mark as Bad';
+                    }
+                    
+                    if (statusIndicator) {
+                        statusIndicator.classList.add('hidden');
+                    }
+                }
             }
-
+        })
+        .catch(error => {
+            console.error('Error updating document modal UI:', error);
+        });
+}
             // New function to show auto-save indicator
             function showAutoSaveIndicator(documentType, success = true) {
                 const textarea = document.getElementById(`comment_${documentType}`);
@@ -1514,148 +1623,216 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('applicationModal').classList.add('hidden');
             }
 
-            function approveApplication() {
-                const applicationId = currentApplicationId;
+function approveApplication() {
+    const applicationId = currentApplicationId;
 
-                // Confirm approval
-                Swal.fire({
-                    title: 'Approve Initial Screening?',
-                    text: 'Are you sure you want to approve this application for initial screening?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#28a745',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, Approve',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const approveBtn = document.getElementById('approveBtn');
-                        const approveBtnText = document.getElementById('approveBtnText');
-                        const approveBtnSpinner = document.getElementById('approveBtnSpinner');
+    // Confirm approval
+    Swal.fire({
+        title: 'Approve Initial Screening?',
+        text: 'Are you sure you want to approve this application for initial screening?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Approve',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const approveBtn = document.getElementById('approveBtn');
+            const approveBtnText = document.getElementById('approveBtnText');
+            const approveBtnSpinner = document.getElementById('approveBtnSpinner');
 
-                        // Show loading state
-                        approveBtn.disabled = true;
-                        approveBtnText.textContent = 'Approving...';
-                        approveBtnSpinner.classList.remove('hidden');
+            // Show loading state
+            approveBtn.disabled = true;
+            approveBtnText.textContent = 'Approving...';
+            approveBtnSpinner.classList.remove('hidden');
 
-                        // Make AJAX call to approve the application
-                        fetch(`/mayor_staff/application/${applicationId}/approve`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Approved!',
-                                    text: 'Initial screening has been approved successfully.',
-                                    icon: 'success',
-                                    showConfirmButton: true,
-                                    allowOutsideClick: false
-                                });
-                                closeApplicationModal();
-                                // Removed page reload to prevent refresh when closing modal
-                            } else {
-                                Swal.fire('Error', 'Failed to approve initial screening.', 'error');
-                            }
-                        })
-                        .catch(() => {
-                            Swal.fire('Error', 'Failed to approve initial screening.', 'error');
-                        })
-                        .finally(() => {
-                            // Reset button state
-                            approveBtn.disabled = false;
-                            approveBtnText.textContent = 'Approved for Interview';
-                            approveBtnSpinner.classList.add('hidden');
-                        });
-                    }
-                });
-            }
-
-            function rejectApplication() {
-                const applicationId = currentApplicationId;
-
-                // Open rejection modal
-                document.getElementById('rejectionModal').classList.remove('hidden');
-            }
-
-            function closeRejectionModal() {
-                document.getElementById('rejectionModal').classList.add('hidden');
-            }
-
-            function submitRejection() {
-                const applicationId = currentApplicationId;
-                const reason = document.getElementById('rejectionReason').value.trim();
-
-                if (!reason) {
-                    Swal.fire('Error', 'Please provide a reason for rejection.', 'error');
-                    return;
+            // Make AJAX call to approve the application
+            fetch(`/mayor_staff/application/${applicationId}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
                 }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Approved!',
+                        text: 'Initial screening has been approved successfully.',
+                        icon: 'success',
+                        showConfirmButton: true,
+                        allowOutsideClick: false
+                    }).then(() => {
+                        closeApplicationModal();
+                        
+                        // ✅ REMOVE FROM TABLE WITHOUT RELOAD
+                        removeApplicationFromTable(applicationId);
+                    });
+                } else {
+                    Swal.fire('Error', 'Failed to approve initial screening.', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Failed to approve initial screening.', 'error');
+            })
+            .finally(() => {
+                // Reset button state
+                approveBtn.disabled = false;
+                approveBtnText.textContent = 'Approved for Interview';
+                approveBtnSpinner.classList.add('hidden');
+            });
+        }
+    });
+}
 
-                // Confirm rejection
-                Swal.fire({
-                    title: 'Reject Initial Screening?',
-                    text: 'Are you sure you want to reject this application for initial screening?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, Reject',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const rejectSubmitBtn = document.getElementById('rejectSubmitBtn');
-                        const rejectSubmitBtnText = document.getElementById('rejectSubmitBtnText');
-                        const rejectSubmitBtnSpinner = document.getElementById('rejectSubmitBtnSpinner');
-
-                        // Show loading state
-                        rejectSubmitBtn.disabled = true;
-                        rejectSubmitBtnText.textContent = 'Rejecting...';
-                        rejectSubmitBtnSpinner.classList.remove('hidden');
-
-                        // Make AJAX call to reject the application
-                        fetch(`/mayor_staff/application/${applicationId}/reject`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                            },
-                            body: JSON.stringify({ reason: reason })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Rejected!',
-                                    text: 'Initial screening has been rejected successfully.',
-                                    icon: 'success',
-                                    showConfirmButton: true,
-                                    allowOutsideClick: false
-                                });
-                                closeRejectionModal();
-                                closeApplicationModal();
-                                // Reload the page to reflect changes
-                                location.reload();
-                            } else {
-                                Swal.fire('Error', 'Failed to reject initial screening.', 'error');
-                            }
-                        })
-                        .catch(() => {
-                            Swal.fire('Error', 'Failed to reject initial screening.', 'error');
-                        })
-                        .finally(() => {
-                            // Reset button state
-                            rejectSubmitBtn.disabled = false;
-                            rejectSubmitBtnText.textContent = 'Reject Application';
-                            rejectSubmitBtnSpinner.classList.add('hidden');
-                        });
-                    }
-                });
+function removeApplicationFromTable(applicationId) {
+    // Hanapin at tanggalin ang row sa pending table
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    let foundRow = null;
+    
+    rows.forEach(row => {
+        // Skip header row or rows without enough cells
+        if (!row.cells || row.cells.length < 7) return;
+        
+        const viewButton = row.querySelector('button[onclick*="openApplicationModal"]');
+        if (viewButton && viewButton.getAttribute('onclick').includes(applicationId.toString())) {
+            foundRow = row;
+        }
+    });
+    
+    if (foundRow) {
+        // Animate removal
+        foundRow.style.transition = 'all 0.3s ease';
+        foundRow.style.opacity = '0';
+        foundRow.style.transform = 'translateX(-100%)';
+        
+        setTimeout(() => {
+            foundRow.remove();
+            
+            // Update ang row numbers at pagination
+            updateRowNumbers();
+            updatePagination('table');
+            
+            // Show success message if no more rows
+            if (document.querySelectorAll('#tableView tbody tr').length === 0) {
+                showNoApplicationsMessage();
             }
+        }, 300);
+    } else {
+        console.warn('Application row not found for ID:', applicationId);
+        // Fallback: reload the page
+        location.reload();
+    }
+}
 
+function updateRowNumbers() {
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    let count = 1;
+    
+    rows.forEach(row => {
+        // Skip if it's a "no data" row
+        if (row.querySelector('td[colspan]')) return;
+        
+        const firstCell = row.cells[0];
+        if (firstCell) {
+            firstCell.textContent = count++;
+        }
+    });
+}
+
+function showNoApplicationsMessage() {
+    const tableBody = document.querySelector('#tableView tbody');
+    if (tableBody && tableBody.querySelectorAll('tr').length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">
+                    No pending applications found.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function submitRejection() {
+    const applicationId = currentApplicationId;
+    const reason = document.getElementById('rejectionReason').value.trim();
+
+    if (!reason) {
+        Swal.fire('Error', 'Please provide a reason for rejection.', 'error');
+        return;
+    }
+
+    // Confirm rejection
+    Swal.fire({
+        title: 'Reject Initial Screening?',
+        text: 'Are you sure you want to reject this application for initial screening?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Reject',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const rejectSubmitBtn = document.getElementById('rejectSubmitBtn');
+            const rejectSubmitBtnText = document.getElementById('rejectSubmitBtnText');
+            const rejectSubmitBtnSpinner = document.getElementById('rejectSubmitBtnSpinner');
+
+            // Show loading state
+            rejectSubmitBtn.disabled = true;
+            rejectSubmitBtnText.textContent = 'Rejecting...';
+            rejectSubmitBtnSpinner.classList.remove('hidden');
+
+            // Make AJAX call to reject the application
+            fetch(`/mayor_staff/application/${applicationId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                },
+                body: JSON.stringify({ reason: reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Rejected!',
+                        text: 'Initial screening has been rejected successfully.',
+                        icon: 'success',
+                        showConfirmButton: true,
+                        allowOutsideClick: false
+                    }).then(() => {
+                        // DAGDAG: Isara ang rejection modal at application modal
+                        closeRejectionModal();
+                        closeApplicationModal();
+                        
+                        // Remove from table without reload
+                        removeApplicationFromTable(applicationId);
+                    });
+                } else {
+                    Swal.fire('Error', 'Failed to reject initial screening.', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Failed to reject initial screening.', 'error');
+            })
+            .finally(() => {
+                // Reset button state
+                rejectSubmitBtn.disabled = false;
+                rejectSubmitBtnText.textContent = 'Reject Application';
+                rejectSubmitBtnSpinner.classList.add('hidden');
+            });
+        }
+    });
+}
+function closeRejectionModal() {
+    document.getElementById('rejectionModal').classList.add('hidden');
+}
+function closeApplicationModal() {
+    document.getElementById('applicationModal').classList.add('hidden');
+}
             function confirmInitialScreening(selectElement) {
                 const selectedValue = selectElement.value;
                 const previousValue = selectElement.getAttribute('data-previous');
@@ -1776,102 +1953,80 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
 
-            // Document Viewer Functions
-            function openDocumentModal(documentUrl, title, documentType) {
-                const modal = document.getElementById('documentModal');
-                const titleElement = document.getElementById('documentModalTitle');
-                const viewer = document.getElementById('documentViewer');
-                const reviewControls = document.getElementById('documentReviewControls');
+function openDocumentModal(documentUrl, title, documentType) {
+    const modal = document.getElementById('documentModal');
+    const titleElement = document.getElementById('documentModalTitle');
+    const viewer = document.getElementById('documentViewer');
+    const reviewControls = document.getElementById('documentReviewControls');
 
-                // Set title
-                titleElement.innerHTML = `<i class="fas fa-file-alt text-blue-600"></i> ${title}`;
+    // Set title
+    titleElement.innerHTML = `<i class="fas fa-file-alt text-blue-600"></i> ${title}`;
 
-                // Set document URL
-                viewer.src = documentUrl;
+    // Set document URL
+    viewer.src = documentUrl;
 
-                // Show modal
-                modal.classList.remove('hidden');
+    // Show modal
+    modal.classList.remove('hidden');
 
-                // Load existing comment for this document
-                loadDocumentComment(documentType);
+    // Add review controls for pending applications
+    if (currentSource === 'pending') {
+        reviewControls.innerHTML = `
+            <div class="bg-gray-50 p-4 rounded-lg border">
+                <h4 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-edit text-blue-600 mr-2"></i>
+                    Document Review
+                </h4>
 
-                // Add review controls for pending applications
-                if (currentSource === 'pending') {
-                    reviewControls.innerHTML = `
-                        <div class="bg-gray-50 p-4 rounded-lg border">
-                            <h4 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                                <i class="fas fa-edit text-blue-600 mr-2"></i>
-                                Document Review
-                            </h4>
-                            
-                            <!-- Comment Section -->
-                            <div class="mb-4">
-                                <label for="comment_${documentType}" class="block text-sm font-medium text-gray-700 mb-2">
-                                    <i class="fas fa-comment mr-1"></i> Comments
-                                </label>
-                                <textarea id="comment_${documentType}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3" placeholder="Add your comments about this document..."></textarea>
-                                <div class="text-xs text-gray-500 mt-1">Comments are auto-saved</div>
-                            </div>
+                <!-- Rating Buttons -->
+                <div class="flex gap-3">
+                    <button class="mark-good-btn flex-1 bg-green-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors duration-200 flex items-center justify-center gap-2" data-document="${documentType}">
+                        <i class="fas fa-check-circle"></i>
+                        Mark as Good
+                    </button>
+                    <button class="mark-bad-btn flex-1 bg-red-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors duration-200 flex items-center justify-center gap-2" data-document="${documentType}">
+                        <i class="fas fa-times-circle"></i>
+                        Mark as Bad
+                    </button>
+                </div>
 
-                            <!-- Rating Buttons -->
-                            <div class="flex gap-3">
-                                <button class="mark-good-btn flex-1 bg-green-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors duration-200 flex items-center justify-center gap-2" data-document="${documentType}">
-                                    <i class="fas fa-check-circle"></i>
-                                    Mark as Good
-                                </button>
-                                <button class="mark-bad-btn flex-1 bg-red-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors duration-200 flex items-center justify-center gap-2" data-document="${documentType}">
-                                    <i class="fas fa-times-circle"></i>
-                                    Mark as Bad
-                                </button>
-                            </div>
-
-                            <!-- Status Indicator -->
-                            <div id="status-indicator-${documentType}" class="mt-3 text-sm font-medium hidden">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                <span id="status-text-${documentType}"></span>
-                            </div>
-                        </div>
-                    `;
-                    
-                    // Add event listeners for the buttons in document modal
-                    setTimeout(() => {
-                        // Mark as Good button
-                        const goodBtn = document.querySelector(`#documentReviewControls .mark-good-btn[data-document="${documentType}"]`);
-                        if (goodBtn) {
-                            goodBtn.addEventListener('click', function() {
-                                const docType = this.getAttribute('data-document');
-                                markDocumentAsGood(docType);
-                        });
-                        }
-                        
-                        // Mark as Bad button
-                        const badBtn = document.querySelector(`#documentReviewControls .mark-bad-btn[data-document="${documentType}"]`);
-                        if (badBtn) {
-                            badBtn.addEventListener('click', function() {
-                                const docType = this.getAttribute('data-document');
-                                markDocumentAsBad(docType);
-                            });
-                        }
-                        
-                        // Add auto-save for comment in document modal
-                        const textarea = document.getElementById(`comment_${documentType}`);
-                        if (textarea) {
-                            textarea.addEventListener('input', debounce(function() {
-                                saveDocumentComment(documentType, this.value);
-                                showAutoSaveIndicator(documentType, false);
-                            }, 1000));
-                        }
-
-                        // Check current status and update UI
-                        updateDocumentModalUI(documentType);
-                    }, 100);
-                } else {
-                    reviewControls.innerHTML = '';
-                }
-                
-                // Track that this document has been opened
-                openedDocuments.add(documentType);
+                <!-- Status Indicator -->
+                <div id="status-indicator-${documentType}" class="mt-3 text-sm font-medium hidden">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    <span id="status-text-${documentType}"></span>
+                </div>
+            </div>
+        `;
+        
+        // Add event listeners for the buttons in document modal
+        setTimeout(() => {
+            // Mark as Good button
+            const goodBtn = document.querySelector(`#documentReviewControls .mark-good-btn[data-document="${documentType}"]`);
+            if (goodBtn) {
+                goodBtn.addEventListener('click', function() {
+                    const docType = this.getAttribute('data-document');
+                    markDocumentAsGood(docType);
+                });
             }
+            
+            // Mark as Bad button
+            const badBtn = document.querySelector(`#documentReviewControls .mark-bad-btn[data-document="${documentType}"]`);
+            if (badBtn) {
+                badBtn.addEventListener('click', function() {
+                    const docType = this.getAttribute('data-document');
+                    markDocumentAsBad(docType);
+                });
+            }
+
+            // Check current status and update UI
+            updateDocumentModalUI(documentType);
+        }, 100);
+    } else {
+        reviewControls.innerHTML = '';
+    }
+    
+    // Track that this document has been opened
+    openedDocuments.add(documentType);
+}
 
             function closeDocumentModal() {
                 const modal = document.getElementById('documentModal');
@@ -1903,66 +2058,65 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
 
-            // Document Review Functions
-            function sendDocumentEmail() {
-                const applicationPersonnelId = currentApplicationId;
+function sendDocumentEmail() {
+    const applicationPersonnelId = currentApplicationId;
 
-                // Show loading state
-                const sendEmailBtn = document.getElementById('sendEmailBtn');
-                const sendEmailBtnText = document.getElementById('sendEmailBtnText');
-                const sendEmailBtnSpinner = document.getElementById('sendEmailBtnSpinner');
+    // Show loading state
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
+    const sendEmailBtnText = document.getElementById('sendEmailBtnText');
+    const sendEmailBtnSpinner = document.getElementById('sendEmailBtnSpinner');
 
-                sendEmailBtn.disabled = true;
-                sendEmailBtnText.textContent = 'Sending...';
-                sendEmailBtnSpinner.classList.remove('hidden');
+    sendEmailBtn.disabled = true;
+    sendEmailBtnText.textContent = 'Sending...';
+    sendEmailBtnSpinner.classList.remove('hidden');
 
-                fetch('/mayor_staff/send-document-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                    },
-                    body: JSON.stringify({
-                        application_personnel_id: applicationPersonnelId
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Document review email has been sent successfully.',
-                            icon: 'success',
-                            showConfirmButton: true,
-                            allowOutsideClick: false
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Success',
-                            text: data.message || 'Document review email has been sent successfully.',
-                            icon: 'success',
-                            showConfirmButton: true,
-                            allowOutsideClick: false
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error sending email:', error);
-                    Swal.fire({
-                        title: 'Success',
-                        text: 'Document review email has been sent successfully.',
-                        icon: 'success',
-                        showConfirmButton: true,
-                        allowOutsideClick: false
-                    });
-                })
-                .finally(() => {
-                    // Reset button state
-                    sendEmailBtn.disabled = false;
-                    sendEmailBtnText.textContent = 'Send Email';
-                    sendEmailBtnSpinner.classList.add('hidden');
-                });
-            }
+    fetch('/mayor_staff/send-document-email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+        },
+        body: JSON.stringify({
+            application_personnel_id: applicationPersonnelId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Document review email with reasons has been sent successfully.',
+                icon: 'success',
+                showConfirmButton: true,
+                allowOutsideClick: false
+            });
+        } else {
+            Swal.fire({
+                title: 'Success',
+                text: data.message || 'Document review email has been sent successfully.',
+                icon: 'success',
+                showConfirmButton: true,
+                allowOutsideClick: false
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error sending email:', error);
+        Swal.fire({
+            title: 'Success',
+            text: 'Document review email has been sent successfully.',
+            icon: 'success',
+            showConfirmButton: true,
+            allowOutsideClick: false
+        });
+    })
+    .finally(() => {
+        // Reset button state
+        sendEmailBtn.disabled = false;
+        sendEmailBtnText.textContent = 'Send Email';
+        sendEmailBtnSpinner.classList.add('hidden');
+    });
+}
 
             let activeDropdown = null;
             let originalParent = null;
@@ -2259,6 +2413,18 @@ function changePage(viewType, page) {
     state.currentPage = page;
     updatePagination(viewType);
 }
+function rejectApplication() {
+    // Open the rejection modal
+    document.getElementById('rejectionModal').classList.remove('hidden');
+    
+    // Clear any previous reason
+    document.getElementById('rejectionReason').value = '';
+    
+    // Focus on the reason textarea
+    setTimeout(() => {
+        document.getElementById('rejectionReason').focus();
+    }, 100);
+}rejectionModal
 
 // Go to specific page
 function goToPage(viewType, page) {
@@ -2275,6 +2441,327 @@ function goToPage(viewType, page) {
 
 
 
+</script>
+<script src="{{ asset('js/app_spinner.js') }}"></script>
+<!-- Add Pusher JS (if not already included) -->
+<script src="https://js.pusher.com/7.0/pusher.min.js"></script>
+<script>
+// Pusher Notification Manager
+class PusherNotificationManager {
+    constructor() {
+        this.pusher = null;
+        this.channel = null;
+        this.notificationSound = new Audio('{{ asset("sounds/notification.wav") }}');
+        this.unreadNotifications = new Set();
+        this.initializePusher();
+        this.loadUnreadNotifications();
+    }
+
+    initializePusher() {
+        try {
+            console.log('Initializing Pusher...');
+            
+            // Initialize Pusher
+            this.pusher = new Pusher('{{ env('PUSHER_APP_KEY') }}', {
+                cluster: '{{ env('PUSHER_APP_CLUSTER') }}',
+                forceTLS: true,
+                authEndpoint: '/broadcasting/auth' // If you have private channels
+            });
+
+            // Subscribe to notifications channel
+            this.channel = this.pusher.subscribe('notifications.mayor_staff');
+
+            // Listen for new notifications
+            this.channel.bind('new.notification', (data) => {
+                console.log('📢 New notification received:', data);
+                this.handleNewNotification(data.notification);
+            });
+
+            // Connection events for debugging
+            this.pusher.connection.bind('connected', () => {
+                console.log('✅ Pusher connected successfully');
+            });
+
+            this.pusher.connection.bind('error', (err) => {
+                console.error('❌ Pusher connection error:', err);
+            });
+
+            this.channel.bind('subscription_succeeded', () => {
+                console.log('✅ Subscribed to notifications channel');
+            });
+
+        } catch (error) {
+            console.error('❌ Pusher initialization error:', error);
+        }
+    }
+
+    handleNewNotification(notification) {
+        console.log('Processing notification:', notification);
+        
+        // Play notification sound
+        this.playNotificationSound();
+        
+        // Add to unread notifications
+        const notificationId = this.generateNotificationId(notification);
+        this.unreadNotifications.add(notificationId);
+        this.saveUnreadNotifications();
+        this.updateBadge();
+        
+        // Update UI
+        this.updateNotificationDropdown(notification);
+        this.showToastNotification(notification);
+        
+        // Show desktop notification if permitted
+        if (Notification.permission === 'granted') {
+            this.showDesktopNotification(notification);
+        }
+    }
+
+    generateNotificationId(notification) {
+        return `${notification.type}-${notification.name}-${notification.id}`;
+    }
+
+    playNotificationSound() {
+        try {
+            this.notificationSound.currentTime = 0;
+            this.notificationSound.play().catch(e => {
+                console.log('Audio play failed:', e);
+            });
+        } catch (error) {
+            console.log('Sound play error:', error);
+        }
+    }
+
+    updateNotificationDropdown(newNotification) {
+        const dropdown = document.getElementById('notifDropdown');
+        const notificationList = dropdown.querySelector('ul');
+        
+        if (!notificationList) {
+            console.error('Notification list not found');
+            return;
+        }
+
+        // Create new notification element
+        const newListItem = document.createElement('li');
+        newListItem.className = 'px-4 py-2 hover:bg-gray-50 text-base border-b';
+        newListItem.innerHTML = `
+            <p class="${this.getNotificationColor(newNotification.type)} font-medium">
+                ${this.getNotificationIcon(newNotification.type)} 
+                ${this.formatNotificationMessage(newNotification)}
+            </p>
+            <p class="text-xs text-gray-500">
+                Just now
+            </p>
+        `;
+        
+        // Add to top of list
+        if (notificationList.firstChild) {
+            notificationList.insertBefore(newListItem, notificationList.firstChild);
+        } else {
+            notificationList.appendChild(newListItem);
+        }
+        
+        // Remove "No new notifications" message if present
+        const emptyMessage = notificationList.querySelector('li:only-child');
+        if (emptyMessage && emptyMessage.textContent.includes('No new notifications')) {
+            emptyMessage.remove();
+        }
+    }
+
+    showToastNotification(notification) {
+        if (typeof Swal !== 'undefined') {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 5000,
+                timerProgressBar: true,
+            });
+
+            Toast.fire({
+                icon: 'info',
+                title: this.formatNotificationMessage(notification),
+                background: '#f0f9ff',
+            });
+        }
+    }
+
+    showDesktopNotification(notification) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('LYDO Scholarship', {
+                body: this.formatNotificationMessage(notification),
+                icon: '{{ asset("images/LYDO.png") }}'
+            });
+        }
+    }
+
+    formatNotificationMessage(notification) {
+        if (notification.type === 'application') {
+            return `📝 ${notification.name} submitted a new application`;
+        } else if (notification.type === 'remark') {
+            return `💬 New remark for ${notification.name}: ${notification.remarks}`;
+        }
+        return 'New notification received';
+    }
+
+    getNotificationColor(type) {
+        const colors = {
+            'application': 'text-blue-600',
+            'remark': 'text-purple-600'
+        };
+        return colors[type] || 'text-gray-600';
+    }
+
+    getNotificationIcon(type) {
+        const icons = {
+            'application': '📝',
+            'remark': '💬'
+        };
+        return icons[type] || '🔔';
+    }
+
+    loadUnreadNotifications() {
+        const stored = localStorage.getItem('unreadNotifications');
+        if (stored) {
+            this.unreadNotifications = new Set(JSON.parse(stored));
+        }
+        this.updateBadge();
+    }
+
+    saveUnreadNotifications() {
+        localStorage.setItem('unreadNotifications', JSON.stringify([...this.unreadNotifications]));
+    }
+
+    updateBadge() {
+        const badge = document.getElementById('notifCount');
+        if (badge) {
+            if (this.unreadNotifications.size > 0) {
+                badge.textContent = this.unreadNotifications.size;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+
+    markNotificationsAsRead() {
+        this.unreadNotifications.clear();
+        this.saveUnreadNotifications();
+        this.updateBadge();
+        
+        // Mark as viewed on server
+        fetch('/mayor_staff/mark-notifications-viewed', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            }
+        });
+    }
+
+    requestNotificationPermission() {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+
+    // Test method for development
+    testNotification(type = 'application') {
+        const testNotifications = {
+            application: {
+                type: 'application',
+                name: 'Juan Dela Cruz',
+                remarks: null,
+                id: 'test-' + Date.now(),
+                created_at: new Date().toISOString()
+            },
+            remark: {
+                type: 'remark', 
+                name: 'Maria Santos',
+                remarks: 'Poor',
+                id: 'test-' + Date.now(),
+                created_at: new Date().toISOString()
+            }
+        };
+        
+        this.handleNewNotification(testNotifications[type]);
+    }
+}
+
+// Initialize the notification system
+let notificationManager;
+
+document.addEventListener('DOMContentLoaded', function() {
+    notificationManager = new PusherNotificationManager();
+    notificationManager.requestNotificationPermission();
+    
+    // Notification bell click handler
+    const notifBell = document.getElementById('notifBell');
+    if (notifBell) {
+        notifBell.addEventListener('click', function() {
+            const dropdown = document.getElementById('notifDropdown');
+            const isHidden = dropdown.classList.contains('hidden');
+            
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+                notificationManager.markNotificationsAsRead();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        });
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const notifBell = document.getElementById('notifBell');
+        const dropdown = document.getElementById('notifDropdown');
+        
+        if (dropdown && !dropdown.classList.contains('hidden') && 
+            notifBell && !notifBell.contains(event.target) && 
+            dropdown && !dropdown.contains(event.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
+    // Add test buttons for development (remove in production)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        addTestButtons();
+    }
+});
+
+function addTestButtons() {
+    const testContainer = document.createElement('div');
+    testContainer.className = 'fixed bottom-4 right-4 z-50 flex flex-col gap-2';
+    testContainer.innerHTML = `
+        <button onclick="notificationManager.testNotification('application')" 
+                class="bg-blue-500 text-white px-3 py-2 rounded text-sm">
+            Test New Application
+        </button>
+        <button onclick="notificationManager.testNotification('remark')" 
+                class="bg-purple-500 text-white px-3 py-2 rounded text-sm">
+            Test Review Remark
+        </button>
+    `;
+    document.body.appendChild(testContainer);
+}
+// When a new application is submitted
+public function storeApplication(Request $request)
+{
+    // Your existing application submission logic...
+    
+    // After saving the application
+    $applicationId = $savedApplication->application_id;
+    $this->triggerNewApplicationNotification($applicationId);
+}
+
+// When an application is reviewed
+public function reviewApplication($applicationPersonnelId)
+{
+    // Your existing review logic...
+    
+    // After reviewing
+    $this->triggerReviewedApplicationNotification($applicationPersonnelId);
+}
 </script>
 
     </body>
