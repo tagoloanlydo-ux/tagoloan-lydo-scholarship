@@ -257,7 +257,7 @@ class ScholarController extends Controller
 
         broadcast(new ApplicantRegistered('total_applicants', $applicantsCurrentYear))->toOthers();
 
-        return redirect()->route('scholar.login')->with('success', 'Application submitted successfully!');
+        return redirect()->route('home')->with('success', 'Application submitted successfully!');
     }
 
 /**
