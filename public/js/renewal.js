@@ -448,48 +448,41 @@ function markRenewalDocumentAsBad(documentType) {
         cancelButtonText: 'Cancel',
         inputValidator: (value) => {
             if (!value) {
-                return 'Please provide a reason for marking this document as bad!';
+                return 'Please provide a reason for marking this document as bad'
             }
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            const reason = result.value;
+            const comment = result.value;
             
-            // Track the bad rating for update detection
-            if (documentUpdateTracker[documentType]) {
-                documentUpdateTracker[documentType].lastStatus = 'bad';
-                documentUpdateTracker[documentType].hasUpdate = false;
-            }
+            // Save status as bad
+            saveRenewalDocumentStatus(documentType, 'bad', comment);
             
-            // Save status to server
-            saveRenewalDocumentStatus(documentType, 'bad', reason);
+            // IMPORTANT: Also save the comment to the database
+            saveRenewalDocumentComment(documentType, comment);
             
-            // Save status to localStorage
-            const comment = document.getElementById(`comment_${documentType}`)?.value || '';
-            saveRenewalRatingsToStorage(currentRenewalId, documentType, 'bad', reason);
-            
-            // Track that this document has been rated
+            // Update tracking
             ratedRenewalDocuments.add(documentType);
             renewalDocumentStatuses[documentType] = 'bad';
             
-            // Update the badge
+            // Update badge
             updateRenewalDocumentBadge(documentType, 'bad');
-            
-            // Handle the status change
-            handleDocumentStatusChange(documentType, 'bad');
-            
-            // Check if all documents are rated
-            checkAllRenewalDocumentsRated();
             
             // Update modal UI
             updateRenewalDocumentModalUI(documentType);
             
+            // Check if all documents are rated
+            checkAllRenewalDocumentsRated();
+            
+            // Close document viewer
+            closeDocumentViewerModal();
+            
+            // Show success
             Swal.fire({
-                title: 'Success!',
-                text: 'Document marked as bad.',
                 icon: 'success',
-                showConfirmButton: true,
-                allowOutsideClick: false
+                title: 'Marked as Bad',
+                text: 'Document marked as bad and comment saved.',
+                timer: 1500
             });
         }
     });
@@ -901,6 +894,9 @@ function sendEmailForBadDocuments() {
         return;
     }
 
+    console.log('Sending email for bad documents:', badDocuments);
+    console.log('Renewal ID:', selectedRenewalId);
+
     // Send request
     fetch('/lydo_staff/send-email-for-bad-documents', {
         method: 'POST',
@@ -915,6 +911,7 @@ function sendEmailForBadDocuments() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Email response:', data);
         if (data.success) {
             Swal.fire({
                 title: 'Correction Request Sent! 📧',

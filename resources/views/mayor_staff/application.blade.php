@@ -530,51 +530,51 @@
             </div>
         </div>
 
-        <!-- FIXED: Rejection Modal -->
-        <div id="rejectionModal" class="modal-overlay hidden">
-            <div class="modal-content max-w-2xl">
-                <!-- Header -->
-                <div class="flex items-center justify-between px-6 py-4 border-b">
-                    <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                        <i class="fas fa-times-circle text-red-600"></i>
-                        Reject Initial Screening
-                    </h2>
-                    <button onclick="closeRejectionModal()"
-                            class="p-2 rounded-full hover:bg-gray-100 transition">
-                        <i class="fas fa-times text-gray-500 text-lg"></i>
-                    </button>
-                </div>
-
-                <!-- Body -->
-                <div class="p-6 space-y-4">
-                    <p class="text-gray-700">Please provide the reason for rejecting this application:</p>
-                    <form id="rejectionForm">
-                        <div class="mb-4">
-                            <label for="rejectionReason" class="block text-gray-700 font-medium mb-2">Reason for Rejection</label>
-                            <textarea id="rejectionReason" name="reason" rows="4" class="w-full border rounded px-3 py-2" placeholder="Enter the reason for rejection..." required></textarea>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Footer -->
-                <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-                    <button onclick="closeRejectionModal()"
-                            class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-                        Cancel
-                    </button>
-                    <button id="rejectSubmitBtn" onclick="submitRejection()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
-                        <i class="fas fa-times"></i>
-                        <span id="rejectSubmitBtnText">Reject Application</span>
-                        <div id="rejectSubmitBtnSpinner" class="hidden ml-2">
-                            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        </div>
-                    </button>
-                </div>
-            </div>
+<!-- FIXED: Rejection Modal -->
+<div id="rejectionModal" class="modal-overlay hidden">
+    <div class="modal-content max-w-2xl">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b">
+            <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-times-circle text-red-600"></i>
+                Reject Initial Screening
+            </h2>
+            <button onclick="closeRejectionModal()"
+                    class="p-2 rounded-full hover:bg-gray-100 transition">
+                <i class="fas fa-times text-gray-500 text-lg"></i>
+            </button>
         </div>
+
+        <!-- Body -->
+        <div class="p-6 space-y-4">
+            <p class="text-gray-700">Please provide the reason for rejecting this application:</p>
+            <form id="rejectionForm">
+                <div class="mb-4">
+                    <label for="rejectionReason" class="block text-gray-700 font-medium mb-2">Reason for Rejection</label>
+                    <textarea id="rejectionReason" name="reason" rows="4" class="w-full border rounded px-3 py-2" placeholder="Enter the reason for rejection..." required></textarea>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+            <button onclick="closeRejectionModal()"
+                    class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                Cancel
+            </button>
+            <button id="rejectSubmitBtn" onclick="submitRejection()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
+                <i class="fas fa-times"></i>
+                <span id="rejectSubmitBtnText">Reject Application</span>
+                <div id="rejectSubmitBtnSpinner" class="hidden ml-2">
+                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </button>
+        </div>
+    </div>
+</div>
 
         <!-- FIXED: Edit Initial Screening Modal -->
         <div id="editInitialScreeningModal" class="modal-overlay hidden">
@@ -1755,7 +1755,6 @@ function showNoApplicationsMessage() {
     }
 }
 
-// Dagdag na function para sa reject (para consistent)
 function submitRejection() {
     const applicationId = currentApplicationId;
     const reason = document.getElementById('rejectionReason').value.trim();
@@ -1805,10 +1804,11 @@ function submitRejection() {
                         showConfirmButton: true,
                         allowOutsideClick: false
                     }).then(() => {
+                        // DAGDAG: Isara ang rejection modal at application modal
                         closeRejectionModal();
                         closeApplicationModal();
                         
-                        // ✅ REMOVE FROM TABLE WITHOUT RELOAD (same as approve)
+                        // Remove from table without reload
                         removeApplicationFromTable(applicationId);
                     });
                 } else {
@@ -1827,7 +1827,12 @@ function submitRejection() {
         }
     });
 }
-
+function closeRejectionModal() {
+    document.getElementById('rejectionModal').classList.add('hidden');
+}
+function closeApplicationModal() {
+    document.getElementById('applicationModal').classList.add('hidden');
+}
             function confirmInitialScreening(selectElement) {
                 const selectedValue = selectElement.value;
                 const previousValue = selectElement.getAttribute('data-previous');
@@ -2408,6 +2413,18 @@ function changePage(viewType, page) {
     state.currentPage = page;
     updatePagination(viewType);
 }
+function rejectApplication() {
+    // Open the rejection modal
+    document.getElementById('rejectionModal').classList.remove('hidden');
+    
+    // Clear any previous reason
+    document.getElementById('rejectionReason').value = '';
+    
+    // Focus on the reason textarea
+    setTimeout(() => {
+        document.getElementById('rejectionReason').focus();
+    }, 100);
+}rejectionModal
 
 // Go to specific page
 function goToPage(viewType, page) {

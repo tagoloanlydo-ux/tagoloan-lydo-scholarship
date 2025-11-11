@@ -396,8 +396,8 @@
 
             <div class="contact-info">
                 <div class="contact-title">Need Assistance?</div>
-                <p>Email: scholarship@lydo.gov.ph<br>
-                Phone: (02) 1234-5678<br>
+                <p>Email: tagoloanlydo@gmail.com<br>
+            
                 Office Hours: Monday-Friday, 8:00 AM - 5:00 PM</p>
             </div>
 
@@ -412,7 +412,7 @@
         
         <div class="footer">
             <p>This is an automated message. Please do not reply to this email.</p>
-            <p>LYDO Scholarship Office • Quezon City, Philippines</p>
+            <p>LYDO Scholarship Office • Tagoloan, Philippines</p>
             <p>© 2024 LYDO Scholarship Program. All rights reserved.</p>
         </div>
     </div>
