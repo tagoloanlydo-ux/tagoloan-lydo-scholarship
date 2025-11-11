@@ -865,7 +865,7 @@ function handleDocumentStatusChange(documentType, status) {
     checkAllRenewalDocumentsRated();
 }
 
-// Function to send email for bad documents
+// This function already exists in your renewal.js and is correct
 function sendEmailForBadDocuments() {
     // Show loading
     const sendEmailBtn = document.getElementById('sendEmailBtn');

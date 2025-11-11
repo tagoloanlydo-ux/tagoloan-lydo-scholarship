@@ -708,110 +708,118 @@ private function getDocumentTypeName($documentType)
 
     return $names[$documentType] ?? 'Document';
 }
+// In EmailService.php - Add this method
+public function sendDocumentCorrectionEmail($email, $data)
+{
+    try {
+        $documentNames = [
+            'cert_of_reg' => 'Certificate of Registration',
+            'grade_slip' => 'Grade Slip', 
+            'brgy_indigency' => 'Barangay Indigency'
+        ];
+
+        $badDocumentsList = '';
+        foreach ($data['bad_documents'] as $docType) {
+            $badDocumentsList .= "• " . ($documentNames[$docType] ?? $docType) . "\n";
+        }
+
+        Mail::send('emails.document_correction', [
+            'applicant_fname' => $data['applicant_fname'],
+            'applicant_lname' => $data['applicant_lname'],
+            'bad_documents' => $data['bad_documents'],
+            'bad_documents_list' => $badDocumentsList,
+            'renewal_id' => $data['renewal_id'] ?? null,
+            'correction_deadline' => now()->addDays(7)->format('F j, Y')
+        ], function ($message) use ($email, $data) {
+            $message->to($email)
+                   ->subject('Document Correction Required - Lydo Scholarship Renewal')
+                   ->from('noreply@lydoscholarship.com', 'Lydo Scholarship');
+        });
+
+        \Log::info("Document correction email sent to: {$email}");
+        return true;
+    } catch (\Exception $e) {
+        \Log::error("Failed to send document correction email to {$email}: " . $e->getMessage());
+        return false;
+    }
+}
+// In RenewalController.php - Add this method
 public function sendEmailForBadDocuments(Request $request)
 {
     try {
         \Log::info('=== START sendEmailForBadDocuments ===');
         \Log::info('Request data:', $request->all());
 
-        $renewalId = $request->input('renewal_id');
-        $badDocuments = $request->input('bad_documents', []);
-        
-        \Log::info('Processing renewal ID:', ['renewal_id' => $renewalId]);
-        \Log::info('Bad documents:', $badDocuments);
+        $request->validate([
+            'renewal_id' => 'required|exists:tbl_renewal,renewal_id',
+            'bad_documents' => 'required|array',
+            'bad_documents.*' => 'in:cert_of_reg,grade_slip,brgy_indigency'
+        ]);
 
-        // Get renewal data with scholar and applicant information
-        $renewal = DB::table('tbl_renewal as r')
+        // Get renewal and scholar information
+        $renewalInfo = DB::table('tbl_renewal as r')
             ->join('tbl_scholar as s', 'r.scholar_id', '=', 's.scholar_id')
             ->join('tbl_application as ap', 's.application_id', '=', 'ap.application_id')
             ->join('tbl_applicant as a', 'ap.applicant_id', '=', 'a.applicant_id')
-            ->where('r.renewal_id', $renewalId)
+            ->where('r.renewal_id', $request->renewal_id)
             ->select(
                 'a.applicant_email',
                 'a.applicant_fname', 
                 'a.applicant_lname',
-                'r.cert_of_reg_comment',
-                'r.grade_slip_comment',
-                'r.brgy_indigency_comment'
+                'r.renewal_id'
             )
             ->first();
 
-        \Log::info('Renewal data retrieved:', (array)$renewal);
+        if (!$renewalInfo) {
+            \Log::error('Renewal not found with ID: ' . $request->renewal_id);
+            return response()->json(['success' => false, 'message' => 'Renewal not found'], 404);
+        }
 
-        if (!$renewal) {
-            \Log::error('Renewal record not found for ID: ' . $renewalId);
-            return response()->json([
-                'success' => false,
-                'message' => 'Renewal record not found'
-            ], 404);
-        }
-        
-        if (empty($badDocuments)) {
-            \Log::error('No bad documents specified');
-            return response()->json([
-                'success' => false,
-                'message' => 'No documents marked as bad'
-            ], 400);
-        }
-        
-        // Map document types to human-readable names
-        $documentNames = [
-            'cert_of_reg' => 'Certificate of Registration',
-            'grade_slip' => 'Grade Slip/Transcript of Records',
-            'brgy_indigency' => 'Barangay Certificate of Indigency'
-        ];
-        
-        // Map document types to comment columns
-        $commentColumns = [
-            'cert_of_reg' => 'cert_of_reg_comment',
-            'grade_slip' => 'grade_slip_comment',
-            'brgy_indigency' => 'brgy_indigency_comment'
-        ];
-        
-        // Prepare bad documents data with reasons
-        $badDocumentsData = [];
-        foreach ($badDocuments as $docType) {
-            $commentColumn = $commentColumns[$docType] ?? null;
-            $reason = $commentColumn ? ($renewal->$commentColumn ?? 'Document does not meet the required standards.') : 'Document does not meet the required standards.';
-            
-            $badDocumentsData[] = [
-                'type' => $docType,
-                'name' => $documentNames[$docType] ?? ucfirst(str_replace('_', ' ', $docType)),
-                'reason' => $reason
-            ];
-        }
-        
-        \Log::info('Prepared bad documents data:', $badDocumentsData);
-        
-        // Prepare email data
-        $emailData = [
-            'applicant_fname' => $renewal->applicant_fname,
-            'applicant_lname' => $renewal->applicant_lname,
-            'bad_documents' => $badDocumentsData
-        ];
-        
-        \Log::info('Attempting to send email to: ' . $renewal->applicant_email);
-        
-        // Send email using Laravel Mail facade
-        Mail::send('emails.document-correction-required', $emailData, function($message) use ($renewal) {
-            $message->to($renewal->applicant_email)
-                   ->subject('LYDO Scholarship - Document Correction Required')
-                   ->from('tagoloanlydo@gmail.com', 'LYDO Scholarship Team');
-        });
-        
-        \Log::info('Email sent successfully to: ' . $renewal->applicant_email);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Correction request email sent successfully to scholar'
+        \Log::info('Found applicant:', [
+            'email' => $renewalInfo->applicant_email,
+            'name' => $renewalInfo->applicant_fname . ' ' . $renewalInfo->applicant_lname
         ]);
-        
+
+        // Send email using EmailService
+        $emailService = new EmailService();
+        $emailResult = $emailService->sendDocumentCorrectionEmail($renewalInfo->applicant_email, [
+            'applicant_fname' => $renewalInfo->applicant_fname,
+            'applicant_lname' => $renewalInfo->applicant_lname,
+            'bad_documents' => $request->bad_documents,
+            'renewal_id' => $request->renewal_id
+        ]);
+
+        if ($emailResult) {
+            \Log::info('Document correction email sent successfully to: ' . $renewalInfo->applicant_email);
+            
+            // Update document statuses to indicate correction requested
+            foreach ($request->bad_documents as $docType) {
+                DB::table('tbl_renewal')
+                    ->where('renewal_id', $request->renewal_id)
+                    ->update([
+                        $docType . '_status' => 'correction_requested',
+                        'updated_at' => now()
+                    ]);
+            }
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Correction request email sent successfully'
+            ]);
+        } else {
+            \Log::error('Failed to send document correction email');
+            return response()->json([
+                'success' => false, 
+                'message' => 'Failed to send correction request email'
+            ], 500);
+        }
+
     } catch (\Exception $e) {
-        \Log::error('Error sending document correction email: ' . $e->getMessage());
+        \Log::error('Send email for bad documents error: ' . $e->getMessage());
         \Log::error('Stack trace: ' . $e->getTraceAsString());
         return response()->json([
-            'success' => false,
-            'message' => 'Failed to send correction notification email: ' . $e->getMessage()
+            'success' => false, 
+            'message' => 'An error occurred while sending the correction request: ' . $e->getMessage()
         ], 500);
     }
 }
