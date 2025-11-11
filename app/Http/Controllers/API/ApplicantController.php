@@ -113,7 +113,7 @@ class ApplicantController extends Controller
             // Create ApplicationPersonnel record for mayor staff review
             $applicationPersonnelData = [
                 'application_id' => $application->application_id,
-                'lydopers_id' => 0, // Default mayor staff ID
+                'lydopers_id' => null, // No default staff assigned initially
                 'initial_screening' => 'Pending',
                 'remarks' => 'Pending',
                 'status' => 'Waiting',
