@@ -262,30 +262,30 @@ function updateRenewalDocumentBadge(documentType, status) {
     const badge = document.getElementById(`badge-${documentType}`);
     const icon = document.getElementById(`icon-${documentType}`);
     
+    // Normalize status to handle different casing and convert "New" to "updated"
+    const normalized = (status || '').toString().toLowerCase();
+    const displayStatus = normalized === 'new' ? 'updated' : normalized;
+
     // Reset all styles first
     badge.classList.remove('badge-new', 'badge-good', 'badge-bad', 'badge-updated', 'hidden');
     icon.classList.remove('text-red-600', 'text-green-600', 'text-gray-500', 'text-purple-600', 'text-orange-500');
     
     // Apply new status
-    if (status === 'good') {
+    if (displayStatus === 'good') {
         badge.classList.add('badge-good');
-        badge.innerHTML = '✓';
+        badge.textContent = '✓';
         icon.classList.add('text-green-600');
         badge.classList.remove('hidden');
-    } else if (status === 'bad') {
+    } else if (displayStatus === 'bad') {
         badge.classList.add('badge-bad');
-        badge.innerHTML = '✗';
+        badge.textContent = '✗';
         icon.classList.add('text-red-600');
         badge.classList.remove('hidden');
-    } else if (status === 'updated') {
+    } else if (displayStatus === 'updated') {
+        // Unified "Updated" badge for server-side 'New'/'Updated' and local 'updated' flag
         badge.classList.add('badge-updated');
-        badge.innerHTML = '🔄';
+        badge.textContent = 'Updated';
         icon.classList.add('text-orange-500');
-        badge.classList.remove('hidden');
-    } else if (status === 'Updated') {
-        badge.classList.add('badge-new');
-        badge.innerHTML = 'NEW';
-        icon.classList.add('text-purple-600');
         badge.classList.remove('hidden');
     } else {
         // No status, hide the badge
@@ -318,35 +318,43 @@ function loadRenewalDocumentStatuses(renewalId) {
                         comment = localRatings[docType].comment;
                     }
                     
-                    renewalDocumentStatuses[docType] = status;
+                    // Normalize server/local status to a consistent form
+                    // Convert "New" to "updated" for badge display
+                    const normalizedStatus = status ? status.toString().trim() : null;
+                    let badgeStatus = normalizedStatus;
+                    if (normalizedStatus && ['new', 'updated'].includes(normalizedStatus.toLowerCase())) {
+                        badgeStatus = 'updated';
+                    }
+                    
+                    renewalDocumentStatuses[docType] = normalizedStatus;
                     
                     // Initialize tracking if not exists
                     if (!documentUpdateTracker[docType]) {
                         documentUpdateTracker[docType] = {
-                            lastStatus: status,
+                            lastStatus: normalizedStatus,
                             hasUpdate: false,
                             isNew: false
                         };
                     } else {
                         // Check if this is an update from bad to good
-                        if (documentUpdateTracker[docType].lastStatus === 'bad' && status === 'good') {
+                        if ((documentUpdateTracker[docType].lastStatus || '').toLowerCase() === 'bad' && (normalizedStatus || '').toLowerCase() === 'good') {
                             documentUpdateTracker[docType].hasUpdate = true;
-                            documentUpdateTracker[docType].lastStatus = 'good';
+                            documentUpdateTracker[docType].lastStatus = normalizedStatus;
                         }
                     }
                     
-                    // Update document badges - show "New" badge if status is "New"
-                    let badgeStatus = status;
+                    // Decide badge state: treat 'new' or 'updated' as 'updated'
+                    let finalBadgeStatus = badgeStatus;
                     if (documentUpdateTracker[docType] && documentUpdateTracker[docType].hasUpdate) {
-                        badgeStatus = 'updated';
-                    } else if (status === 'New') {
-                        badgeStatus = 'New';
+                        finalBadgeStatus = 'updated';
+                    } else if (normalizedStatus && ['new', 'updated'].includes(normalizedStatus.toLowerCase())) {
+                        finalBadgeStatus = 'updated';
                     }
                     
-                    updateRenewalDocumentBadge(docType, badgeStatus);
+                    updateRenewalDocumentBadge(docType, finalBadgeStatus);
                     
                     // If document has a status, consider it as rated
-                    if (status === 'good' || status === 'bad') {
+                    if (normalizedStatus && ['good', 'bad'].includes(normalizedStatus.toLowerCase())) {
                         ratedRenewalDocuments.add(docType);
                     }
                 });
