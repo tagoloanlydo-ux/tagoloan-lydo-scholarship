@@ -1708,7 +1708,7 @@ public function submitIntakeSheetPublic(Request $request)
             $filename = $request->signature_filename ?? 'signature_' . $request->application_personnel_id . '_' . time() . '.png';
 
             // Store in storage/app/public/signatures
-            Storage::put('public/signatures/' . $filename, $image);
+            Storage::put('storage/signatures/' . $filename, $image);
             $signaturePath = 'signatures/' . $filename;
         }
     }

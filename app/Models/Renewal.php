@@ -14,16 +14,19 @@ class Renewal extends Model
     public $timestamps = true;
 
     protected $fillable = [
-        'scholar_id', 'renewal_cert_of_reg', 'renewal_grade_slip',
-        'renewal_brgy_indigency', 'renewal_semester', 'renewal_acad_year',
-        'renewal_start_date', 'renewal_deadline',
-        'date_submitted', 'renewal_status'
+        'scholar_id',
+        'renewal_cert_of_reg',
+        'renewal_grade_slip',
+        'renewal_brgy_indigency',
+        'renewal_semester',
+        'renewal_acad_year',
+        'renewal_year_level',
+        'date_submitted',
+        'renewal_status',
     ];
 
     protected $casts = [
-        'renewal_start_date' => 'date',
-        'renewal_deadline' => 'date',
-        'date_submitted' => 'date',
+        'date_submitted' => 'datetime',
     ];
 
     public function scholar()

@@ -19,17 +19,20 @@
 
     </head>
     <style>
-    /* Pagination Styles */
-    /* Full-screen like Document Viewer */
+ /* Document Viewer Modal Styles */
+.document-modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
 .document-viewer-container {
-    height: 90vh; /* Almost full screen */
-    min-height: 700px;
-    max-height: none; /* Remove height limit */
+    height: calc(100vh - 300px); /* A4 height equivalent */
+    min-height: 800px; /* Minimum A4 height */
+    max-height: 900px; /* Maximum A4 height */
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
     overflow: hidden;
-    background-color: #f8fafc;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    background-color: #f9fafb;
 }
 
 .document-viewer {
@@ -39,47 +42,58 @@
     background-color: white;
 }
 
-.document-modal-content {
-    max-height: 95vh;
-    overflow-y: auto;
-    padding: 0;
+/* Review Controls - Maintain current button styles */
+#documentReviewControls {
+    margin-top: 1rem;
 }
 
-/* Make the modal larger overall */
-.modal-content.max-w-6xl {
-    max-height: 98vh;
-    width: 95%;
-    max-width: 1200px;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-content.max-w-6xl .document-modal-content {
+#documentReviewControls .mark-good-btn,
+#documentReviewControls .mark-bad-btn {
     flex: 1;
+    background-color: #10b981; /* Green for good */
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    cursor: pointer;
+}
+
+#documentReviewControls .mark-bad-btn {
+    background-color: #ef4444; /* Red for bad */
+}
+
+#documentReviewControls .mark-good-btn:hover {
+    background-color: #059669;
+}
+
+#documentReviewControls .mark-bad-btn:hover {
+    background-color: #dc2626;
+}
+
+#documentReviewControls .mark-good-btn:disabled,
+#documentReviewControls .mark-bad-btn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
 }
 
 /* Responsive adjustments */
-@media (max-width: 1024px) {
-    .document-viewer-container {
-        height: 85vh;
-        min-height: 600px;
-    }
-}
-
 @media (max-width: 768px) {
     .document-viewer-container {
-        height: 75vh;
-        min-height: 500px;
+        height: calc(100vh - 250px);
+        min-height: 600px;
+        max-height: 700px;
     }
-}
-
-@media (max-width: 480px) {
-    .document-viewer-container {
-        height: 65vh;
-        min-height: 400px;
-    }
+    
+    #documentReviewControls .flex {
+        flex-direction: column;
+       }
 }
 .pagination-container {
     display: flex;

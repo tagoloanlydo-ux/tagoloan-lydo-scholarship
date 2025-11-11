@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::table('tbl_renewal', function (Blueprint $table) {
             // Add status columns if they don’t exist
             if (!Schema::hasColumn('tbl_renewal', 'cert_of_reg_status')) {
-                $table->enum('cert_of_reg_status', ['good', 'bad'])->nullable()->after('rejection_reason');
+                $table->enum('cert_of_reg_status', ['good', 'bad',  'New'])->nullable()->after('rejection_reason');
             }
             if (!Schema::hasColumn('tbl_renewal', 'grade_slip_status')) {
-                $table->enum('grade_slip_status', ['good', 'bad'])->nullable()->after('cert_of_reg_status');
+                $table->enum('grade_slip_status', ['good', 'bad', 'New'])->nullable()->after('cert_of_reg_status');
             }
             if (!Schema::hasColumn('tbl_renewal', 'brgy_indigency_status')) {
-                $table->enum('brgy_indigency_status', ['good', 'bad'])->nullable()->after('grade_slip_status');
+                $table->enum('brgy_indigency_status', ['good', 'bad','New'])->nullable()->after('grade_slip_status');
             }
 
             // Add comment columns if they don’t exist
