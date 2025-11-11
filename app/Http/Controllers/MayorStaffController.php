@@ -492,17 +492,20 @@ $listApplicants = DB::table("tbl_applicant as a")
         return response()->json(['success' => true, 'message' => 'Initial screening remarks updated successfully.']);
     }
 
-    public function deleteApplication($id)
-    {
+ public function deleteApplication($id)
+{
+    try {
         // Delete the application personnel record
         DB::table("tbl_application_personnel")
             ->where("application_personnel_id", $id)
             ->delete();
 
-        return redirect()
-            ->back()
-            ->with("success", "Application deleted successfully.");
+        return response()->json(['success' => true, 'message' => 'Application deleted successfully.']);
+        
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'message' => 'Failed to delete application.'], 500);
     }
+}
 
     public function approveApplication($id)
     {
