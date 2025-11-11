@@ -1,54 +1,31 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\Applicant;
-use App\Models\Application;
-use App\Models\ApplicationPersonnel;
-use App\Models\Lydopers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\Applicant;
+use App\Models\Application;
+use App\Models\Lydopers;
+use App\Models\ApplicationPersonnel;
 
 class ApplicantController extends Controller
 {
-    /**
-     * Display all applicants with their applications.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        try {
-            // Use 'application' (singular) if one-to-one relationship
-            $applicants = Applicant::with('application')->get();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Applicants retrieved successfully.',
-                'data' => $applicants,
-                'count' => $applicants->count()
-            ], 200);
-        } catch (\Exception $e) {
-            Log::error('Error retrieving applicants: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve applicants.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        $applicants = Applicant::paginate(15);
+        return response()->json($applicants);
     }
 
-    /**
-     * Store a new applicant AND create an application record in one submission.
-     */
     public function store(Request $request)
     {
         DB::beginTransaction();
-        
+
         try {
             Log::info('=== APPLICATION SUBMISSION STARTED ===');
 
-            // Validate applicant data using request validate
+            // Validate applicant data
             $validatedApplicant = $request->validate([
                 'applicant_fname' => 'required|string|max:255',
                 'applicant_mname' => 'nullable|string|max:255',
@@ -67,8 +44,6 @@ class ApplicantController extends Controller
                 'applicant_acad_year' => 'required|string|max:20',
             ]);
 
-            Log::info('Creating applicant record...');
-
             // Create applicant
             $applicant = Applicant::create($validatedApplicant);
             Log::info('Applicant created successfully', [
@@ -82,14 +57,12 @@ class ApplicantController extends Controller
                 'date_submitted' => now(),
             ];
 
-            Log::info('Processing document files...');
-
             // Handle document file paths
             $fileFields = [
-                'application_letter', 
-                'cert_of_reg', 
-                'grade_slip', 
-                'brgy_indigency', 
+                'application_letter',
+                'cert_of_reg',
+                'grade_slip',
+                'brgy_indigency',
                 'student_id'
             ];
 
@@ -97,12 +70,8 @@ class ApplicantController extends Controller
                 if ($request->has($field) && !empty($request->$field)) {
                     $applicationData[$field] = $request->$field;
                     Log::info("Document added to application: $field");
-                } else {
-                    Log::info("Document field empty or missing: $field");
                 }
             }
-
-            Log::info('Creating application record...');
 
             // Create application record
             $application = Application::create($applicationData);
@@ -111,22 +80,35 @@ class ApplicantController extends Controller
                 'applicant_id' => $application->applicant_id
             ]);
 
-            // Find mayor staff (assuming role is 'mayor_staff')
-            $mayorStaff = Lydopers::where('lydopers_role', 'mayor_staff')->first();
+            // Find available mayor staff (not assigned too many applications)
+            $mayorStaff = Lydopers::where('lydopers_role', 'mayor_staff')
+                ->whereHas('applicationPersonnel', function($query) {
+                    $query->where('status', 'Waiting')
+                          ->where('initial_screening', 'Pending');
+                }, '<', 10) // Limit to 10 pending applications per staff
+                ->first();
+
+            // If no available staff found, get any mayor staff
+            if (!$mayorStaff) {
+                $mayorStaff = Lydopers::where('lydopers_role', 'mayor_staff')->first();
+            }
 
             // Create ApplicationPersonnel record for mayor staff review
             $applicationPersonnelData = [
                 'application_id' => $application->application_id,
                 'lydopers_id' => $mayorStaff ? $mayorStaff->lydopers_id : null,
                 'initial_screening' => 'Pending',
-                'remarks' => 'Pending',
+                'remarks' => 'Pending', // This should match your filter criteria
                 'status' => 'Waiting',
+                'created_at' => now(),
+                'updated_at' => now(),
             ];
 
             $applicationPersonnel = ApplicationPersonnel::create($applicationPersonnelData);
             Log::info('ApplicationPersonnel record created successfully', [
                 'application_personnel_id' => $applicationPersonnel->application_personnel_id,
-                'application_id' => $applicationPersonnel->application_id
+                'application_id' => $applicationPersonnel->application_id,
+                'lydopers_id' => $applicationPersonnel->lydopers_id
             ]);
 
             DB::commit();
@@ -140,157 +122,67 @@ class ApplicantController extends Controller
                     'applicant' => $applicant,
                     'application' => $application,
                     'application_personnel' => $applicationPersonnel,
+                    'assigned_staff' => $mayorStaff ? $mayorStaff->lydopers_name : 'No staff assigned',
                     'submission_date' => $application->date_submitted
                 ]
             ], 201);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-            Log::error('VALIDATION EXCEPTION', ['errors' => $e->errors()]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed. Please check your data.',
-                'errors' => $e->errors()
-            ], 422);
-            
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('APPLICATION SUBMISSION FAILED: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
+            Log::error('APPLICATION SUBMISSION FAILED: ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Application submission failed. Please try again.',
+                'message' => 'Application submission failed.',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Display a specific applicant with application.
-     */
     public function show($id)
     {
-        try {
-            $applicant = Applicant::with('application')->find($id);
-
-            if (!$applicant) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Applicant not found.'
-                ], 404);
-            }
-
-            return response()->json([
-                'success' => true,
-                'data' => $applicant
-            ], 200);
-        } catch (\Exception $e) {
-            Log::error('Error retrieving applicant: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve applicant.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        $applicant = Applicant::find($id);
+        return response()->json($applicant);
     }
 
-    /**
-     * Update applicant info.
-     */
     public function update(Request $request, $id)
     {
-        try {
-            $applicant = Applicant::find($id);
-
-            if (!$applicant) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Applicant not found.'
-                ], 404);
-            }
-
-            $validated = $request->validate([
-                'applicant_fname' => 'sometimes|required|string|max:255',
-                'applicant_mname' => 'nullable|string|max:255',
-                'applicant_lname' => 'sometimes|required|string|max:255',
-                'applicant_suffix' => 'nullable|string|max:50',
-                'applicant_gender' => 'sometimes|required|string|max:50',
-                'applicant_bdate' => 'sometimes|required|date',
-                'applicant_civil_status' => 'sometimes|required|string|max:50',
-                'applicant_pob' => 'nullable|string|max:255',
-                'applicant_brgy' => 'sometimes|required|string|max:255',
-                'applicant_email' => 'sometimes|required|email|unique:tbl_applicant,applicant_email,' . $id . ',applicant_id',
-                'applicant_contact_number' => 'sometimes|required|string|max:20',
-                'applicant_school_name' => 'sometimes|required|string|max:255',
-                'applicant_year_level' => 'sometimes|required|string|max:50',
-                'applicant_course' => 'sometimes|required|string|max:255',
-                'applicant_acad_year' => 'sometimes|required|string|max:20',
-            ]);
-
-            $applicant->update($validated);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Applicant updated successfully.',
-                'data' => $applicant
-            ], 200);
-        } catch (\Exception $e) {
-            Log::error('Error updating applicant: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update applicant.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        $applicant = Applicant::find($id);
+        $applicant->update($request->all());
+        return response()->json($applicant);
     }
 
-    /**
-     * Delete an applicant and their application.
-     */
     public function destroy($id)
     {
-        DB::beginTransaction();
-        
-        try {
-            $applicant = Applicant::with('application')->find($id);
+        Applicant::destroy($id);
+        return response()->json(['message' => 'Applicant deleted']);
+    }
 
-            if (!$applicant) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Applicant not found.'
-                ], 404);
-            }
+    public function meta()
+    {
+        $meta = [
+            'total' => Applicant::count(),
+            'by_gender' => Applicant::selectRaw('applicant_gender, COUNT(*) as count')->groupBy('applicant_gender')->get(),
+            'by_barangay' => Applicant::selectRaw('applicant_brgy, COUNT(*) as count')->groupBy('applicant_brgy')->get(),
+        ];
+        return response()->json($meta);
+    }
 
-            // Delete associated application
-            if ($applicant->application) {
-                $applicant->application->delete();
-                Log::info('Application deleted', ['application_id' => $applicant->application->application_id]);
-            }
+    public function distributionByBarangay()
+    {
+        $distribution = Applicant::selectRaw('applicant_brgy, COUNT(*) as count')
+            ->groupBy('applicant_brgy')
+            ->orderBy('count', 'desc')
+            ->get();
+        return response()->json($distribution);
+    }
 
-            // Delete applicant
-            $applicant->delete();
-            Log::info('Applicant deleted', ['applicant_id' => $id]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Applicant and associated application deleted successfully.'
-            ], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error deleting applicant: ' . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete applicant.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+    public function distributionBySchool()
+    {
+        $distribution = Applicant::selectRaw('applicant_school_name, COUNT(*) as count')
+            ->groupBy('applicant_school_name')
+            ->orderBy('count', 'desc')
+            ->get();
+        return response()->json($distribution);
     }
 }

@@ -440,7 +440,7 @@ function saveSignature() {
   });
 }
 
-// Submit form function - UPDATED VERSION
+// Replace the entire submitForm function with this:
 async function submitForm() {
   // Validate signature
   const signatureData = document.getElementById('signature_client').value;
@@ -472,25 +472,32 @@ async function submitForm() {
     return; // User cancelled
   }
 
-  const data = collectData();
-  // Add application_personnel_id from URL
-  data.application_personnel_id = window.location.pathname.split('/').pop();
-  // Add token from URL query parameter
-  const urlParams = new URLSearchParams(window.location.search);
-  data.token = urlParams.get('token');
-  // Add signature filename
-  data.signature_filename = signatureFilename;
-  
   try {
-    const response = await fetch('/submit-intake-sheet', {
+    // Get the form element
+    const form = document.getElementById('intakeForm');
+    
+    // Create a FormData object from the form
+    const formData = new FormData(form);
+    
+    // Add the collected data as JSON
+    const data = collectData();
+    formData.append('form_data', JSON.stringify(data));
+    
+    // Add signature data
+    formData.append('signature_data', signatureData);
+    formData.append('signature_filename', signatureFilename);
+
+    const response = await fetch(form.action, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        'Accept': 'application/json'
       },
-      body: JSON.stringify(data)
+      body: formData
     });
+
     const result = await response.json();
+    
     if (response.ok) {
       Swal.fire({
         icon: 'success',
@@ -499,8 +506,8 @@ async function submitForm() {
         confirmButtonText: 'OK'
       }).then(() => {
         clearFormData();
-        // Optionally redirect
-        window.location.href = '/'; // or wherever appropriate
+        // Redirect to a success page or home
+        window.location.href = '/submission-success';
       });
     } else {
       Swal.fire({
@@ -633,7 +640,8 @@ function populateReview() {
   
   document.getElementById("rv_serial").innerText = serial;
   document.getElementById("printSerial").innerText = serial;
-  
+    document.getElementById("printSerialNumber").textContent = serial; // ADD THIS LINE
+
   // FIX: Get full name directly from form inputs to ensure it shows correctly
   const fullName = [
     document.getElementById('applicant_fname').value,
@@ -966,3 +974,52 @@ window.addEventListener("resize", () => {
   const canvas = document.getElementById('signatureCanvas');
   if (canvas) resizeCanvasForSignature(canvas);
 });
+
+// Handle print functionality
+function handlePrint() {
+  // Update the print serial number
+  const serialNumber = document.getElementById('serial_number').value || generateSerialNumber();
+  document.getElementById('printSerialNumber').textContent = serialNumber;
+  
+  // Show only the review area for printing
+  document.querySelectorAll('.step').forEach(step => {
+    step.classList.add('hidden');
+  });
+  document.getElementById('step-4').classList.remove('hidden');
+  
+  // Wait a moment for DOM to update, then print
+  setTimeout(() => {
+    window.print();
+    
+    // Restore the view after printing
+    setTimeout(() => {
+      showStep(currentStep);
+    }, 100);
+  }, 100);
+}
+// Handle print functionality
+// Update the handlePrint function in intakesheet.js
+async function handlePrint() {
+    const data = collectData();
+    const serial = document.getElementById('serial_number').value || generateSerialNumber();
+    
+    // Add the serial number to the data
+    data.head.serial = serial;
+    
+    try {
+        // Get the application_personnel_id from the URL
+        const applicationPersonnelId = window.location.pathname.split('/').pop();
+        
+        // Use the correct route - remove the dash
+        const printWindow = window.open(`/print-intake-sheet/${applicationPersonnelId}?data=${encodeURIComponent(JSON.stringify(data))}`, '_blank');
+        
+    } catch (error) {
+        console.error('Error opening print window:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Print Error',
+            text: 'Unable to open print view. Please try again.',
+            confirmButtonText: 'OK'
+        });
+    }
+}

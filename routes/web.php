@@ -8,6 +8,7 @@ use App\Http\Controllers\LydopersController;
 use App\Http\Controllers\RenewalController;
 use App\Http\Controllers\ScholarController;
 use App\Http\Controllers\StatusController;
+use App\Http\Controllers\IntakeSheetController;
 
 Route::get('/reset-password', function () {return redirect()->route('login');});
 Route::get('/', [LydopersController::class, 'showfrontpage'])->name('home');
@@ -124,8 +125,7 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/get-document-comments/{renewalId}', [RenewalController::class, 'getDocumentComments']);
     Route::post('/lydo_staff/request-document-update/{renewalId}', [RenewalController::class, 'requestDocumentUpdate']);
     Route::post('/lydo_staff/mark-document-updated/{renewalId}', [RenewalController::class, 'markDocumentAsUpdated']);
-Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments'])->name('send.email.bad.documents');
-});
+Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments']);});
 
 // Mayor Staff Routes - Only accessible by mayor_staff role
 Route::middleware(['role:mayor_staff'])->group(function () {
@@ -185,8 +185,12 @@ Route::get('/test-pusher', function() {
 // Public routes for intake sheet
 Route::get('/intake-sheet/{application_personnel_id}', [MayorStaffController::class, 'showIntakeSheet'])->name('intake_sheet.show');
 Route::get('/intake-sheet-submitted', function () {return view('Applicants.intakesheet_submitted');})->name('intake_sheet.submitted');
-Route::post('/intake-sheet/submit-public', [MayorStaffController::class, 'submitIntakeSheetPublic'])->name('intake.submit.public');
+Route::post('/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheetPublic'])->name('submit.intake.sheet');
+// Option 1: Add the dashed route
+Route::get('/print-intake-sheet/{id}', [IntakeSheetController::class, 'printView'])->name('intake.print');
 
+// Option 2: Or update your existing route to use the dashed version
+Route::get('/print-intake-sheet/{id}', [IntakeSheetController::class, 'printView'])->name('intake.print');
 Route::middleware(['scholar.auth'])->group(function () {
 
     Route::get('/scholar/renewal_app', [ScholarController::class, 'showRenewalApp'])->name('scholar.renewal_app');

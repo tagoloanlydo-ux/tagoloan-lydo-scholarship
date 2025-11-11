@@ -494,7 +494,7 @@ function saveRenewalDocumentStatus(documentType, status, reason = '') {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            'X-CSRF-TOKEN': getCsrfToken()
         },
         body: JSON.stringify({
             renewal_id: currentRenewalId,
@@ -516,6 +516,15 @@ function saveRenewalDocumentStatus(documentType, status, reason = '') {
     });
 }
 
+// add helper to get CSRF token from meta
+function getCsrfToken() {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) return meta.getAttribute('content');
+    // fallback: try to read existing form token if present
+    const input = document.querySelector('input[name="_token"]');
+    return input ? input.value : '';
+}
+
 // In saveRenewalDocumentComment function - UPDATE THIS:
 function saveRenewalDocumentComment(documentType, comment) {
     console.log('Saving comment for:', documentType, 'Comment:', comment);
@@ -525,7 +534,7 @@ function saveRenewalDocumentComment(documentType, comment) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            'X-CSRF-TOKEN': getCsrfToken()
         },
         body: JSON.stringify({
             renewal_id: currentRenewalId,
@@ -865,7 +874,6 @@ function handleDocumentStatusChange(documentType, status) {
     checkAllRenewalDocumentsRated();
 }
 
-// This function already exists in your renewal.js and is correct
 function sendEmailForBadDocuments() {
     // Show loading
     const sendEmailBtn = document.getElementById('sendEmailBtn');
@@ -1039,7 +1047,7 @@ function submitStatusUpdate(renewalId, status, reason) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            'X-CSRF-TOKEN': getCsrfToken()
         },
         body: JSON.stringify({
             renewal_status: status,
@@ -1105,7 +1113,7 @@ function saveEditRenewalStatus() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            'X-CSRF-TOKEN': getCsrfToken()
         },
         body: JSON.stringify({
             renewal_status: status

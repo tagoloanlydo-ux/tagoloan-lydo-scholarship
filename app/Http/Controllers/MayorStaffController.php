@@ -1634,37 +1634,39 @@ public function sendDocumentEmail(Request $request)
     }
 }
 
-    public function showIntakeSheet($application_personnel_id, Request $request)
-    {
-        // Verify token
-        $token = $request->query('token');
-        if (!$token) {
-            abort(403, 'Access denied. Token required.');
-        }
-        // Get application personnel record
-        $applicationPersonnel = DB::table('tbl_application_personnel')
-            ->where('application_personnel_id', $application_personnel_id)
-            ->where('intake_sheet_token', $token)
-            ->first();
-
-        if (!$applicationPersonnel) {
-            abort(403, 'Invalid token or application not found.');
-        }
-
-        // Get applicant data
-        $applicant = DB::table('tbl_applicant as a')
-            ->join('tbl_application as app', 'a.applicant_id', '=', 'app.applicant_id')
-            ->join('tbl_application_personnel as ap', 'app.application_id', '=', 'ap.application_id')
-            ->where('ap.application_personnel_id', $application_personnel_id)
-            ->select('a.*')
-            ->first();
-
-        if (!$applicant) {
-            abort(404, 'Applicant not found.');
-        }
-
-        return view('intake_sheet.form', compact('applicant'));
+public function showIntakeSheet($application_personnel_id, Request $request)
+{
+    // Verify token
+    $token = $request->query('token');
+    if (!$token) {
+        abort(403, 'Access denied. Token required.');
     }
+    
+    // Get application personnel record
+    $applicationPersonnel = DB::table('tbl_application_personnel')
+        ->where('application_personnel_id', $application_personnel_id)
+        ->where('intake_sheet_token', $token)
+        ->first();
+
+    if (!$applicationPersonnel) {
+        abort(403, 'Invalid token or application not found.');
+    }
+
+    // Get applicant data
+    $applicant = DB::table('tbl_applicant as a')
+        ->join('tbl_application as app', 'a.applicant_id', '=', 'app.applicant_id')
+        ->join('tbl_application_personnel as ap', 'app.application_id', '=', 'ap.application_id')
+        ->where('ap.application_personnel_id', $application_personnel_id)
+        ->select('a.*')
+        ->first();
+
+    if (!$applicant) {
+        abort(404, 'Applicant not found.');
+    }
+
+    // Pass the application_personnel_id to the view
+    return view('intake_sheet.form', compact('applicant', 'application_personnel_id', 'token'));
+}
 
 public function submitIntakeSheetPublic(Request $request)
 {

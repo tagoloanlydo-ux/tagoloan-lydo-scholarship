@@ -7,6 +7,25 @@ use Illuminate\Support\Facades\Log;
 
 class EmailService
 {
+        public function sendDocumentCorrectionEmail($email, $data)
+    {
+        try {
+            Log::info('Attempting to send document correction email to: ' . $email);
+            
+            Mail::send('emails.document-correction-required', $data, function($message) use ($email, $data) {
+                $message->to($email)
+                        ->subject('Document Correction Required - LYDO Scholarship Renewal');
+            });
+
+            Log::info('Document correction email sent successfully to: ' . $email);
+            return true;
+            
+        } catch (\Exception $e) {
+            Log::error('Document correction email error: '.$e->getMessage());
+            Log::error('Stack trace: '.$e->getTraceAsString());
+            return false;
+        }
+    }
     /**
      * Send account creation email to scholar
      *
@@ -226,4 +245,5 @@ class EmailService
             return false;
         }
     }
+    
 }
