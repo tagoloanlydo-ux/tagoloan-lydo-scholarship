@@ -1083,5 +1083,6 @@ function showSignedTab() {
     disbursementPagination.renderSignedPage();
 }
 </script>
+  <script src="{{ asset('js/disburserefresh.js') }}"></script>
 </body>
 </html>

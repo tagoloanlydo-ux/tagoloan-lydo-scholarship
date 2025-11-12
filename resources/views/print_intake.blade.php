@@ -17,37 +17,44 @@
             padding: 6px;
             -webkit-print-color-adjust: exact;
         }
-/* Add to your existing CSS */
-.currency {
-    text-align: right;
-    font-family: 'Courier New', monospace;
-}
+        
+        /* Markdown Preview Concept - INVISIBLE IMPLEMENTATION */
+        .data-rendered { /* This class indicates rendered data fields */
+            /* No visual changes - maintains original appearance */
+        }
+        
+        .currency {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
 
-.page-break {
-    page-break-before: always;
-}
+        .page-break {
+            page-break-before: always;
+        }
 
-.no-break {
-    page-break-inside: avoid;
-}
+        .no-break {
+            page-break-inside: avoid;
+        }
 
-/* Ensure background colors print */
-@media print {
-    * {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
-    th {
-        background-color: #f0f0f0 !important;
-    }
-}
+        /* Ensure background colors print */
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            th {
+                background-color: #f0f0f0 !important;
+            }
+        }
+        
         /* overall two-column layout */
         .wrapper {
             display: flex;
             gap: 8px;
             align-items: flex-start;
         }
+        
         .left { width: 68%; }
         .right { width: 32%; }
 
@@ -58,18 +65,22 @@
             align-items: center;
             margin-bottom: 4px;
         }
+        
         .logo {
             width:56px;
             height:56px;
             background: transparent;
         }
+        
         .org {
             flex: 1;
             text-align: left;
             line-height: 1;
         }
+        
         .org h1 { font-size:13px; margin:0; font-weight:700; }
         .org h2 { font-size:11px; margin:0; font-weight:700; }
+        
         .serial {
             font-size:10px;
             text-align:right;
@@ -79,6 +90,7 @@
 
         /* form blocks */
         .card { border:1px solid #ffffffff; padding:4px; margin-bottom:6px; }
+        
         .checkbox-row { display:flex; gap:12px; align-items:center; margin-bottom:4px; }
         .checkbox-row label { display:flex; gap:6px; align-items:center; font-weight:600; font-size:10px; }
 
@@ -86,6 +98,7 @@
             display:flex;
             gap:8px;
         }
+        
         .col { flex:1; }
 
         table { width:100%; border-collapse: collapse; font-size:10px; }
@@ -120,12 +133,15 @@
     </style>
 </head>
 <body>
+    <!-- MARKDOWN PREVIEW CONCEPT: RENDERED DATA VIEW -->
+    <!-- This entire template is a "rendered preview" of the form data -->
+    
     <div class="wrapper">
-        <!-- LEFT: intake form -->
+        <!-- LEFT: RENDERED INTAKE FORM DATA -->
         <div class="left">
             <div class="top-header">
                 <div class="logo">
-                    <!-- replace with actual logo path if available -->
+                    <!-- RENDERED LOGO -->
                     <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture2.png'))) }}" alt="logo" style="width:100%;height:100%;object-fit:contain;">
                 </div>
                 <div class="org">
@@ -133,7 +149,7 @@
                     <h2>Municipality of Tagoloan, Lanao del Norte</h2>
                     <div class="small-note">MUNICIPAL SOCIAL WELFARE AND DEVELOPMENT OFFICE</div>
                     <div style="margin-top:6px;font-weight:700;font-size:13px;text-align:left;">FAMILY INTAKE SHEET</div>
-                    <div style="font-size:11px;font-weight:600;color:#333;margin-top:2px;">PDF Print View — print-ready layout optimized for PDF export</div>
+                    <div style="font-size:11px;font-weight:600;color:#333;margin-top:2px;">PDF Print View — Rendered Data Preview</div>
                 </div>
                 <div class="serial">
                     <div>Serial No.:</div>
@@ -155,23 +171,23 @@
                         <div style="display:flex;gap:6px;margin-bottom:8px;">
                             <div style="flex:1;">
                                 <div style="font-weight:700;font-size:9px;margin-bottom:2px;">SURNAME</div>
-                                <input type="text" value="{{ ($head['lname'] ?? '') }}" style="width:100%;border:none;border-bottom:1px solid #000;padding:3px;box-sizing:border-box;" readonly>
+                                <input type="text" value="{{ ($head['lname'] ?? '') }}" style="width:100%;border:none;border-bottom:1px solid #000;padding:3px;box-sizing:border-box;" readonly class="data-rendered">
                             </div>
                             <div style="flex:1;">
                                 <div style="font-weight:700;font-size:9px;margin-bottom:2px;">FIRST NAME</div>
-                                <input type="text" value="{{ ($head['fname'] ?? '') }}" style="width:100%;border:none;border-bottom:1px solid #000;padding:3px;box-sizing:border-box;" readonly>
+                                <input type="text" value="{{ ($head['fname'] ?? '') }}" style="width:100%;border:none;border-bottom:1px solid #000;padding:3px;box-sizing:border-box;" readonly class="data-rendered">
                             </div>
                             <div style="flex:1;">
                                 <div style="font-weight:700;font-size:9px;margin-bottom:2px;">MIDDLE NAME</div>
-                                <input type="text" value="{{ ($head['mname'] ?? '') }}" style="width:100%;border:none;border-bottom:1px solid #000;padding:3px;box-sizing:border-box;" readonly>
+                                <input type="text" value="{{ ($head['mname'] ?? '') }}" style="width:100%;border:none;border-bottom:1px solid #000;padding:3px;box-sizing:border-box;" readonly class="data-rendered">
                             </div>
                         </div>
                     </div>
                     <div class="col" style="max-width:120px;">
                         <div style="font-weight:700;margin-bottom:6px;">Sex / Age</div>
                         <div style="display:flex;gap:6px;">
-                            <div style="border:1px solid #000;padding:6px;text-align:center;">{{ $head['sex'] ?? '-' }}</div>
-                            <div style="border:1px solid #000;padding:6px;text-align:center;">{{ $head['age'] ?? '-' }}</div>
+                            <div style="border:1px solid #000;padding:6px;text-align:center;" class="data-rendered">{{ $head['sex'] ?? '-' }}</div>
+                            <div style="border:1px solid #000;padding:6px;text-align:center;" class="data-rendered">{{ $head['age'] ?? '-' }}</div>
                         </div>
                     </div>
                 </div>
@@ -180,53 +196,53 @@
                     <div style="display:flex;gap:10px;">
                         <div style="flex:2;">
                             <div style="font-weight:700;">Address</div>
-                            <div style="border-bottom:1px solid #000;padding:4px;">{{ $head['address'] ?? '-' }}</div>
+                            <div style="border-bottom:1px solid #000;padding:4px;" class="data-rendered">{{ $head['address'] ?? '-' }}</div>
                         </div>
                         <div style="flex:1;">
                             <div style="font-weight:700;">Zone</div>
-                            <div style="border-bottom:1px solid #000;padding:4px;">{{ $head['zone'] ?? '-' }}</div>
+                            <div style="border-bottom:1px solid #000;padding:4px;" class="data-rendered">{{ $head['zone'] ?? '-' }}</div>
                         </div>
                         <div style="flex:1;">
                             <div style="font-weight:700;">Barangay</div>
-                            <div style="border-bottom:1px solid #000;padding:4px;">{{ $head['barangay'] ?? '-' }}</div>
+                            <div style="border-bottom:1px solid #000;padding:4px;" class="data-rendered">{{ $head['barangay'] ?? '-' }}</div>
                         </div>
                     </div>
 
                     <div style="display:flex;gap:10px;margin-top:8px;">
                         <div style="flex:1;">
                             <div style="font-weight:700;">Date of Birth</div>
-                            <div style="border-bottom:1px solid #000;padding:4px;">
+                            <div style="border-bottom:1px solid #000;padding:4px;" class="data-rendered">
                                 @if(!empty($head['dob'])){{ \Carbon\Carbon::parse($head['dob'])->format('m/d/Y') }}@else - @endif
                             </div>
                         </div>
                         <div style="flex:1;">
                             <div style="font-weight:700;">Place of Birth</div>
-                            <div style="border-bottom:1px solid #000;padding:4px;">{{ $head['pob'] ?? '-' }}</div>
+                            <div style="border-bottom:1px solid #000;padding:4px;" class="data-rendered">{{ $head['pob'] ?? '-' }}</div>
                         </div>
                         <div style="flex:1;">
                             <div style="font-weight:700;">Civil Status</div>
-                            <div style="border-bottom:1px solid #000;padding:4px;">{{ $head['civil'] ?? '-' }}</div>
+                            <div style="border-bottom:1px solid #000;padding:4px;" class="data-rendered">{{ $head['civil'] ?? '-' }}</div>
                         </div>
                     </div>
 
                     <div style="display:flex;gap:10px;margin-top:8px;">
                         <div style="flex:1;">
                             <div style="font-weight:700;">Educational Attainment</div>
-                            <div style="border-bottom:1px solid #000;padding:4px;">{{ $head['educ'] ?? '-' }}</div>
+                            <div style="border-bottom:1px solid #000;padding:4px;" class="data-rendered">{{ $head['educ'] ?? '-' }}</div>
                         </div>
                         <div style="flex:1;">
                             <div style="font-weight:700;">Occupation</div>
-                            <div style="border-bottom:1px solid #000;padding:4px;">{{ $head['occ'] ?? '-' }}</div>
+                            <div style="border-bottom:1px solid #000;padding:4px;" class="data-rendered">{{ $head['occ'] ?? '-' }}</div>
                         </div>
                         <div style="flex:1;">
                             <div style="font-weight:700;">Religion</div>
-                            <div style="border-bottom:1px solid #000;padding:4px;">{{ $head['religion'] ?? '-' }}</div>
+                            <div style="border-bottom:1px solid #000;padding:4px;" class="data-rendered">{{ $head['religion'] ?? '-' }}</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- FAMILY COMPOSITION -->
+            <!-- RENDERED FAMILY COMPOSITION DATA -->
             <div class="card">
                 <div style="font-weight:700;margin-bottom:6px;">FAMILY COMPOSITION</div>
                 <table class="family-table">
@@ -250,16 +266,20 @@
                             @php $member = $family[$i-1] ?? null; @endphp
                             <tr>
                                 <td style="text-align:center;">{{ $i }}</td>
-                                <td>{{ $member['name'] ?? '' }}</td>
-                                <td>{{ $member['relation'] ?? '' }}</td>
-                                <td style="text-align:center;">@if(!empty($member['birth'])){{ \Carbon\Carbon::parse($member['birth'])->format('m/d/Y') }}@endif</td>
-                                <td style="text-align:center;">{{ $member['age'] ?? '' }}</td>
-                                <td style="text-align:center;">{{ $member['sex'] ?? '' }}</td>
-                                <td style="text-align:center;">{{ $member['civil'] ?? '' }}</td>
-                                <td>{{ $member['educ'] ?? '' }}</td>
-                                <td>{{ $member['occ'] ?? '' }}</td>
-                                <td style="text-align:right;">@if(!empty($member['income']))₱{{ number_format($member['income'],2) }}@endif</td>
-                                <td style="text-align:center;">{{ $member['remarks'] ?? '' }}</td>
+                                <td class="data-rendered">{{ $member['name'] ?? '' }}</td>
+                                <td class="data-rendered">{{ $member['relation'] ?? '' }}</td>
+                                <td style="text-align:center;" class="data-rendered">
+                                    @if(!empty($member['birth'])){{ \Carbon\Carbon::parse($member['birth'])->format('m/d/Y') }}@endif
+                                </td>
+                                <td style="text-align:center;" class="data-rendered">{{ $member['age'] ?? '' }}</td>
+                                <td style="text-align:center;" class="data-rendered">{{ $member['sex'] ?? '' }}</td>
+                                <td style="text-align:center;" class="data-rendered">{{ $member['civil'] ?? '' }}</td>
+                                <td class="data-rendered">{{ $member['educ'] ?? '' }}</td>
+                                <td class="data-rendered">{{ $member['occ'] ?? '' }}</td>
+                                <td style="text-align:right;" class="data-rendered currency">
+                                    @if(!empty($member['income']))₱{{ number_format($member['income'],2) }}@endif
+                                </td>
+                                <td style="text-align:center;" class="data-rendered">{{ $member['remarks'] ?? '' }}</td>
                             </tr>
                         @endfor
                     </tbody>
@@ -269,25 +289,29 @@
                     <div style="flex:1;">
                         <div style="display:flex;gap:6px;">
                             <strong>Total Family Income:</strong>
-                            <div style="border-bottom:1px solid #000;flex:1;padding:3px;">@if(!empty($house['total_income']))₱{{ number_format($house['total_income'],2) }}@endif</div>
+                            <div style="border-bottom:1px solid #000;flex:1;padding:3px;" class="data-rendered">
+                                @if(!empty($house['total_income']))₱{{ number_format($house['total_income'],2) }}@endif
+                            </div>
                         </div>
                         <div style="display:flex;gap:6px;margin-top:6px;">
                             <strong>Other Source of Income:</strong>
-                            <div style="border-bottom:1px solid #000;flex:1;padding:3px;">{{ $house['other_income'] ?? '' }}</div>
+                            <div style="border-bottom:1px solid #000;flex:1;padding:3px;" class="data-rendered">{{ $house['other_income'] ?? '' }}</div>
                         </div>
                     </div>
                     <div style="flex:1;">
                         <div style="display:flex;gap:6px;">
                             <strong>House:</strong>
-                            <div style="border-bottom:1px solid #000;flex:1;padding:3px;">{{ $house['house'] ?? '' }}</div>
+                            <div style="border-bottom:1px solid #000;flex:1;padding:3px;" class="data-rendered">{{ $house['house'] ?? '' }}</div>
                         </div>
                         <div style="display:flex;gap:6px;margin-top:6px;">
                             <strong>Lot:</strong>
-                            <div style="border-bottom:1px solid #000;flex:1;padding:3px;">{{ $house['lot'] ?? '' }}</div>
+                            <div style="border-bottom:1px solid #000;flex:1;padding:3px;" class="data-rendered">{{ $house['lot'] ?? '' }}</div>
                         </div>
                         <div style="display:flex;gap:6px;margin-top:6px;">
                             <strong>Water:</strong>
-                            <div style="border-bottom:1px solid #000;flex:1;padding:3px;">@if(!empty($house['water']))₱{{ number_format($house['water'],2) }}@endif</div>
+                            <div style="border-bottom:1px solid #000;flex:1;padding:3px;" class="data-rendered">
+                                @if(!empty($house['water']))₱{{ number_format($house['water'],2) }}@endif
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -305,7 +329,7 @@
             </div>
         </div>
 
-        <!-- RIGHT: Social Services Record -->
+        <!-- RIGHT: RENDERED SOCIAL SERVICES DATA -->
         <div class="right">
             <div class="card" style="padding:6px 8px;">
                 <div style="text-align:center;font-weight:700;margin-bottom:6px;font-size:12px;">SOCIAL SERVICES RECORD</div>

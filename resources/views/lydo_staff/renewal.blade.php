@@ -649,6 +649,7 @@
     <script src="{{ asset('js/renewal.js') }}"></script>
     <script src="{{ asset('js/spinner.js') }}"></script>
     <script src="{{ asset('js/renewal_paginate.js') }}"></script>
+      <script src="{{ asset('js/renewalrefresh.js') }}"></script>
     <script src="{{ asset('js/logout.js') }}"></script>
 </body>
 </html>
