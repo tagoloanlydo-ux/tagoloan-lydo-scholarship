@@ -533,18 +533,9 @@ public function getListViewData(Request $request)
         $query = DB::table("tbl_applicant as a")
             ->join("tbl_application as app", "a.applicant_id", "=", "app.applicant_id")
             ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
-            ->select(
-                "a.*",
-                "app.application_id",
-                "ap.application_personnel_id",
-                "ap.status",
-                "ap.initial_screening",
-                "ap.remarks",
-                "a.applicant_email",
-                "app.created_at"
-            )
+            ->select(...)
             ->where("a.applicant_acad_year", "=", now()->format("Y") . "-" . now()->addYear()->format("Y"))
-            ->where("ap.lydepers_id", $currentStaffId)
+            ->where("ap.lydopers_id", $currentStaffId) // FIX: was "ap.lydepers_id" (typo)
             ->whereIn("ap.initial_screening", ["Approved", "Rejected"])
             ->orderBy("app.created_at", "desc");
 

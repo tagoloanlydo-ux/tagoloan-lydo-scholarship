@@ -3161,6 +3161,7 @@ let isAutoRefreshEnabled = true;
 let refreshInterval = 5000; // 5 seconds
 
 // Function to refresh table data silently
+// Function to refresh table data silently
 async function refreshTableData() {
     if (!isAutoRefreshEnabled) return;
     
@@ -3180,14 +3181,15 @@ async function refreshTableData() {
 // Refresh Table View (Pending Review)
 async function refreshTableView() {
     try {
-        const response = await fetch('/mayor_staff/application/table-data');
+        const response = await fetch('/mayor_staff/application/table-data', {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            }
+        });
         const data = await response.json();
         
         if (data.success && data.html) {
-            // Only update if the table view is currently visible
-            if (!document.getElementById('tableView').classList.contains('hidden')) {
-                updateTableContent('tableView', data.html, 'table');
-            }
+            updateTableContent('tableView', data.html, 'table');
         }
     } catch (error) {
         console.error('Error refreshing table view:', error);
@@ -3197,14 +3199,15 @@ async function refreshTableView() {
 // Refresh List View (Reviewed Applications)
 async function refreshListView() {
     try {
-        const response = await fetch('/mayor_staff/application/list-data');
+        const response = await fetch('/mayor_staff/application/list-data', {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            }
+        });
         const data = await response.json();
         
         if (data.success && data.html) {
-            // Only update if the list view is currently visible
-            if (!document.getElementById('listView').classList.contains('hidden')) {
-                updateTableContent('listView', data.html, 'list');
-            }
+            updateTableContent('listView', data.html, 'list');
         }
     } catch (error) {
         console.error('Error refreshing list view:', error);
@@ -3224,26 +3227,22 @@ function updateTableContent(tableId, newHtml, viewType) {
         const newTableBody = tempDiv.querySelector('tbody');
         
         if (newTableBody && currentTableBody.innerHTML !== newTableBody.innerHTML) {
-            // Preserve current scroll position
-            const scrollPosition = window.scrollY;
-            
-            // Smoothly update the table body
+            // Update the table body
             currentTableBody.innerHTML = newTableBody.innerHTML;
             
             // Re-attach event listeners
             reattachEventListeners(viewType);
             
-            // Re-initialize pagination for the updated table
+            // Re-initialize pagination for this view
             initializePaginationForView(viewType);
             
-            // Restore scroll position
-            window.scrollTo(0, scrollPosition);
+            // Re-attach filter listeners
+            attachFilterListenersForView(viewType);
             
-            console.log(`Table ${tableId} updated silently`);
+            console.log(`${viewType} view refreshed successfully`);
         }
     }
 }
-
 // Re-attach event listeners after table update
 function reattachEventListeners(viewType) {
     // Re-attach click events for review buttons
