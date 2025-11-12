@@ -2311,4 +2311,46 @@ $percentageReviewed = $totalApplications > 0
         ]);
     }
 
+    /**
+     * Get applications data for mayor staff table.
+     */
+    public function getApplicationsData(Request $request)
+    {
+        try {
+            $applications = DB::table('tbl_application as app')
+                ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+                ->leftJoin('tbl_application_personnel as ap', 'app.application_id', '=', 'ap.application_id')
+                ->select(
+                    'app.application_id',
+                    'a.applicant_id',
+                    'a.applicant_fname',
+                    'a.applicant_mname',
+                    'a.applicant_lname',
+                    'a.applicant_email',
+                    'a.applicant_contact_number',
+                    'a.applicant_school_name',
+                    'a.applicant_year_level',
+                    'app.date_submitted',
+                    'ap.remarks',
+                    'ap.status',
+                    'ap.initial_screening'
+                )
+                ->orderBy('app.date_submitted', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $applications,
+                'count' => $applications->count()
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Error fetching applications data: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch applications data.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
