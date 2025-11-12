@@ -474,7 +474,6 @@
                             </div>
                 <!-- ✅ Table View (Applicants without remarks) -->
                 <div id="tableView">
-                    <!-- Search and Filter Section -->
 <!-- Search and Filter Section for Table View -->
 <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
     <div class="flex gap-4 items-end">
