@@ -876,8 +876,7 @@ public function disbursement(Request $request)
         ->orderBy('created_at', 'desc')
         ->get();
 
-    // Get applicants with filtering - show both Approved and Rejected initial screening
-    $query = DB::table('tbl_applicant')
+      $query = DB::table('tbl_applicant')
         ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
         ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id')
         ->select(
@@ -888,7 +887,7 @@ public function disbursement(Request $request)
             'tbl_application.brgy_indigency',
             'tbl_application.student_id',
             'tbl_application.date_submitted',
-            'tbl_application_personnel.initial_screening',
+            'tbl_application_personnel.initial_screening', // Make sure this is selected
             'tbl_application_personnel.status'
         );
 
@@ -897,7 +896,6 @@ public function disbursement(Request $request)
     if ($initialScreeningStatus && $initialScreeningStatus !== 'all') {
         $query->where('tbl_application_personnel.initial_screening', $initialScreeningStatus);
     }
-
     // Apply other filters
     if ($request->has('search') && !empty($request->search)) {
         $query->where(function($q) use ($request) {

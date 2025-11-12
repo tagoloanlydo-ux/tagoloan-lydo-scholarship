@@ -345,14 +345,14 @@
                 @endforeach
             </select>
         </div>
-        <!-- Add Initial Screening Filter -->
-        <div class="flex-1">
-            <select id="initialScreeningSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                <option value="all" {{ $initialScreeningStatus == 'all' ? 'selected' : '' }}>All Status</option>
-                <option value="Approved" {{ $initialScreeningStatus == 'Approved' ? 'selected' : '' }}>Approved</option>
-                <option value="Rejected" {{ $initialScreeningStatus == 'Rejected' ? 'selected' : '' }}>Rejected</option>
-            </select>
-        </div>
+<div class="flex-1">
+    <select id="initialScreeningSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+        <option value="all" {{ $initialScreeningStatus == 'all' ? 'selected' : '' }}>All Status</option>
+        <option value="Approved" {{ $initialScreeningStatus == 'Approved' ? 'selected' : '' }}>Approved</option>
+        <option value="Rejected" {{ $initialScreeningStatus == 'Rejected' ? 'selected' : '' }}>Rejected</option>
+        <option value="Reviewed" {{ $initialScreeningStatus == 'Reviewed' ? 'selected' : '' }}>Reviewed</option>
+    </select>
+</div>
     </div>
 </div>
 
@@ -373,52 +373,63 @@
                     
                     <div class="overflow-x-auto">
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
-                            <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
-                                <tr>
-                                    <th class="px-4 py-3 border border-gray-200 text-left">
-                                        <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                    </th>
-                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Full Name</th>
-                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Barangay</th>
-                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Email</th>
-                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">School</th>
-                                     <th class="px-4 py-3 border border-gray-200 align-middle text-center">Academic Year</th>
-                                 </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($applicants as $applicant)
-                                    <tr class="hover:bg-gray-50 border-b">
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <input type="checkbox" name="selected_applicants" value="{{ $applicant->applicant_id }}" class="applicant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                        </td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {{ $applicant->applicant_lname }}{{ $applicant->applicant_suffix ? ' ' . $applicant->applicant_suffix : '' }}, 
-                                                {{ $applicant->applicant_fname }} 
-                                                {{ $applicant->applicant_mname ? $applicant->applicant_mname . ' ' : '' }}
-                                            </div>
-                                        </td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_brgy }}</div>
-                                        </td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_email }}</div>
-                                        </td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_school_name }}</div>
-                                        </td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_acad_year }}</div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="px-4 py-2 text-center text-sm text-gray-500">
-                                            No applicants found.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
+<thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
+    <tr>
+        <th class="px-4 py-3 border border-gray-200 text-left">
+            <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+        </th>
+        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Full Name</th>
+        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Barangay</th>
+        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Email</th>
+        <th class="px-4 py-3 border border-gray-200 align-middle text-center">School</th>
+        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Academic Year</th>
+        <!-- ADD THIS COLUMN -->
+        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Initial Screening</th>
+    </tr>
+</thead>
+<tbody>
+    @forelse($applicants as $applicant)
+        <tr class="hover:bg-gray-50 border-b">
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <input type="checkbox" name="selected_applicants" value="{{ $applicant->applicant_id }}" class="applicant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm font-medium text-gray-900">
+                    {{ $applicant->applicant_lname }}{{ $applicant->applicant_suffix ? ' ' . $applicant->applicant_suffix : '' }}, 
+                    {{ $applicant->applicant_fname }} 
+                    {{ $applicant->applicant_mname ? $applicant->applicant_mname . ' ' : '' }}
+                </div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">{{ $applicant->applicant_brgy }}</div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">{{ $applicant->applicant_email }}</div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">{{ $applicant->applicant_school_name }}</div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">{{ $applicant->applicant_acad_year }}</div>
+            </td>
+            <!-- ADD THIS CELL FOR STATUS -->
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                    @if($applicant->initial_screening === 'Approved') bg-green-100 text-green-800
+                    @elseif($applicant->initial_screening === 'Rejected') bg-red-100 text-red-800
+                    @else bg-yellow-100 text-yellow-800 @endif">
+                    {{ $applicant->initial_screening ?? 'Pending' }}
+                </span>
+            </td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="8" class="px-4 py-2 text-center text-sm text-gray-500">
+                No applicants found.
+            </td>
+        </tr>
+    @endforelse
+</tbody>
                         </table>
                     </div>
 
@@ -1034,12 +1045,29 @@ function debounce(func, wait) {
     };
 }
 
+
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     initializeApplicantData();
     initializeApplicantPagination();
     initializeApplicantFiltering();
 });
+
+// Add this to your JavaScript
+const initialScreeningSelect = document.getElementById('initialScreeningSelect');
+if (initialScreeningSelect) {
+    initialScreeningSelect.addEventListener('change', function() {
+        // This will trigger a page reload with the new filter
+        window.location.href = updateUrlParameter(window.location.href, 'initial_screening', this.value);
+    });
+}
+
+// Helper function to update URL parameters
+function updateUrlParameter(url, param, value) {
+    const urlObj = new URL(url);
+    urlObj.searchParams.set(param, value);
+    return urlObj.toString();
+}
 </script>
 <script src="{{ asset('js/spinner.js') }}"></script>
 
