@@ -165,45 +165,48 @@ function initializeScholarFiltering() {
     const academicYearSelect = document.getElementById('academicYearSelect');
     const statusSelect = document.getElementById('statusSelect');
 
-    function filterScholarTable() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedBarangay = barangaySelect.value;
-        const selectedAcademicYear = academicYearSelect.value;
-        const selectedStatus = statusSelect.value;
+function filterScholarTable() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedBarangay = barangaySelect.value;
+    const selectedAcademicYear = academicYearSelect.value;
+    const selectedStatus = statusSelect.value.toLowerCase(); // Ensure this is lowercase
 
-        const filteredRows = paginationState.allRows.filter(row => {
-            const nameCell = row.cells[1];
-            const barangayCell = row.cells[2];
-            const academicYearCell = row.cells[6];
-            const statusCell = row.cells[7];
+    const filteredRows = paginationState.allRows.filter(row => {
+        const nameCell = row.cells[1];
+        const barangayCell = row.cells[2];
+        const academicYearCell = row.cells[6];
+        const statusCell = row.cells[7];
 
-            if (!nameCell || !barangayCell || !academicYearCell || !statusCell) return false;
+        if (!nameCell || !barangayCell || !academicYearCell || !statusCell) return false;
 
-            const name = nameCell.textContent.toLowerCase();
-            const barangay = barangayCell.textContent.trim();
-            const academicYear = academicYearCell.textContent.trim();
-            const status = statusCell.textContent.trim().toLowerCase();
+        const name = nameCell.textContent.toLowerCase();
+        const barangay = barangayCell.textContent.trim();
+        const academicYear = academicYearCell.textContent.trim();
+        const status = statusCell.textContent.trim().toLowerCase(); // Ensure this matches the format
 
-            const nameMatch = name.includes(searchTerm);
-            const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
-            const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
-            const statusMatch = selectedStatus === 'all' || status === selectedStatus;
+        const nameMatch = name.includes(searchTerm);
+        const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+        const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
+        const statusMatch = selectedStatus === 'all' || status === selectedStatus; // Ensure case matches
 
-            return nameMatch && barangayMatch && academicYearMatch && statusMatch;
-        });
+        // Debugging logs
+        console.log(`Name: ${name}, Barangay: ${barangay}, Academic Year: ${academicYear}, Status: ${status}, Selected Status: ${selectedStatus}`);
 
-        // Sort filtered results alphabetically
-        const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
+        return nameMatch && barangayMatch && academicYearMatch && statusMatch;
+    });
 
-        // Update filtered rows and reset to page 1
-        paginationState.filteredRows = sortedFilteredRows;
-        paginationState.currentPage = 1;
-        updateScholarPagination();
-        
-        // Reset select all checkbox
-        document.getElementById('selectAll').checked = false;
-        document.getElementById('selectAll').indeterminate = false;
-    }
+    // Sort filtered results alphabetically
+    const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
+
+    // Update filtered rows and reset to page 1
+    paginationState.filteredRows = sortedFilteredRows;
+    paginationState.currentPage = 1;
+    updateScholarPagination();
+    
+    // Reset select all checkbox
+    document.getElementById('selectAll').checked = false;
+    document.getElementById('selectAll').indeterminate = false;
+}
 
     // Add event listeners with debouncing
     if (searchInput) {

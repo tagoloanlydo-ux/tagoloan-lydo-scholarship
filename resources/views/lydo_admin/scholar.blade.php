@@ -399,46 +399,49 @@
   
 <!-- Filter Section -->
 <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
-    <div class="flex flex-col md:flex-row gap-4" id="filterForm">
-        <div class="flex-1">
-            <input type="text" id="searchInput" placeholder="Search by name..." 
-                   class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+    <form method="GET" action="{{ route('LydoAdmin.scholar') }}" id="filterForm">
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1">
+                <input type="text" id="searchInput" name="search" placeholder="Search by name..."
+                       class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black"
+                       value="{{ request('search') }}">
+            </div>
+            <div class="flex-1">
+                <select id="barangaySelect" name="barangay" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                    <option value="">All Barangays</option>
+                    @foreach($barangays as $barangay)
+                        <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
+                            {{ $barangay }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex-1">
+                <select id="academicYearSelect" name="academic_year" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                    <option value="">All Academic Years</option>
+                    @foreach($academicYears as $year)
+                        <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
+                            {{ $year }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <!-- Add Status Filter Dropdown -->
+            <div class="flex-1">
+                <select id="statusSelect" name="status" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                    <option value="active" {{ $statusFilter == 'active' ? 'selected' : '' }}>Active Scholars</option>
+                    <option value="inactive" {{ $statusFilter == 'inactive' ? 'selected' : '' }}>Inactive Scholars</option>
+                    <option value="all" {{ $statusFilter == 'all' ? 'selected' : '' }}>All Scholars</option>
+                </select>
+            </div>
+            <!-- Add Print to PDF Button -->
+            <div class="flex-1">
+                <button id="printPdfBtn" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center">
+                    <i class="fas fa-file-pdf mr-2"></i> Print to PDF
+                </button>
+            </div>
         </div>
-        <div class="flex-1">
-            <select id="barangaySelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                <option value="">All Barangays</option>
-                @foreach($barangays as $barangay)
-                    <option value="{{ $barangay }}">
-                        {{ $barangay }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-        <div class="flex-1">
-            <select id="academicYearSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                <option value="">All Academic Years</option>
-                @foreach($academicYears as $year)
-                    <option value="{{ $year }}">
-                        {{ $year }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-        <!-- Add Status Filter Dropdown -->
-        <div class="flex-1">
-            <select id="statusSelect" name="status" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                <option value="active" {{ $statusFilter == 'active' ? 'selected' : '' }}>Active Scholars</option>
-                <option value="inactive" {{ $statusFilter == 'inactive' ? 'selected' : '' }}>Inactive Scholars</option>
-                <option value="all" {{ $statusFilter == 'all' ? 'selected' : '' }}>All Scholars</option>
-            </select>
-        </div>
-        <!-- Add Print to PDF Button -->
-        <div class="flex-1">
-            <button id="printPdfBtn" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center">
-                <i class="fas fa-file-pdf mr-2"></i> Print to PDF
-            </button>
-        </div>
-    </div>
+    </form>
 </div>
 
                 <!-- Scholars Table -->
@@ -701,283 +704,16 @@
     </div>
 </div>
             <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const selectAll = document.getElementById('selectAll');
-                    const checkboxes = document.querySelectorAll('.scholar-checkbox');
-                    const sendEmailBtn = document.getElementById('sendEmailBtn');
-                    const generateAnnouncementBtn = document.getElementById('generateAnnouncementBtn');
-                    const emailModal = document.getElementById('emailModal');
-                    const announcementModal = document.getElementById('announcementModal');
-                    const announcementContent = document.getElementById('announcementContent');
-                    const cancelEmail = document.getElementById('cancelEmail');
-                    const closeAnnouncement = document.getElementById('closeAnnouncement');
-                    const copyAnnouncement = document.getElementById('copyAnnouncement');
-                    const emailForm = document.getElementById('emailForm');
-                    const emailLoading = document.getElementById('emailLoading');
-                    const sendEmailButton = document.getElementById('sendEmailButton');
-                    let allFilteredScholarEmails = new Set(); // Store all filtered
+                // Notification bell functionality
+                document.getElementById("notifBell").addEventListener("click", function () {
+                    let dropdown = document.getElementById("notifDropdown");
+                    dropdown.classList.toggle("hidden");
 
-                    // Select All checkbox functionality
-                    selectAll.addEventListener('change', async function() {
-                        if (this.checked) {
-                            selectAll.disabled = true;
-                            selectAll.nextElementSibling?.classList.add('hidden');
-                            const loadingSpan = document.createElement('span');
-                            loadingSpan.className = 'ml-2 text-sm text-gray-500';
-                            loadingSpan.textContent = 'Loading...';
-                            selectAll.parentNode.appendChild(loadingSpan);
-
-                            try {
-                                // Get current filter parameters
-                                const search = document.querySelector('input[name="search"]').value;
-                                const barangay = document.querySelector('select[name="barangay"]').value;
-                                const academicYear = document.querySelector('select[name="academic_year"]').value;
-
-                                // Fetch all filtered scholar emails from server
-                                const response = await fetch(`/lydo_admin/get-all-filtered-scholars?search=${encodeURIComponent(search)}&barangay=${encodeURIComponent(barangay)}&academic_year=${encodeURIComponent(academicYear)}`);
-                                const data = await response.json();
-
-                                // Store all filtered scholar emails
-                                allFilteredScholarEmails = new Set(data.scholar_emails);
-
-                                // Check all checkboxes that match the filtered emails
-                                checkboxes.forEach(checkbox => {
-                                    const scholarEmail = checkbox.value;
-                                    checkbox.checked = allFilteredScholarEmails.has(scholarEmail);
-                                });
-
-                                updateSendButton();
-                            } catch (error) {
-                                console.error('Error fetching filtered scholars:', error);
-                                // Fallback: just select visible checkboxes
-                                checkboxes.forEach(checkbox => {
-                                    checkbox.checked = true;
-                                });
-                            } finally {
-                                // Remove loading state
-                                selectAll.disabled = false;
-                                loadingSpan.remove();
-                                selectAll.nextElementSibling?.classList.remove('hidden');
-                            }
-                        } else {
-                            // Uncheck all checkboxes
-                            checkboxes.forEach(checkbox => {
-                                checkbox.checked = false;
-                            });
-                            allFilteredScholarEmails.clear();
-                            updateSendButton();
-                        }
-                    });
-
-                    // Individual checkbox change
-                    checkboxes.forEach(checkbox => {
-                        checkbox.addEventListener('change', function() {
-                            updateSendButton();
-                            
-                            // Update selectAll checkbox state
-                            const allChecked = [...checkboxes].every(cb => cb.checked);
-                            const someChecked = [...checkboxes].some(cb => cb.checked);
-                            
-                            selectAll.checked = allChecked;
-                            selectAll.indeterminate = someChecked && !allChecked;
-                        });
-                    });
-
-                    // Update send button state
-                    function updateSendButton() {
-                        const selectedCount = document.querySelectorAll('.scholar-checkbox:checked').length;
-                        sendEmailBtn.disabled = selectedCount === 0;
-                        generateAnnouncementBtn.disabled = selectedCount === 0;
-
-                        // Show or hide buttons based on selection
-                        if (selectedCount > 0) {
-                            sendEmailBtn.classList.remove('hidden');
-                            generateAnnouncementBtn.classList.remove('hidden');
-                        } else {
-                            sendEmailBtn.classList.add('hidden');
-                            generateAnnouncementBtn.classList.add('hidden');
-                        }
+                    // remove badge when opened
+                    let notifCount = document.getElementById("notifCount");
+                    if (notifCount) {
+                        notifCount.remove();
                     }
-
-
-
-                    // Open email modal
-                    sendEmailBtn.addEventListener('click', function() {
-                        const selectedEmails = Array.from(document.querySelectorAll('.scholar-checkbox:checked'))
-                            .map(checkbox => checkbox.value)
-                            .join(', ');
-
-                        const selectedScholarIds = Array.from(document.querySelectorAll('.scholar-checkbox:checked'))
-                            .map(checkbox => checkbox.getAttribute('data-scholar-id'))
-                            .join(', ');
-
-                        emailTo.value = selectedEmails;
-                        document.getElementById('scholarId').value = selectedScholarIds;
-
-                        emailModal.classList.remove('hidden');
-                    });
-
-                    // Close email modal
-                    cancelEmail.addEventListener('click', function() {
-                        emailModal.classList.add('hidden');
-                    });
-
-                    // Close email modal with close button
-                    document.getElementById('closeEmailModal').addEventListener('click', function() {
-                        emailModal.classList.add('hidden');
-                    });
-
-                    // Handle email form submission
-                    emailForm.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        
-                        // Show loading indicator
-                        emailLoading.classList.remove('hidden');
-                        sendEmailButton.disabled = true;
-                        
-                        const formData = new FormData(this);
-                        formData.append('email', emailTo.value);
-
-                        fetch('{{ route("LydoAdmin.sendEmail") }}', {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            // Hide loading indicator
-                            emailLoading.classList.add('hidden');
-                            sendEmailButton.disabled = false;
-                            
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Success!',
-                                    text: 'Email sent successfully!',
-                                    icon: 'success',
-                                    confirmButtonText: 'OK'
-                                });
-                                emailModal.classList.add('hidden');
-                                emailForm.reset();
-                            } else {
-                                Swal.fire({
-                                    title: 'Error!',
-                                    text: 'Failed to send email: ' + data.message,
-                                    icon: 'error',
-                                    confirmButtonText: 'OK'
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            // Hide loading indicator
-                            emailLoading.classList.add('hidden');
-                            sendEmailButton.disabled = false;
-                            Swal.fire({
-                                title: 'Error!',
-                                text: 'Error sending email: ' + error.message,
-                                icon: 'error',
-                                confirmButtonText: 'OK'
-                            });
-                        });
-                    });
-
-                    // Close modal when clicking outside
-                    window.addEventListener('click', function(e) {
-                        if (e.target === emailModal) {
-                            emailModal.classList.add('hidden');
-                        }
-                        if (e.target === announcementModal) {
-                            announcementModal.classList.add('hidden');
-                        }
-                    });
-
-                    // Auto-submit filter form when any filter changes
-  
-                    // Also submit on search input (for typing)
-                    const searchInput = filterForm.querySelector('input[name="search"]');
-                    let searchTimeout;
-                    
-                    searchInput.addEventListener('input', function() {
-                        clearTimeout(searchTimeout);
-                        searchTimeout = setTimeout(() => {
-                            filterForm.submit();
-                        }, 500); // Submit after 500ms of no typing
-                    });
-
-
-                    // Generate Announcement button functionality
-generateAnnouncementBtn.addEventListener('click', function() {
-    const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
-
-    if (selectedCheckboxes.length === 0) {
-        Swal.fire({
-            title: 'No Selection!',
-            text: 'Please select at least one scholar to copy names.',
-            icon: 'warning',
-            confirmButtonText: 'OK'
-        });
-        return;
-    }
-
-    // Group selected scholars by barangay
-    const barangayGroups = {};
-    selectedCheckboxes.forEach(checkbox => {
-        const row = checkbox.closest('tr');
-        const name = row.querySelector('td:nth-child(2) div').textContent.trim();
-        const barangay = row.querySelector('td:nth-child(3) div').textContent.trim();
-        if (!barangayGroups[barangay]) {
-            barangayGroups[barangay] = [];
-        }
-        barangayGroups[barangay].push(name);
-    });
-
-    // Build the output string
-    let output = '';
-    Object.keys(barangayGroups).forEach(barangay => {
-        output += `${barangay}\n`;
-        barangayGroups[barangay].forEach((name, idx) => {
-            output += `${idx + 1}. ${name}\n`;
-        });
-        output += '\n';
-    });
-
-    navigator.clipboard.writeText(output.trim()).then(() => {
-        Swal.fire({
-            title: 'Success!',
-            text: 'Selected scholar names grouped by barangay copied to clipboard!',
-            icon: 'success',
-            confirmButtonText: 'OK'
-        });
-    }).catch(err => {
-        Swal.fire({
-            title: 'Error!',
-            text: 'Failed to copy names: ' + err,
-            icon: 'error',
-            confirmButtonText: 'OK'
-        });
-    });
-});
-
-                    // Copy announcement to clipboard
-                    copyAnnouncement.addEventListener('click', function() {
-                        announcementContent.select();
-                        document.execCommand('copy');
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Announcement copied to clipboard!',
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        });
-                    });
-
-                    // Close announcement modal
-                    closeAnnouncement.addEventListener('click', function() {
-                        announcementModal.classList.add('hidden');
-                    });
-
-                    // Initialize button states
-                    updateSendButton();
                 });
                 // Add this to your existing JavaScript in scholar.blade.php
 
@@ -1388,76 +1124,6 @@ window.addEventListener('click', function(e) {
     if (e.target === modal) {
         modal.classList.add('hidden');
     }
-});
-
-// Document expand functionality
-document.addEventListener('DOMContentLoaded', function() {
-    let currentlyExpandedDoc = null; // Track which document is currently expanded
-
-    // Expand button event listeners
-    const expandButtons = ['expandDoc1', 'expandDoc2', 'expandDoc3'];
-
-    expandButtons.forEach((buttonId, index) => {
-        const button = document.getElementById(buttonId);
-        const preview = document.getElementById(`doc${index + 1}Preview`);
-        const icon = button.querySelector('i');
-        const container = preview.closest('.border');
-        const documentsGrid = container.closest('.grid');
-        const modal = document.getElementById('documentModal');
-
-        // Set initial collapsed state
-        preview.classList.remove('expanded');
-        preview.style.maxHeight = '200px';
-        icon.className = 'fas fa-expand';
-        button.title = 'Expand Document';
-
-        button.addEventListener('click', function() {
-            const isExpanded = preview.classList.contains('expanded');
-
-            if (isExpanded) {
-                // Collapse current document
-                preview.classList.remove('expanded');
-                preview.style.maxHeight = '200px';
-                container.classList.remove('md:col-span-3', 'col-span-1');
-                documentsGrid.classList.remove('grid-cols-1');
-                documentsGrid.classList.add('md:grid-cols-3');
-                modal.classList.add('max-h-[90vh]');
-                modal.classList.remove('max-h-screen');
-                modal.style.maxHeight = '';
-                icon.className = 'fas fa-expand';
-                button.title = 'Expand Document';
-                currentlyExpandedDoc = null;
-            } else {
-                // If another document is expanded, collapse it first
-                if (currentlyExpandedDoc && currentlyExpandedDoc !== index) {
-                    const prevButton = document.getElementById(`expandDoc${currentlyExpandedDoc + 1}`);
-                    const prevPreview = document.getElementById(`doc${currentlyExpandedDoc + 1}Preview`);
-                    const prevContainer = prevPreview.closest('.border');
-                    const prevIcon = prevButton.querySelector('i');
-
-                    prevPreview.classList.remove('expanded');
-                    prevPreview.style.maxHeight = '200px';
-                    prevContainer.classList.remove('md:col-span-3', 'col-span-1');
-                    modal.classList.add('max-h-[90vh]');
-                    modal.style.maxHeight = '';
-                    prevIcon.className = 'fas fa-expand';
-                    prevButton.title = 'Expand Document';
-                }
-
-                // Expand current document
-                preview.classList.add('expanded');
-                preview.style.maxHeight = 'none';
-                container.classList.add('md:col-span-3', 'col-span-1');
-                documentsGrid.classList.remove('md:grid-cols-3');
-                documentsGrid.classList.add('grid-cols-1');
-                modal.classList.remove('max-h-[900vh]');
-                modal.style.maxHeight = 'none';
-                icon.className = 'fas fa-compress';
-                button.title = 'Collapse Document';
-                currentlyExpandedDoc = index;
-            }
-        });
-    });
 });
             </script>
             <script src="{{ asset('js/filter_paginate.js') }}"></script>

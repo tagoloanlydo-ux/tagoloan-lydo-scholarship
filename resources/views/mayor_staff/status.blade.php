@@ -441,10 +441,10 @@
                             <table class="intake-table">
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Problem/Need</th>
-                                        <th>Action/Assistance Given</th>
-                                        <th>Remarks</th>
+                                                    <th style="text-align: center; vertical-align: middle;">Date</th>
+            <th style="text-align: center; vertical-align: middle;">Problem/Need</th>
+            <th style="text-align: center; vertical-align: middle;">Action/Assistance Given</th>
+            <th style="text-align: center; vertical-align: middle;">Remarks</th>
                                     </tr>
                                 </thead>
                                 <tbody id="modal-service-records" class="text-center align-middle">
@@ -462,9 +462,7 @@
                             <!-- Left column: Worker -->
                             <div class="text-center">
                                 <div id="modal-worker-photo" class="mb-2">
-                                    <img id="modal-worker-photo-img" src="" alt="worker photo"
-                                         style="max-width:180px;height:120px;object-fit:cover;border:1px solid #e5e7eb;display:none;"
-                                         onerror="this.style.display='none'">
+                                  
                                 </div>
                                 <!-- signature image above name, centered -->
                                 <div id="modal-worker-signature" class="mb-2 flex items-center justify-center">
@@ -477,9 +475,7 @@
                             <!-- Right column: Officer -->
                             <div class="text-center">
                                 <div id="modal-officer-photo" class="mb-2">
-                                    <img id="modal-officer-photo-img" src="" alt="officer photo"
-                                         style="max-width:180px;height:120px;object-fit:cover;border:1px solid #e5e7eb;display:none;"
-                                         onerror="this.style.display='none'">
+                            
                                 </div>
                                 <!-- signature image above name, centered -->
                                 <div id="modal-officer-signature" class="mb-2 flex items-center justify-center">
