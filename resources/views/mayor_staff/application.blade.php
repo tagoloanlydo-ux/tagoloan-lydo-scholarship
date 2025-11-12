@@ -24,123 +24,73 @@
     max-height: 80vh;
     overflow-y: auto;
 }
-/* Pagination Styles for Application */
 .pagination-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-top: 1.5rem;
     padding: 1rem;
-    background: white;
+    background-color: white;
     border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    flex-wrap: wrap;
-    gap: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .pagination-info {
-    font-size: 0.9rem;
     color: #6b7280;
-    font-weight: 500;
+    font-size: 0.875rem;
 }
 
 .pagination-buttons {
     display: flex;
-    gap: 0.5rem;
     align-items: center;
-    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .pagination-btn {
-    padding: 0.5rem 1rem;
-    background-color: #7c3aed;
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.875rem;
-    font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: white;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .pagination-btn:hover:not(:disabled) {
-    background-color: #6d28d9;
-    transform: translateY(-1px);
+    background-color: #f9fafb;
+    border-color: #9ca3af;
 }
 
 .pagination-btn:disabled {
-    background-color: #d1d5db;
+    opacity: 0.5;
     cursor: not-allowed;
-    transform: none;
 }
 
 .pagination-page-info {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    margin: 0 1rem;
+    color: #6b7280;
     font-size: 0.875rem;
-    color: #374151;
 }
 
 .pagination-page-input {
     width: 3.5rem;
-    padding: 0.4rem;
-    text-align: center;
+    padding: 0.25rem 0.5rem;
     border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    background-color: white;
+    border-radius: 0.25rem;
+    text-align: center;
 }
 
 .pagination-page-input:focus {
     outline: none;
     border-color: #7c3aed;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-}
-
-/* Responsive design for pagination */
-@media (max-width: 768px) {
-    .pagination-container {
-        flex-direction: column;
-        gap: 0.75rem;
-        text-align: center;
-    }
-
-    .pagination-buttons {
-        justify-content: center;
-    }
-
-    .pagination-btn {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
-    }
-
-    .pagination-info {
-        font-size: 0.8rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .pagination-buttons {
-        gap: 0.25rem;
-    }
-
-    .pagination-btn {
-        padding: 0.35rem 0.7rem;
-        font-size: 0.75rem;
-    }
-
-    .pagination-page-info {
-        font-size: 0.8rem;
-    }
-
-    .pagination-page-input {
-        width: 3rem;
-        padding: 0.3rem;
-    }
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
 }
 .document-viewer-container {
     height: calc(100vh - 300px); /* A4 height equivalent */
@@ -232,106 +182,6 @@
     font-weight: bold;
     z-index: 10;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-.pagination-info {
-    font-size: 0.9rem;
-    color: #6b7280;
-    font-weight: 500;
-}
-
-.pagination-buttons {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.pagination-btn {
-    padding: 0.5rem 1rem;
-    background-color: #7c3aed;
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-.pagination-btn:hover:not(:disabled) {
-    background-color: #6d28d9;
-    transform: translateY(-1px);
-}
-
-.pagination-btn:disabled {
-    background-color: #d1d5db;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.pagination-page-info {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    color: #374151;
-}
-
-.pagination-page-input {
-    width: 3.5rem;
-    padding: 0.4rem;
-    text-align: center;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    background-color: white;
-}
-
-.pagination-page-input:focus {
-    outline: none;
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-}
-
-/* Responsive design for pagination */
-@media (max-width: 768px) {
-    .pagination-container {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .pagination-buttons {
-        justify-content: center;
-    }
-
-    .pagination-btn {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
-    }
-
-    .pagination-info {
-        font-size: 0.8rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .pagination-buttons {
-        gap: 0.25rem;
-    }
-
-    .pagination-btn {
-        padding: 0.35rem 0.7rem;
-        font-size: 0.75rem;
-    }
-
-    .pagination-page-info {
-        font-size: 0.8rem;
-    }
-
-    .pagination-page-input {
-        width: 3rem;
-        padding: 0.3rem;
-    }
 }
 </style>
 <body class="bg-gray-50">
@@ -555,7 +405,8 @@
                 </tbody>
             </table>
             <div class="mt-4">
-            <div id="paginationControls"></div>
+            <!-- Pagination for Table View -->
+<div class="pagination-container" id="tablePagination"></div>
             </div>
         </div>
 
@@ -647,7 +498,8 @@
         </tbody>
     </table>
                             <div class="mt-4">
-       <div id="paginationControls"></div>
+                            <!-- Pagination for List View -->
+<div class="pagination-container" id="listPagination"></div>
     </div>
         </div>
         </div>
@@ -2359,254 +2211,10 @@ function sendDocumentEmail() {
         });
     </script>
     <script>
-    // Pagination state for application page
-const paginationState = {
-    table: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        allRows: [],
-        filteredRows: []
-    },
-    list: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        allRows: [],
-        filteredRows: []
-    }
-};
-
-// Initialize pagination when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    initializePagination();
     
-    // Update the existing event listeners to use debounce
-    const searchInputTable = document.getElementById('searchInputTable');
-    const barangaySelectTable = document.getElementById('barangaySelectTable');
-    const searchInputList = document.getElementById('searchInputList');
-    const barangaySelectList = document.getElementById('barangaySelectList');
-    
-    if (searchInputTable) {
-        searchInputTable.addEventListener('input', debounce(filterTable, 300));
-    }
-    if (barangaySelectTable) {
-        barangaySelectTable.addEventListener('change', filterTable);
-    }
-    if (searchInputList) {
-        searchInputList.addEventListener('input', debounce(filterList, 300));
-    }
-    if (barangaySelectList) {
-        barangaySelectList.addEventListener('change', filterList);
-    }
-});
-
-// Initialize pagination
-function initializePagination() {
-    // Get ALL table rows (not just visible ones) from Table View
-    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
-    paginationState.table.allRows = tableRows.filter(row => !row.querySelector('td[colspan]'));
-    paginationState.table.filteredRows = [...paginationState.table.allRows];
-    
-    // Get ALL list rows from List View
-    const listRows = Array.from(document.querySelectorAll('#listView tbody tr'));
-    paginationState.list.allRows = listRows.filter(row => !row.querySelector('td[colspan]'));
-    paginationState.list.filteredRows = [...paginationState.list.allRows];
-    
-    updatePagination('table');
-    updatePagination('list');
-}
-
-// Update pagination display
-function updatePagination(viewType) {
-    const state = paginationState[viewType];
-    const containerId = viewType === 'table' ? 'paginationControls' : 'paginationControls';
-    const container = document.getElementById(containerId);
-    
-    if (!container) return;
-    
-    // Hide all rows first
-    state.allRows.forEach(row => {
-        row.style.display = 'none';
-    });
-    
-    // Calculate pagination for filtered rows
-    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
-    const endIndex = startIndex + state.rowsPerPage;
-    const pageRows = state.filteredRows.slice(startIndex, endIndex);
-    
-    // Show only rows for current page
-    pageRows.forEach(row => {
-        row.style.display = '';
-    });
-    
-    // Update pagination controls
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    const startItem = state.filteredRows.length === 0 ? 0 : Math.min(startIndex + 1, state.filteredRows.length);
-    const endItem = Math.min(endIndex, state.filteredRows.length);
-    
-    container.innerHTML = `
-        <div class="pagination-container">
-            <div class="pagination-info">
-                Showing ${startItem} to ${endItem} of ${state.filteredRows.length} entries
-            </div>
-            <div class="pagination-buttons">
-                <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
-                    <i class="fas fa-angle-double-left"></i>
-                </button>
-                <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
-                    <i class="fas fa-angle-left"></i>
-                </button>
-                <div class="pagination-page-info">
-                    Page <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)"> of ${totalPages}
-                </div>
-                <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                    <i class="fas fa-angle-right"></i>
-                </button>
-                <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                    <i class="fas fa-angle-double-right"></i>
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-// Change page
-function changePage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
-}
-
-// Go to specific page
-function goToPage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    page = parseInt(page);
-    if (isNaN(page) || page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
-}
-
-// Filter Table View
-function filterTable() {
-    const searchValue = document.getElementById('searchInputTable').value.toLowerCase().trim();
-    const barangayValue = document.getElementById('barangaySelectTable').value.toLowerCase().trim();
-
-    const filteredRows = paginationState.table.allRows.filter(row => {
-        const nameCell = row.cells[1];
-        const barangayCell = row.cells[2];
-
-        if (!nameCell || !barangayCell) return false;
-
-        const name = nameCell.textContent.toLowerCase();
-        const barangay = barangayCell.textContent.toLowerCase();
-
-        const matchesName = name.includes(searchValue);
-        const matchesBarangay = barangayValue === '' || barangay.includes(barangayValue);
-
-        return matchesName && matchesBarangay;
-    });
-
-    // Update filtered rows and reset to page 1
-    paginationState.table.filteredRows = filteredRows;
-    paginationState.table.currentPage = 1;
-    updatePagination('table');
-}
-
-// Filter List View
-function filterList() {
-    const searchValue = document.getElementById('searchInputList').value.toLowerCase().trim();
-    const barangayValue = document.getElementById('barangaySelectList').value.toLowerCase().trim();
-
-    const filteredRows = paginationState.list.allRows.filter(row => {
-        const nameCell = row.cells[1];
-        const barangayCell = row.cells[2];
-
-        if (!nameCell || !barangayCell) return false;
-
-        const name = nameCell.textContent.toLowerCase();
-        const barangay = barangayCell.textContent.toLowerCase();
-
-        const matchesName = name.includes(searchValue);
-        const matchesBarangay = barangayValue === '' || barangay.includes(barangayValue);
-
-        return matchesName && matchesBarangay;
-    });
-
-    // Update filtered rows and reset to page 1
-    paginationState.list.filteredRows = filteredRows;
-    paginationState.list.currentPage = 1;
-    updatePagination('list');
-}
-
-// Update the existing showTable and showList functions
-function showTable() {
-    document.getElementById('tableView').classList.remove('hidden');
-    document.getElementById('listView').classList.add('hidden');
-    document.getElementById('pendingTab').classList.add('active');
-    document.getElementById('reviewedTab').classList.remove('active');
-    
-    // Reset to first page
-    paginationState.table.currentPage = 1;
-    updatePagination('table');
-}
-
-function showList() {
-    document.getElementById('tableView').classList.add('hidden');
-    document.getElementById('listView').classList.remove('hidden');
-    document.getElementById('pendingTab').classList.remove('active');
-    document.getElementById('reviewedTab').classList.add('active');
-    
-    // Reset to first page
-    paginationState.list.currentPage = 1;
-    updatePagination('list');
-}
-
-// Clear filters for Table View
-function clearFiltersTable() {
-    document.getElementById('searchInputTable').value = '';
-    document.getElementById('barangaySelectTable').value = '';
-    filterTable();
-}
-
-// Clear filters for List View
-function clearFiltersList() {
-    document.getElementById('searchInputList').value = '';
-    document.getElementById('barangaySelectList').value = '';
-    filterList();
-}
-
-// Debounce function for search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Update the existing filterRows function to use the new pagination
-function filterRows(type) {
-    if (type === 'table') {
-        filterTable();
-    } else {
-        filterList();
-    }
-}
     </script>
 <script src="{{ asset('js/app_spinner.js') }}"></script>
+<script src="{{ asset('js/application_paginate.js') }}"></script>
 
     </body>
     </html>
