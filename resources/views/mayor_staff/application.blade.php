@@ -2647,61 +2647,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('Pagination and filters initialized successfully');
 });
+
 </script>
-public function refreshTableData(Request $request)
-{
-    $currentStaffId = session('lydopers')->lydopers_id;
-    $viewType = $request->get('view', 'table');
-    $search = $request->get('search', '');
-    $barangay = $request->get('barangay', '');
-    $page = $request->get('page', 1);
-    
-    $query = DB::table("tbl_applicant as a")
-        ->join("tbl_application as app", "a.applicant_id", "=", "app.applicant_id")
-        ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
-        ->select(
-            "a.*",
-            "app.application_id",
-            "ap.application_personnel_id",
-            "ap.status",
-            "ap.initial_screening",
-            "ap.remarks",
-            "a.applicant_email",
-            "app.created_at"
-        )
-        ->where("a.applicant_acad_year", "=", now()->format("Y") . "-" . now()->addYear()->format("Y"))
-        ->where("ap.lydopers_id", $currentStaffId)
-        ->orderBy("app.created_at", "desc");
-    
-    if ($viewType === 'table') {
-        $query->where("ap.initial_screening", "Pending");
-    } else {
-        $query->whereIn("ap.initial_screening", ["Approved", "Rejected"]);
-    }
-    
-    if (!empty($search)) {
-        $query->where(function ($q) use ($search) {
-            $q->where("a.applicant_fname", "like", "%" . $search . "%")
-              ->orWhere("a.applicant_lname", "like", "%" . $search . "%");
-        });
-    }
-    
-    if (!empty($barangay)) {
-        $query->where("a.applicant_brgy", $barangay);
-    }
-    
-    $perPage = 15;
-    $total = $query->count();
-    $rows = $query->skip(($page - 1) * $perPage)
-                  ->take($perPage)
-                  ->get();
-    
-    return response()->json([
-        'success' => true,
-        'rows' => $rows,
-        'total' => $total
-    ]);
-}
+
 <script src="{{ asset('js/app_spinner.js') }}"></script>
 <!-- Add Pusher JS (if not already included) -->
 <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
