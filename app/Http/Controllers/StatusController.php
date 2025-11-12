@@ -198,12 +198,12 @@ public function getIntakeSheet($applicationPersonnelId)
                 'remarks' => $appRow->remarks ?? null,
                 'head_barangay' => $appRow->applicant_brgy ?? null,
                 
-                // Application Documents
-                'application_letter' => $appRow->application_letter ? asset('storage/documents/' . $appRow->application_letter) : null,
-                'cert_of_reg' => $appRow->cert_of_reg ? asset('storage/documents/' . $appRow->cert_of_reg) : null,
-                'grade_slip' => $appRow->grade_slip ? asset('storage/documents/' . $appRow->grade_slip) : null,
-                'brgy_indigency' => $appRow->brgy_indigency ? asset('storage/documents/' . $appRow->brgy_indigency) : null,
-                'student_id' => $appRow->student_id ? asset('storage/documents/' . $appRow->student_id) : null,
+                // FIXED: Document paths - corrected to storage/document (singular)
+                'application_letter' => $appRow->application_letter ? asset('storage/document/' . $appRow->application_letter) : null,
+                'cert_of_reg' => $appRow->cert_of_reg ? asset('storage/document/' . $appRow->cert_of_reg) : null,
+                'grade_slip' => $appRow->grade_slip ? asset('storage/document/' . $appRow->grade_slip) : null,
+                'brgy_indigency' => $appRow->brgy_indigency ? asset('storage/document/' . $appRow->brgy_indigency) : null,
+                'student_id' => $appRow->student_id ? asset('storage/document/' . $appRow->student_id) : null,
                 
                 // Empty arrays - using frontend expected field names
                 'family_members' => [],
@@ -221,13 +221,13 @@ public function getIntakeSheet($applicationPersonnelId)
         \Log::info("=== DATABASE VALUES DEBUG ===");
         \Log::info("Family Members DB Value: " . ($intakeSheet->family_members ?? 'NULL'));
         \Log::info("Social Service Records DB Value: " . ($intakeSheet->social_service_records ?? 'NULL'));
-        \Log::info("RV Service Records DB Value: " . ($intakeSheet->rv_service_records ?? 'NULL')); // ADDED THIS LINE
+        \Log::info("RV Service Records DB Value: " . ($intakeSheet->rv_service_records ?? 'NULL'));
 
         // Enhanced JSON parsing with better NULL handling
         $familyMembers = $this->parseJsonField($intakeSheet->family_members, 'family_members');
         
         // FIX: Use rv_service_records instead of social_service_records
-        $socialServiceRecords = $this->parseJsonField($intakeSheet->rv_service_records, 'rv_service_records'); // CHANGED THIS LINE
+        $socialServiceRecords = $this->parseJsonField($intakeSheet->rv_service_records, 'rv_service_records');
 
         // FIXED TRANSFORMATION: Use original field names to avoid mapping issues
         $transformedFamilyMembers = [];
@@ -303,7 +303,7 @@ public function getIntakeSheet($applicationPersonnelId)
             
             // Family Members and Service Records - USING TRANSFORMED DATA
             'family_members' => $transformedFamilyMembers,
-            'social_service_records' => $transformedServiceRecords, // This will now have data from rv_service_records
+            'social_service_records' => $transformedServiceRecords,
             
             // Signatures
             'worker_name' => $intakeSheet->worker_name ?? null,
@@ -318,12 +318,12 @@ public function getIntakeSheet($applicationPersonnelId)
             'signature_officer_data' => $intakeSheet->signature_officer ? asset('storage/' . $intakeSheet->signature_officer) : null,
             'signature_client_data' => $intakeSheet->signature_client ? asset('storage/' . $intakeSheet->signature_client) : null, 
 
-            // Application Documents
-            'doc_application_letter' => $appRow->application_letter ? asset('storage/documents/' . $appRow->application_letter) : null,
-            'doc_cert_reg' => $appRow->cert_of_reg ? asset('storage/documents/' . $appRow->cert_of_reg) : null,
-            'doc_grade_slip' => $appRow->grade_slip ? asset('storage/documents/' . $appRow->grade_slip) : null,
-            'doc_brgy_indigency' => $appRow->brgy_indigency ? asset('storage/documents/' . $appRow->brgy_indigency) : null,
-            'doc_student_id' => $appRow->student_id ? asset('storage/documents/' . $appRow->student_id) : null,
+            // FIXED: Document paths - corrected to storage/document (singular)
+            'doc_application_letter' => $appRow->application_letter ? asset('storage/document/' . $appRow->application_letter) : null,
+            'doc_cert_reg' => $appRow->cert_of_reg ? asset('storage/document/' . $appRow->cert_of_reg) : null,
+            'doc_grade_slip' => $appRow->grade_slip ? asset('storage/document/' . $appRow->grade_slip) : null,
+            'doc_brgy_indigency' => $appRow->brgy_indigency ? asset('storage/document/' . $appRow->brgy_indigency) : null,
+            'doc_student_id' => $appRow->student_id ? asset('storage/document/' . $appRow->student_id) : null,
 
             // Raw values for reference
             'house_rent' => $intakeSheet->house_rent ?? null,
@@ -356,7 +356,6 @@ public function getIntakeSheet($applicationPersonnelId)
         ], 500);
     }
 }
-
 /**
  * Helper method to parse JSON fields with comprehensive error handling
  */
