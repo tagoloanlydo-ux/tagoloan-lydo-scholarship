@@ -1,4 +1,3 @@
-// Global variables for renewal document rating
 let currentRenewalId = null;
 let currentDocumentType = null;
 let ratedRenewalDocuments = new Set();
@@ -48,8 +47,22 @@ function initializeDocumentUpdateTracker() {
 
 // Open document viewer with rating controls
 function openRenewalDocumentViewer(documentUrl, title, documentType, renewalId) {
+    // IMPORTANT: Ensure renewalId is passed and set
+    if (!renewalId) {
+        console.error('renewalId is required but not provided');
+        Swal.fire('Error', 'Renewal ID is missing. Please reload and try again.', 'error');
+        return;
+    }
+
     currentDocumentType = documentType;
-    currentRenewalId = renewalId;
+    currentRenewalId = renewalId;  // Set this explicitly
+    selectedRenewalId = renewalId; // Also update selectedRenewalId as backup
+    
+    console.log('Opening document viewer:', {
+        documentType: documentType,
+        renewalId: renewalId,
+        currentRenewalId: currentRenewalId
+    });
     
     document.getElementById('documentTitle').textContent = title;
     document.getElementById('documentViewer').src = documentUrl;
@@ -173,6 +186,31 @@ function clearRenewalRatingsFromStorage(renewalId) {
     localStorage.removeItem(storageKey);
 }
 
+
+
+// Fallback function using only localStorage
+function fallbackToLocalStorage(renewalId) {
+    const localRatings = loadRenewalRatingsFromStorage(renewalId);
+    const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
+    
+    documentTypes.forEach(docType => {
+        if (localRatings[docType]) {
+            const status = localRatings[docType].status;
+            renewalDocumentStatuses[docType] = status;
+            if (['good', 'bad'].includes(status)) {
+                ratedRenewalDocuments.add(docType);
+            }
+            updateRenewalDocumentBadge(docType, status);
+        } else {
+            updateRenewalDocumentBadge(docType, null);
+        }
+    });
+    
+    checkAllRenewalDocumentsRated();
+}
+
+
+
 // Open renewal modal with document rating functionality
 function openRenewalModal(scholarId) {
     const contentDiv = document.getElementById('applicationContent');
@@ -187,6 +225,9 @@ function openRenewalModal(scholarId) {
     if (window.renewals[scholarId]) {
         selectedRenewalId = window.renewals[scholarId][0].renewal_id; // latest renewal
         currentRenewalId = selectedRenewalId;
+
+        // Force refresh from database
+        refreshDocumentStatuses(selectedRenewalId);
 
         window.renewals[scholarId].forEach((r, index) => {
             const statusBadge = r.renewal_status === 'Approved'
@@ -262,113 +303,231 @@ function updateRenewalDocumentBadge(documentType, status) {
     const badge = document.getElementById(`badge-${documentType}`);
     const icon = document.getElementById(`icon-${documentType}`);
     
-    // Normalize status to handle different casing and convert "New" to "updated"
-    const normalized = (status || '').toString().toLowerCase();
-    const displayStatus = normalized === 'new' ? 'updated' : normalized;
+    if (!badge || !icon) {
+        console.log(`Elements not found for: ${documentType}`);
+        return;
+    }
+
+    // Normalize status
+    const normalized = status ? status.toString().toLowerCase() : '';
+    console.log(`Updating badge for ${documentType} to:`, normalized);
 
     // Reset all styles first
     badge.classList.remove('badge-new', 'badge-good', 'badge-bad', 'badge-updated', 'hidden');
     icon.classList.remove('text-red-600', 'text-green-600', 'text-gray-500', 'text-purple-600', 'text-orange-500');
     
-    // Apply new status
-    if (displayStatus === 'good') {
+    // Apply new status based on database value
+    if (normalized === 'good') {
         badge.classList.add('badge-good');
         badge.textContent = '✓';
         icon.classList.add('text-green-600');
         badge.classList.remove('hidden');
-    } else if (displayStatus === 'bad') {
+        console.log(`✓ Set ${documentType} to GOOD`);
+    } else if (normalized === 'bad') {
         badge.classList.add('badge-bad');
         badge.textContent = '✗';
         icon.classList.add('text-red-600');
         badge.classList.remove('hidden');
-    } else if (displayStatus === 'updated') {
-        // Unified "Updated" badge for server-side 'New'/'Updated' and local 'updated' flag
+        console.log(`✗ Set ${documentType} to BAD`);
+    } else if (normalized === 'new' || normalized === 'updated') {
         badge.classList.add('badge-updated');
         badge.textContent = 'Updated';
+        badge.style.width = 'auto';
+        badge.style.padding = '2px 6px';
+        badge.style.borderRadius = '8px';
+        badge.style.fontSize = '0.7rem';
+        badge.style.top = '-8px';
+        badge.style.right = '-8px';
         icon.classList.add('text-orange-500');
         badge.classList.remove('hidden');
+        console.log(`↻ Set ${documentType} to UPDATED`);
     } else {
         // No status, hide the badge
         badge.classList.add('hidden');
         icon.classList.add('text-purple-600');
+        console.log(`- Set ${documentType} to NO STATUS (hidden)`);
     }
 }
 
-// Load existing document statuses
-function loadRenewalDocumentStatuses(renewalId) {
-    // First check localStorage for existing ratings
-    const localRatings = loadRenewalRatingsFromStorage(renewalId);
+
+
+// Function to check if any document has "New" status and hide action buttons
+function checkForNewDocumentStatus() {
+    const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
+    const actionButtons = document.getElementById('actionButtons');
     
-    // Then check server for statuses
+    let hasNewStatus = false;
+    
+    // Check each document type for "New" status
+    documentTypes.forEach(docType => {
+        const status = renewalDocumentStatuses[docType];
+        if (status && status.toString().toLowerCase() === 'new') {
+            hasNewStatus = true;
+            console.log(`Found NEW status for: ${docType}`);
+        }
+    });
+    
+    // Hide action buttons if any document has "New" status
+    if (hasNewStatus) {
+        if (actionButtons) {
+            actionButtons.style.display = 'none';
+        }
+        console.log('Action buttons hidden due to NEW document status');
+    } else {
+        console.log('No NEW document status found');
+    }
+}
+
+// Enhanced loadRenewalDocumentStatuses function with NEW status check
+function loadRenewalDocumentStatuses(renewalId) {
+    console.log('Loading document statuses for renewal:', renewalId);
+    
     fetch(`/lydo_staff/get-renewal-document-statuses/${renewalId}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 const statuses = data.statuses || {};
-                const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
+                
+                console.log('DEBUG - Server statuses from database:', statuses);
 
-                documentTypes.forEach(docType => {
-                    let statusData = statuses[docType];
-                    let status = statusData ? statusData.status : null;
-                    let comment = statusData ? statusData.comment : '';
+                // Document type mappings to database columns
+                const documentMappings = {
+                    'cert_of_reg': 'cert_of_reg_status',
+                    'grade_slip': 'grade_slip_status', 
+                    'brgy_indigency': 'brgy_indigency_status'
+                };
+
+                // Clear existing ratings to start fresh from database
+                ratedRenewalDocuments.clear();
+                renewalDocumentStatuses = {};
+
+                Object.keys(documentMappings).forEach(docType => {
+                    const dbColumnName = documentMappings[docType];
+                    let dbStatus = statuses[dbColumnName];
                     
-                    // Check localStorage first (most recent)
-                    if (localRatings[docType]) {
-                        status = localRatings[docType].status;
-                        comment = localRatings[docType].comment;
-                    }
-                    
-                    // Normalize server/local status to a consistent form
-                    // Convert "New" to "updated" for badge display
-                    const normalizedStatus = status ? status.toString().trim() : null;
-                    let badgeStatus = normalizedStatus;
-                    if (normalizedStatus && ['new', 'updated'].includes(normalizedStatus.toLowerCase())) {
-                        badgeStatus = 'updated';
-                    }
-                    
-                    renewalDocumentStatuses[docType] = normalizedStatus;
-                    
-                    // Initialize tracking if not exists
-                    if (!documentUpdateTracker[docType]) {
-                        documentUpdateTracker[docType] = {
-                            lastStatus: normalizedStatus,
-                            hasUpdate: false,
-                            isNew: false
-                        };
-                    } else {
-                        // Check if this is an update from bad to good
-                        if ((documentUpdateTracker[docType].lastStatus || '').toLowerCase() === 'bad' && (normalizedStatus || '').toLowerCase() === 'good') {
-                            documentUpdateTracker[docType].hasUpdate = true;
-                            documentUpdateTracker[docType].lastStatus = normalizedStatus;
+                    console.log(`DEBUG - ${docType} (${dbColumnName}):`, dbStatus);
+
+                    // Use database status as primary source
+                    if (dbStatus) {
+                        // Normalize the status
+                        const normalizedStatus = dbStatus.toString().trim().toLowerCase();
+                        
+                        // Store in our tracking objects
+                        renewalDocumentStatuses[docType] = normalizedStatus;
+                        
+                        // If document has a valid status, mark it as rated
+                        if (['good', 'bad', 'new'].includes(normalizedStatus)) {
+                            ratedRenewalDocuments.add(docType);
                         }
-                    }
-                    
-                    // Decide badge state: treat 'new' or 'updated' as 'updated'
-                    let finalBadgeStatus = badgeStatus;
-                    if (documentUpdateTracker[docType] && documentUpdateTracker[docType].hasUpdate) {
-                        finalBadgeStatus = 'updated';
-                    } else if (normalizedStatus && ['new', 'updated'].includes(normalizedStatus.toLowerCase())) {
-                        finalBadgeStatus = 'updated';
-                    }
-                    
-                    updateRenewalDocumentBadge(docType, finalBadgeStatus);
-                    
-                    // If document has a status, consider it as rated
-                    if (normalizedStatus && ['good', 'bad'].includes(normalizedStatus.toLowerCase())) {
-                        ratedRenewalDocuments.add(docType);
+                        
+                        // Update badge based on database value
+                        let badgeStatus = normalizedStatus;
+                        if (normalizedStatus === 'new') {
+                            badgeStatus = 'updated'; // Show "Updated" for new documents
+                        }
+                        
+                        console.log(`Setting badge for ${docType} to:`, badgeStatus);
+                        updateRenewalDocumentBadge(docType, badgeStatus);
+                    } else {
+                        // No status in database, check localStorage as fallback
+                        const localRatings = loadRenewalRatingsFromStorage(renewalId);
+                        if (localRatings[docType]) {
+                            const localStatus = localRatings[docType].status;
+                            renewalDocumentStatuses[docType] = localStatus;
+                            if (['good', 'bad'].includes(localStatus)) {
+                                ratedRenewalDocuments.add(docType);
+                            }
+                            updateRenewalDocumentBadge(docType, localStatus);
+                        } else {
+                            // No status anywhere, show default
+                            updateRenewalDocumentBadge(docType, null);
+                        }
                     }
                 });
                 
+                // Check for NEW status and hide action buttons if found
+                checkForNewDocumentStatus();
+                
                 // Check if all documents are rated
                 checkAllRenewalDocumentsRated();
+                
+                console.log('Final document statuses:', renewalDocumentStatuses);
+                console.log('Rated documents:', Array.from(ratedRenewalDocuments));
             }
         })
         .catch(error => {
             console.error('Error loading renewal document statuses:', error);
+            // Fallback to localStorage only if server fails
+            fallbackToLocalStorage(renewalId);
         });
 }
 
-// Enhanced mark document as good with update tracking
+// Enhanced refreshDocumentStatuses function
+function refreshDocumentStatuses(renewalId) {
+    console.log('Force refreshing document statuses for:', renewalId);
+    // Clear localStorage for this renewal to force fresh load from database
+    clearRenewalRatingsFromStorage(renewalId);
+    // Reload from database
+    loadRenewalDocumentStatuses(renewalId);
+}
+
+// Enhanced checkAllRenewalDocumentsRated function with accurate counting
+function checkAllRenewalDocumentsRated() {
+    const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
+    
+    // First check if any document has "New" status
+    let hasNewStatus = false;
+    documentTypes.forEach(docType => {
+        if (renewalDocumentStatuses[docType] && renewalDocumentStatuses[docType].toString().toLowerCase() === 'new') {
+            hasNewStatus = true;
+        }
+    });
+    
+    // If any document has "New" status, hide action buttons and return
+    if (hasNewStatus) {
+        const actionButtons = document.getElementById('actionButtons');
+        if (actionButtons) {
+            actionButtons.style.display = 'none';
+        }
+        console.log('Action buttons hidden - documents have NEW status');
+        return;
+    }
+    
+    // Check if all documents are rated (have 'good' or 'bad' status)
+    const allRated = documentTypes.every(docType => 
+        renewalDocumentStatuses[docType] && 
+        ['good', 'bad'].includes(renewalDocumentStatuses[docType].toString().toLowerCase())
+    );
+    
+    if (allRated) {
+        // Count good and bad documents accurately
+        let goodCount = 0;
+        let badCount = 0;
+        
+        documentTypes.forEach(docType => {
+            const status = renewalDocumentStatuses[docType].toString().toLowerCase();
+            if (status === 'good') {
+                goodCount++;
+            } else if (status === 'bad') {
+                badCount++;
+            }
+        });
+        
+        console.log(`All documents rated - Good: ${goodCount}, Bad: ${badCount}`);
+        
+        // Update action buttons based on document ratings
+        updateRenewalActionButtons(goodCount, badCount);
+    } else {
+        console.log(`Not all documents rated: ${ratedRenewalDocuments.size}/3`);
+        // Hide action buttons if not all documents are rated
+        const actionButtons = document.getElementById('actionButtons');
+        if (actionButtons) {
+            actionButtons.style.display = 'none';
+        }
+    }
+}
+
+// Fixed markRenewalDocumentAsGood function - success message stays until OK is clicked
 function markRenewalDocumentAsGood(documentType) {
     Swal.fire({
         title: 'Mark as Good?',
@@ -381,63 +540,77 @@ function markRenewalDocumentAsGood(documentType) {
         cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Check if this document was previously marked as bad
+            // Check if this document was previously marked as bad or new
             const wasPreviouslyBad = documentUpdateTracker[documentType] && 
                                    documentUpdateTracker[documentType].lastStatus === 'bad';
+            const wasNew = renewalDocumentStatuses[documentType] === 'new';
             
             // Update tracking
             if (documentUpdateTracker[documentType]) {
                 documentUpdateTracker[documentType].lastStatus = 'good';
-                if (wasPreviouslyBad) {
+                if (wasPreviouslyBad || wasNew) {
                     documentUpdateTracker[documentType].hasUpdate = true;
                 }
             }
             
-            // Save status to server
-            saveRenewalDocumentStatus(documentType, 'good');
-            
-            // Save status to localStorage
-            const comment = document.getElementById(`comment_${documentType}`)?.value || '';
-            saveRenewalRatingsToStorage(currentRenewalId, documentType, 'good', comment);
-            
-            // Track that this document has been rated
-            ratedRenewalDocuments.add(documentType);
-            renewalDocumentStatuses[documentType] = 'good';
-            
-            // Update the badge - show updated badge if it was previously bad
-            if (wasPreviouslyBad) {
-                updateRenewalDocumentBadge(documentType, 'updated');
-                // Auto-clear the updated status after 5 seconds
-                setTimeout(() => {
-                    if (renewalDocumentStatuses[documentType] === 'good') {
-                        updateRenewalDocumentBadge(documentType, 'good');
+            // Save status to server FIRST
+            saveRenewalDocumentStatus(documentType, 'good').then(() => {
+                // Save status to localStorage
+                const comment = document.getElementById(`comment_${documentType}`)?.value || '';
+                saveRenewalRatingsToStorage(currentRenewalId, documentType, 'good', comment);
+                
+                // Track that this document has been rated
+                ratedRenewalDocuments.add(documentType);
+                renewalDocumentStatuses[documentType] = 'good';
+                
+                // Update the badge - show updated badge if it was previously bad or new
+                if (wasPreviouslyBad || wasNew) {
+                    updateRenewalDocumentBadge(documentType, 'updated');
+                    // Auto-clear the updated status after 5 seconds
+                    setTimeout(() => {
+                        if (renewalDocumentStatuses[documentType] === 'good') {
+                            updateRenewalDocumentBadge(documentType, 'good');
+                        }
+                    }, 5000);
+                } else {
+                    updateRenewalDocumentBadge(documentType, 'good');
+                }
+                
+                // Handle the status change
+                handleDocumentStatusChange(documentType, 'good');
+                
+                // Check if all documents are rated (including NEW status check)
+                checkAllRenewalDocumentsRated();
+                
+                // Update modal UI
+                updateRenewalDocumentModalUI(documentType);
+                
+                // Show success message that stays until OK is clicked
+                Swal.fire({
+                    title: 'Success!',
+                    text: wasPreviouslyBad ? 'Document updated and marked as good!' : 
+                          wasNew ? 'New document marked as good!' : 'Document marked as good.',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    showConfirmButton: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then((result) => {
+                    // This runs only when OK button is clicked
+                    if (result.isConfirmed) {
+                        // Close document viewer after user clicks OK
+                        closeDocumentViewerModal();
                     }
-                }, 5000);
-            } else {
-                updateRenewalDocumentBadge(documentType, 'good');
-            }
-            
-            // Handle the status change
-            handleDocumentStatusChange(documentType, 'good');
-            
-            // Check if all documents are rated
-            checkAllRenewalDocumentsRated();
-            
-            // Update modal UI
-            updateRenewalDocumentModalUI(documentType);
-            
-            Swal.fire({
-                title: 'Success!',
-                text: wasPreviouslyBad ? 'Document updated and marked as good!' : 'Document marked as good.',
-                icon: 'success',
-                showConfirmButton: true,
-                allowOutsideClick: false
+                });
+            }).catch(error => {
+                console.error('Error saving document status:', error);
+                Swal.fire('Error', 'Failed to save document status.', 'error');
             });
         }
     });
 }
 
-// Enhanced mark document as bad with update tracking
+// Updated markRenewalDocumentAsBad function - success message stays until OK is clicked
 function markRenewalDocumentAsBad(documentType) {
     Swal.fire({
         title: 'Mark as Bad?',
@@ -464,66 +637,104 @@ function markRenewalDocumentAsBad(documentType) {
             const comment = result.value;
             
             // Save status as bad
-            saveRenewalDocumentStatus(documentType, 'bad', comment);
-            
-            // IMPORTANT: Also save the comment to the database
-            saveRenewalDocumentComment(documentType, comment);
-            
-            // Update tracking
-            ratedRenewalDocuments.add(documentType);
-            renewalDocumentStatuses[documentType] = 'bad';
-            
-            // Update badge
-            updateRenewalDocumentBadge(documentType, 'bad');
-            
-            // Update modal UI
-            updateRenewalDocumentModalUI(documentType);
-            
-            // Check if all documents are rated
-            checkAllRenewalDocumentsRated();
-            
-            // Close document viewer
-            closeDocumentViewerModal();
-            
-            // Show success
-            Swal.fire({
-                icon: 'success',
-                title: 'Marked as Bad',
-                text: 'Document marked as bad and comment saved.',
-                timer: 1500
+            saveRenewalDocumentStatus(documentType, 'bad', comment).then(() => {
+                // IMPORTANT: Also save the comment to the database
+                saveRenewalDocumentComment(documentType, comment);
+                
+                // Update tracking
+                ratedRenewalDocuments.add(documentType);
+                renewalDocumentStatuses[documentType] = 'bad';
+                
+                // Update badge
+                updateRenewalDocumentBadge(documentType, 'bad');
+                
+                // Update modal UI
+                updateRenewalDocumentModalUI(documentType);
+                
+                // Check if all documents are rated (including NEW status check)
+                checkAllRenewalDocumentsRated();
+                
+                // Show success message that stays until OK is clicked
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Marked as Bad',
+                    text: 'Document marked as bad and comment saved.',
+                    confirmButtonText: 'OK',
+                    showConfirmButton: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then((result) => {
+                    // This runs only when OK button is clicked
+                    if (result.isConfirmed) {
+                        // Close document viewer after user clicks OK
+                        closeDocumentViewerModal();
+                    }
+                });
+            }).catch(error => {
+                console.error('Error saving document status:', error);
+                Swal.fire('Error', 'Failed to save document status.', 'error');
             });
         }
     });
 }
-
-// Save document status to server
-function saveRenewalDocumentStatus(documentType, status, reason = '') {
-    fetch('/lydo_staff/save-renewal-document-status', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': getCsrfToken()
-        },
-        body: JSON.stringify({
-            renewal_id: currentRenewalId,
-            document_type: documentType,
-            status: status,
-            reason: reason
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (!data.success) {
-            console.error('Failed to save status:', data.message);
-            Swal.fire('Error', 'Failed to save document status.', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error saving status:', error);
-        Swal.fire('Error', 'Failed to save document status.', 'error');
-    });
+// Add this function if missing
+function handleDocumentStatusChange(documentType, status) {
+    console.log(`Document ${documentType} status changed to: ${status}`);
+    // You can add any additional handling here if needed
 }
 
+// Updated saveRenewalDocumentStatus function to return Promise
+function saveRenewalDocumentStatus(documentType, status, reason = '') {
+    return new Promise((resolve, reject) => {
+        // Validate that we have a renewal ID
+        if (!currentRenewalId || currentRenewalId === null || currentRenewalId === undefined) {
+            console.error('currentRenewalId is not set:', currentRenewalId);
+            console.error('selectedRenewalId is:', selectedRenewalId);
+            
+            // Try to use selectedRenewalId as fallback
+            if (selectedRenewalId && selectedRenewalId !== null) {
+                currentRenewalId = selectedRenewalId;
+                console.log('Using selectedRenewalId as fallback:', currentRenewalId);
+            } else {
+                Swal.fire('Error', 'Renewal ID not found. Please reload the page and try again.', 'error');
+                reject(new Error('Renewal ID not found'));
+                return;
+            }
+        }
+
+        console.log('Saving status for renewal:', currentRenewalId, 'Document:', documentType, 'Status:', status);
+
+        fetch('/lydo_staff/save-renewal-document-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            body: JSON.stringify({
+                renewal_id: currentRenewalId,
+                document_type: documentType,
+                status: status,
+                reason: reason
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Save status response:', data);
+            if (!data.success) {
+                console.error('Failed to save status:', data.message);
+                reject(new Error(data.message || 'Failed to save document status.'));
+            } else {
+                // Refresh statuses from database after saving
+                refreshDocumentStatuses(currentRenewalId);
+                resolve(data);
+            }
+        })
+        .catch(error => {
+            console.error('Error saving status:', error);
+            reject(error);
+        });
+    });
+}
 // add helper to get CSRF token from meta
 function getCsrfToken() {
     const meta = document.querySelector('meta[name="csrf-token"]');
@@ -535,9 +746,19 @@ function getCsrfToken() {
 
 // In saveRenewalDocumentComment function - UPDATE THIS:
 function saveRenewalDocumentComment(documentType, comment) {
-    console.log('Saving comment for:', documentType, 'Comment:', comment);
+    // Validate renewal ID
+    if (!currentRenewalId || currentRenewalId === null || currentRenewalId === undefined) {
+        console.error('currentRenewalId is not set');
+        if (selectedRenewalId && selectedRenewalId !== null) {
+            currentRenewalId = selectedRenewalId;
+        } else {
+            console.warn('Cannot save comment - no renewal ID available');
+            return;
+        }
+    }
+
+    console.log('Saving comment for renewal:', currentRenewalId, 'Document:', documentType);
     
-    // Save to server
     fetch('/lydo_staff/save-renewal-document-comment', {
         method: 'POST',
         headers: {
@@ -557,7 +778,6 @@ function saveRenewalDocumentComment(documentType, comment) {
             console.error('Failed to save comment:', data.message);
             Swal.fire('Error', 'Failed to save comment.', 'error');
         } else {
-            // Also save to localStorage
             const currentStatus = renewalDocumentStatuses[documentType] || '';
             saveRenewalRatingsToStorage(currentRenewalId, documentType, currentStatus, comment);
             showRenewalAutoSaveIndicator(documentType, true);
@@ -623,31 +843,9 @@ function loadRenewalDocumentComment(documentType) {
         });
 }
 
-// Check if all documents are rated
-function checkAllRenewalDocumentsRated() {
-    const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
-    
-    if (ratedRenewalDocuments.size === 3) {
-        // Count good and bad documents
-        let goodCount = 0;
-        let badCount = 0;
-        
-        documentTypes.forEach(docType => {
-            if (renewalDocumentStatuses[docType] === 'good') {
-                goodCount++;
-            } else if (renewalDocumentStatuses[docType] === 'bad') {
-                badCount++;
-            }
-        });
-        
-        // Update action buttons based on document ratings
-        updateRenewalActionButtons(goodCount, badCount);
-    } else {
-        console.log(`Not all documents rated: ${ratedRenewalDocuments.size}/3`);
-    }
-}
 
-// Update action buttons based on document ratings
+
+// Update action buttons based on document ratings - ONLY APPROVE BUTTON if all good
 function updateRenewalActionButtons(goodCount, badCount) {
     console.log(`Good: ${goodCount}, Bad: ${badCount}`);
 
@@ -659,18 +857,33 @@ function updateRenewalActionButtons(goodCount, badCount) {
 
     actionButtons.style.display = 'flex';
 
-    // NEW LOGIC: If there are bad documents, show send email button and reject only
-    if (badCount > 0) {
+    // NEW LOGIC: 
+    // - If ALL documents are good (goodCount === 3), show ONLY APPROVE button
+    // - If there are bad documents (badCount > 0), show Send Email and Reject buttons
+    // - If mixed (some good, some not rated yet), show both Approve and Reject
+    
+    const totalDocuments = 3;
+    const allGood = goodCount === totalDocuments;
+    const hasBadDocuments = badCount > 0;
+    
+    if (allGood) {
+        // ALL DOCUMENTS ARE GOOD - Show ONLY APPROVE button
+        sendEmailBtn.style.display = 'none';
+        approveBtn.style.display = 'flex';
+        rejectBtn.style.display = 'none';
+        console.log('All documents good - showing ONLY Approve button');
+    } else if (hasBadDocuments) {
+        // HAS BAD DOCUMENTS - Show Send Email and Reject buttons
         sendEmailBtn.style.display = 'flex';
         approveBtn.style.display = 'none';
         rejectBtn.style.display = 'flex';
         console.log('Bad documents found - showing Send Email and Reject buttons');
     } else {
-        // If all documents are good, show approve and reject buttons
+        // MIXED or NOT ALL RATED - Show both Approve and Reject buttons
         sendEmailBtn.style.display = 'none';
         approveBtn.style.display = 'flex';
         rejectBtn.style.display = 'flex';
-        console.log('All documents good - showing Approve and Reject buttons');
+        console.log('Mixed status - showing both Approve and Reject buttons');
     }
 }
 
@@ -817,7 +1030,8 @@ function restoreModalState() {
         documentTypes.forEach(docType => {
             if (renewalDocumentStatuses[docType]) {
                 let badgeStatus = renewalDocumentStatuses[docType];
-                if (documentUpdateTracker[docType] && documentUpdateTracker[docType].hasUpdate) {
+                // For "New" status, show "Updated" badge
+                if (badgeStatus && badgeStatus.toLowerCase() === 'new') {
                     badgeStatus = 'updated';
                 }
                 updateRenewalDocumentBadge(docType, badgeStatus);
@@ -855,251 +1069,56 @@ function initializePersistentRatings() {
 // Load document comments
 function loadDocumentComments(renewalId) {
     fetch(`/lydo_staff/get-document-comments/${renewalId}`)
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('API Response:', data);
             if (data.success) {
-                // Store comments for later use
-                window.documentComments = data.comments;
-                window.documentStatuses = data.statuses;
+                const comments = data.comments || {};
+                const statuses = data.statuses || {};
+
+                console.log('Comments:', comments);
+                console.log('Statuses:', statuses);
+
+                // Document types to check
+                const documentTypes = ['application_letter', 'cert_of_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
+
+                // Initialize rated documents tracking
+                ratedDocuments = new Set();
+
+                // Store previous status for comparison
+                previousDocumentStatus = {};
+
+                documentTypes.forEach(docType => {
+                    console.log(`Processing ${docType}:`, comments[docType], statuses[`${docType}_status`]);
+
+                    // Load status
+                    const status = statuses[`${docType}_status`];
+                    console.log(`Status for ${docType}:`, status);
+                    
+                    // Store previous status
+                    previousDocumentStatus[docType] = status;
+                    
+                    // Update document badges based on status
+                    updateDocumentBadges(docType, status, false);
+                    
+                    // If document has a status, consider it as rated and opened
+                    if (status === 'good' || status === 'bad') {
+                        ratedDocuments.add(docType);
+                    }
+                });
+                
+                // Check if all documents are already rated
+                checkAllDocumentsRated();
+            } else {
+                console.error('API returned error:', data.message);
             }
         })
         .catch(error => {
             console.error('Error loading document comments:', error);
         });
-}
-
-// Enhanced function to handle document status changes
-function handleDocumentStatusChange(documentType, status) {
-    // Hide approve button when there are bad documents
-    if (status === 'bad') {
-        const approveBtn = document.getElementById('approveBtn');
-        if (approveBtn) {
-            approveBtn.style.display = 'none';
-        }
-    }
-    
-    // Update action buttons based on all document statuses
-    checkAllRenewalDocumentsRated();
-}
-
-function sendEmailForBadDocuments() {
-    // Show loading
-    const sendEmailBtn = document.getElementById('sendEmailBtn');
-    const sendEmailText = document.getElementById('sendEmailText');
-    const sendEmailSpinner = document.getElementById('sendEmailSpinner');
-
-    sendEmailText.classList.add('hidden');
-    sendEmailSpinner.classList.remove('hidden');
-    sendEmailBtn.disabled = true;
-
-    // Get bad documents
-    const badDocuments = [];
-    const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
-
-    documentTypes.forEach(docType => {
-        if (renewalDocumentStatuses[docType] === 'bad') {
-            badDocuments.push(docType);
-        }
-    });
-
-    if (badDocuments.length === 0) {
-        Swal.fire('Error', 'No documents marked as bad to send correction request.', 'error');
-        sendEmailText.classList.remove('hidden');
-        sendEmailSpinner.classList.add('hidden');
-        sendEmailBtn.disabled = false;
-        return;
-    }
-
-    console.log('Sending email for bad documents:', badDocuments);
-    console.log('Renewal ID:', selectedRenewalId);
-
-    // Send request
-    fetch('/lydo_staff/send-email-for-bad-documents', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            renewal_id: selectedRenewalId,
-            bad_documents: badDocuments
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Email response:', data);
-        if (data.success) {
-            Swal.fire({
-                title: 'Correction Request Sent! 📧',
-                text: 'Scholar has been notified about the required document corrections.',
-                icon: 'success',
-                confirmButtonColor: '#10b981',
-                timer: 4000
-            });
-        } else {
-            Swal.fire('Error', data.message || 'Failed to send correction request', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error sending correction email:', error);
-        Swal.fire('Error', 'Failed to send correction request. Please try again.', 'error');
-    })
-    .finally(() => {
-        // Reset button
-        sendEmailText.classList.remove('hidden');
-        sendEmailSpinner.classList.add('hidden');
-        sendEmailBtn.disabled = false;
-    });
-}
-// Initialize everything when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    initializeDocumentUpdateTracker();
-    restoreModalState();
-    initializePersistentRatings();
-
-    // Override the openRenewalModal to ensure ratings persist
-    const originalOpenRenewalModal = window.openRenewalModal;
-    window.openRenewalModal = function(scholarId) {
-        restoreModalState();
-        originalOpenRenewalModal(scholarId);
-
-        // Load document comments for this renewal
-        if (selectedRenewalId) {
-            loadDocumentComments(selectedRenewalId);
-        }
-    };
-});
-
-// Tab switching functions
-function showTable() {
-    document.getElementById('tableView').classList.remove('hidden');
-    document.getElementById('listView').classList.add('hidden');
-    document.getElementById('tab-renewal').classList.add('active');
-    document.getElementById('tab-review').classList.remove('active');
-}
-
-function showList() {
-    document.getElementById('tableView').classList.add('hidden');
-    document.getElementById('listView').classList.remove('hidden');
-    document.getElementById('tab-renewal').classList.remove('active');
-    document.getElementById('tab-review').classList.add('active');
-}
-
-// Filter functions
-function clearFiltersTable() {
-    document.getElementById('nameSearch').value = '';
-    document.getElementById('barangayFilter').value = '';
-    // Add code to reload table data without filters
-}
-
-function clearFiltersList() {
-    document.getElementById('listNameSearch').value = '';
-    document.getElementById('listBarangayFilter').value = '';
-    // Add code to reload list data without filters
-}
-
-// Update renewal status function
-function updateRenewalStatus(renewalId, status) {
-    const approveBtn = document.getElementById('approveBtn');
-    const rejectBtn = document.getElementById('rejectBtn');
-    const approveText = document.getElementById('approveText');
-    const rejectText = document.getElementById('rejectText');
-    const approveSpinner = document.getElementById('approveSpinner');
-    const rejectSpinner = document.getElementById('rejectSpinner');
-
-    // Show loading state
-    if (status === 'Approved') {
-        approveText.classList.add('hidden');
-        approveSpinner.classList.remove('hidden');
-        approveBtn.disabled = true;
-    } else {
-        rejectText.classList.add('hidden');
-        rejectSpinner.classList.remove('hidden');
-        rejectBtn.disabled = true;
-    }
-
-    let reason = null;
-    if (status === 'Rejected') {
-        Swal.fire({
-            title: 'Reason for Rejection',
-            input: 'textarea',
-            inputLabel: 'Please provide a reason for rejection:',
-            inputPlaceholder: 'Enter reason here...',
-            inputAttributes: {
-                'aria-label': 'Enter reason for rejection'
-            },
-            showCancelButton: true,
-            confirmButtonText: 'Submit Rejection',
-            cancelButtonText: 'Cancel',
-            inputValidator: (value) => {
-                if (!value) {
-                    return 'Please provide a reason for rejection!';
-                }
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                reason = result.value;
-                submitStatusUpdate(renewalId, status, reason);
-            } else {
-                // Reset button states if cancelled
-                resetButtonStates();
-            }
-        });
-    } else {
-        submitStatusUpdate(renewalId, status, reason);
-    }
-}
-
-function submitStatusUpdate(renewalId, status, reason) {
-    fetch(`/lydo_staff/update-renewal-status/${renewalId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': getCsrfToken()
-        },
-        body: JSON.stringify({
-            renewal_status: status,
-            reason: reason
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            Swal.fire({
-                title: 'Success!',
-                text: `Renewal ${status.toLowerCase()} successfully.`,
-                icon: 'success',
-                confirmButtonColor: '#10b981'
-            }).then(() => {
-                closeApplicationModal();
-                location.reload(); // Reload to update the lists
-            });
-        } else {
-            Swal.fire('Error', 'Failed to update renewal status', 'error');
-            resetButtonStates();
-        }
-    })
-    .catch(error => {
-        console.error('Error updating renewal status:', error);
-        Swal.fire('Error', 'Failed to update renewal status', 'error');
-        resetButtonStates();
-    });
-}
-
-function resetButtonStates() {
-    const approveText = document.getElementById('approveText');
-    const rejectText = document.getElementById('rejectText');
-    const approveSpinner = document.getElementById('approveSpinner');
-    const rejectSpinner = document.getElementById('rejectSpinner');
-    const approveBtn = document.getElementById('approveBtn');
-    const rejectBtn = document.getElementById('rejectBtn');
-
-    approveText.classList.remove('hidden');
-    rejectText.classList.remove('hidden');
-    approveSpinner.classList.add('hidden');
-    rejectSpinner.classList.add('hidden');
-    approveBtn.disabled = false;
-    rejectBtn.disabled = false;
 }
 
 // Edit renewal modal functions

@@ -646,5 +646,27 @@
         });
     @endif
 </script>
+<script>
+// Simple deadline checker - add this to your existing script
+function checkRenewalDeadline() {
+    const renewalButton = document.querySelector('#renewalButton, button[onclick*="openModal"]');
+    if (!renewalButton || renewalButton.disabled) return;
+    
+    const now = new Date();
+    const renewalDeadline = new Date('{{ $settings->renewal_deadline ?? null }}');
+    const renewalStart = new Date('{{ $settings->renewal_start_date ?? null }}');
+    
+    // Check if we're outside the renewal period
+    if ((renewalDeadline && now > renewalDeadline) || (renewalStart && now < renewalStart)) {
+        renewalButton.disabled = true;
+        renewalButton.classList.remove('bg-violet-600', 'bg-yellow-600', 'bg-red-600', 'hover:bg-violet-700', 'hover:bg-yellow-700', 'hover:bg-red-700');
+        renewalButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+        renewalButton.innerHTML = '<i class="fa-solid fa-plus-circle mr-2"></i>Apply for Renewal';
+    }
+}
+
+// Check every 2 seconds
+setInterval(checkRenewalDeadline, 2000);
+</script>
 </body>
 </html>
