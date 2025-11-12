@@ -153,7 +153,7 @@ class ApplicationPersonnelController extends Controller
                     'application' // Load application directly
                 ])
                 ->where('lydopers_id', $request->auth_user_id)
-                ->where('status', 'Waiting')
+                ->where('status', 'Pending')
                 ->where('initial_screening', 'Pending')
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -226,7 +226,7 @@ class ApplicationPersonnelController extends Controller
             // Get applications assigned to this mayor staff (filter by qualifying remarks)
             $applications = ApplicationPersonnel::with(['application.applicant'])
                 ->where('lydopers_id', $userId)
-                ->where('status', 'Waiting')
+                ->where('status', 'Pending')
                 ->where('initial_screening', 'Reviewed')
                 // Include remarks that qualify for further processing
                 ->where(function($query) {
@@ -322,7 +322,7 @@ class ApplicationPersonnelController extends Controller
 
             $waitingPending = ApplicationPersonnel::with(['application.applicant'])
                 ->where('lydopers_id', $userId)
-                ->where('status', 'Waiting')
+                ->where('status', 'Pending')
                 ->where('initial_screening', 'Pending')
                 ->orderBy('created_at', 'desc')
                 ->get();

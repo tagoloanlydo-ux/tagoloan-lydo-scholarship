@@ -130,7 +130,7 @@ class ApplicantController extends Controller
                 'lydopers_id' => $mayorStaff ? $mayorStaff->lydopers_id : 1, // Default to 1 if no staff found
                 'initial_screening' => 'Pending',
                 'remarks' => 'Poor', // 🔥 CHANGE FROM 'Pending' TO VALID POVERTY LEVEL
-                'status' => 'Waiting',
+                'status' => 'Pending',
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
