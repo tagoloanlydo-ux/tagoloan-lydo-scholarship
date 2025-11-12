@@ -289,7 +289,7 @@ public function application(Request $request)
         $query->where("a.applicant_brgy", $request->barangay);
     }
 
-    $tableApplicants = $query->paginate(15);
+    $tableApplicants = $query->get();
 
     $listApplicants = DB::table("tbl_applicant as a")
         ->join(
@@ -342,7 +342,8 @@ public function application(Request $request)
         ->when($request->filled("barangay"), function ($q) use ($request) {
             $q->where("a.applicant_brgy", $request->barangay);
         })
-        ->paginate(15, ['*'], 'list');
+        
+        ->get();
 
     $barangays = DB::table("tbl_applicant")
         ->pluck("applicant_brgy")
@@ -779,7 +780,7 @@ public function deleteApplication($id)
             ->where('ap.status', 'Pending')
             ->where('ap.initial_screening', 'Reviewed')
             ->whereIn('ap.remarks', ['Poor', 'Ultra Poor', 'Indigenous']) // Include all valid poverty levels
-            ->paginate(15);
+           ->get();
 
         // Get list of processed applications
         $listApplications = DB::table('tbl_application_personnel as ap')
@@ -801,7 +802,7 @@ public function deleteApplication($id)
             )
             ->where('ap.lydopers_id', $currentStaffId) // Add this filter
             ->whereIn('ap.status', ['Approved', 'Rejected'])
-            ->paginate(15, ['*'], 'list');
+            ->get();
 
         // Get barangays for filtering
         $barangays = DB::table('tbl_applicant')
@@ -1474,7 +1475,7 @@ public function deleteApplication($id)
             ->when($request->filled("barangay"), function ($q) use ($request) {
                 $q->where("a.applicant_brgy", $request->barangay);
             })
-            ->paginate(15, ['*'], 'list');
+            ->get();
 
         $applications = DB::table("tbl_application as app")
             ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
@@ -1666,7 +1667,7 @@ public function deleteApplication($id)
             $query->where('app.applicant_brgy', $request->barangay);
         }
 
-        $applications = $query->paginate(15);
+        $applications = $query->get();
 
         $listApplications = DB::table('tbl_application_personnel as ap')
             ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
@@ -1685,7 +1686,7 @@ public function deleteApplication($id)
             )
             ->whereIn('ap.status', ['Approved', 'Rejected'])
             ->where('lydo.lydopers_role', 'lydo_staff')
-            ->paginate(15, ['*'], 'list');
+            ->get();
 
         return response()->json([
             'applications' => $applications->items(),
@@ -1770,7 +1771,7 @@ public function deleteApplication($id)
             $query->where('app.applicant_brgy', $request->barangay);
         }
 
-        $tableApplicants = $query->paginate(15);
+        $tableApplicants = $query->get();
 
         return response()->json([
             'data' => $tableApplicants->items(),
@@ -1823,7 +1824,7 @@ public function deleteApplication($id)
             $query->where('ap.status', $request->status_filter);
         }
 
-        $listApplications = $query->paginate(15, ['*'], 'list');
+        $listApplications = $query->get();
 
         return response()->json([
             'data' => $listApplications->items(),
