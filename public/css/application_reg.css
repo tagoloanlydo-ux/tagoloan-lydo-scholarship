@@ -1,13 +1,49 @@
+/* Simple left-aligned back button */
+.header-simple {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.back-btn-left {
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+    padding: 5px 15px 5px 0;
+    margin: 0;
+    line-height: 1;
+    align-self: flex-start;
+}
+
+.header-content-left {
+    flex: 1;
+    text-align: center;
+}
 body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #f0f0f5 0%, #d9d9ff 100%);
     display: flex;
-    flex-direction: column; /* column para nasa taas ang header */
-    justify-content: flex-start; /* hindi na center, sa taas */
-    align-items: center; /* center horizontally */
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
     min-height: 100vh;
     margin: 0;
+    overflow-x: hidden;
 }
+
+/* Full screen container */
+.full-screen-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 /* Select2 customization */
 .select2-container--default .select2-selection--single {
   border: 1px solid #d1d5db !important;
@@ -53,16 +89,22 @@ body {
   margin-top: 4px; 
   display: block; 
 }
-/* Wrapper */
-.container-wrapper {
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-    justify-content: center;
-    align-items: flex-start;
+
+.tab-container {
     width: 100%;
-    max-width: 2000px;
+    height: 100vh;
+    background: transparent;
+    padding: 30px;
+    border-radius: 0;
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
+
 .select2-container--default .select2-selection--single {
     height: 42px !important;
     border: 1px solid #000000 !important;
@@ -144,19 +186,6 @@ body {
     box-sizing: border-box;
 }
 
-.tab-container {
-    width: 100%;
-    max-width: 800px;
-    background: transparent;
-    padding: 30px 30px 10px;
-    border-radius: 16px;
-    box-shadow: 0 15px 30px rgba(102, 51, 153, 0.2);
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
-    box-sizing: border-box;
-}
-
 /* Headers */
 .login-container h1,
 .credentials-container h1,
@@ -171,7 +200,7 @@ body {
 .credentials-container p.subtitle,
 .tab-container p.subtitle {
     color: #000000;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     font-size: 15px;
     text-align: center;
 }
@@ -180,6 +209,9 @@ body {
 form {
     z-index: 3;
     position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 .input-row {
     display: flex;
@@ -287,7 +319,7 @@ input[type="file"]::file-selector-button:hover {
     padding: 12px 20px;
     font-weight: 700;
     font-size: 14px;
-    margin-top: 10px;
+    margin-top: 0;
     background: linear-gradient(90deg, #4b2b8d 0%, #230061 100%);
     color: white;
     border: none;
@@ -337,19 +369,24 @@ input[type="file"]::file-selector-button:hover {
 
 .tab-content {
     display: none;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .tab-content.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Navigation Buttons */
 .button-row {
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    margin-top: 2px;
+    margin-bottom: 100px;
+    gap: 10px;
 }
 
+/* Gamitin ito sa HTML: <button class="nav-btn">Next</button> */
 .nav-btn {
     padding: 12px 20px;
     font-weight: 700;
@@ -362,8 +399,8 @@ input[type="file"]::file-selector-button:hover {
     box-shadow: 0 10px 20px #5132a6cc;
     transition: background 0.3s ease;
     height: 42px;
+    /* WALANG MARGIN-TOP DITO */
 }
-
 .nav-btn:hover {
     background: linear-gradient(90deg, #5b21b6 0%, #3b0066 100%);
 }
@@ -454,7 +491,7 @@ svg {
     width: 100%;
     text-align: center;
     margin-bottom: 10px;
-    margin-top: -40px;
+    margin-top: 0;
 }
 .page-header .logo {
     width: 80px;
@@ -496,44 +533,29 @@ svg {
 
 /* Large screens (desktops) */
 @media (min-width: 1200px) {
-    .container-wrapper {
-        max-width: 1400px;
+    .full-screen-container {
+        padding: 0;
     }
 
-    .login-container,
     .tab-container {
-        max-width: 900px;
-    }
-
-    .credentials-container {
-        max-width: 600px;
+        max-width: 100%;
     }
 }
 
 /* Medium screens (tablets and small desktops) */
 @media (max-width: 1024px) {
-    .container-wrapper {
-        max-width: 1000px;
-        gap: 15px;
+    .full-screen-container {
+        padding: 0;
     }
 
-    .login-container,
     .tab-container {
-        max-width: 700px;
+        max-width: 100%;
     }
 
-    .credentials-container {
-        max-width: 400px;
-    }
-
-    .login-container h1,
-    .credentials-container h1,
     .tab-container h1 {
         font-size: 28px;
     }
 
-    .login-container p.subtitle,
-    .credentials-container p.subtitle,
     .tab-container p.subtitle {
         font-size: 14px;
     }
@@ -546,31 +568,23 @@ svg {
 /* Small screens (tablets) */
 @media (max-width: 768px) {
     body {
-        padding: 15px;
+        padding: 0;
     }
 
-    .container-wrapper {
-        flex-direction: column;
-        gap: 20px;
-        max-width: 100%;
+    .full-screen-container {
+        padding: 0;
     }
 
-    .login-container,
-    .credentials-container,
     .tab-container {
         width: 100%;
         max-width: none;
-        padding: 25px 20px;
+        padding: 20px;
     }
 
-    .login-container h1,
-    .credentials-container h1,
     .tab-container h1 {
         font-size: 26px;
     }
 
-    .login-container p.subtitle,
-    .credentials-container p.subtitle,
     .tab-container p.subtitle {
         font-size: 14px;
     }
@@ -598,28 +612,22 @@ svg {
 /* Extra small screens (large phones) */
 @media (max-width: 640px) {
     body {
-        padding: 10px;
+        padding: 0;
     }
 
-    .container-wrapper {
-        gap: 15px;
+    .full-screen-container {
+        padding: 0;
     }
 
-    .login-container,
-    .credentials-container,
     .tab-container {
-        padding: 20px 15px;
-        border-radius: 14px;
+        padding: 15px;
+        border-radius: 0;
     }
 
-    .login-container h1,
-    .credentials-container h1,
     .tab-container h1 {
         font-size: 24px;
     }
 
-    .login-container p.subtitle,
-    .credentials-container p.subtitle,
     .tab-container p.subtitle {
         font-size: 13px;
     }
@@ -645,29 +653,23 @@ svg {
 /* Mobile phones */
 @media (max-width: 480px) {
     body {
-        padding: 8px;
+        padding: 0;
     }
 
-    .container-wrapper {
-        gap: 12px;
+    .full-screen-container {
+        padding: 0;
     }
 
-    .login-container,
-    .credentials-container,
     .tab-container {
-        padding: 18px 12px;
-        border-radius: 12px;
+        padding: 12px;
+        border-radius: 0;
     }
 
-    .login-container h1,
-    .credentials-container h1,
     .tab-container h1 {
         font-size: 22px;
         margin-bottom: 5px;
     }
 
-    .login-container p.subtitle,
-    .credentials-container p.subtitle,
     .tab-container p.subtitle {
         font-size: 12px;
         margin-bottom: 18px;
@@ -752,29 +754,23 @@ svg {
 /* Very small screens */
 @media (max-width: 360px) {
     body {
-        padding: 5px;
+        padding: 0;
     }
 
-    .container-wrapper {
-        gap: 10px;
+    .full-screen-container {
+        padding: 0;
     }
 
-    .login-container,
-    .credentials-container,
     .tab-container {
-        padding: 15px 10px;
-        border-radius: 10px;
+        padding: 10px;
+        border-radius: 0;
     }
 
-    .login-container h1,
-    .credentials-container h1,
     .tab-container h1 {
         font-size: 20px;
         margin-bottom: 4px;
     }
 
-    .login-container p.subtitle,
-    .credentials-container p.subtitle,
     .tab-container p.subtitle {
         font-size: 11px;
         margin-bottom: 15px;
