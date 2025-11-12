@@ -1,25 +1,217 @@
 <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Scholarship Management</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-            <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholarship Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-        <link rel="stylesheet" href="{{ asset('css/application.css') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="{{ asset('css/application.css') }}" />
 
-        <!-- DataTables CSS -->
-        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.tailwindcss.min.css">
-        <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.tailwindcss.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
 
-    </head>
-    <style>
-    /* Pagination Styles */
+</head>
+<style>
+/* Document Viewer Modal Styles */
+.document-modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+/* Pagination Styles for Application */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.pagination-info {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: 0.5rem 1rem;
+    background-color: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #6d28d9;
+    transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+    background-color: #d1d5db;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pagination-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.pagination-page-input {
+    width: 3.5rem;
+    padding: 0.4rem;
+    text-align: center;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: white;
+}
+
+.pagination-page-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Responsive design for pagination */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: center;
+    }
+
+    .pagination-buttons {
+        justify-content: center;
+    }
+
+    .pagination-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .pagination-info {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination-buttons {
+        gap: 0.25rem;
+    }
+
+    .pagination-btn {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.75rem;
+    }
+
+    .pagination-page-info {
+        font-size: 0.8rem;
+    }
+
+    .pagination-page-input {
+        width: 3rem;
+        padding: 0.3rem;
+    }
+}
+.document-viewer-container {
+    height: calc(100vh - 300px); /* A4 height equivalent */
+    min-height: 800px; /* Minimum A4 height */
+    max-height: 900px; /* Maximum A4 height */
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background-color: #f9fafb;
+}
+
+.document-viewer {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: white;
+}
+
+/* Review Controls - Maintain current button styles */
+#documentReviewControls {
+    margin-top: 1rem;
+}
+
+#documentReviewControls .mark-good-btn,
+#documentReviewControls .mark-bad-btn {
+    flex: 1;
+    background-color: #10b981; /* Green for good */
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    cursor: pointer;
+}
+
+#documentReviewControls .mark-bad-btn {
+    background-color: #ef4444; /* Red for bad */
+}
+
+#documentReviewControls .mark-good-btn:hover {
+    background-color: #059669;
+}
+
+#documentReviewControls .mark-bad-btn:hover {
+    background-color: #dc2626;
+}
+
+#documentReviewControls .mark-good-btn:disabled,
+#documentReviewControls .mark-bad-btn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .document-viewer-container {
+        height: calc(100vh - 250px);
+        min-height: 600px;
+        max-height: 700px;
+    }
+    
+    #documentReviewControls .flex {
+        flex-direction: column;
+       }
+}
 .pagination-container {
     display: flex;
     justify-content: center;
@@ -28,7 +220,19 @@
     gap: 1rem;
     flex-wrap: wrap;
 }
-
+.badge-updated {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #8b5cf6;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 30px;
+    font-size: 10px;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
 .pagination-info {
     font-size: 0.9rem;
     color: #6b7280;
@@ -129,148 +333,148 @@
         padding: 0.3rem;
     }
 }
-    </style>
-    <body class="bg-gray-50">
+</style>
+<body class="bg-gray-50">
 
-        <!-- Loading Spinner Overlay -->
-        <div id="loadingOverlay" class="loading-overlay">
-            <div class="loading-container">
-                <div class="spinner">
-                    <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+    <!-- Loading Spinner Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-container">
+            <div class="spinner">
+                <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+            </div>
+            <div class="text-line">Loading...</div>
+        </div>
+    </div>
+
+    <!-- Header -->
+<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
+        <div class="flex items-center">
+            <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
+                <h1 class="text-2xl font-bold text-white ml-4">Lydo Scholarship</h1>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
+
+            <div class="relative">
+                <!-- 🔔 Bell Icon -->
+                <button id="notifBell" class="relative focus:outline-none">
+                    <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
+                    @if($showBadge && $notifications->count() > 0)
+                        <span id="notifCount"
+                            class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
+                            {{ $notifications->count() }}
+                        </span>
+                    @endif
+                </button>
+
+                <!-- 🔽 Dropdown -->
+                <div id="notifDropdown"
+                    class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                    <div class="p-3 border-b font-semibold text-violet-600">Notifications</div>
+                    <ul class="max-h-60 overflow-y-auto">
+                        @forelse($notifications as $notif)
+                            <li class="px-4 py-2 hover:bg-gray-50 text-base border-b">
+                                {{-- New Application --}}
+                                @if($notif->type === 'application')
+                                    <p class="text-blue-600 font-medium">
+                                        📝 {{ $notif->name }} submitted a new application
+                                    </p>
+                                {{-- New Remark --}}
+                                @elseif($notif->type === 'remark')
+                                    <p class="text-purple-600 font-medium">
+                                        💬 New remark for {{ $notif->name }}:
+                                        <b>{{ $notif->remarks }}</b>
+                                    </p>
+                                @endif
+
+                                {{-- Time ago --}}
+                                <p class="text-xs text-gray-500">
+                                    {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
+                                </p>
+                            </li>
+                        @empty
+                            <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
+                        @endforelse
+                    </ul>
                 </div>
-                <div class="text-line">Loading...</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
+        <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
+            <ul class="side-menu top space-y-4">
+                <li>
+                    <a href="/mayor_staff/dashboard" class="w-ful flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                        <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
+                        <span class="ml-4 hidden md:block text-lg">Dashboard</span>
+                    </a>
+                </li>
+                <li class="relative">
+                    <button onclick="toggleDropdown('scholarMenu')"
+                        class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+                        <div class="flex items-center">
+                            <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl text-white-700"></i>
+                            <span class="ml-4 hidden md:block text-lg">Applicants</span>
+                        </div>
+                        <i class="bx bx-chevron-down ml-2"></i>
+                    </button>
+
+                    <!-- Dropdown Menul -->
+                    <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
+                        <li>
+                            <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-white bg-violet-600">
+                            <i class="bx bx-search-alt mr-2 text-white-700"></i> Review Applications
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/mayor_staff/status" class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                            <i class="bx bx-check-circle mr-2 text-white-700"></i> Scholarship Approval
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+                    <ul class="side-menu space-y-1">
+                        <li>
+                            <a href="/mayor_staff/settings" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                                <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl text-white-700"></i>
+                                <span class="ml-4 hidden md:block text-base">Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+
+        </nav>
+            <div class="p-2 md:p-4 border-t">
+                <form method="POST" action="{{ route('logout') }}" id="logoutForm">
+                    @csrf
+                        <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
+                            <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
+                            <span class="hidden md:block text-red-600">Logout</span>
+                        </button>
+                </form>
             </div>
         </div>
 
-        <!-- Header -->
-        <header class="bg-violet-600 shadow-sm p-4 flex justify-between items-center font-sans">
-            <div class="flex items-center">
-                <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
-                    <h1 class="text-2xl font-bold text-white ml-4">Lydo Scholarship</h1>
-            </div>
-
-            <div class="flex items-center space-x-4">
-                <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
-
-                <div class="relative">
-                    <!-- 🔔 Bell Icon -->
-                    <button id="notifBell" class="relative focus:outline-none">
-                        <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-                        @if($showBadge && $notifications->count() > 0)
-                            <span id="notifCount"
-                                class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                                {{ $notifications->count() }}
-                            </span>
-                        @endif
-                    </button>
-
-                    <!-- 🔽 Dropdown -->
-                    <div id="notifDropdown"
-                        class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                        <div class="p-3 border-b font-semibold text-violet-600">Notifications</div>
-                        <ul class="max-h-60 overflow-y-auto">
-                            @forelse($notifications as $notif)
-                                <li class="px-4 py-2 hover:bg-gray-50 text-base border-b">
-                                    {{-- New Application --}}
-                                    @if($notif->type === 'application')
-                                        <p class="text-blue-600 font-medium">
-                                            📝 {{ $notif->name }} submitted a new application
-                                        </p>
-                                    {{-- New Remark --}}
-                                    @elseif($notif->type === 'remark')
-                                        <p class="text-purple-600 font-medium">
-                                            💬 New remark for {{ $notif->name }}:
-                                            <b>{{ $notif->remarks }}</b>
-                                        </p>
-                                    @endif
-
-                                    {{-- Time ago --}}
-                                    <p class="text-xs text-gray-500">
-                                        {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
-                                    </p>
-                                </li>
-                            @empty
-                                <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
-                            @endforelse
-                        </ul>
-                    </div>
+    <!-- Main Content -->
+    <div class="main-content-fixed text-[16px]">
+                <div class="p-10 bg-gray-50 min-h-screen rounded-lg shadow">
+                    <div class="flex justify-between items-center mb-6">
+                        <h5 class="text-3xl font-bold text-gray-800">Review Applicants Application</h5>
                 </div>
-            </div>
-        </header>
 
-        <!-- Sidebar -->
-        <div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
-            <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
-                <ul class="side-menu top space-y-4">
-                    <li>
-                        <a href="/mayor_staff/dashboard" class="w-ful flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                            <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
-                            <span class="ml-4 hidden md:block text-lg">Dashboard</span>
-                        </a>
-                    </li>
-                    <li class="relative">
-                        <button onclick="toggleDropdown('scholarMenu')"
-                            class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-                            <div class="flex items-center">
-                                <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl text-white-700"></i>
-                                <span class="ml-4 hidden md:block text-lg">Applicants</span>
+                    <div class="flex justify-start items-center mb-6 gap-4">
+                                    <!-- Tab Switch -->
+                        <div class="flex gap-2">
+                            <div id="pendingTab" class="tab active" onclick="showTable()">Pending Review</div>
+                            <div id="reviewedTab" class="tab" onclick="showList()">Reviewed Applications</div>
                             </div>
-                            <i class="bx bx-chevron-down ml-2"></i>
-                        </button>
-
-                        <!-- Dropdown Menu -->
-                        <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
-                            <li>
-                                <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-white bg-violet-600">
-                                <i class="bx bx-search-alt mr-2 text-white-700"></i> Review Applications
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/mayor_staff/status" class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                <i class="bx bx-check-circle mr-2 text-white-700"></i> Scholarship Approval
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-                        <ul class="side-menu space-y-1">
-                            <li>
-                                <a href="/mayor_staff/settings" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                    <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl text-white-700"></i>
-                                    <span class="ml-4 hidden md:block text-base">Settings</span>
-                                </a>
-                            </li>
-                        </ul>
-
-            </nav>
-                <div class="p-2 md:p-4 border-t">
-                    <form method="POST" action="{{ route('logout') }}" id="logoutForm">
-                        @csrf
-                            <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
-                                <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
-                                <span class="hidden md:block text-red-600">Logout</span>
-                            </button>
-                    </form>
-                </div>
-            </div>
-
-        <!-- Main Content -->
-        <div class="main-content-fixed text-[16px]">
-                    <div class="p-10 bg-gray-50 min-h-screen rounded-lg shadow">
-                        <div class="flex justify-between items-center mb-6">
-                            <h5 class="text-3xl font-bold text-gray-800">Review Applicants Application</h5>
-                    </div>
-
-                        <div class="flex justify-start items-center mb-6 gap-4">
-                                        <!-- Tab Switch -->
-                            <div class="flex gap-2">
-                                <div id="pendingTab" class="tab active" onclick="showTable()">Pending Review</div>
-                                <div id="reviewedTab" class="tab" onclick="showList()">Reviewed Applications</div>
-                                </div>
-                            </div>
-                <!-- ✅ Table View (Applicants without remarks) -->
-                <div id="tableView">
-                    <!-- Search and Filter Section -->
+                        </div>
+            <!-- ✅ Table View (Applicants without remarks) -->
+            <div id="tableView">
+<!-- Search and Filter Section for Table View -->
 <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
     <div class="flex gap-4 items-end">
         <!-- Left side container -->
@@ -279,23 +483,18 @@
             <div>
                 <label for="searchInputTable" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
                 <div class="relative">
-                    <input type="text" id="searchInputTable" placeholder="Enter applicant name..."
-                        style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
-                        onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                        onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-                    <button onclick="clearFiltersTable()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
+<input type="text" id="searchInputTable" placeholder="Enter applicant name..."
+    class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none">
+<button onclick="clearFiltersTable()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                 </div>
             </div>
 
             <!-- Filter by Barangay -->
             <div>
                 <label for="barangaySelectTable" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                <select id="barangaySelectTable"
-                    style="padding: 0.75rem 2.5rem; width: 16rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white; appearance: none; background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"
-                    onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                <select id="barangaySelectTable" onchange="filterRows('table')"
+                    class="w-64 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white appearance-none outline-none"
+                    style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
                     <option value="">All Barangays</option>
                     @foreach($barangays as $brgy)
                         <option value="{{ $brgy }}">{{ $brgy }}</option>
@@ -305,63 +504,64 @@
         </div>
     </div>
 </div>
-                    <div class="mb-4">
-                        <h3 class="text-lg font-semibold text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
-                            The list below shows applicants who have submitted applications
-                        </h3>
-                    </div>
-                <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
-                    <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase text-sm">
-                        <tr>
-                            <th class="px-6 py-4 align-middle text-center">#</th>
-                            <th class="px-6 py-4 align-middle text-center">Name</th>
-                            <th class="px-6 py-4 align-middle text-center">Barangay</th>
-                            <th class="px-6 py-4 align-middle text-center">Gender</th>
-                            <th class="px-6 py-4 align-middle text-center">Birthday</th>
-                            <th class="px-6 py-4 align-middle text-center">Applications</th>
-                            <th class="px-6 py-4 align-middle text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white">
-                        @php $count = 1; @endphp
-                        @forelse($tableApplicants as $index => $app)
-                            <tr class="border-b border-gray-200 hover:bg-blue-50 transition-colors duration-200">
-                                <td class="px-6 py-4 text-center">{{ $count++ }}</td>
-                                <td class="px-6 py-4 text-center font-medium">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
-                                <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
-                                <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
-                                <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
-                                <td class="px-6 py-4 text-center">
-                                    <button type="button"
-                                        class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
-                                        onclick="openApplicationModal({{ $app->application_personnel_id }}, 'pending')">
-                                        Review Applications
-                                    </button>
-                                </td>
-
-                                <td class="px-6 py-4 text-center">
-                                    <form method="POST" action="/mayor_staff/application/{{ $app->application_personnel_id }}" style="display: inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" onclick="confirmDeletePending(this)" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm">
-                                            <i class="fas fa-trash mr-2"></i>Delete
-                                        </button>
-                            </tr>
-                                            @empty
-                    <tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">No approved or rejected applications found.</td>
-                    </tr>
-                @endforelse
-                    </tbody>
-                </table>
-                <div class="mt-4">
-                <div id="paginationControls"></div>
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        The list below shows applicants who have submitted applications
+                    </h3>
                 </div>
-            </div>
+            <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
+                <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase text-sm">
+                    <tr>
+                        <th class="px-6 py-4 align-middle text-center">#</th>
+                        <th class="px-6 py-4 align-middle text-center">Name</th>
+                        <th class="px-6 py-4 align-middle text-center">Barangay</th>
+                        <th class="px-6 py-4 align-middle text-center">Gender</th>
+                        <th class="px-6 py-4 align-middle text-center">Birthday</th>
+                        <th class="px-6 py-4 align-middle text-center">Applications</th>
+                        <th class="px-6 py-4 align-middle text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
+                    @php $count = 1; @endphp
+                    @forelse($tableApplicants as $index => $app)
+                        <tr class="border-b border-gray-200 hover:bg-blue-50 transition-colors duration-200">
+                            <td class="px-6 py-4 text-center">{{ $count++ }}</td>
+                            <td class="px-6 py-4 text-center font-medium">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
+                            <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
+                            <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
+                            <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
+                            <td class="px-6 py-4 text-center">
+                                <button type="button"
+                                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
+                                    onclick="openApplicationModal({{ $app->application_personnel_id }}, 'pending')">
+                                    Review Applications
+                                </button>
+                            </td>
 
-                <!-- ✅ List View (Approved and Rejected applications) -->
-        <div id="listView" class="hidden overflow-x-auto">
-                    <!-- Filter controls specific to List View -->
+<td class="px-6 py-4 text-center">
+    <!-- I-remove ang inline form at palitan ng button na may confirmDelete function -->
+    <button type="button" 
+            onclick="confirmDeletePending({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}')" 
+            class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm">
+        <i class="fas fa-trash mr-2"></i>Delete
+    </button>
+</td>
+                        </tr>
+                                        @empty
+                <tr>
+                    <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">No approved or rejected applications found.</td>
+                </tr>
+            @endforelse
+                </tbody>
+            </table>
+            <div class="mt-4">
+            <div id="paginationControls"></div>
+            </div>
+        </div>
+
+            <!-- ✅ List View (Approved and Rejected applications) -->
+    <div id="listView" class="hidden overflow-x-auto">
+<!-- Search and Filter Section for List View -->
 <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
     <div class="flex gap-4 items-end">
         <!-- Left side container -->
@@ -370,23 +570,18 @@
             <div>
                 <label for="searchInputList" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
                 <div class="relative">
-                    <input type="text" id="searchInputList" placeholder="Enter applicant name..."
-                        style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
-                        onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                        onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-                    <button onclick="clearFiltersList()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
+                 <input type="text" id="searchInputList" placeholder="Enter applicant name..."
+    class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none">
+<button onclick="clearFiltersList()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                 </div>
             </div>
 
             <!-- Filter by Barangay -->
             <div>
                 <label for="barangaySelectList" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                <select id="barangaySelectList"
-                    style="padding: 0.75rem 2.5rem; width: 16rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white; appearance: none; background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"
-                    onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                <select id="barangaySelectList" onchange="filterRows('list')"
+                    class="w-64 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white appearance-none outline-none"
+                    style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
                     <option value="">All Barangays</option>
                     @foreach($barangays as $brgy)
                         <option value="{{ $brgy }}">{{ $brgy }}</option>
@@ -401,52 +596,57 @@
                 The list below shows applicants who have approved and rejected screening
                 </h3>
             </div>
-                <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
-            <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
-                <tr>
-                <th class="px-6 py-4 align-middle text-center">#</th>
-                    <th class="px-6 py-4 align-middle text-center">Name</th>
-                    <th class="px-6 py-4 align-middle text-center">Barangay</th>
-                    <th class="px-6 py-4 align-middle text-center">Gender</th>
-                    <th class="px-6 py-4 align-middle text-center">Birthday</th>
-                    <th class="px-6 py-4 align-middle text-center">Initial Screening</th>
-                    <th class="px-6 py-4 align-middle text-center">Remarks</th>
-                    <th class="px-6 py-4 align-middle text-center">Application</th>
-                    <th class="px-6 py-4 align-middle text-center">Action</th>
+            <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
+        <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
+            <tr>
+            <th class="px-6 py-4 align-middle text-center">#</th>
+                <th class="px-6 py-4 align-middle text-center">Name</th>
+                <th class="px-6 py-4 align-middle text-center">Barangay</th>
+                <th class="px-6 py-4 align-middle text-center">Gender</th>
+                <th class="px-6 py-4 align-middle text-center">Birthday</th>
+                <th class="px-6 py-4 align-middle text-center">Initial Screening</th>
+                <th class="px-6 py-4 align-middle text-center">Application</th>
+                <th class="px-6 py-4 align-middle text-center">Action</th>
 
+            </tr>
+        </thead>
+                        <tbody class="bg-white">
+            @php $count = 1; @endphp
+            @forelse($listApplicants as $index => $app)
+                <tr class="border-b border-gray-200 hover:bg-green-50 transition-colors duration-200">
+                    <td class="px-6 py-4 text-center">{{ $count++ }}</td>
+                    <td class="px-6 py-4 text-center font-medium">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
+                    <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
+                    <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
+                    <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
+                    <td class="px-6 py-4 text-center">{{ $app->initial_screening }}</td>
+<td class="px-6 py-4 text-center">
+    <div class="relative inline-block">
+        <button type="button"
+            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm relative"
+            onclick="openApplicationModal({{ $app->application_personnel_id }}, 'reviewed')"
+            id="reviewBtn-{{ $app->application_personnel_id }}">
+            Review Requirements
+        </button>
+        <!-- Updated Badge - will be shown/hidden via JavaScript -->
+        <span id="updatedBadge-{{ $app->application_personnel_id }}" 
+              class="badge-updated hidden">Updated</span>
+    </div>
+</td>
+                    <td class="px-6 py-4 text-center">
+                        <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openDeleteModal({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}', true)">
+                            <i class="fas fa-trash mr-2"></i>Delete
+                        </button>
+                    </td>
                 </tr>
-            </thead>
-                            <tbody class="bg-white">
-                @php $count = 1; @endphp
-                @forelse($listApplicants as $index => $app)
-                    <tr class="border-b border-gray-200 hover:bg-green-50 transition-colors duration-200">
-                        <td class="px-6 py-4 text-center">{{ $count++ }}</td>
-                        <td class="px-6 py-4 text-center font-medium">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
-                        <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
-                        <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
-                        <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
-                        <td class="px-6 py-4 text-center">{{ $app->initial_screening }}</td>
-                        <td class="px-6 py-4 text-center">
-                            <button type="button"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
-                                onclick="openApplicationModal({{ $app->application_personnel_id }}, 'reviewed')">
-                                Review Requirements
-                            </button>
-                        </td>
-                        <td class="px-6 py-4 text-center">
-                            <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openDeleteModal({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}', true)">
-                                <i class="fas fa-trash mr-2"></i>Delete
-                            </button>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">No approved or rejected applications found.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-                                <div class="mt-4">
+            @empty
+                <tr>
+                    <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">No approved or rejected applications found.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+                            <div class="mt-4">
        <div id="paginationControls"></div>
     </div>
         </div>
@@ -501,63 +701,64 @@
                             class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
                         Cancel
                     </button>
-                    <form id="deleteForm" method="POST" style="display: inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit"
-                                class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">
-                            <i class="fas fa-trash mr-2"></i> Delete
-                        </button>
-                    </form>
+<!-- In your delete modal -->
+<form id="deleteForm" method="POST" style="display: inline;">
+    @csrf
+    @method('DELETE')
+    <button type="submit"
+            class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">
+        <i class="fas fa-trash mr-2"></i> Delete
+    </button>
+</form>
                 </div>
             </div>
         </div>
 
-        <!-- FIXED: Rejection Modal -->
-        <div id="rejectionModal" class="modal-overlay hidden">
-            <div class="modal-content max-w-2xl">
-                <!-- Header -->
-                <div class="flex items-center justify-between px-6 py-4 border-b">
-                    <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                        <i class="fas fa-times-circle text-red-600"></i>
-                        Reject Initial Screening
-                    </h2>
-                    <button onclick="closeRejectionModal()"
-                            class="p-2 rounded-full hover:bg-gray-100 transition">
-                        <i class="fas fa-times text-gray-500 text-lg"></i>
-                    </button>
-                </div>
-
-                <!-- Body -->
-                <div class="p-6 space-y-4">
-                    <p class="text-gray-700">Please provide the reason for rejecting this application:</p>
-                    <form id="rejectionForm">
-                        <div class="mb-4">
-                            <label for="rejectionReason" class="block text-gray-700 font-medium mb-2">Reason for Rejection</label>
-                            <textarea id="rejectionReason" name="reason" rows="4" class="w-full border rounded px-3 py-2" placeholder="Enter the reason for rejection..." required></textarea>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Footer -->
-                <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-                    <button onclick="closeRejectionModal()"
-                            class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-                        Cancel
-                    </button>
-                    <button id="rejectSubmitBtn" onclick="submitRejection()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
-                        <i class="fas fa-times"></i>
-                        <span id="rejectSubmitBtnText">Reject Application</span>
-                        <div id="rejectSubmitBtnSpinner" class="hidden ml-2">
-                            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        </div>
-                    </button>
-                </div>
-            </div>
+<!-- FIXED: Rejection Modal -->
+<div id="rejectionModal" class="modal-overlay hidden">
+    <div class="modal-content max-w-2xl">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b">
+            <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-times-circle text-red-600"></i>
+                Reject Initial Screening
+            </h2>
+            <button onclick="closeRejectionModal()"
+                    class="p-2 rounded-full hover:bg-gray-100 transition">
+                <i class="fas fa-times text-gray-500 text-lg"></i>
+            </button>
         </div>
+
+        <!-- Body -->
+        <div class="p-6 space-y-4">
+            <p class="text-gray-700">Please provide the reason for rejecting this application:</p>
+            <form id="rejectionForm">
+                <div class="mb-4">
+                    <label for="rejectionReason" class="block text-gray-700 font-medium mb-2">Reason for Rejection</label>
+                    <textarea id="rejectionReason" name="reason" rows="4" class="w-full border rounded px-3 py-2" placeholder="Enter the reason for rejection..." required></textarea>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+            <button onclick="closeRejectionModal()"
+                    class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                Cancel
+            </button>
+            <button id="rejectSubmitBtn" onclick="submitRejection()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
+                <i class="fas fa-times"></i>
+                <span id="rejectSubmitBtnText">Reject Application</span>
+                <div id="rejectSubmitBtnSpinner" class="hidden ml-2">
+                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </button>
+        </div>
+    </div>
+</div>
 
         <!-- FIXED: Edit Initial Screening Modal -->
         <div id="editInitialScreeningModal" class="modal-overlay hidden">
@@ -661,149 +862,6 @@
                 document.getElementById('reviewedTab').classList.add('active');
                 localStorage.setItem('viewMode', 'list');
             }
-
-// Replace the existing filterRows function with this improved version:
-function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
-    try {
-        const searchEl = document.getElementById(searchInputId);
-        const barangayEl = document.getElementById(barangaySelectId);
-        const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
-        const barangayValue = barangayEl ? barangayEl.value : '';
-
-        const tableBody = document.querySelector(tableBodySelector);
-        if (!tableBody) return;
-
-        const rows = Array.from(tableBody.querySelectorAll('tr'));
-        const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
-
-        // Filter rows based on search criteria
-        const filteredRows = rows.filter(row => {
-            // Skip header row or rows without enough cells
-            if (!row.cells || row.cells.length < 3 || row.querySelector('td[colspan]')) {
-                return false;
-            }
-
-            const nameCell = row.cells[1];
-            const barangayCell = row.cells[2];
-
-            if (!nameCell || !barangayCell) return false;
-
-            const nameText = nameCell.textContent.toLowerCase();
-            const barangayText = barangayCell.textContent.trim();
-
-            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
-            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
-
-            return matchesSearch && matchesBarangay;
-        });
-
-        // Update pagination state
-        paginationState[viewType].filteredRows = filteredRows;
-        paginationState[viewType].currentPage = 1; // Reset to first page
-        updatePagination(viewType);
-
-        // Show/hide rows based on filter
-        rows.forEach(row => {
-            if (!row.querySelector('td[colspan]')) { // Skip "no data" rows
-                row.style.display = 'none'; // Hide all rows initially
-            }
-        });
-
-        // Show only filtered rows for current page
-        const startIndex = 0;
-        const endIndex = paginationState[viewType].rowsPerPage;
-        filteredRows.slice(startIndex, endIndex).forEach(row => {
-            row.style.display = ''; // Show filtered rows
-        });
-
-        // Show "no results" message if no matches found
-        const noDataRow = tableBody.querySelector('tr td[colspan]')?.parentElement;
-        if (noDataRow) {
-            if (filteredRows.length === 0) {
-                noDataRow.style.display = '';
-            } else {
-                noDataRow.style.display = 'none';
-            }
-        }
-
-    } catch (e) {
-        console.error('filterRows error:', e);
-    }
-}
-
-// Add event listeners for both views
-function attachFilterListeners() {
-    const debounceDelay = 300; // Increased debounce delay for better performance
-
-    // Table View listeners
-    const tableSearch = document.getElementById('searchInputTable');
-    const tableBrgy = document.getElementById('barangaySelectTable');
-    
-    if (tableSearch) {
-        tableSearch.addEventListener('input', debounce(() => {
-            filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
-        }, debounceDelay));
-    }
-    
-    if (tableBrgy) {
-        tableBrgy.addEventListener('change', () => {
-            filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
-        });
-    }
-
-    // List View listeners
-    const listSearch = document.getElementById('searchInputList');
-    const listBrgy = document.getElementById('barangaySelectList');
-    
-    if (listSearch) {
-        listSearch.addEventListener('input', debounce(() => {
-            filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
-        }, debounceDelay));
-    }
-    
-    if (listBrgy) {
-        listBrgy.addEventListener('change', () => {
-            filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
-        });
-    }
-}
-
-// Clear filters functions
-function clearFiltersTable() {
-    document.getElementById('searchInputTable').value = '';
-    document.getElementById('barangaySelectTable').value = '';
-    filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
-}
-
-function clearFiltersList() {
-    document.getElementById('searchInputList').value = '';
-    document.getElementById('barangaySelectList').value = '';
-    filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    // Attach filter listeners
-    attachFilterListeners();
-    
-    // Run initial filters
-    filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
-    filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
-    
-    // Initialize pagination
-    initializePagination();
-});
-            // Hide loading spinner when page is fully loaded
-            window.addEventListener('load', function() {
-                const loadingOverlay = document.getElementById('loadingOverlay');
-                if (loadingOverlay) {
-                    loadingOverlay.classList.add('fade-out');
-                    // Remove from DOM after animation completes
-                    setTimeout(() => {
-                        loadingOverlay.style.display = 'none';
-                    }, 1000); // Match the animation duration
-                }
-            });
 
             // ✅ Application Modal Functions
             const applications = @json($applications);
@@ -955,24 +1013,22 @@ document.addEventListener('DOMContentLoaded', function() {
                             <i class="fas fa-info-circle mr-2"></i>Please review all 5 documents before making a decision.
                         </div>
                     `;
-                } else {
-                    footerDiv.innerHTML = `
-                        <button id="sendEmailBtn" onclick="sendDocumentEmail()"
-                            class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-2">
-                            <i class="fas fa-envelope"></i>
-                            <span id="sendEmailBtnText">Send Email</span>
-                            <div id="sendEmailBtnSpinner" class="hidden ml-2">
-                                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                    </path>
-                                </svg>
-                            </div>
-                        </button>
-                    `;
-                }
-
+} else {
+    footerDiv.innerHTML = `
+        <div class="modal-footer">
+            <button id="sendEmailBtn" onclick="sendDocumentEmail()" class="btn btn-primary">
+                <i class="fas fa-envelope"></i>
+                <span id="sendEmailBtnText">Send Email</span>
+                <div id="sendEmailBtnSpinner" class="hidden ml-2">
+                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </button>
+        </div>
+    `;
+}
                 document.getElementById('applicationModal').classList.remove('hidden');
 
                 // Load existing comments and statuses
@@ -980,6 +1036,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // NEW: Check for document updates to show NEW badges
                 trackDocumentUpdates(applicationPersonnelId);
+
+                // Ensure send email button is hidden when modal is opened from List view (or any non-pending source)
+                // Small timeout to ensure DOM elements rendered before toggling
+                setTimeout(() => {
+                    const sendEmailBtn = document.getElementById('sendEmailBtn');
+                    if (sendEmailBtn) {
+                        if (currentSource !== 'pending') {
+                            sendEmailBtn.style.display = 'none';
+                        } else {
+                            sendEmailBtn.style.display = '';
+                        }
+                    }
+                }, 50);
             }
 
             // NEW: Function to generate document items with status badges
@@ -1014,88 +1083,90 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
 
-            // NEW: Function to update document status badges
-            function updateDocumentBadges(documentType, status, isNew = false) {
-                const badge = document.getElementById(`badge-${documentType}`);
-                const icon = document.getElementById(`icon-${documentType}`);
-                
-                // Reset all styles first
-                badge.classList.remove('badge-new', 'badge-good', 'badge-bad', 'badge-updated', 'hidden');
-                icon.classList.remove('text-red-600', 'text-green-600', 'text-gray-500', 'text-purple-600');
-                
-                // Apply new status
-                if (status === 'good') {
-                    badge.classList.add('badge-good');
-                    badge.innerHTML = '✓';
-                    icon.classList.add('text-green-600');
-                    badge.classList.remove('hidden');
-                } else if (status === 'bad') {
-                    badge.classList.add('badge-bad');
-                    badge.innerHTML = '✗';
-                    icon.classList.add('text-red-600');
-                    badge.classList.remove('hidden');
-                } else if (isNew) {
-                    badge.classList.add('badge-new');
-                    badge.innerHTML = 'NEW';
-                    badge.classList.remove('hidden');
-                    icon.classList.add('text-purple-600');
-                } else {
-                    // No status, hide the badge
-                    badge.classList.add('hidden');
-                    icon.classList.add('text-purple-600');
-                }
-                
-                // Special case: if document was bad but has been updated
-                if (status === 'bad' && isNew) {
-                    badge.classList.remove('badge-bad');
-                    badge.classList.add('badge-updated');
-                    badge.innerHTML = 'NEW';
-                    icon.classList.remove('text-red-600');
-                    icon.classList.add('text-purple-600');
-                }
-            }
+// NEW: Function to update document status badges
+function updateDocumentBadges(documentType, status, isNew = false) {
+    const badge = document.getElementById(`badge-${documentType}`);
+    const icon = document.getElementById(`icon-${documentType}`);
+    
+    // Reset all styles first
+    badge.classList.remove('badge-new', 'badge-good', 'badge-bad', 'badge-updated', 'hidden');
+    icon.classList.remove('text-red-600', 'text-green-600', 'text-gray-500', 'text-purple-600');
+    
+    // Apply new status
+    if (status === 'good') {
+        badge.classList.add('badge-good');
+        badge.innerHTML = '✓';
+        icon.classList.add('text-green-600');
+        badge.classList.remove('hidden');
+    } else if (status === 'bad') {
+        badge.classList.add('badge-bad');
+        badge.innerHTML = '✗';
+        icon.classList.add('text-red-600');
+        badge.classList.remove('hidden');
+    } else if (status === 'New') {
+        badge.classList.add('badge-updated');
+        badge.innerHTML = 'Updated';
+        icon.classList.add('text-purple-600');
+        badge.classList.remove('hidden');
+    } else if (isNew) {
+        badge.classList.add('badge-new');
+        badge.innerHTML = 'NEW';
+        badge.classList.remove('hidden');
+        icon.classList.add('text-purple-600');
+    } else {
+        // No status, hide the badge
+        badge.classList.add('hidden');
+        icon.classList.add('text-purple-600');
+    }
+    
+    // Special case: if document was bad but has been updated
+    if (status === 'bad' && isNew) {
+        badge.classList.remove('badge-bad');
+        badge.classList.add('badge-updated');
+        badge.innerHTML = 'Updated';
+        icon.classList.remove('text-red-600');
+        icon.classList.add('text-purple-600');
+    }
+}
 
-            // NEW: Function to track document updates and show NEW badge
-            function trackDocumentUpdates(applicationPersonnelId) {
-                // Check if any documents have been updated since last review
-                fetch(`/mayor_staff/check-document-updates/${applicationPersonnelId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success && data.updated_documents) {
-                            data.updated_documents.forEach(docType => {
-                                // Show NEW badge for updated documents
-                                updateDocumentBadges(docType, null, true);
-                                
-                                // If document was previously bad and now has NEW status,
-                                // we need to track this for the reject button logic
-                                if (previousDocumentStatus && 
-                                    previousDocumentStatus[docType] === 'bad') {
-                                    markDocumentAsUpdated(docType);
-                                }
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error checking document updates:', error);
-                    });
+// NEW: Function to track document updates and show NEW badge
+function trackDocumentUpdates(applicationPersonnelId) {
+    // Check if any documents have been updated since last review
+    fetch(`/mayor_staff/check-document-updates/${applicationPersonnelId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.updated_documents) {
+                data.updated_documents.forEach(docType => {
+                    // Show NEW badge for updated documents
+                    updateDocumentBadges(docType, null, true);
+                    
+                    // If document was previously bad and now has NEW status,
+                    // we need to track this for the reject button logic
+                    if (previousDocumentStatus && 
+                        previousDocumentStatus[docType] === 'bad') {
+                        markDocumentAsUpdated(docType);
+                    }
+                });
             }
-
+            
+            // Also check for documents with 'New' status
+            if (data.success && data.statuses) {
+                Object.entries(data.statuses).forEach(([key, status]) => {
+                    if (key.endsWith('_status') && status === 'New') {
+                        const docType = key.replace('_status', '');
+                        updateDocumentBadges(docType, 'New', false);
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error checking document updates:', error);
+        });
+}
             // NEW: Function to mark a document as updated (from bad to new)
             function markDocumentAsUpdated(documentType) {
                 updatedDocuments.add(documentType);
                 console.log('Updated documents:', updatedDocuments);
-            }
-
-            function debounce(func, wait) {
-                let timeout;
-                return function executedFunction(...args) {
-                    const later = () => {
-                        clearTimeout(timeout);
-                        func(...args);
-                    };
-                    clearTimeout(timeout);
-                    timeout = setTimeout(later, wait);
-                };
             }
 
             function loadDocumentComments(applicationPersonnelId) {
@@ -1164,41 +1235,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
             function checkAllDocumentsRated() {
                 const documentTypes = ['application_letter', 'cert_of_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
-                
+
                 if (ratedDocuments && ratedDocuments.size === 5) {
-                    // Count good, bad, and updated documents
-                    let goodCount = 0;
-                    let badCount = 0;
-                    let updatedCount = updatedDocuments ? updatedDocuments.size : 0;
-                    
-                    documentTypes.forEach(docType => {
-                        // We'll check the actual status from the database
-                        const applicationPersonnelId = currentApplicationId;
-                        
-                        // Make an API call to get the actual status
-                        fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    const statuses = data.statuses || {};
+                    // Make a single API call to get all statuses
+                    const applicationPersonnelId = currentApplicationId;
+
+                    fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const statuses = data.statuses || {};
+                                let goodCount = 0;
+                                let badCount = 0;
+                                let updatedCount = updatedDocuments ? updatedDocuments.size : 0;
+
+                                // Count good and bad documents from the response
+                                documentTypes.forEach(docType => {
                                     const status = statuses[`${docType}_status`];
-                                    
                                     if (status === 'good') {
                                         goodCount++;
                                     } else if (status === 'bad') {
                                         badCount++;
                                     }
-                                    
-                                    // After checking all documents, update the UI
-                                    if (goodCount + badCount === 5) {
-                                        updateActionButtons(goodCount, badCount, updatedCount);
-                                    }
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error checking document status:', error);
-                            });
-                    });
+                                });
+
+                                console.log(`Final counts - Good: ${goodCount}, Bad: ${badCount}, Updated: ${updatedCount}`);
+
+                                // Update the action buttons based on the counts
+                                updateActionButtons(goodCount, badCount, updatedCount);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error checking document status:', error);
+                        });
                 } else {
                     console.log(`Not all documents rated: ${ratedDocuments ? ratedDocuments.size : 0}/5`);
                 }
@@ -1207,147 +1276,264 @@ document.addEventListener('DOMContentLoaded', function() {
             // MODIFIED: Function to update action buttons with new logic
             function updateActionButtons(goodCount, badCount, updatedCount = 0) {
                 console.log(`Good: ${goodCount}, Bad: ${badCount}, Updated: ${updatedCount}`);
-                
+
                 // Show action buttons
                 const actionButtons = document.getElementById('actionButtons');
                 const approveBtn = document.getElementById('approveBtn');
                 const rejectBtn = document.getElementById('rejectBtn');
                 const sendEmailBtn = document.getElementById('sendEmailBtn');
-                
+
                 actionButtons.classList.remove('hidden');
                 document.getElementById('reviewMessage').style.display = 'none';
-                
-                // NEW LOGIC: Always show reject button, but conditionally show approve button
-                if (badCount > 0 || updatedCount > 0) {
-                    // If there are bad documents OR updated documents, hide approve button
+
+                // Show buttons based on document status
+                if (goodCount === 5) {
+                    // All documents are good - show only approve button
+                    approveBtn.style.display = 'flex';
+                    rejectBtn.style.display = 'none';
+                    sendEmailBtn.style.display = 'none';
+                    console.log('All documents good - showing only Approve button');
+                } else {
+                    // There are bad documents - show reject and send email buttons
                     approveBtn.style.display = 'none';
                     rejectBtn.style.display = 'flex';
                     sendEmailBtn.style.display = 'flex';
-                    console.log('Bad or updated documents found - showing Reject button only');
-                } else {
-                    // If all documents are good and no updates, show both buttons
-                    approveBtn.style.display = 'flex';
-                    rejectBtn.style.display = 'flex'; // ALWAYS show reject button
-                    sendEmailBtn.style.display = 'flex';
-                    console.log('All documents good - showing both Approve and Reject buttons');
+                    console.log('Not all documents good - showing Reject and Send Email buttons');
                 }
             }
 
-            // MODIFIED: Function to mark document as good
-            function markDocumentAsGood(documentType) {
-                Swal.fire({
-                    title: 'Mark as Good?',
-                    text: 'Are you sure you want to mark this document as good?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#28a745',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, Mark as Good',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Save status
-                        saveDocumentStatus(documentType, 'good');
-                        
-                        // Track that this document has been rated
-                        trackRatedDocument(documentType);
-                        
-                        // Remove from updated documents if it was there
-                        if (updatedDocuments && updatedDocuments.has(documentType)) {
-                            updatedDocuments.delete(documentType);
-                        }
-                        
-                        // Update the badge - remove NEW and show Good
-                        updateDocumentBadges(documentType, 'good', false);
-                        
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Document marked as good.',
-                            icon: 'success',
-                            showConfirmButton: true,
-                            allowOutsideClick: false
-                        });
-                    }
-                });
-            }
+// MODIFIED: Function to mark document as good (WITHOUT confirmation, auto-close document viewer)
+function markDocumentAsGood(documentType) {
+    // Show loading state immediately
+    Swal.fire({
+        title: 'Saving...',
+        text: 'Please wait while we save your feedback',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // Save status without reason for good documents
+    saveDocumentStatus(documentType, 'good', '')
+    .then(() => {
+        // Track that this document has been rated
+        trackRatedDocument(documentType);
 
-            // MODIFIED: Function to mark document as bad
-            function markDocumentAsBad(documentType) {
-                Swal.fire({
-                    title: 'Mark as Bad?',
-                    text: 'Are you sure you want to mark this document as bad?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, Mark as Bad',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Save status
-                        saveDocumentStatus(documentType, 'bad');
-                        
-                        // Track that this document has been rated
-                        trackRatedDocument(documentType);
-                        
-                        // Remove from updated documents if it was there
-                        if (updatedDocuments && updatedDocuments.has(documentType)) {
-                            updatedDocuments.delete(documentType);
-                        }
-                        
-                        // Update the badge - remove NEW and show Bad
-                        updateDocumentBadges(documentType, 'bad', false);
-                        
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Document marked as bad.',
-                            icon: 'success',
-                            showConfirmButton: true,
-                            allowOutsideClick: false
-                        });
-                    }
-                });
-            }
+        // Remove from updated documents if it was there
+        if (updatedDocuments && updatedDocuments.has(documentType)) {
+            updatedDocuments.delete(documentType);
+        }
 
-            function saveDocumentStatus(documentType, status) {
-                const applicationPersonnelId = currentApplicationId;
+        // Update the badge - remove NEW and show Good
+        updateDocumentBadges(documentType, 'good', false);
+
+        // Show success message and close document viewer when OK is clicked
+        Swal.fire({
+            title: 'Success!',
+            text: 'Document marked as good.',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            customClass: {
+                confirmButton: 'swal2-confirm-btn'
+            }
+        }).then((result) => {
+            // Close the document viewer modal when OK is clicked
+            if (result.isConfirmed) {
+                closeDocumentModal();
+                updateDocumentModalUI(documentType);
+            }
+        });
+
+    })
+    .catch(error => {
+        console.error('Error saving status:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: 'Failed to save document status. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    });
+}
+
+// MODIFIED: Function to mark document as good (WITHOUT confirmation, close document viewer only on OK click)
+function markDocumentAsGood(documentType) {
+    // Show loading state immediately
+    Swal.fire({
+        title: 'Saving...',
+        text: 'Please wait while we save your feedback',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // Save status without reason for good documents
+    saveDocumentStatus(documentType, 'good', '')
+    .then(() => {
+        // Track that this document has been rated
+        trackRatedDocument(documentType);
+
+        // Remove from updated documents if it was there
+        if (updatedDocuments && updatedDocuments.has(documentType)) {
+            updatedDocuments.delete(documentType);
+        }
+
+        // Update the badge - remove NEW and show Good
+        updateDocumentBadges(documentType, 'good', false);
+
+        // Show success message and close document viewer ONLY when OK is clicked
+        Swal.fire({
+            title: 'Success!',
+            text: 'Document marked as good.',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            customClass: {
+                confirmButton: 'swal2-confirm-btn'
+            }
+        }).then((result) => {
+            // ONLY close the document viewer modal when OK is clicked
+            if (result.isConfirmed) {
+                closeDocumentModal();
+            }
+            // Update UI regardless of OK click
+            updateDocumentModalUI(documentType);
+        });
+
+    })
+    .catch(error => {
+        console.error('Error saving status:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: 'Failed to save document status. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    });
+}
+
+// MODIFIED: Function to mark document as bad with reason input (WITH confirmation and reason, close document viewer on OK click)
+function markDocumentAsBad(documentType) {
+    Swal.fire({
+        title: 'Mark as Bad?',
+        text: 'Please provide the reason why this document is marked as bad:',
+        icon: 'warning',
+        input: 'textarea',
+        inputLabel: 'Reason for marking as bad',
+        inputPlaceholder: 'Enter the reason why this document needs to be updated...',
+        inputAttributes: {
+            'aria-label': 'Enter the reason why this document needs to be updated',
+            'rows': 3
+        },
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Mark as Bad',
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Please provide a reason for marking this document as bad';
+            }
+            if (value.length < 10) {
+                return 'Please provide a more detailed reason (at least 10 characters)';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const reason = result.value;
+            
+            // Show loading state
+            Swal.fire({
+                title: 'Saving...',
+                text: 'Please wait while we save your feedback',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Save status with reason for bad documents
+            saveDocumentStatus(documentType, 'bad', reason)
+            .then(() => {
+                // Track that this document has been rated
+                trackRatedDocument(documentType);
                 
-                console.log('Saving status:', { applicationPersonnelId, documentType, status });
-
-                fetch('/mayor_staff/save-document-status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                    },
-                    body: JSON.stringify({
-                        application_personnel_id: applicationPersonnelId,
-                        document_type: documentType,
-                        status: status
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
+                // Remove from updated documents if it was there
+                if (updatedDocuments && updatedDocuments.has(documentType)) {
+                    updatedDocuments.delete(documentType);
+                }
+                
+                // Update the badge - remove NEW and show Bad
+                updateDocumentBadges(documentType, 'bad', false);
+                
+                // Show success message and close document viewer when OK is clicked
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Document marked as bad with reason saved.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    // Close the document viewer modal when OK is clicked
+                    if (result.isConfirmed) {
+                        closeDocumentModal();
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Save status response:', data);
-                    if (!data.success) {
-                        console.error('Failed to save status:', data.message);
-                        Swal.fire('Error', 'Failed to save document status.', 'error');
-                    } else {
-                        console.log('Status saved successfully');
-                        // Update the UI in the document modal
-                        updateDocumentModalUI(documentType);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error saving status:', error);
-                    Swal.fire('Error', 'Failed to save document status.', 'error');
+                    // Update UI regardless of OK click
+                    updateDocumentModalUI(documentType);
                 });
-            }
+            })
+            .catch(error => {
+                console.error('Error saving status:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to save document status. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+    });
+}
+function saveDocumentStatus(documentType, status, reason = '') {
+    const applicationPersonnelId = currentApplicationId;
+
+    console.log('Saving status:', { applicationPersonnelId, documentType, status, reason });
+
+    return fetch('/mayor_staff/save-document-status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+        },
+        body: JSON.stringify({
+            application_personnel_id: applicationPersonnelId,
+            document_type: documentType,
+            status: status,
+            reason: reason
+        })
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error('Network response was not ok: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Save status response:', data);
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to save status');
+        }
+        console.log('Status saved successfully');
+        // Update the UI in the document modal
+        updateDocumentModalUI(documentType);
+        return data;
+    })
+    .catch(error => {
+        console.error('Error in saveDocumentStatus:', error);
+        throw error;
+    });
+}
 
             function saveDocumentComment(documentType, comment) {
                 const applicationPersonnelId = currentApplicationId;
@@ -1410,86 +1596,105 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
             }
 
-            // New function to update document modal UI based on current status
-            function updateDocumentModalUI(documentType) {
-                const applicationPersonnelId = currentApplicationId;
+// New function to update document modal UI based on current status
+function updateDocumentModalUI(documentType) {
+    const applicationPersonnelId = currentApplicationId;
+    
+    fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const statuses = data.statuses || {};
+                const status = statuses[`${documentType}_status`];
                 
-                fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            const statuses = data.statuses || {};
-                            const status = statuses[`${documentType}_status`];
-                            
-                            const goodBtn = document.querySelector(`#documentReviewControls .mark-good-btn[data-document="${documentType}"]`);
-                            const badBtn = document.querySelector(`#documentReviewControls .mark-bad-btn[data-document="${documentType}"]`);
-                            const statusIndicator = document.getElementById(`status-indicator-${documentType}`);
-                            const statusText = document.getElementById(`status-text-${documentType}`);
-                            
-                            if (status === 'good') {
-                                // Document is already marked as good
-                                if (goodBtn && badBtn) {
-                                    goodBtn.disabled = true;
-                                    goodBtn.classList.add('bg-green-700', 'cursor-not-allowed');
-                                    goodBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
-                                    goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Marked as Good';
-                                    
-                                    badBtn.disabled = false;
-                                    badBtn.classList.remove('bg-red-700', 'cursor-not-allowed');
-                                    badBtn.classList.add('bg-red-500', 'hover:bg-red-600');
-                                    badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Mark as Bad';
-                                }
-                                
-                                if (statusIndicator && statusText) {
-                                    statusIndicator.classList.remove('hidden');
-                                    statusIndicator.className = 'mt-3 text-sm font-medium text-green-600';
-                                    statusText.textContent = 'This document has been marked as Good.';
-                                }
-                            } else if (status === 'bad') {
-                                // Document is already marked as bad
-                                if (goodBtn && badBtn) {
-                                    badBtn.disabled = true;
-                                    badBtn.classList.add('bg-red-700', 'cursor-not-allowed');
-                                    badBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
-                                    badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Marked as Bad';
-                                    
-                                    goodBtn.disabled = false;
-                                    goodBtn.classList.remove('bg-green-700', 'cursor-not-allowed');
-                                    goodBtn.classList.add('bg-green-500', 'hover:bg-green-600');
-                                    goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Good';
-                                }
-                                
-                                if (statusIndicator && statusText) {
-                                    statusIndicator.classList.remove('hidden');
-                                    statusIndicator.className = 'mt-3 text-sm font-medium text-red-600';
-                                    statusText.textContent = 'This document has been marked as Bad.';
-                                }
-                            } else {
-                                // Document not rated yet
-                                if (goodBtn && badBtn) {
-                                    goodBtn.disabled = false;
-                                    badBtn.disabled = false;
-                                    
-                                    goodBtn.classList.remove('bg-green-700', 'cursor-not-allowed');
-                                    goodBtn.classList.add('bg-green-500', 'hover:bg-green-600');
-                                    goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Good';
-                                    
-                                    badBtn.classList.remove('bg-red-700', 'cursor-not-allowed');
-                                    badBtn.classList.add('bg-red-500', 'hover:bg-red-600');
-                                    badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Mark as Bad';
-                                }
-                                
-                                if (statusIndicator) {
-                                    statusIndicator.classList.add('hidden');
-                                }
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error updating document modal UI:', error);
-                    });
+                const goodBtn = document.querySelector(`#documentReviewControls .mark-good-btn[data-document="${documentType}"]`);
+                const badBtn = document.querySelector(`#documentReviewControls .mark-bad-btn[data-document="${documentType}"]`);
+                const statusIndicator = document.getElementById(`status-indicator-${documentType}`);
+                const statusText = document.getElementById(`status-text-${documentType}`);
+                
+                if (status === 'good') {
+                    // Document is already marked as good
+                    if (goodBtn && badBtn) {
+                        goodBtn.disabled = true;
+                        goodBtn.classList.add('bg-green-700', 'cursor-not-allowed');
+                        goodBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                        goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Marked as Good';
+                        
+                        badBtn.disabled = false;
+                        badBtn.classList.remove('bg-red-700', 'cursor-not-allowed');
+                        badBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                        badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Mark as Bad';
+                    }
+                    
+                    if (statusIndicator && statusText) {
+                        statusIndicator.classList.remove('hidden');
+                        statusIndicator.className = 'mt-3 text-sm font-medium text-green-600';
+                        statusText.textContent = 'This document has been marked as Good.';
+                    }
+                } else if (status === 'bad') {
+                    // Document is already marked as bad
+                    if (goodBtn && badBtn) {
+                        badBtn.disabled = true;
+                        badBtn.classList.add('bg-red-700', 'cursor-not-allowed');
+                        badBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                        badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Marked as Bad';
+                        
+                        goodBtn.disabled = false;
+                        goodBtn.classList.remove('bg-green-700', 'cursor-not-allowed');
+                        goodBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                        goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Good';
+                    }
+                    
+                    if (statusIndicator && statusText) {
+                        statusIndicator.classList.remove('hidden');
+                        statusIndicator.className = 'mt-3 text-sm font-medium text-red-600';
+                        statusText.textContent = 'This document has been marked as Bad.';
+                    }
+                } else if (status === 'New') {
+                    // Document has been updated (from bad to New)
+                    if (goodBtn && badBtn) {
+                        goodBtn.disabled = false;
+                        badBtn.disabled = false;
+                        
+                        goodBtn.classList.remove('bg-green-700', 'cursor-not-allowed');
+                        goodBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                        goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Good';
+                        
+                        badBtn.classList.remove('bg-red-700', 'cursor-not-allowed');
+                        badBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                        badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Mark as Bad';
+                    }
+                    
+                    if (statusIndicator && statusText) {
+                        statusIndicator.classList.remove('hidden');
+                        statusIndicator.className = 'mt-3 text-sm font-medium text-purple-600';
+                        statusText.textContent = 'This document has been updated and needs review.';
+                    }
+                } else {
+                    // Document not rated yet
+                    if (goodBtn && badBtn) {
+                        goodBtn.disabled = false;
+                        badBtn.disabled = false;
+                        
+                        goodBtn.classList.remove('bg-green-700', 'cursor-not-allowed');
+                        goodBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                        goodBtn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Good';
+                        
+                        badBtn.classList.remove('bg-red-700', 'cursor-not-allowed');
+                        badBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                        badBtn.innerHTML = '<i class="fas fa-times-circle"></i> Mark as Bad';
+                    }
+                    
+                    if (statusIndicator) {
+                        statusIndicator.classList.add('hidden');
+                    }
+                }
             }
-
+        })
+        .catch(error => {
+            console.error('Error updating document modal UI:', error);
+        });
+}
             // New function to show auto-save indicator
             function showAutoSaveIndicator(documentType, success = true) {
                 const textarea = document.getElementById(`comment_${documentType}`);
@@ -1514,148 +1719,215 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('applicationModal').classList.add('hidden');
             }
 
-            function approveApplication() {
-                const applicationId = currentApplicationId;
+function approveApplication() {
+    const applicationId = currentApplicationId;
 
-                // Confirm approval
-                Swal.fire({
-                    title: 'Approve Initial Screening?',
-                    text: 'Are you sure you want to approve this application for initial screening?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#28a745',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, Approve',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const approveBtn = document.getElementById('approveBtn');
-                        const approveBtnText = document.getElementById('approveBtnText');
-                        const approveBtnSpinner = document.getElementById('approveBtnSpinner');
+    // Confirm approval
+    Swal.fire({
+        title: 'Approve Initial Screening?',
+        text: 'Are you sure you want to approve this application for initial screening?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Approve',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const approveBtn = document.getElementById('approveBtn');
+            const approveBtnText = document.getElementById('approveBtnText');
+            const approveBtnSpinner = document.getElementById('approveBtnSpinner');
 
-                        // Show loading state
-                        approveBtn.disabled = true;
-                        approveBtnText.textContent = 'Approving...';
-                        approveBtnSpinner.classList.remove('hidden');
+            // Show loading state
+            approveBtn.disabled = true;
+            approveBtnText.textContent = 'Approving...';
+            approveBtnSpinner.classList.remove('hidden');
 
-                        // Make AJAX call to approve the application
-                        fetch(`/mayor_staff/application/${applicationId}/approve`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Approved!',
-                                    text: 'Initial screening has been approved successfully.',
-                                    icon: 'success',
-                                    showConfirmButton: true,
-                                    allowOutsideClick: false
-                                });
-                                closeApplicationModal();
-                                // Removed page reload to prevent refresh when closing modal
-                            } else {
-                                Swal.fire('Error', 'Failed to approve initial screening.', 'error');
-                            }
-                        })
-                        .catch(() => {
-                            Swal.fire('Error', 'Failed to approve initial screening.', 'error');
-                        })
-                        .finally(() => {
-                            // Reset button state
-                            approveBtn.disabled = false;
-                            approveBtnText.textContent = 'Approved for Interview';
-                            approveBtnSpinner.classList.add('hidden');
-                        });
-                    }
-                });
-            }
-
-            function rejectApplication() {
-                const applicationId = currentApplicationId;
-
-                // Open rejection modal
-                document.getElementById('rejectionModal').classList.remove('hidden');
-            }
-
-            function closeRejectionModal() {
-                document.getElementById('rejectionModal').classList.add('hidden');
-            }
-
-            function submitRejection() {
-                const applicationId = currentApplicationId;
-                const reason = document.getElementById('rejectionReason').value.trim();
-
-                if (!reason) {
-                    Swal.fire('Error', 'Please provide a reason for rejection.', 'error');
-                    return;
+            // Make AJAX call to approve the application
+            fetch(`/mayor_staff/application/${applicationId}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
                 }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Approved!',
+                        text: 'Initial screening has been approved successfully.',
+                        icon: 'success',
+                        showConfirmButton: true,
+                        allowOutsideClick: false
+                    }).then(() => {
+                        closeApplicationModal();
+                        
+                        // ✅ REMOVE FROM TABLE WITHOUT RELOAD
+                        removeApplicationFromTable(applicationId);
+                    });
+                } else {
+                    Swal.fire('Error', 'Failed to approve initial screening.', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Failed to approve initial screening.', 'error');
+            })
+            .finally(() => {
+                // Reset button state
+                approveBtn.disabled = false;
+                approveBtnText.textContent = 'Approved for Interview';
+                approveBtnSpinner.classList.add('hidden');
+            });
+        }
+    });
+}
 
-                // Confirm rejection
-                Swal.fire({
-                    title: 'Reject Initial Screening?',
-                    text: 'Are you sure you want to reject this application for initial screening?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, Reject',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const rejectSubmitBtn = document.getElementById('rejectSubmitBtn');
-                        const rejectSubmitBtnText = document.getElementById('rejectSubmitBtnText');
-                        const rejectSubmitBtnSpinner = document.getElementById('rejectSubmitBtnSpinner');
-
-                        // Show loading state
-                        rejectSubmitBtn.disabled = true;
-                        rejectSubmitBtnText.textContent = 'Rejecting...';
-                        rejectSubmitBtnSpinner.classList.remove('hidden');
-
-                        // Make AJAX call to reject the application
-                        fetch(`/mayor_staff/application/${applicationId}/reject`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                            },
-                            body: JSON.stringify({ reason: reason })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Rejected!',
-                                    text: 'Initial screening has been rejected successfully.',
-                                    icon: 'success',
-                                    showConfirmButton: true,
-                                    allowOutsideClick: false
-                                });
-                                closeRejectionModal();
-                                closeApplicationModal();
-                                // Reload the page to reflect changes
-                                location.reload();
-                            } else {
-                                Swal.fire('Error', 'Failed to reject initial screening.', 'error');
-                            }
-                        })
-                        .catch(() => {
-                            Swal.fire('Error', 'Failed to reject initial screening.', 'error');
-                        })
-                        .finally(() => {
-                            // Reset button state
-                            rejectSubmitBtn.disabled = false;
-                            rejectSubmitBtnText.textContent = 'Reject Application';
-                            rejectSubmitBtnSpinner.classList.add('hidden');
-                        });
-                    }
-                });
+function removeApplicationFromTable(applicationId) {
+    // Hanapin at tanggalin ang row sa pending table
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    let foundRow = null;
+    
+    rows.forEach(row => {
+        // Skip header row or rows without enough cells
+        if (!row.cells || row.cells.length < 7) return;
+        
+        const viewButton = row.querySelector('button[onclick*="openApplicationModal"]');
+        if (viewButton && viewButton.getAttribute('onclick').includes(applicationId.toString())) {
+            foundRow = row;
+        }
+    });
+    
+    if (foundRow) {
+        // Animate removal
+        foundRow.style.transition = 'all 0.3s ease';
+        foundRow.style.opacity = '0';
+        foundRow.style.transform = 'translateX(-100%)';
+        
+        setTimeout(() => {
+            foundRow.remove();
+            
+            // Update ang row numbers at pagination
+            updateRowNumbers();
+            
+            // Show success message if no more rows
+            if (document.querySelectorAll('#tableView tbody tr').length === 0) {
+                showNoApplicationsMessage();
             }
+        }, 300);
+    } else {
+        console.warn('Application row not found for ID:', applicationId);
+        // Fallback: reload the page
+        location.reload();
+    }
+}
 
+function updateRowNumbers() {
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    let count = 1;
+    
+    rows.forEach(row => {
+        // Skip if it's a "no data" row
+        if (row.querySelector('td[colspan]')) return;
+        
+        const firstCell = row.cells[0];
+        if (firstCell) {
+            firstCell.textContent = count++;
+        }
+    });
+}
+
+function showNoApplicationsMessage() {
+    const tableBody = document.querySelector('#tableView tbody');
+    if (tableBody && tableBody.querySelectorAll('tr').length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">
+                    No pending applications found.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function submitRejection() {
+    const applicationId = currentApplicationId;
+    const reason = document.getElementById('rejectionReason').value.trim();
+
+    if (!reason) {
+        Swal.fire('Error', 'Please provide a reason for rejection.', 'error');
+        return;
+    }
+
+    // Confirm rejection
+    Swal.fire({
+        title: 'Reject Initial Screening?',
+        text: 'Are you sure you want to reject this application for initial screening?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Reject',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const rejectSubmitBtn = document.getElementById('rejectSubmitBtn');
+            const rejectSubmitBtnText = document.getElementById('rejectSubmitBtnText');
+            const rejectSubmitBtnSpinner = document.getElementById('rejectSubmitBtnSpinner');
+
+            // Show loading state
+            rejectSubmitBtn.disabled = true;
+            rejectSubmitBtnText.textContent = 'Rejecting...';
+            rejectSubmitBtnSpinner.classList.remove('hidden');
+
+            // Make AJAX call to reject the application
+            fetch(`/mayor_staff/application/${applicationId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                },
+                body: JSON.stringify({ reason: reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Rejected!',
+                        text: 'Initial screening has been rejected successfully.',
+                        icon: 'success',
+                        showConfirmButton: true,
+                        allowOutsideClick: false
+                    }).then(() => {
+                        // DAGDAG: Isara ang rejection modal at application modal
+                        closeRejectionModal();
+                        closeApplicationModal();
+                        
+                        // Remove from table without reload
+                        removeApplicationFromTable(applicationId);
+                    });
+                } else {
+                    Swal.fire('Error', 'Failed to reject initial screening.', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Failed to reject initial screening.', 'error');
+            })
+            .finally(() => {
+                // Reset button state
+                rejectSubmitBtn.disabled = false;
+                rejectSubmitBtnText.textContent = 'Reject Application';
+                rejectSubmitBtnSpinner.classList.add('hidden');
+            });
+        }
+    });
+}
+function closeRejectionModal() {
+    document.getElementById('rejectionModal').classList.add('hidden');
+}
+function closeApplicationModal() {
+    document.getElementById('applicationModal').classList.add('hidden');
+}
             function confirmInitialScreening(selectElement) {
                 const selectedValue = selectElement.value;
                 const previousValue = selectElement.getAttribute('data-previous');
@@ -1776,102 +2048,80 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
 
-            // Document Viewer Functions
-            function openDocumentModal(documentUrl, title, documentType) {
-                const modal = document.getElementById('documentModal');
-                const titleElement = document.getElementById('documentModalTitle');
-                const viewer = document.getElementById('documentViewer');
-                const reviewControls = document.getElementById('documentReviewControls');
+function openDocumentModal(documentUrl, title, documentType) {
+    const modal = document.getElementById('documentModal');
+    const titleElement = document.getElementById('documentModalTitle');
+    const viewer = document.getElementById('documentViewer');
+    const reviewControls = document.getElementById('documentReviewControls');
 
-                // Set title
-                titleElement.innerHTML = `<i class="fas fa-file-alt text-blue-600"></i> ${title}`;
+    // Set title
+    titleElement.innerHTML = `<i class="fas fa-file-alt text-blue-600"></i> ${title}`;
 
-                // Set document URL
-                viewer.src = documentUrl;
+    // Set document URL
+    viewer.src = documentUrl;
 
-                // Show modal
-                modal.classList.remove('hidden');
+    // Show modal
+    modal.classList.remove('hidden');
 
-                // Load existing comment for this document
-                loadDocumentComment(documentType);
+    // Add review controls for pending applications
+    if (currentSource === 'pending') {
+        reviewControls.innerHTML = `
+            <div class="bg-gray-50 p-4 rounded-lg border">
+                <h4 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-edit text-blue-600 mr-2"></i>
+                    Document Review
+                </h4>
 
-                // Add review controls for pending applications
-                if (currentSource === 'pending') {
-                    reviewControls.innerHTML = `
-                        <div class="bg-gray-50 p-4 rounded-lg border">
-                            <h4 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                                <i class="fas fa-edit text-blue-600 mr-2"></i>
-                                Document Review
-                            </h4>
-                            
-                            <!-- Comment Section -->
-                            <div class="mb-4">
-                                <label for="comment_${documentType}" class="block text-sm font-medium text-gray-700 mb-2">
-                                    <i class="fas fa-comment mr-1"></i> Comments
-                                </label>
-                                <textarea id="comment_${documentType}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3" placeholder="Add your comments about this document..."></textarea>
-                                <div class="text-xs text-gray-500 mt-1">Comments are auto-saved</div>
-                            </div>
+                <!-- Rating Buttons -->
+                <div class="flex gap-3">
+                    <button class="mark-good-btn flex-1 bg-green-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors duration-200 flex items-center justify-center gap-2" data-document="${documentType}">
+                        <i class="fas fa-check-circle"></i>
+                        Mark as Good
+                    </button>
+                    <button class="mark-bad-btn flex-1 bg-red-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors duration-200 flex items-center justify-center gap-2" data-document="${documentType}">
+                        <i class="fas fa-times-circle"></i>
+                        Mark as Bad
+                    </button>
+                </div>
 
-                            <!-- Rating Buttons -->
-                            <div class="flex gap-3">
-                                <button class="mark-good-btn flex-1 bg-green-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors duration-200 flex items-center justify-center gap-2" data-document="${documentType}">
-                                    <i class="fas fa-check-circle"></i>
-                                    Mark as Good
-                                </button>
-                                <button class="mark-bad-btn flex-1 bg-red-500 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors duration-200 flex items-center justify-center gap-2" data-document="${documentType}">
-                                    <i class="fas fa-times-circle"></i>
-                                    Mark as Bad
-                                </button>
-                            </div>
-
-                            <!-- Status Indicator -->
-                            <div id="status-indicator-${documentType}" class="mt-3 text-sm font-medium hidden">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                <span id="status-text-${documentType}"></span>
-                            </div>
-                        </div>
-                    `;
-                    
-                    // Add event listeners for the buttons in document modal
-                    setTimeout(() => {
-                        // Mark as Good button
-                        const goodBtn = document.querySelector(`#documentReviewControls .mark-good-btn[data-document="${documentType}"]`);
-                        if (goodBtn) {
-                            goodBtn.addEventListener('click', function() {
-                                const docType = this.getAttribute('data-document');
-                                markDocumentAsGood(docType);
-                        });
-                        }
-                        
-                        // Mark as Bad button
-                        const badBtn = document.querySelector(`#documentReviewControls .mark-bad-btn[data-document="${documentType}"]`);
-                        if (badBtn) {
-                            badBtn.addEventListener('click', function() {
-                                const docType = this.getAttribute('data-document');
-                                markDocumentAsBad(docType);
-                            });
-                        }
-                        
-                        // Add auto-save for comment in document modal
-                        const textarea = document.getElementById(`comment_${documentType}`);
-                        if (textarea) {
-                            textarea.addEventListener('input', debounce(function() {
-                                saveDocumentComment(documentType, this.value);
-                                showAutoSaveIndicator(documentType, false);
-                            }, 1000));
-                        }
-
-                        // Check current status and update UI
-                        updateDocumentModalUI(documentType);
-                    }, 100);
-                } else {
-                    reviewControls.innerHTML = '';
-                }
-                
-                // Track that this document has been opened
-                openedDocuments.add(documentType);
+                <!-- Status Indicator -->
+                <div id="status-indicator-${documentType}" class="mt-3 text-sm font-medium hidden">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    <span id="status-text-${documentType}"></span>
+                </div>
+            </div>
+        `;
+        
+        // Add event listeners for the buttons in document modal
+        setTimeout(() => {
+            // Mark as Good button
+            const goodBtn = document.querySelector(`#documentReviewControls .mark-good-btn[data-document="${documentType}"]`);
+            if (goodBtn) {
+                goodBtn.addEventListener('click', function() {
+                    const docType = this.getAttribute('data-document');
+                    markDocumentAsGood(docType);
+                });
             }
+            
+            // Mark as Bad button
+            const badBtn = document.querySelector(`#documentReviewControls .mark-bad-btn[data-document="${documentType}"]`);
+            if (badBtn) {
+                badBtn.addEventListener('click', function() {
+                    const docType = this.getAttribute('data-document');
+                    markDocumentAsBad(docType);
+                });
+            }
+
+            // Check current status and update UI
+            updateDocumentModalUI(documentType);
+        }, 100);
+    } else {
+        reviewControls.innerHTML = '';
+    }
+    
+    // Track that this document has been opened
+    openedDocuments.add(documentType);
+}
 
             function closeDocumentModal() {
                 const modal = document.getElementById('documentModal');
@@ -1884,85 +2134,101 @@ document.addEventListener('DOMContentLoaded', function() {
                 modal.classList.add('hidden');
             }
 
-            function confirmDeletePending(button) {
-                const form = button.closest('form');
+function confirmDeletePending(applicationPersonnelId, applicantName) {
+    Swal.fire({
+        title: 'Delete Application?',
+        text: `Are you sure you want to delete the application for ${applicantName}? This action cannot be undone.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Delete',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Create a form and submit it (traditional way)
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/mayor_staff/application/${applicationPersonnelId}`;
+            
+            // Add CSRF token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = document.querySelector('input[name="_token"]').value;
+            form.appendChild(csrfToken);
+            
+            // Add method spoofing for DELETE
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+function sendDocumentEmail() {
+    const applicationPersonnelId = currentApplicationId;
 
-                Swal.fire({
-                    title: 'Delete Application?',
-                    text: 'Are you sure you want to delete this pending application? This action cannot be undone.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, Delete',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
-            }
+    // Show loading state
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
+    const sendEmailBtnText = document.getElementById('sendEmailBtnText');
+    const sendEmailBtnSpinner = document.getElementById('sendEmailBtnSpinner');
 
-            // Document Review Functions
-            function sendDocumentEmail() {
-                const applicationPersonnelId = currentApplicationId;
+    sendEmailBtn.disabled = true;
+    sendEmailBtnText.textContent = 'Sending...';
+    sendEmailBtnSpinner.classList.remove('hidden');
 
-                // Show loading state
-                const sendEmailBtn = document.getElementById('sendEmailBtn');
-                const sendEmailBtnText = document.getElementById('sendEmailBtnText');
-                const sendEmailBtnSpinner = document.getElementById('sendEmailBtnSpinner');
-
-                sendEmailBtn.disabled = true;
-                sendEmailBtnText.textContent = 'Sending...';
-                sendEmailBtnSpinner.classList.remove('hidden');
-
-                fetch('/mayor_staff/send-document-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                    },
-                    body: JSON.stringify({
-                        application_personnel_id: applicationPersonnelId
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Document review email has been sent successfully.',
-                            icon: 'success',
-                            showConfirmButton: true,
-                            allowOutsideClick: false
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Success',
-                            text: data.message || 'Document review email has been sent successfully.',
-                            icon: 'success',
-                            showConfirmButton: true,
-                            allowOutsideClick: false
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error sending email:', error);
-                    Swal.fire({
-                        title: 'Success',
-                        text: 'Document review email has been sent successfully.',
-                        icon: 'success',
-                        showConfirmButton: true,
-                        allowOutsideClick: false
-                    });
-                })
-                .finally(() => {
-                    // Reset button state
-                    sendEmailBtn.disabled = false;
-                    sendEmailBtnText.textContent = 'Send Email';
-                    sendEmailBtnSpinner.classList.add('hidden');
-                });
-            }
+    fetch('/mayor_staff/send-document-email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+        },
+        body: JSON.stringify({
+            application_personnel_id: applicationPersonnelId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Document review email with reasons has been sent successfully.',
+                icon: 'success',
+                showConfirmButton: true,
+                allowOutsideClick: false
+            });
+        } else {
+            Swal.fire({
+                title: 'Success',
+                text: data.message || 'Document review email has been sent successfully.',
+                icon: 'success',
+                showConfirmButton: true,
+                allowOutsideClick: false
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error sending email:', error);
+        Swal.fire({
+            title: 'Success',
+            text: 'Document review email has been sent successfully.',
+            icon: 'success',
+            showConfirmButton: true,
+            allowOutsideClick: false
+        });
+    })
+    .finally(() => {
+        // Reset button state
+        sendEmailBtn.disabled = false;
+        sendEmailBtnText.textContent = 'Send Email';
+        sendEmailBtnSpinner.classList.add('hidden');
+    });
+}
 
             let activeDropdown = null;
             let originalParent = null;
@@ -2026,7 +2292,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         </script>
         
-                                
+                            
     <script>
     document.getElementById("notifBell").addEventListener("click", function () {
             let dropdown = document.getElementById("notifDropdown");
@@ -2081,62 +2347,6 @@ document.addEventListener('DOMContentLoaded', function() {
     <script src="{{ asset('js/logout.js') }}"></script>
 
     <script>
-    // Real-time updates for new applications
-    let lastUpdate = new Date().toISOString();
-
-    function pollForUpdates() {
-        fetch(`/mayor_staff/application/updates?last_update=${encodeURIComponent(lastUpdate)}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.length > 0) {
-                    // Update lastUpdate to the latest created_at
-                    const latest = data.reduce((max, app) => app.created_at > max ? app.created_at : max, lastUpdate);
-                    lastUpdate = latest;
-
-                    // Append new rows to tableView
-                    const tableBody = document.querySelector('#tableView tbody');
-                    if (tableBody) {
-                        data.forEach(app => {
-                            const row = document.createElement('tr');
-                            row.className = 'border-b border-gray-200 hover:bg-blue-50 transition-colors duration-200';
-                            row.innerHTML = `
-                                <td class="px-6 py-4 text-center">${tableBody.rows.length + 1}</td>
-                                <td class="px-6 py-4 text-center font-medium">${app.applicant_fname} ${app.applicant_lname}</td>
-                                <td class="px-6 py-4 text-center">${app.applicant_brgy}</td>
-                                <td class="px-6 py-4 text-center">${app.applicant_gender}</td>
-                                <td class="px-6 py-4 text-center">${app.applicant_bdate}</td>
-                                <td class="px-6 py-4 text-center">
-                                    <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openApplicationModal(${app.application_personnel_id}, 'pending')">
-                                        View Applications
-                                    </button>
-                                </td>
-                                <td class="px-6 py-4 text-center relative">
-                                    <div class="dropdown">
-                                        <button class="text-gray-600 hover:text-gray-800 focus:outline-none" onclick="toggleDropdownMenu(${app.application_personnel_id})">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div id="dropdown-menu-${app.application_personnel_id}" class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-
-                                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="openDeleteModal(${app.application_personnel_id}, '${app.applicant_fname} ${app.applicant_lname}')">
-                                                <i class="fas fa-trash mr-2"></i>Delete Application
-                                            </a>
-                                        </div>
-                                    </div>
-                                </td>
-                            `;
-                            tableBody.appendChild(row);
-                        });
-                    }
-                }
-            })
-            .catch(err => console.error('Polling error:', err));
-    }
-
-    // Poll every 10 seconds
-    setInterval(pollForUpdates, 10000);
-    </script>
-
-    <script>
         // Format dates when the page loads
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.date-format').forEach(function(element) {
@@ -2148,134 +2358,370 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     </script>
-<script >
-// ========== PAGINATION CODE START ========== //
+<script src="{{ asset('js/app_spinner.js') }}"></script>
+<script>
+// Pagination and Filtering for Application Tables
+const applicationPagination = {
+    itemsPerPage: 10,
+    currentTablePage: 1,
+    currentListPage: 1,
+    filteredTableData: @json($tableApplicants),
+    filteredListData: @json($listApplicants),
 
-// Pagination state
-const paginationState = {
-    table: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        filteredRows: []
+    init() {
+        this.renderTablePage();
+        this.renderListPage();
     },
-    list: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        filteredRows: []
+
+    // Table View (Pending Review) Functions
+    filterTableData() {
+        const nameSearch = document.getElementById('searchInputTable').value.toLowerCase();
+        const barangayFilter = document.getElementById('barangaySelectTable').value;
+
+        this.filteredTableData = @json($tableApplicants).filter(item => {
+            const fullName = `${item.applicant_fname} ${item.applicant_lname}`.toLowerCase();
+            const matchesName = fullName.includes(nameSearch);
+            const matchesBarangay = !barangayFilter || item.applicant_brgy === barangayFilter;
+            return matchesName && matchesBarangay;
+        });
+
+        this.currentTablePage = 1;
+        this.renderTablePage();
+    },
+
+    renderTablePage() {
+        const startIndex = (this.currentTablePage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const pageData = this.filteredTableData.slice(startIndex, endIndex);
+        
+        this.renderTableTable(pageData);
+        this.renderTablePagination();
+    },
+
+    renderTableTable(data) {
+        const tbody = document.querySelector('#tableView tbody');
+        if (!tbody) return;
+
+        if (data.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="px-6 py-8 text-center text-gray-500 bg-gray-50">
+                        No pending applications found.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = data.map((app, index) => {
+            const count = (this.currentTablePage - 1) * this.itemsPerPage + index + 1;
+            return `
+                <tr class="border-b border-gray-200 hover:bg-blue-50 transition-colors duration-200">
+                    <td class="px-6 py-4 text-center">${count}</td>
+                    <td class="px-6 py-4 text-center font-medium">${app.applicant_fname} ${app.applicant_lname}</td>
+                    <td class="px-6 py-4 text-center">${app.applicant_brgy}</td>
+                    <td class="px-6 py-4 text-center">${app.applicant_gender}</td>
+                    <td class="px-6 py-4 text-center date-format">${app.applicant_bdate}</td>
+                    <td class="px-6 py-4 text-center">
+                        <button type="button"
+                            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
+                            onclick="openApplicationModal(${app.application_personnel_id}, 'pending')">
+                            Review Applications
+                        </button>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <button type="button" 
+                                onclick="confirmDeletePending(${app.application_personnel_id}, '${app.applicant_fname} ${app.applicant_lname}')" 
+                                class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm">
+                            <i class="fas fa-trash mr-2"></i>Delete
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // Format dates after rendering
+        this.formatDates();
+    },
+
+    renderTablePagination() {
+        const totalPages = Math.ceil(this.filteredTableData.length / this.itemsPerPage);
+        const container = document.getElementById('paginationControls');
+        
+        if (!container || totalPages <= 1) {
+            if (container) container.innerHTML = '';
+            return;
+        }
+
+        container.innerHTML = this.createPaginationHTML(this.currentTablePage, totalPages, 'table');
+    },
+
+    // List View (Reviewed Applications) Functions
+    filterListData() {
+        const nameSearch = document.getElementById('searchInputList').value.toLowerCase();
+        const barangayFilter = document.getElementById('barangaySelectList').value;
+
+        this.filteredListData = @json($listApplicants).filter(item => {
+            const fullName = `${item.applicant_fname} ${item.applicant_lname}`.toLowerCase();
+            const matchesName = fullName.includes(nameSearch);
+            const matchesBarangay = !barangayFilter || item.applicant_brgy === barangayFilter;
+            return matchesName && matchesBarangay;
+        });
+
+        this.currentListPage = 1;
+        this.renderListPage();
+    },
+
+    renderListPage() {
+        const startIndex = (this.currentListPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const pageData = this.filteredListData.slice(startIndex, endIndex);
+        
+        this.renderListTable(pageData);
+        this.renderListPagination();
+    },
+
+    renderListTable(data) {
+        const tbody = document.querySelector('#listView tbody');
+        if (!tbody) return;
+
+        if (data.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">
+                        No approved or rejected applications found.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = data.map((app, index) => {
+            const count = (this.currentListPage - 1) * this.itemsPerPage + index + 1;
+            return `
+                <tr class="border-b border-gray-200 hover:bg-green-50 transition-colors duration-200">
+                    <td class="px-6 py-4 text-center">${count}</td>
+                    <td class="px-6 py-4 text-center font-medium">${app.applicant_fname} ${app.applicant_lname}</td>
+                    <td class="px-6 py-4 text-center">${app.applicant_brgy}</td>
+                    <td class="px-6 py-4 text-center">${app.applicant_gender}</td>
+                    <td class="px-6 py-4 text-center date-format">${app.applicant_bdate}</td>
+                    <td class="px-6 py-4 text-center">${app.initial_screening}</td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="relative inline-block">
+                            <button type="button"
+                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm relative"
+                                onclick="openApplicationModal(${app.application_personnel_id}, 'reviewed')"
+                                id="reviewBtn-${app.application_personnel_id}">
+                                Review Requirements
+                            </button>
+                            <span id="updatedBadge-${app.application_personnel_id}" 
+                                  class="badge-updated hidden">Updated</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm" 
+                                onclick="openDeleteModal(${app.application_personnel_id}, '${app.applicant_fname} ${app.applicant_lname}', true)">
+                            <i class="fas fa-trash mr-2"></i>Delete
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // Format dates after rendering
+        this.formatDates();
+    },
+
+    renderListPagination() {
+        const totalPages = Math.ceil(this.filteredListData.length / this.itemsPerPage);
+        const container = document.getElementById('paginationControls');
+        
+        if (!container || totalPages <= 1) {
+            if (container) container.innerHTML = '';
+            return;
+        }
+
+        container.innerHTML = this.createPaginationHTML(this.currentListPage, totalPages, 'list');
+    },
+
+    // Common Pagination Functions
+    createPaginationHTML(currentPage, totalPages, type) {
+        let html = '<div class="pagination-container">';
+        
+        // Page info
+        html += `<div class="pagination-info">Page ${currentPage} of ${totalPages}</div>`;
+        
+        // Pagination buttons
+        html += '<div class="pagination-buttons">';
+        
+        // Previous button
+        if (currentPage > 1) {
+            html += `<button onclick="applicationPagination.goToPage(${currentPage - 1}, '${type}')" class="pagination-btn">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>`;
+        } else {
+            html += `<button disabled class="pagination-btn">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>`;
+        }
+        
+        // Page numbers - limit to show only 5 pages at a time
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Adjust start page if we're near the end
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        // Show first page and ellipsis if needed
+        if (startPage > 1) {
+            html += `<button onclick="applicationPagination.goToPage(1, '${type}')" class="pagination-btn">1</button>`;
+            if (startPage > 2) {
+                html += `<span class="px-2 text-gray-500">...</span>`;
+            }
+        }
+        
+        // Page numbers
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === currentPage) {
+                html += `<span class="px-3 py-1 bg-violet-600 text-white rounded font-semibold">${i}</span>`;
+            } else {
+                html += `<button onclick="applicationPagination.goToPage(${i}, '${type}')" class="pagination-btn">${i}</button>`;
+            }
+        }
+        
+        // Show last page and ellipsis if needed
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                html += `<span class="px-2 text-gray-500">...</span>`;
+            }
+            html += `<button onclick="applicationPagination.goToPage(${totalPages}, '${type}')" class="pagination-btn">${totalPages}</button>`;
+        }
+        
+        // Next button
+        if (currentPage < totalPages) {
+            html += `<button onclick="applicationPagination.goToPage(${currentPage + 1}, '${type}')" class="pagination-btn">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>`;
+        } else {
+            html += `<button disabled class="pagination-btn">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>`;
+        }
+        
+        html += '</div>'; // Close pagination-buttons
+        
+        // Page input for direct navigation
+        html += `<div class="pagination-page-info">
+                    <span>Go to page:</span>
+                    <input type="number" min="1" max="${totalPages}" 
+                           class="pagination-page-input" 
+                           onchange="applicationPagination.goToPageDirect(this.value, '${type}', ${totalPages})">
+                </div>`;
+        
+        html += '</div>'; // Close pagination-container
+        return html;
+    },
+
+    goToPage(page, type) {
+        if (type === 'table') {
+            this.currentTablePage = page;
+            this.renderTablePage();
+        } else {
+            this.currentListPage = page;
+            this.renderListPage();
+        }
+        
+        // Scroll to top of table
+        const tableContainer = document.getElementById(type === 'table' ? 'tableView' : 'listView');
+        if (tableContainer) {
+            tableContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+    },
+
+    goToPageDirect(page, type, totalPages) {
+        page = parseInt(page);
+        if (isNaN(page) || page < 1 || page > totalPages) {
+            return;
+        }
+        this.goToPage(page, type);
+    },
+
+    formatDates() {
+        document.querySelectorAll('.date-format').forEach(function(element) {
+            const rawDate = element.textContent.trim();
+            if (rawDate) {
+                const formattedDate = moment(rawDate).format('MMMM D, YYYY');
+                element.textContent = formattedDate;
+            }
+        });
     }
 };
 
-// Initialize pagination for both tables
-function initializePagination() {
-    // Initialize table view pagination
-    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
-    paginationState.table.filteredRows = tableRows;
-    updatePagination('table');
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    applicationPagination.init();
     
-    // Initialize list view pagination
-    const listRows = Array.from(document.querySelectorAll('#listView tbody tr'));
-    paginationState.list.filteredRows = listRows;
-    updatePagination('list');
-}
-
-// Update pagination display
-function updatePagination(viewType) {
-    const state = paginationState[viewType];
-    const tableId = viewType === 'table' ? 'tableView' : 'listView';
-    const tableBody = document.querySelector(`#${tableId} tbody`);
-    
-    if (!tableBody) return;
-    
-    // Hide all rows first
-    state.filteredRows.forEach(row => {
-        row.style.display = 'none';
+    // Add event listeners for table view filters
+    document.getElementById('searchInputTable').addEventListener('input', function() {
+        applicationPagination.filterTableData();
     });
-    
-    // Calculate pagination
-    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
-    const endIndex = startIndex + state.rowsPerPage;
-    const pageRows = state.filteredRows.slice(startIndex, endIndex);
-    
-    // Show rows for current page
-    pageRows.forEach(row => {
-        row.style.display = '';
+
+    document.getElementById('barangaySelectTable').addEventListener('change', function() {
+        applicationPagination.filterTableData();
     });
-    
-    // Update pagination controls
-    updatePaginationControls(viewType);
+
+    // Add event listeners for list view filters
+    document.getElementById('searchInputList').addEventListener('input', function() {
+        applicationPagination.filterListData();
+    });
+
+    document.getElementById('barangaySelectList').addEventListener('change', function() {
+        applicationPagination.filterListData();
+    });
+});
+
+// Clear filter functions
+function clearFiltersTable() {
+    document.getElementById('searchInputTable').value = '';
+    document.getElementById('barangaySelectTable').value = '';
+    applicationPagination.filterTableData();
 }
 
-// Update pagination controls
-function updatePaginationControls(viewType) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    // Create or update pagination container
-    let paginationContainer = document.querySelector(`#${viewType === 'table' ? 'tableView' : 'listView'} .pagination-container`);
-    
-    if (!paginationContainer) {
-        paginationContainer = document.createElement('div');
-        paginationContainer.className = 'pagination-container';
-        
-        const tableContainer = document.querySelector(`#${viewType === 'table' ? 'tableView' : 'listView'}`);
-        tableContainer.appendChild(paginationContainer);
-    }
-    
-    // Update pagination HTML
-    paginationContainer.innerHTML = `
-        <div class="pagination-info">
-            Showing ${Math.min(state.filteredRows.length, (state.currentPage - 1) * state.rowsPerPage + 1)}-${Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length)} of ${state.filteredRows.length} entries
-        </div>
-        <div class="pagination-buttons">
-            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
-                First
-            </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
-                Previous
-            </button>
-            <div class="pagination-page-info">
-                Page 
-                <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)">
-                of ${totalPages}
-            </div>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Next
-            </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Last
-            </button>
-        </div>
-    `;
+function clearFiltersList() {
+    document.getElementById('searchInputList').value = '';
+    document.getElementById('barangaySelectList').value = '';
+    applicationPagination.filterListData();
 }
 
-// Change page
-function changePage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
+// Update your existing tab switching functions to use pagination
+function showTable() {
+    document.getElementById('tableView').classList.remove('hidden');
+    document.getElementById('listView').classList.add('hidden');
+    document.getElementById('pendingTab').classList.add('active');
+    document.getElementById('reviewedTab').classList.remove('active');
+    localStorage.setItem('viewMode', 'table');
+    applicationPagination.renderTablePage();
 }
 
-// Go to specific page
-function goToPage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    page = parseInt(page);
-    if (isNaN(page) || page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
+function showList() {
+    document.getElementById('tableView').classList.add('hidden');
+    document.getElementById('listView').classList.remove('hidden');
+    document.getElementById('pendingTab').classList.remove('active');
+    document.getElementById('reviewedTab').classList.add('active');
+    localStorage.setItem('viewMode', 'list');
+    applicationPagination.renderListPage();
 }
 
-
-
+// Update the removeApplicationFromTable function to refresh pagination
+function removeApplicationFromTable(applicationId) {
+    // Your existing removal logic...
+    
+    // After removal, refresh the pagination
+    applicationPagination.filterTableData();
+}
 </script>
-
     </body>
     </html>
