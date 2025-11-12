@@ -79,6 +79,8 @@
           background: white !important;
           color: #000;
           font-size: 10px;
+          margin: 0;
+          padding: 0;
         }
         .no-print {
           display: none !important;
@@ -87,7 +89,36 @@
         .max-w-6xl {
           max-width: 100% !important;
           width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
         }
+        
+        /* Print header styling */
+        .print-header {
+          display: flex !important;
+          justify-content: space-between;
+          align-items: flex-start;
+          width: 100%;
+          margin-bottom: 10px;
+          border-bottom: 1px solid #000;
+          padding-bottom: 5px;
+        }
+        .print-header-left {
+          text-align: left;
+          font-size: 9px;
+          line-height: 1.2;
+        }
+        .print-header-right {
+          text-align: right;
+          font-size: 9px;
+        }
+        .print-title {
+          font-size: 14px !important;
+          font-weight: bold;
+          text-align: center;
+          margin: 5px 0;
+        }
+        
         #reviewArea {
           page-break-inside: avoid;
           padding: 0.125rem !important;
@@ -141,6 +172,11 @@
           border: 1px solid #000;
         }
       }
+      
+      /* Print header - hidden by default */
+      .print-header {
+        display: none;
+      }
     </style>
   </head>
   <body class="bg-gray-100 min-h-screen">
@@ -176,8 +212,22 @@
         </div>
       </div>
 
+      <!-- PRINT HEADER (Only shows when printing) -->
+      <div class="print-header">
+        <div class="print-header-left">
+          <div>Republic of the Philippines</div>
+          <div>Province of Misamis Oriental</div>
+          <div>Municipality of Tagoloan</div>
+          <div>Municipal Social Welfare and Development Office</div>
+        </div>
+        <div class="print-header-right">
+          Serial No.: <span id="printSerialNumber"></span>
+        </div>
+      </div>
+      <div class="print-title">FAMILY INTAKE SHEET</div>
+
       <!-- Progress -->
-      <div class="w-full bg-gray-200 h-2 mb-4 rounded-full">
+      <div class="w-full bg-gray-200 h-2 mb-4 rounded-full no-print">
         <div
           id="progressBar"
           class="h-2 bg-purple-600 rounded-full transition-all duration-300"
@@ -185,8 +235,9 @@
         ></div>
       </div>
 
-      <form id="intakeForm" class="space-y-6">
-        <!-- STEP 1 -->
+    <form id="intakeForm" class="space-y-6" method="POST" action="{{ route('submit.intake.sheet') }}">
+    @csrf
+<input type="hidden" name="application_personnel_id" value="{{ $application_personnel_id ?? request()->route('application_personnel_id') }}">    <input type="hidden" name="token" value="{{ $token }}">
         <section class="step" id="step-1">
           <h3 class="text-lg font-semibold mb-3">
             Step 1 — Head of the Family
@@ -606,75 +657,72 @@
           </div>
         </section>
 
-        <!-- STEP 4: Review -->
-        <section class="step hidden" id="step-4">
-          <h3 class="text-lg font-semibold mb-3">Step 4 — Review and Submit</h3>
-          <div id="reviewArea" class="w-full">
-            <div class="review-columns">
-              <div class="space-y-4">
-                <h2 class="text-xl font-bold">Family Intake Sheet Review</h2>
-                <div class="print-box p-4">
-                  <p class="text-sm md:text-base"><strong>Serial No.:</strong> <span id="rv_serial"></span></p>
-                  <p class="text-sm md:text-base"><strong>Name:</strong> <span id="rv_head_name"></span></p>
-                  <div id="rv_head_table"></div>
-                </div>
-                <div class="print-box p-4">
-                  <h4 class="font-semibold text-sm md:text-base">Family Members</h4>
-                  <div class="overflow-x-auto">
-                    <table id="rv_family_table" class="min-w-full text-xs md:text-sm thin-border">
-                      <thead class="bg-gray-100">
-                        <tr>
-                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Name</th>
-                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Relation</th>
-                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Birthdate</th>
-                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Age</th>
-                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Sex</th>
-                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Civil Status</th>
-                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Educational Attainment</th>
-                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Occupation</th>
-                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Monthly Income</th>
-                          <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Remarks</th>
-                        </tr>
-                      </thead>
-                      <tbody></tbody>
-                    </table>
-                  </div>
-                </div>
-                <div id="rv_household_table" class="print-box p-4">
-                  <h4 class="font-semibold text-sm md:text-base">Household Information</h4>
-                  <table class="min-w-full text-xs md:text-sm">
-                    <tr>
-                        <td class="px-1 md:px-2 py-1"><strong>Other Source of Income:</strong> ₱<span id="rv_other_income"></span></td>
-                      <td class="px-1 md:px-2 py-1"><strong>Total Family Income (Monthly):</strong> ₱<span id="rv_total_income"></span></td>
-                      <td class="px-1 md:px-2 py-1"><strong>Total Family Net Income (Monthly):</strong> ₱<span id="rv_net_income"></span></td>
-
-                    </tr>
-    <tr>
-      <td class="px-1 md:px-2 py-1"><strong>House (Owned/Rented):</strong> <span id="rv_house"></span><br><span id="rv_house_rent_display"></span></td>
-      <td class="px-1 md:px-2 py-1"><strong>Lot (Owned/Rented):</strong> <span id="rv_lot"></span><br><span id="rv_lot_rent_display"></span></td>
-      <td class="px-1 md:px-2 py-1"><strong>Water Monthly Billing:</strong> ₱<span id="rv_water"></span></td>
-      <td class="px-1 md:px-2 py-1"><strong>Electricity Monthly Billing:</strong> ₱<span id="rv_electric"></span></td>
-    </tr>
-    <tr id="rv_value_row" style="display: none;">
-      <td class="px-1 md:px-2 py-1"><strong>House Value:</strong> ₱<span id="rv_house_value"></span></td>
-      <td class="px-1 md:px-2 py-1"><strong>Lot Value:</strong> ₱<span id="rv_lot_value"></span></td>
-      <td colspan="2" class="px-1 md:px-2 py-1"></td>
-    </tr>
-                  </table>
-                </div>
-                <div class="print-box p-4">
-                  <h4 class="font-semibold">Signatures</h4>
-                  <div>
-                    <p><strong>Family Head:</strong></p>
-                    <div id="rv_sig_client"></div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
+ <!-- STEP 4: Review -->
+<section class="step hidden" id="step-4">
+  <h3 class="text-lg font-semibold mb-3 no-print">Step 4 — Review and Submit</h3>
+  <div id="reviewArea" class="w-full">
+    <div class="review-columns">
+      <div class="space-y-4">
+        <h2 class="text-xl font-bold no-print">Family Intake Sheet Review</h2>
+        <div class="print-box p-4">
+          <p class="text-sm md:text-base"><strong>Serial No.:</strong> <span id="rv_serial"></span></p>
+          <p class="text-sm md:text-base"><strong>Name:</strong> <span id="rv_head_name"></span></p>
+          <div id="rv_head_table"></div>
+        </div>
+        <div class="print-box p-4">
+          <h4 class="font-semibold text-sm md:text-base">Family Members</h4>
+          <div class="overflow-x-auto">
+            <table id="rv_family_table" class="min-w-full text-xs md:text-sm thin-border">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Name</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Relation</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Birthdate</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Age</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Sex</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Civil Status</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Educational Attainment</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Occupation</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Monthly Income</th>
+                  <th class="border px-1 md:px-2 py-1 text-xs md:text-sm">Remarks</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
           </div>
-        </section>
-
+        </div>
+        <div id="rv_household_table" class="print-box p-4">
+          <h4 class="font-semibold text-sm md:text-base">Household Information</h4>
+          <table class="min-w-full text-xs md:text-sm">
+            <tr>
+                <td class="px-1 md:px-2 py-1"><strong>Other Source of Income:</strong> ₱<span id="rv_other_income"></span></td>
+              <td class="px-1 md:px-2 py-1"><strong>Total Family Income (Monthly):</strong> ₱<span id="rv_total_income"></span></td>
+              <td class="px-1 md:px-2 py-1"><strong>Total Family Net Income (Monthly):</strong> ₱<span id="rv_net_income"></span></td>
+            </tr>
+            <tr>
+              <td class="px-1 md:px-2 py-1"><strong>House (Owned/Rented):</strong> <span id="rv_house"></span><br><span id="rv_house_rent_display"></span></td>
+              <td class="px-1 md:px-2 py-1"><strong>Lot (Owned/Rented):</strong> <span id="rv_lot"></span><br><span id="rv_lot_rent_display"></span></td>
+              <td class="px-1 md:px-2 py-1"><strong>Water Monthly Billing:</strong> ₱<span id="rv_water"></span></td>
+              <td class="px-1 md:px-2 py-1"><strong>Electricity Monthly Billing:</strong> ₱<span id="rv_electric"></span></td>
+            </tr>
+            <tr id="rv_value_row" style="display: none;">
+              <td class="px-1 md:px-2 py-1"><strong>House Value:</strong> ₱<span id="rv_house_value"></span></td>
+              <td class="px-1 md:px-2 py-1"><strong>Lot Value:</strong> ₱<span id="rv_lot_value"></span></td>
+              <td colspan="2" class="px-1 md:px-2 py-1"></td>
+            </tr>
+          </table>
+        </div>
+        <div class="print-box p-4">
+          <h4 class="font-semibold">Signatures</h4>
+          <div>
+            <p><strong>Family Head:</strong></p>
+            <div id="rv_sig_client"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
         <!-- Navigation controls -->
         <div id="navControls" class="flex justify-between border-t pt-4 no-print">
           <button
@@ -689,7 +737,7 @@
           <button
             type="button"
             id="printBtn"
-            onclick="window.print()"
+            onclick="handlePrint()"
             class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 hidden"
           >
             Print

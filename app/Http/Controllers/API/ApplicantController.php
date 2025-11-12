@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Applicant;
 use App\Models\Application;
 use App\Models\ApplicationPersonnel;
+use App\Models\Lydopers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -43,7 +44,7 @@ class ApplicantController extends Controller
     public function store(Request $request)
     {
         DB::beginTransaction();
-        
+
         try {
             Log::info('=== APPLICATION SUBMISSION STARTED ===');
 
@@ -85,10 +86,10 @@ class ApplicantController extends Controller
 
             // Handle document file paths
             $fileFields = [
-                'application_letter', 
-                'cert_of_reg', 
-                'grade_slip', 
-                'brgy_indigency', 
+                'application_letter',
+                'cert_of_reg',
+                'grade_slip',
+                'brgy_indigency',
                 'student_id'
             ];
 
@@ -110,19 +111,36 @@ class ApplicantController extends Controller
                 'applicant_id' => $application->applicant_id
             ]);
 
-            // Create ApplicationPersonnel record for mayor staff review
+            // 🔥 CRITICAL FIX: Find available mayor staff and assign properly
+            $mayorStaff = DB::table('tbl_lydopers')
+                ->where('lydopers_role', 'mayor_staff')
+                ->where('lydopers_status', 'active')
+                ->first();
+
+            if (!$mayorStaff) {
+                // Fallback: get any active staff
+                $mayorStaff = DB::table('tbl_lydopers')
+                    ->where('lydopers_status', 'active')
+                    ->first();
+            }
+
+            // 🔥 CRITICAL FIX: Create ApplicationPersonnel record with VALID remarks
             $applicationPersonnelData = [
                 'application_id' => $application->application_id,
-                'lydopers_id' => 0, // Default mayor staff ID
+                'lydopers_id' => $mayorStaff ? $mayorStaff->lydopers_id : 1, // Default to 1 if no staff found
                 'initial_screening' => 'Pending',
-                'remarks' => 'Pending',
+                'remarks' => 'Poor', // 🔥 CHANGE FROM 'Pending' TO VALID POVERTY LEVEL
                 'status' => 'Waiting',
+                'created_at' => now(),
+                'updated_at' => now(),
             ];
 
             $applicationPersonnel = ApplicationPersonnel::create($applicationPersonnelData);
             Log::info('ApplicationPersonnel record created successfully', [
                 'application_personnel_id' => $applicationPersonnel->application_personnel_id,
-                'application_id' => $applicationPersonnel->application_id
+                'application_id' => $applicationPersonnel->application_id,
+                'lydopers_id' => $applicationPersonnel->lydopers_id,
+                'remarks' => $applicationPersonnel->remarks // Log the actual value
             ]);
 
             DB::commit();
@@ -140,27 +158,13 @@ class ApplicantController extends Controller
                 ]
             ], 201);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-            Log::error('VALIDATION EXCEPTION', ['errors' => $e->errors()]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed. Please check your data.',
-                'errors' => $e->errors()
-            ], 422);
-            
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('APPLICATION SUBMISSION FAILED: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
+            Log::error('APPLICATION SUBMISSION FAILED: ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Application submission failed. Please try again.',
+                'message' => 'Application submission failed.',
                 'error' => $e->getMessage()
             ], 500);
         }

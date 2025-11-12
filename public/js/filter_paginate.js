@@ -167,6 +167,49 @@ function initializeScholarFiltering() {
     const academicYearSelect = document.getElementById('academicYearSelect');
     const statusSelect = document.getElementById('statusSelect');
 
+    // New helper: fetch filtered rows from server and replace table body.
+    async function fetchAndReplaceScholars() {
+        try {
+            const params = new URLSearchParams();
+            if (searchInput && searchInput.value) params.set('search', searchInput.value);
+            if (barangaySelect && barangaySelect.value) params.set('barangay', barangaySelect.value);
+            if (academicYearSelect && academicYearSelect.value) params.set('academic_year', academicYearSelect.value);
+            if (statusSelect && statusSelect.value) params.set('status', statusSelect.value);
+
+            const resp = await fetch(`/lydo_admin/scholar?${params.toString()}`, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (!resp.ok) throw new Error('Failed to load scholars from server');
+
+            const html = await resp.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newTbody = doc.querySelector('table tbody');
+
+            if (newTbody) {
+                const tbody = document.querySelector('table tbody');
+                tbody.innerHTML = newTbody.innerHTML;
+
+                // Re-initialize client-side state after replacing rows
+                initializeScholarData();
+                paginationState.currentPage = 1;
+                updateScholarPagination();
+                initializeCheckboxSelection();
+                updateCheckboxStates();
+                updateSendButton();
+
+                // Re-attach other handlers that rely on DOM (documents modal buttons, etc.)
+                initializeEmailFunctionality();
+                initializeAnnouncementFunctionality();
+                initializeDocumentsModal();
+            }
+        } catch (err) {
+            console.error('Error fetching scholars:', err);
+        }
+    }
+
     function filterScholarTable() {
         const searchTerm = searchInput.value.toLowerCase();
         const selectedBarangay = barangaySelect.value;
@@ -234,7 +277,14 @@ function initializeScholarFiltering() {
         academicYearSelect.addEventListener('change', filterScholarTable);
     }
     if (statusSelect) {
-        statusSelect.addEventListener('change', filterScholarTable);
+        // When status changes, ask server for rows with that status, then apply client filters.
+        statusSelect.addEventListener('change', function() {
+            // Fetch server-side filtered rows (so inactive rows exist in DOM) then run client filter
+            fetchAndReplaceScholars().then(() => {
+                // after server rows are in DOM, apply client side filters (search/barangay/academicyear)
+                filterScholarTable();
+            });
+        });
     }
 }
 

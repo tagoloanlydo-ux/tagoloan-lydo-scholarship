@@ -27,6 +27,9 @@ Route::prefix('staging')->group(function () {
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     });
 
+    // Public routes (no authentication required)
+    Route::post('/applicants', [ApplicantController::class, 'store']);
+
     // Protected routes with Sanctum
     Route::middleware('auth:sanctum')->group(function () {
         // Auth routes
@@ -46,8 +49,8 @@ Route::prefix('staging')->group(function () {
             Route::post('/submit_renewal', [RenewalController::class, 'submitScholarRenewal']);
         });
 
-        // API Resources
-        Route::apiResource('/applicants', ApplicantController::class);
+        // API Resources (excluding applicants store which is now public)
+        Route::apiResource('/applicants', ApplicantController::class)->except(['store']);
         Route::apiResource('/applications', ApplicationController::class);
         Route::apiResource('/scholars', ScholarController::class);
         Route::apiResource('/renewals', RenewalController::class);

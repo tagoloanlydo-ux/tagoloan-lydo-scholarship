@@ -13,7 +13,7 @@ class ApplicationPersonnelController extends Controller
      */
     public function index()
     {
-        $records = ApplicationPersonnel::all();
+        $records = ApplicationPersonnel::with(['application.applicant'])->get();
 
         return response()->json([
             'success' => true,
@@ -45,6 +45,9 @@ class ApplicationPersonnelController extends Controller
             'brgy_indigency_status' => 'nullable|string|max:50',
             'student_id_status' => 'nullable|string|max:50',
         ]);
+
+        // Set default status to 'pending' if not provided
+        $validated['status'] = $validated['status'] ?? 'pending';
 
         $record = ApplicationPersonnel::create($validated);
 
@@ -137,5 +140,210 @@ class ApplicationPersonnelController extends Controller
             'success' => true,
             'message' => 'Record deleted successfully.'
         ], 200);
+    }
+
+    /**
+     * Get applications for mayor staff review - FIXED VERSION
+     */
+    public function getMayorStaffApplications(Request $request)
+    {
+        try {
+            $applications = ApplicationPersonnel::with([
+                    'application.applicant', // Load applicant through application
+                    'application' // Load application directly
+                ])
+                ->where('lydopers_id', $request->auth_user_id)
+                ->where('status', 'Waiting')
+                ->where('initial_screening', 'Pending')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Mayor staff applications retrieved successfully.',
+                'data' => $applications,
+                'count' => $applications->count()
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve applications.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get mayor staff dashboard data.
+     */
+    public function getMayorStaffDashboard(Request $request)
+    {
+        try {
+            $userId = $request->auth_user_id;
+
+            // Get counts
+            $totalApplications = ApplicationPersonnel::where('lydopers_id', $userId)->count();
+            $pendingInitial = ApplicationPersonnel::where('lydopers_id', $userId)
+                ->where('initial_screening', 'Pending')
+                ->count();
+            $reviewedCount = ApplicationPersonnel::where('lydopers_id', $userId)
+                ->where('initial_screening', 'Reviewed')
+                ->count();
+
+            // Get recent applications
+            $recentApplications = ApplicationPersonnel::with(['application.applicant'])
+                ->where('lydopers_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total_applications' => $totalApplications,
+                    'pending_initial' => $pendingInitial,
+                    'reviewed_count' => $reviewedCount,
+                    'recent_applications' => $recentApplications
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve dashboard data.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get mayor staff status page data - FIXED VERSION
+     */
+    public function getMayorStaffStatus(Request $request)
+    {
+        try {
+            $userId = $request->auth_user_id;
+
+            // Get applications assigned to this mayor staff (filter by qualifying remarks)
+            $applications = ApplicationPersonnel::with(['application.applicant'])
+                ->where('lydopers_id', $userId)
+                ->where('status', 'Waiting')
+                ->where('initial_screening', 'Reviewed')
+                // Include remarks that qualify for further processing
+                ->where(function($query) {
+                    $query->whereIn('remarks', ['Poor', 'Non-Poor', 'Ultra Poor', 'Indigenous'])
+                          ->orWhere('remarks', 'Pending');
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Get processed applications
+            $processedApplications = ApplicationPersonnel::with(['application.applicant'])
+                ->where('lydopers_id', $userId)
+                ->whereIn('status', ['Approved', 'Rejected'])
+                ->orderBy('updated_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'applications' => $applications,
+                    'processed_applications' => $processedApplications
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve status data.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update mayor staff application status.
+     */
+    public function updateMayorStaffStatus(Request $request, $id)
+    {
+        try {
+            $record = ApplicationPersonnel::find($id);
+
+            if (!$record) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Application not found.'
+                ], 404);
+            }
+
+            // Verify the record belongs to the authenticated mayor staff
+            if ($record->lydopers_id != $request->auth_user_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access to this application.'
+                ], 403);
+            }
+
+            $validated = $request->validate([
+                'status' => 'required|in:Approved,Rejected',
+                'remarks' => 'nullable|string'
+            ]);
+
+            $record->update([
+                'status' => $validated['status'],
+                'remarks' => $validated['remarks'] ?? $record->remarks,
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Application status updated successfully.',
+                'data' => $record
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update application status.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Debug endpoint to check assigned applications
+     */
+    public function debugMayorStaffApplications(Request $request)
+    {
+        try {
+            $userId = $request->auth_user_id;
+
+            $allApplications = ApplicationPersonnel::with(['application.applicant'])
+                ->where('lydopers_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $waitingPending = ApplicationPersonnel::with(['application.applicant'])
+                ->where('lydopers_id', $userId)
+                ->where('status', 'Waiting')
+                ->where('initial_screening', 'Pending')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'all_applications' => $allApplications,
+                    'waiting_pending_applications' => $waitingPending,
+                    'counts' => [
+                        'total' => $allApplications->count(),
+                        'waiting_pending' => $waitingPending->count()
+                    ]
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Debug failed.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
