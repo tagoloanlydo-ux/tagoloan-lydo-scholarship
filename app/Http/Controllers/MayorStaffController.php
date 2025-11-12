@@ -772,7 +772,7 @@ public function deleteApplication($id)
                 'lydo.lydopers_role as role' // For debugging
             )
             ->where('ap.lydopers_id', $currentStaffId) // Add this filter
-            ->where('ap.status', 'Waiting')
+            ->where('ap.status', 'Pending')
             ->where('ap.initial_screening', 'Reviewed')
             ->whereIn('ap.remarks', ['Poor', 'Ultra Poor', 'Indigenous']) // Include all valid poverty levels
             ->paginate(15);
