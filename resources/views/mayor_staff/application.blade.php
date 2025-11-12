@@ -483,12 +483,9 @@
             <div>
                 <label for="searchInputTable" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
                 <div class="relative">
-                    <input type="text" id="searchInputTable" placeholder="Enter applicant name..."
-                        class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none"
-                        onkeyup="filterRows('table')">
-                    <button onclick="clearFiltersTable()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-                        <i class="fas fa-times"></i>
-                    </button>
+<input type="text" id="searchInputTable" placeholder="Enter applicant name..."
+    class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none">
+<button onclick="clearFiltersTable()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                 </div>
             </div>
 
@@ -573,12 +570,9 @@
             <div>
                 <label for="searchInputList" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
                 <div class="relative">
-                    <input type="text" id="searchInputList" placeholder="Enter applicant name..."
-                        class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none"
-                        onkeyup="filterRows('list')">
-                    <button onclick="clearFiltersList()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-                        <i class="fas fa-times"></i>
-                    </button>
+                 <input type="text" id="searchInputList" placeholder="Enter applicant name..."
+    class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none">
+<button onclick="clearFiltersList()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                 </div>
             </div>
 
@@ -1313,17 +1307,128 @@ function trackDocumentUpdates(applicationPersonnelId) {
                 console.log('Updated documents:', updatedDocuments);
             }
 
-            function debounce(func, wait) {
-                let timeout;
-                return function executedFunction(...args) {
-                    const later = () => {
-                        clearTimeout(timeout);
-                        func(...args);
-                    };
-                    clearTimeout(timeout);
-                    timeout = setTimeout(later, wait);
-                };
-            }
+// ========== SEARCH AND FILTER FUNCTIONS ========== //
+
+// Debounce function for search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Main filter function
+function filterRows(viewType) {
+    try {
+        const searchInputId = viewType === 'table' ? 'searchInputTable' : 'searchInputList';
+        const barangaySelectId = viewType === 'table' ? 'barangaySelectTable' : 'barangaySelectList';
+        
+        const searchEl = document.getElementById(searchInputId);
+        const barangayEl = document.getElementById(barangaySelectId);
+        const searchValue = searchEl ? searchEl.value.toLowerCase().trim() : '';
+        const barangayValue = barangayEl ? barangayEl.value : '';
+
+        const state = paginationState[viewType];
+        
+        // Filter rows based on search criteria
+        const filteredRows = state.allRows.filter(row => {
+            const nameCell = row.cells[1]; // Name column
+            const barangayCell = row.cells[2]; // Barangay column
+
+            if (!nameCell || !barangayCell) return false;
+
+            const nameText = nameCell.textContent.toLowerCase().trim();
+            const barangayText = barangayCell.textContent.trim();
+
+            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
+            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
+
+            return matchesSearch && matchesBarangay;
+        });
+
+        // Update pagination state
+        state.filteredRows = filteredRows;
+        state.currentPage = 1; // Reset to first page
+        updatePagination(viewType);
+
+    } catch (e) {
+        console.error('filterRows error:', e);
+    }
+}
+
+// Clear filters functions
+function clearFiltersTable() {
+    document.getElementById('searchInputTable').value = '';
+    document.getElementById('barangaySelectTable').value = '';
+    filterRows('table');
+}
+
+function clearFiltersList() {
+    document.getElementById('searchInputList').value = '';
+    document.getElementById('barangaySelectList').value = '';
+    filterRows('list');
+}
+
+// Attach event listeners for filters
+function attachFilterListeners() {
+    const debounceDelay = 300;
+
+    // Table View listeners
+    const tableSearch = document.getElementById('searchInputTable');
+    const tableBrgy = document.getElementById('barangaySelectTable');
+    
+    if (tableSearch) {
+        tableSearch.addEventListener('input', debounce(() => {
+            filterRows('table');
+        }, debounceDelay));
+    }
+    
+    if (tableBrgy) {
+        tableBrgy.addEventListener('change', () => {
+            filterRows('table');
+        });
+    }
+
+    // List View listeners
+    const listSearch = document.getElementById('searchInputList');
+    const listBrgy = document.getElementById('barangaySelectList');
+    
+    if (listSearch) {
+        listSearch.addEventListener('input', debounce(() => {
+            filterRows('list');
+        }, debounceDelay));
+    }
+    
+    if (listBrgy) {
+        listBrgy.addEventListener('change', () => {
+            filterRows('list');
+        });
+    }
+}
+
+// Initialize everything when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize pagination
+    initializePagination();
+    
+    // Attach filter listeners
+    attachFilterListeners();
+    
+    // Restore view mode from localStorage
+    const savedViewMode = localStorage.getItem('viewMode');
+    if (savedViewMode === 'list') {
+        showList();
+    } else {
+        showTable();
+    }
+    
+    console.log('Pagination and filters initialized successfully');
+});
 
             function loadDocumentComments(applicationPersonnelId) {
                 console.log('Loading comments for application:', applicationPersonnelId);
