@@ -564,7 +564,7 @@
 
                 <!-- ✅ List View (Approved and Rejected applications) -->
         <div id="listView" class="hidden overflow-x-auto">
-                    <!-- Filter controls specific to List View -->
+<!-- Search and Filter Section for List View -->
 <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
     <div class="flex gap-4 items-end">
         <!-- Left side container -->
@@ -574,10 +574,9 @@
                 <label for="searchInputList" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
                 <div class="relative">
                     <input type="text" id="searchInputList" placeholder="Enter applicant name..."
-                        style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
-                        onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                        onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-                    <button onclick="clearFiltersList()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none"
+                        onkeyup="filterRows('list')">
+                    <button onclick="clearFiltersList()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -586,10 +585,9 @@
             <!-- Filter by Barangay -->
             <div>
                 <label for="barangaySelectList" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                <select id="barangaySelectList"
-                    style="padding: 0.75rem 2.5rem; width: 16rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white; appearance: none; background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"
-                    onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                <select id="barangaySelectList" onchange="filterRows('list')"
+                    class="w-64 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white appearance-none outline-none"
+                    style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
                     <option value="">All Barangays</option>
                     @foreach($barangays as $brgy)
                         <option value="{{ $brgy }}">{{ $brgy }}</option>
@@ -990,19 +988,24 @@ function clearFiltersList() {
     filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
 }
 
-// Initialize on page load
+// Initialize everything when page loads
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize pagination
+    initializePagination();
+    
     // Attach filter listeners
     attachFilterListeners();
     
-    // Run initial filters
-    filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
-    filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
+    // Restore view mode from localStorage
+    const savedViewMode = localStorage.getItem('viewMode');
+    if (savedViewMode === 'list') {
+        showList();
+    } else {
+        showTable();
+    }
     
-    // Initialize pagination
-    initializePagination();
+    console.log('Pagination and filters initialized successfully');
 });
-
 
             // ✅ Application Modal Functions
             const applications = @json($applications);
