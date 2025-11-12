@@ -173,7 +173,8 @@ Route::get('/mayor_staff/get-notification-content', [MayorStaffController::class
 // Notification test routes
 Route::post('/test/new-application/{id}', [MayorStaffController::class, 'triggerNewApplicationNotification']);
 Route::post('/test/reviewed-application/{id}', [MayorStaffController::class, 'triggerReviewedApplicationNotification']);
-
+Route::get('/mayor_staff/application/table-data', [MayorStaffController::class, 'getTableViewData']);
+Route::get('/mayor_staff/application/list-data', [MayorStaffController::class, 'getListViewData']);
 // Quick test route
 Route::get('/test-pusher', function() {
     $applicationId = 1; // Change to a real application ID

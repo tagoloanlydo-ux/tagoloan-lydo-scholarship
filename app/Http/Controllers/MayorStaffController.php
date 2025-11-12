@@ -479,6 +479,115 @@ public function application(Request $request)
     );
 }
 
+// Add these methods to your MayorStaffController class
+
+/**
+ * Get table view data for auto-refresh
+ */
+public function getTableViewData(Request $request)
+{
+    try {
+        $currentStaffId = session('lydopers')->lydopers_id;
+        
+        $query = DB::table("tbl_applicant as a")
+            ->join("tbl_application as app", "a.applicant_id", "=", "app.applicant_id")
+            ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
+            ->select(
+                "a.*",
+                "app.application_id",
+                "ap.application_personnel_id",
+                "ap.status",
+                "ap.initial_screening",
+                "ap.remarks",
+                "a.applicant_email",
+                "app.created_at"
+            )
+            ->where("a.applicant_acad_year", "=", now()->format("Y") . "-" . now()->addYear()->format("Y"))
+            ->where("ap.lydopers_id", $currentStaffId)
+            ->where("ap.initial_screening", "Pending")
+            ->orderBy("app.created_at", "desc");
+
+        if ($request->filled("search")) {
+            $query->where(function ($q) use ($request) {
+                $q->where("a.applicant_fname", "like", "%" . $request->search . "%")
+                  ->orWhere("a.applicant_lname", "like", "%" . $request->search . "%");
+            });
+        }
+
+        if ($request->filled("barangay")) {
+            $query->where("a.applicant_brgy", $request->barangay);
+        }
+
+        $tableApplicants = $query->get();
+
+        $html = view('mayor_staff.partials.table-view', compact('tableApplicants'))->render();
+
+        return response()->json([
+            'success' => true,
+            'html' => $html
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Error getting table view data: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to get table data'
+        ], 500);
+    }
+}
+
+/**
+ * Get list view data for auto-refresh
+ */
+public function getListViewData(Request $request)
+{
+    try {
+        $currentStaffId = session('lydopers')->lydopers_id;
+        
+        $query = DB::table("tbl_applicant as a")
+            ->join("tbl_application as app", "a.applicant_id", "=", "app.applicant_id")
+            ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
+            ->select(
+                "a.*",
+                "app.application_id",
+                "ap.application_personnel_id",
+                "ap.status",
+                "ap.initial_screening",
+                "ap.remarks",
+                "a.applicant_email",
+                "app.created_at"
+            )
+            ->where("a.applicant_acad_year", "=", now()->format("Y") . "-" . now()->addYear()->format("Y"))
+            ->where("ap.lydopers_id", $currentStaffId)
+            ->whereIn("ap.initial_screening", ["Approved", "Rejected"])
+            ->orderBy("app.created_at", "desc");
+
+        if ($request->filled("search")) {
+            $query->where(function ($q) use ($request) {
+                $q->where("a.applicant_fname", "like", "%" . $request->search . "%")
+                  ->orWhere("a.applicant_lname", "like", "%" . $request->search . "%");
+            });
+        }
+
+        if ($request->filled("barangay")) {
+            $query->where("a.applicant_brgy", $request->barangay);
+        }
+
+        $listApplicants = $query->get();
+
+        $html = view('mayor_staff.partials.list-view', compact('listApplicants'))->render();
+
+        return response()->json([
+            'success' => true,
+            'html' => $html
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Error getting list view data: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to get list data'
+        ], 500);
+    }
+}
     public function updateInitialScreening(Request $request, $id)
     {
         $request->validate([
