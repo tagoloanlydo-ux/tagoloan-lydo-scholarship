@@ -483,16 +483,18 @@
             <div>
                 <label for="searchInputTable" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
                 <div class="relative">
-<input type="text" id="searchInputTable" placeholder="Enter applicant name..."
-    class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none">
-<button onclick="clearFiltersTable()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                    <input type="text" id="searchInputTable" placeholder="Enter applicant name..."
+                        class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none">
+                    <button onclick="clearFiltersTable()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
 
             <!-- Filter by Barangay -->
             <div>
                 <label for="barangaySelectTable" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                <select id="barangaySelectTable" onchange="filterRows('table')"
+                <select id="barangaySelectTable"
                     class="w-64 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white appearance-none outline-none"
                     style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
                     <option value="">All Barangays</option>
@@ -570,16 +572,18 @@
             <div>
                 <label for="searchInputList" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
                 <div class="relative">
-                 <input type="text" id="searchInputList" placeholder="Enter applicant name..."
-    class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none">
-<button onclick="clearFiltersList()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                    <input type="text" id="searchInputList" placeholder="Enter applicant name..."
+                        class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none">
+                    <button onclick="clearFiltersList()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
 
             <!-- Filter by Barangay -->
             <div>
                 <label for="barangaySelectList" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                <select id="barangaySelectList" onchange="filterRows('list')"
+                <select id="barangaySelectList"
                     class="w-64 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white appearance-none outline-none"
                     style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
                     <option value="">All Barangays</option>
@@ -862,144 +866,6 @@
                 document.getElementById('reviewedTab').classList.add('active');
                 localStorage.setItem('viewMode', 'list');
             }
-
-// Replace the existing filterRows function with this improved version:
-function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
-    try {
-        const searchEl = document.getElementById(searchInputId);
-        const barangayEl = document.getElementById(barangaySelectId);
-        const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
-        const barangayValue = barangayEl ? barangayEl.value : '';
-
-        const tableBody = document.querySelector(tableBodySelector);
-        if (!tableBody) return;
-
-        const rows = Array.from(tableBody.querySelectorAll('tr'));
-        const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
-
-        // Filter rows based on search criteria
-        const filteredRows = rows.filter(row => {
-            // Skip header row or rows without enough cells
-            if (!row.cells || row.cells.length < 3 || row.querySelector('td[colspan]')) {
-                return false;
-            }
-
-            const nameCell = row.cells[1];
-            const barangayCell = row.cells[2];
-
-            if (!nameCell || !barangayCell) return false;
-
-            const nameText = nameCell.textContent.toLowerCase();
-            const barangayText = barangayCell.textContent.trim();
-
-            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
-            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
-
-            return matchesSearch && matchesBarangay;
-        });
-
-        // Update pagination state
-        paginationState[viewType].filteredRows = filteredRows;
-        paginationState[viewType].currentPage = 1; // Reset to first page
-        updatePagination(viewType);
-
-        // Show/hide rows based on filter
-        rows.forEach(row => {
-            if (!row.querySelector('td[colspan]')) { // Skip "no data" rows
-                row.style.display = 'none'; // Hide all rows initially
-            }
-        });
-
-        // Show only filtered rows for current page
-        const startIndex = 0;
-        const endIndex = paginationState[viewType].rowsPerPage;
-        filteredRows.slice(startIndex, endIndex).forEach(row => {
-            row.style.display = ''; // Show filtered rows
-        });
-
-        // Show "no results" message if no matches found
-        const noDataRow = tableBody.querySelector('tr td[colspan]')?.parentElement;
-        if (noDataRow) {
-            if (filteredRows.length === 0) {
-                noDataRow.style.display = '';
-            } else {
-                noDataRow.style.display = 'none';
-            }
-        }
-
-    } catch (e) {
-        console.error('filterRows error:', e);
-    }
-}
-
-// Add event listeners for both views
-function attachFilterListeners() {
-    const debounceDelay = 300; // Increased debounce delay for better performance
-
-    // Table View listeners
-    const tableSearch = document.getElementById('searchInputTable');
-    const tableBrgy = document.getElementById('barangaySelectTable');
-    
-    if (tableSearch) {
-        tableSearch.addEventListener('input', debounce(() => {
-            filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
-        }, debounceDelay));
-    }
-    
-    if (tableBrgy) {
-        tableBrgy.addEventListener('change', () => {
-            filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
-        });
-    }
-
-    // List View listeners
-    const listSearch = document.getElementById('searchInputList');
-    const listBrgy = document.getElementById('barangaySelectList');
-    
-    if (listSearch) {
-        listSearch.addEventListener('input', debounce(() => {
-            filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
-        }, debounceDelay));
-    }
-    
-    if (listBrgy) {
-        listBrgy.addEventListener('change', () => {
-            filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
-        });
-    }
-}
-
-// Clear filters functions
-function clearFiltersTable() {
-    document.getElementById('searchInputTable').value = '';
-    document.getElementById('barangaySelectTable').value = '';
-    filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
-}
-
-function clearFiltersList() {
-    document.getElementById('searchInputList').value = '';
-    document.getElementById('barangaySelectList').value = '';
-    filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
-}
-
-// Initialize everything when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize pagination
-    initializePagination();
-    
-    // Attach filter listeners
-    attachFilterListeners();
-    
-    // Restore view mode from localStorage
-    const savedViewMode = localStorage.getItem('viewMode');
-    if (savedViewMode === 'list') {
-        showList();
-    } else {
-        showTable();
-    }
-    
-    console.log('Pagination and filters initialized successfully');
-});
 
             // ✅ Application Modal Functions
             const applications = @json($applications);
@@ -1307,128 +1173,17 @@ function trackDocumentUpdates(applicationPersonnelId) {
                 console.log('Updated documents:', updatedDocuments);
             }
 
-// ========== SEARCH AND FILTER FUNCTIONS ========== //
-
-// Debounce function for search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Main filter function
-function filterRows(viewType) {
-    try {
-        const searchInputId = viewType === 'table' ? 'searchInputTable' : 'searchInputList';
-        const barangaySelectId = viewType === 'table' ? 'barangaySelectTable' : 'barangaySelectList';
-        
-        const searchEl = document.getElementById(searchInputId);
-        const barangayEl = document.getElementById(barangaySelectId);
-        const searchValue = searchEl ? searchEl.value.toLowerCase().trim() : '';
-        const barangayValue = barangayEl ? barangayEl.value : '';
-
-        const state = paginationState[viewType];
-        
-        // Filter rows based on search criteria
-        const filteredRows = state.allRows.filter(row => {
-            const nameCell = row.cells[1]; // Name column
-            const barangayCell = row.cells[2]; // Barangay column
-
-            if (!nameCell || !barangayCell) return false;
-
-            const nameText = nameCell.textContent.toLowerCase().trim();
-            const barangayText = barangayCell.textContent.trim();
-
-            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
-            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
-
-            return matchesSearch && matchesBarangay;
-        });
-
-        // Update pagination state
-        state.filteredRows = filteredRows;
-        state.currentPage = 1; // Reset to first page
-        updatePagination(viewType);
-
-    } catch (e) {
-        console.error('filterRows error:', e);
-    }
-}
-
-// Clear filters functions
-function clearFiltersTable() {
-    document.getElementById('searchInputTable').value = '';
-    document.getElementById('barangaySelectTable').value = '';
-    filterRows('table');
-}
-
-function clearFiltersList() {
-    document.getElementById('searchInputList').value = '';
-    document.getElementById('barangaySelectList').value = '';
-    filterRows('list');
-}
-
-// Attach event listeners for filters
-function attachFilterListeners() {
-    const debounceDelay = 300;
-
-    // Table View listeners
-    const tableSearch = document.getElementById('searchInputTable');
-    const tableBrgy = document.getElementById('barangaySelectTable');
-    
-    if (tableSearch) {
-        tableSearch.addEventListener('input', debounce(() => {
-            filterRows('table');
-        }, debounceDelay));
-    }
-    
-    if (tableBrgy) {
-        tableBrgy.addEventListener('change', () => {
-            filterRows('table');
-        });
-    }
-
-    // List View listeners
-    const listSearch = document.getElementById('searchInputList');
-    const listBrgy = document.getElementById('barangaySelectList');
-    
-    if (listSearch) {
-        listSearch.addEventListener('input', debounce(() => {
-            filterRows('list');
-        }, debounceDelay));
-    }
-    
-    if (listBrgy) {
-        listBrgy.addEventListener('change', () => {
-            filterRows('list');
-        });
-    }
-}
-
-// Initialize everything when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize pagination
-    initializePagination();
-    
-    // Attach filter listeners
-    attachFilterListeners();
-    
-    // Restore view mode from localStorage
-    const savedViewMode = localStorage.getItem('viewMode');
-    if (savedViewMode === 'list') {
-        showList();
-    } else {
-        showTable();
-    }
-    
-    console.log('Pagination and filters initialized successfully');
-});
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
 
             function loadDocumentComments(applicationPersonnelId) {
                 console.log('Loading comments for application:', applicationPersonnelId);
@@ -1604,62 +1359,6 @@ function markDocumentAsGood(documentType) {
                 closeDocumentModal();
                 updateDocumentModalUI(documentType);
             }
-        });
-
-    })
-    .catch(error => {
-        console.error('Error saving status:', error);
-        Swal.fire({
-            title: 'Error!',
-            text: 'Failed to save document status. Please try again.',
-            icon: 'error',
-            confirmButtonText: 'OK'
-        });
-    });
-}
-
-// MODIFIED: Function to mark document as good (WITHOUT confirmation, close document viewer only on OK click)
-function markDocumentAsGood(documentType) {
-    // Show loading state immediately
-    Swal.fire({
-        title: 'Saving...',
-        text: 'Please wait while we save your feedback',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
-    
-    // Save status without reason for good documents
-    saveDocumentStatus(documentType, 'good', '')
-    .then(() => {
-        // Track that this document has been rated
-        trackRatedDocument(documentType);
-
-        // Remove from updated documents if it was there
-        if (updatedDocuments && updatedDocuments.has(documentType)) {
-            updatedDocuments.delete(documentType);
-        }
-
-        // Update the badge - remove NEW and show Good
-        updateDocumentBadges(documentType, 'good', false);
-
-        // Show success message and close document viewer ONLY when OK is clicked
-        Swal.fire({
-            title: 'Success!',
-            text: 'Document marked as good.',
-            icon: 'success',
-            confirmButtonText: 'OK',
-            customClass: {
-                confirmButton: 'swal2-confirm-btn'
-            }
-        }).then((result) => {
-            // ONLY close the document viewer modal when OK is clicked
-            if (result.isConfirmed) {
-                closeDocumentModal();
-            }
-            // Update UI regardless of OK click
-            updateDocumentModalUI(documentType);
         });
 
     })
@@ -2676,184 +2375,44 @@ function sendDocumentEmail() {
             });
         });
     </script>
-<script >
-// ========== PAGINATION CODE FOR APPLICATION ========== //
 
-// Pagination state for application
-const paginationState = {
-    table: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        filteredRows: [],
-        totalRows: 0
-    },
-    list: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        filteredRows: [],
-        totalRows: 0
-    }
-};
+<script>
+// ========== SEARCH AND FILTER FUNCTIONS ========== //
 
-// Initialize pagination for both tables in application
-function initializePagination() {
-    // Initialize table view pagination (Pending Review)
-    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr')).filter(row => 
-        !row.querySelector('td[colspan]') && row.cells.length >= 7
-    );
-    paginationState.table.filteredRows = tableRows;
-    paginationState.table.totalRows = tableRows.length;
-    updatePagination('table');
-    
-    // Initialize list view pagination (Reviewed Applications)
-    const listRows = Array.from(document.querySelectorAll('#listView tbody tr')).filter(row => 
-        !row.querySelector('td[colspan]') && row.cells.length >= 7
-    );
-    paginationState.list.filteredRows = listRows;
-    paginationState.list.totalRows = listRows.length;
-    updatePagination('list');
+// Debounce function for search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }
 
-// Update pagination display
-function updatePagination(viewType) {
-    const state = paginationState[viewType];
-    const tableId = viewType === 'table' ? 'tableView' : 'listView';
-    const tableBody = document.querySelector(`#${tableId} tbody`);
-    
-    if (!tableBody) return;
-    
-    // Hide all rows first
-    const allRows = Array.from(tableBody.querySelectorAll('tr'));
-    allRows.forEach(row => {
-        if (!row.querySelector('td[colspan]')) {
-            row.style.display = 'none';
-        }
-    });
-    
-    // Calculate pagination
-    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
-    const endIndex = startIndex + state.rowsPerPage;
-    const pageRows = state.filteredRows.slice(startIndex, endIndex);
-    
-    // Show rows for current page
-    pageRows.forEach(row => {
-        row.style.display = '';
-    });
-    
-    // Update pagination controls
-    updatePaginationControls(viewType);
-    
-    // Show/hide "no data" message
-    const noDataRow = tableBody.querySelector('tr td[colspan]')?.parentElement;
-    if (noDataRow) {
-        if (state.filteredRows.length === 0) {
-            noDataRow.style.display = '';
-        } else {
-            noDataRow.style.display = 'none';
-        }
-    }
-}
-
-// Update pagination controls
-function updatePaginationControls(viewType) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    const tableId = viewType === 'table' ? 'tableView' : 'listView';
-    
-    // Create or update pagination container
-    let paginationContainer = document.querySelector(`#${tableId} .pagination-container`);
-    
-    if (!paginationContainer) {
-        paginationContainer = document.createElement('div');
-        paginationContainer.className = 'pagination-container';
-        
-        const tableContainer = document.querySelector(`#${tableId}`);
-        tableContainer.appendChild(paginationContainer);
-    }
-    
-    // Update pagination HTML
-    paginationContainer.innerHTML = `
-        <div class="pagination-info">
-            Showing ${state.filteredRows.length === 0 ? 0 : Math.min(state.filteredRows.length, (state.currentPage - 1) * state.rowsPerPage + 1)}-${Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length)} of ${state.filteredRows.length} entries
-        </div>
-        <div class="pagination-buttons">
-            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
-                <i class="fas fa-angle-double-left"></i> First
-            </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
-                <i class="fas fa-angle-left"></i> Previous
-            </button>
-            <div class="pagination-page-info">
-                Page 
-                <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)">
-                of ${totalPages}
-            </div>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Next <i class="fas fa-angle-right"></i>
-            </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Last <i class="fas fa-angle-double-right"></i>
-            </button>
-        </div>
-    `;
-}
-
-// Change page
-function changePage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
-    
-    // Scroll to top of table
-    const tableId = viewType === 'table' ? 'tableView' : 'listView';
-    const tableElement = document.getElementById(tableId);
-    if (tableElement) {
-        tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
-
-// Go to specific page
-function goToPage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    page = parseInt(page);
-    if (isNaN(page) || page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
-}
-
-// Update filter function to work with pagination
-function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
+// Main filter function
+function filterRows(viewType) {
     try {
+        const searchInputId = viewType === 'table' ? 'searchInputTable' : 'searchInputList';
+        const barangaySelectId = viewType === 'table' ? 'barangaySelectTable' : 'barangaySelectList';
+        
         const searchEl = document.getElementById(searchInputId);
         const barangayEl = document.getElementById(barangaySelectId);
-        const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
+        const searchValue = searchEl ? searchEl.value.toLowerCase().trim() : '';
         const barangayValue = barangayEl ? barangayEl.value : '';
 
-        const tableBody = document.querySelector(tableBodySelector);
-        if (!tableBody) return;
-
-        const rows = Array.from(tableBody.querySelectorAll('tr')).filter(row => 
-            !row.querySelector('td[colspan]') && row.cells.length >= 7
-        );
-        const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
-
+        const state = paginationState[viewType];
+        
         // Filter rows based on search criteria
-        const filteredRows = rows.filter(row => {
-            const nameCell = row.cells[1];
-            const barangayCell = row.cells[2];
+        const filteredRows = state.allRows.filter(row => {
+            const nameCell = row.cells[1]; // Name column
+            const barangayCell = row.cells[2]; // Barangay column
 
             if (!nameCell || !barangayCell) return false;
 
-            const nameText = nameCell.textContent.toLowerCase();
+            const nameText = nameCell.textContent.toLowerCase().trim();
             const barangayText = barangayCell.textContent.trim();
 
             const matchesSearch = searchValue === '' || nameText.includes(searchValue);
@@ -2863,8 +2422,8 @@ function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
         });
 
         // Update pagination state
-        paginationState[viewType].filteredRows = filteredRows;
-        paginationState[viewType].currentPage = 1; // Reset to first page
+        state.filteredRows = filteredRows;
+        state.currentPage = 1; // Reset to first page
         updatePagination(viewType);
 
     } catch (e) {
@@ -2872,33 +2431,56 @@ function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
     }
 }
 
-// Initialize pagination when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize pagination
-    initializePagination();
+// Clear filters functions
+function clearFiltersTable() {
+    document.getElementById('searchInputTable').value = '';
+    document.getElementById('barangaySelectTable').value = '';
+    filterRows('table');
+}
+
+function clearFiltersList() {
+    document.getElementById('searchInputList').value = '';
+    document.getElementById('barangaySelectList').value = '';
+    filterRows('list');
+}
+
+// Attach event listeners for filters
+function attachFilterListeners() {
+    const debounceDelay = 300;
+
+    // Table View listeners
+    const tableSearch = document.getElementById('searchInputTable');
+    const tableBrgy = document.getElementById('barangaySelectTable');
     
-    // Update existing filter functions to work with pagination
-    const originalFilterRows = window.filterRows;
-    if (originalFilterRows) {
-        window.filterRows = function(tableBodySelector, searchInputId, barangaySelectId) {
-            originalFilterRows(tableBodySelector, searchInputId, barangaySelectId);
-            // Re-initialize pagination after filtering
-            setTimeout(() => {
-                const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
-                const rows = Array.from(document.querySelectorAll(`${tableBodySelector} tr`)).filter(row => 
-                    !row.querySelector('td[colspan]') && row.cells.length >= 7
-                );
-                paginationState[viewType].filteredRows = rows;
-                updatePagination(viewType);
-            }, 100);
-        };
+    if (tableSearch) {
+        tableSearch.addEventListener('input', debounce(() => {
+            filterRows('table');
+        }, debounceDelay));
     }
-});
-</script>
-<script src="{{ asset('js/app_spinner.js') }}"></script>
-<!-- Add Pusher JS (if not already included) -->
-<script src="https://js.pusher.com/7.0/pusher.min.js"></script>
-<script>
+    
+    if (tableBrgy) {
+        tableBrgy.addEventListener('change', () => {
+            filterRows('table');
+        });
+    }
+
+    // List View listeners
+    const listSearch = document.getElementById('searchInputList');
+    const listBrgy = document.getElementById('barangaySelectList');
+    
+    if (listSearch) {
+        listSearch.addEventListener('input', debounce(() => {
+            filterRows('list');
+        }, debounceDelay));
+    }
+    
+    if (listBrgy) {
+        listBrgy.addEventListener('change', () => {
+            filterRows('list');
+        });
+    }
+}
+
 // ========== PAGINATION CODE FOR APPLICATION ========== //
 
 // Pagination state for application
@@ -3047,113 +2629,29 @@ function goToPage(viewType, page) {
     updatePagination(viewType);
 }
 
-// NEW: Improved filter function
-function filterRows(viewType) {
-    try {
-        const searchInputId = viewType === 'table' ? 'searchInputTable' : 'searchInputList';
-        const barangaySelectId = viewType === 'table' ? 'barangaySelectTable' : 'barangaySelectList';
-        
-        const searchEl = document.getElementById(searchInputId);
-        const barangayEl = document.getElementById(barangaySelectId);
-        const searchValue = searchEl ? searchEl.value.toLowerCase().trim() : '';
-        const barangayValue = barangayEl ? barangayEl.value : '';
-
-        const state = paginationState[viewType];
-        
-        // Filter rows based on search criteria
-        const filteredRows = state.allRows.filter(row => {
-            const nameCell = row.cells[1]; // Name column
-            const barangayCell = row.cells[2]; // Barangay column
-
-            if (!nameCell || !barangayCell) return false;
-
-            const nameText = nameCell.textContent.toLowerCase().trim();
-            const barangayText = barangayCell.textContent.trim();
-
-            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
-            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
-
-            return matchesSearch && matchesBarangay;
-        });
-
-        // Update pagination state
-        state.filteredRows = filteredRows;
-        state.currentPage = 1; // Reset to first page
-        updatePagination(viewType);
-
-    } catch (e) {
-        console.error('filterRows error:', e);
-    }
-}
-
-// NEW: Clear filters function
-function clearFiltersTable() {
-    document.getElementById('searchInputTable').value = '';
-    document.getElementById('barangaySelectTable').value = '';
-    filterRows('table');
-}
-
-function clearFiltersList() {
-    document.getElementById('searchInputList').value = '';
-    document.getElementById('barangaySelectList').value = '';
-    filterRows('list');
-}
-
-// NEW: Debounce function for search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// NEW: Attach event listeners for filters
-function attachFilterListeners() {
-    const debounceDelay = 300;
-
-    // Table View listeners
-    const tableSearch = document.getElementById('searchInputTable');
-    const tableBrgy = document.getElementById('barangaySelectTable');
+// Initialize everything when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize pagination
+    initializePagination();
     
-    if (tableSearch) {
-        tableSearch.addEventListener('input', debounce(() => {
-            filterRows('table');
-        }, debounceDelay));
+    // Attach filter listeners
+    attachFilterListeners();
+    
+    // Restore view mode from localStorage
+    const savedViewMode = localStorage.getItem('viewMode');
+    if (savedViewMode === 'list') {
+        showList();
+    } else {
+        showTable();
     }
     
-    if (tableBrgy) {
-        tableBrgy.addEventListener('change', () => {
-            filterRows('table');
-        });
-    }
-
-    // List View listeners
-    const listSearch = document.getElementById('searchInputList');
-    const listBrgy = document.getElementById('barangaySelectList');
-    
-    if (listSearch) {
-        listSearch.addEventListener('input', debounce(() => {
-            filterRows('list');
-        }, debounceDelay));
-    }
-    
-    if (listBrgy) {
-        listBrgy.addEventListener('change', () => {
-            filterRows('list');
-        });
-    }
-}
-
-// Remove the old filterRows function if it exists
-if (window.filterRows) {
-    delete window.filterRows;
-}
+    console.log('Pagination and filters initialized successfully');
+});
 </script>
+
+<script src="{{ asset('js/app_spinner.js') }}"></script>
+<!-- Add Pusher JS (if not already included) -->
+<script src="https://js.pusher.com/7.0/pusher.min.js"></script>
 
     </body>
     </html>
