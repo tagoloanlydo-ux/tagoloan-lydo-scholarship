@@ -2279,16 +2279,15 @@ function rejectApplication() {
 
     <script>
         // Format dates when the page loads
-// Format dates when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.date-format').forEach(function(element) {
-        const rawDate = element.textContent.trim();
-        if (rawDate) {
-            const formattedDate = moment(rawDate).format('MMMM D YYYY'); // Removed the comma
-            element.textContent = formattedDate;
-        }
-    });
-});
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.date-format').forEach(function(element) {
+                const rawDate = element.textContent.trim();
+                if (rawDate) {
+                    const formattedDate = moment(rawDate).format('MMMM D, YYYY');
+                    element.textContent = formattedDate;
+                }
+            });
+        });
     </script>
     <script>
     

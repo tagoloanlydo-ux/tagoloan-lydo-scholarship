@@ -473,28 +473,28 @@ public function submitRenewal(Request $request)
         }
 
         $renewal->renewal_semester = $request->input('renewal_semester');
-        $renewal->renewal_acad_year = $request->input('renewal_acad_year');
+$renewal->renewal_acad_year = $request->input('renewal_acad_year');
         $renewal->date_submitted = now();
         $renewal->renewal_status = 'Pending';
 
-        // NEW CODE: Reset status fields to "New" when files are updated
+        // SET STATUS FIELDS TO 'New' ONLY WHEN FILES ARE UPDATED (for re-review)
         if ($request->hasFile('renewal_cert_of_reg')) {
             $renewal->renewal_cert_of_reg = $this->moveFileToRenewals($request->file('renewal_cert_of_reg'));
-            $renewal->cert_of_reg_status = 'New'; // Reset status to "New"
+            $renewal->cert_of_reg_status = 'New'; // Set to 'New' for re-review
         }
         if ($request->hasFile('renewal_grade_slip')) {
             $renewal->renewal_grade_slip = $this->moveFileToRenewals($request->file('renewal_grade_slip'));
-            $renewal->grade_slip_status = 'New'; // Reset status to "New"
+            $renewal->grade_slip_status = 'New'; // Set to 'New' for re-review
         }
         if ($request->hasFile('renewal_brgy_indigency')) {
             $renewal->renewal_brgy_indigency = $this->moveFileToRenewals($request->file('renewal_brgy_indigency'));
-            $renewal->brgy_indigency_status = 'New'; // Reset status to "New"
+            $renewal->brgy_indigency_status = 'New'; // Set to 'New' for re-review
         }
 
         $renewal->save();
         $message = 'Renewal application updated successfully.';
     } else {
-        // Create new renewal record, move files manually to storage/renewals
+        // Create new renewal record
         $certOfRegPath = $this->moveFileToRenewals($request->file('renewal_cert_of_reg'));
         $gradeSlipPath = $this->moveFileToRenewals($request->file('renewal_grade_slip'));
         $brgyIndigencyPath = $this->moveFileToRenewals($request->file('renewal_brgy_indigency'));
@@ -509,10 +509,10 @@ public function submitRenewal(Request $request)
         $renewal->date_submitted = now();
         $renewal->renewal_status = 'Pending';
         
-        // NEW CODE: Set initial status as "New" for new applications
-        $renewal->cert_of_reg_status = 'New';
-        $renewal->grade_slip_status = 'New';
-        $renewal->brgy_indigency_status = 'New';
+        // SET INITIAL STATUS AS null FOR NEW APPLICATIONS (not yet reviewed)
+        $renewal->cert_of_reg_status = 'pending';
+        $renewal->grade_slip_status = 'pending';
+        $renewal->brgy_indigency_status = 'pending';
         
         $renewal->save();
         $message = 'Renewal application submitted successfully.';

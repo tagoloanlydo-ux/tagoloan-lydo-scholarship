@@ -651,5 +651,7 @@
     <script src="{{ asset('js/renewal_paginate.js') }}"></script>
       <script src="{{ asset('js/renewalrefresh.js') }}"></script>
     <script src="{{ asset('js/logout.js') }}"></script>
+    <!-- Add this right before the closing </body> tag, after your other scripts -->
+<script src="{{ asset('js/modalrefresh.js') }}"></script>
 </body>
 </html>
