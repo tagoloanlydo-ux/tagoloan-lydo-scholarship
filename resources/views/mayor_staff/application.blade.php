@@ -475,6 +475,7 @@
                 <!-- ✅ Table View (Applicants without remarks) -->
                 <div id="tableView">
                     <!-- Search and Filter Section -->
+<!-- Search and Filter Section for Table View -->
 <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
     <div class="flex gap-4 items-end">
         <!-- Left side container -->
@@ -484,10 +485,9 @@
                 <label for="searchInputTable" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
                 <div class="relative">
                     <input type="text" id="searchInputTable" placeholder="Enter applicant name..."
-                        style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
-                        onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                        onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-                    <button onclick="clearFiltersTable()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none"
+                        onkeyup="filterRows('table')">
+                    <button onclick="clearFiltersTable()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -496,10 +496,9 @@
             <!-- Filter by Barangay -->
             <div>
                 <label for="barangaySelectTable" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                <select id="barangaySelectTable"
-                    style="padding: 0.75rem 2.5rem; width: 16rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white; appearance: none; background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;"
-                    onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
-                    onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                <select id="barangaySelectTable" onchange="filterRows('table')"
+                    class="w-64 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white appearance-none outline-none"
+                    style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
                     <option value="">All Barangays</option>
                     @foreach($barangays as $brgy)
                         <option value="{{ $brgy }}">{{ $brgy }}</option>
@@ -2793,472 +2792,259 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Add Pusher JS (if not already included) -->
 <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
 <script>
-// Pusher Notification Manager
-class PusherNotificationManager {
-    constructor() {
-        this.pusher = null;
-        this.channel = null;
-        this.notificationSound = new Audio('{{ asset("sounds/notification.wav") }}');
-        this.unreadNotifications = new Set();
-        this.initializePusher();
-        this.loadUnreadNotifications();
+// ========== PAGINATION CODE FOR APPLICATION ========== //
+
+// Pagination state for application
+const paginationState = {
+    table: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        filteredRows: [],
+        allRows: []
+    },
+    list: {
+        currentPage: 1,
+        rowsPerPage: 15,
+        filteredRows: [],
+        allRows: []
     }
+};
 
-    initializePusher() {
-        try {
-            console.log('Initializing Pusher...');
-            
-            // Initialize Pusher
-            this.pusher = new Pusher('{{ env('PUSHER_APP_KEY') }}', {
-                cluster: '{{ env('PUSHER_APP_CLUSTER') }}',
-                forceTLS: true,
-                authEndpoint: '/broadcasting/auth' // If you have private channels
-            });
+// Initialize pagination for both tables in application
+function initializePagination() {
+    // Initialize table view pagination (Pending Review)
+    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr')).filter(row => 
+        !row.querySelector('td[colspan]') && row.cells.length >= 7
+    );
+    paginationState.table.allRows = tableRows;
+    paginationState.table.filteredRows = tableRows; // Start with all rows
+    updatePagination('table');
+    
+    // Initialize list view pagination (Reviewed Applications)
+    const listRows = Array.from(document.querySelectorAll('#listView tbody tr')).filter(row => 
+        !row.querySelector('td[colspan]') && row.cells.length >= 7
+    );
+    paginationState.list.allRows = listRows;
+    paginationState.list.filteredRows = listRows; // Start with all rows
+    updatePagination('list');
+}
 
-            // Subscribe to notifications channel
-            this.channel = this.pusher.subscribe('notifications.mayor_staff');
-
-            // Listen for new notifications
-            this.channel.bind('new.notification', (data) => {
-                console.log('📢 New notification received:', data);
-                this.handleNewNotification(data.notification);
-            });
-
-            // Connection events for debugging
-            this.pusher.connection.bind('connected', () => {
-                console.log('✅ Pusher connected successfully');
-            });
-
-            this.pusher.connection.bind('error', (err) => {
-                console.error('❌ Pusher connection error:', err);
-            });
-
-            this.channel.bind('subscription_succeeded', () => {
-                console.log('✅ Subscribed to notifications channel');
-            });
-
-        } catch (error) {
-            console.error('❌ Pusher initialization error:', error);
-        }
-    }
-
-    handleNewNotification(notification) {
-        console.log('Processing notification:', notification);
-        
-        // Play notification sound
-        this.playNotificationSound();
-        
-        // Add to unread notifications
-        const notificationId = this.generateNotificationId(notification);
-        this.unreadNotifications.add(notificationId);
-        this.saveUnreadNotifications();
-        this.updateBadge();
-        
-        // Update UI
-        this.updateNotificationDropdown(notification);
-        this.showToastNotification(notification);
-        
-        // Show desktop notification if permitted
-        if (Notification.permission === 'granted') {
-            this.showDesktopNotification(notification);
-        }
-    }
-
-    generateNotificationId(notification) {
-        return `${notification.type}-${notification.name}-${notification.id}`;
-    }
-
-    playNotificationSound() {
-        try {
-            this.notificationSound.currentTime = 0;
-            this.notificationSound.play().catch(e => {
-                console.log('Audio play failed:', e);
-            });
-        } catch (error) {
-            console.log('Sound play error:', error);
-        }
-    }
-
-    updateNotificationDropdown(newNotification) {
-        const dropdown = document.getElementById('notifDropdown');
-        const notificationList = dropdown.querySelector('ul');
-        
-        if (!notificationList) {
-            console.error('Notification list not found');
-            return;
-        }
-
-        // Create new notification element
-        const newListItem = document.createElement('li');
-        newListItem.className = 'px-4 py-2 hover:bg-gray-50 text-base border-b';
-        newListItem.innerHTML = `
-            <p class="${this.getNotificationColor(newNotification.type)} font-medium">
-                ${this.getNotificationIcon(newNotification.type)} 
-                ${this.formatNotificationMessage(newNotification)}
-            </p>
-            <p class="text-xs text-gray-500">
-                Just now
-            </p>
-        `;
-        
-        // Add to top of list
-        if (notificationList.firstChild) {
-            notificationList.insertBefore(newListItem, notificationList.firstChild);
+// Update pagination display
+function updatePagination(viewType) {
+    const state = paginationState[viewType];
+    const tableId = viewType === 'table' ? 'tableView' : 'listView';
+    const tableBody = document.querySelector(`#${tableId} tbody`);
+    
+    if (!tableBody) return;
+    
+    // Hide all rows first
+    state.allRows.forEach(row => {
+        row.style.display = 'none';
+    });
+    
+    // Calculate pagination
+    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
+    const endIndex = startIndex + state.rowsPerPage;
+    const pageRows = state.filteredRows.slice(startIndex, endIndex);
+    
+    // Show rows for current page
+    pageRows.forEach(row => {
+        row.style.display = '';
+    });
+    
+    // Update pagination controls
+    updatePaginationControls(viewType);
+    
+    // Show/hide "no data" message
+    const noDataRow = tableBody.querySelector('tr td[colspan]')?.parentElement;
+    if (noDataRow) {
+        if (state.filteredRows.length === 0) {
+            noDataRow.style.display = '';
+            // Update the "no data" message text
+            const noDataCell = noDataRow.querySelector('td[colspan]');
+            if (noDataCell) {
+                noDataCell.textContent = 'No applications found matching your criteria.';
+            }
         } else {
-            notificationList.appendChild(newListItem);
+            noDataRow.style.display = 'none';
         }
-        
-        // Remove "No new notifications" message if present
-        const emptyMessage = notificationList.querySelector('li:only-child');
-        if (emptyMessage && emptyMessage.textContent.includes('No new notifications')) {
-            emptyMessage.remove();
-        }
-    }
-
-    showToastNotification(notification) {
-        if (typeof Swal !== 'undefined') {
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 5000,
-                timerProgressBar: true,
-            });
-
-            Toast.fire({
-                icon: 'info',
-                title: this.formatNotificationMessage(notification),
-                background: '#f0f9ff',
-            });
-        }
-    }
-
-    showDesktopNotification(notification) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('LYDO Scholarship', {
-                body: this.formatNotificationMessage(notification),
-                icon: '{{ asset("images/LYDO.png") }}'
-            });
-        }
-    }
-
-    formatNotificationMessage(notification) {
-        if (notification.type === 'application') {
-            return `📝 ${notification.name} submitted a new application`;
-        } else if (notification.type === 'remark') {
-            return `💬 New remark for ${notification.name}: ${notification.remarks}`;
-        }
-        return 'New notification received';
-    }
-
-    getNotificationColor(type) {
-        const colors = {
-            'application': 'text-blue-600',
-            'remark': 'text-purple-600'
-        };
-        return colors[type] || 'text-gray-600';
-    }
-
-    getNotificationIcon(type) {
-        const icons = {
-            'application': '📝',
-            'remark': '💬'
-        };
-        return icons[type] || '🔔';
-    }
-
-    loadUnreadNotifications() {
-        const stored = localStorage.getItem('unreadNotifications');
-        if (stored) {
-            this.unreadNotifications = new Set(JSON.parse(stored));
-        }
-        this.updateBadge();
-    }
-
-    saveUnreadNotifications() {
-        localStorage.setItem('unreadNotifications', JSON.stringify([...this.unreadNotifications]));
-    }
-
-    updateBadge() {
-        const badge = document.getElementById('notifCount');
-        if (badge) {
-            if (this.unreadNotifications.size > 0) {
-                badge.textContent = this.unreadNotifications.size;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-    }
-
-    markNotificationsAsRead() {
-        this.unreadNotifications.clear();
-        this.saveUnreadNotifications();
-        this.updateBadge();
-        
-        // Mark as viewed on server
-        fetch('/mayor_staff/mark-notifications-viewed', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-            }
-        });
-    }
-
-    requestNotificationPermission() {
-        if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission();
-        }
-    }
-
-    // Test method for development
-    testNotification(type = 'application') {
-        const testNotifications = {
-            application: {
-                type: 'application',
-                name: 'Juan Dela Cruz',
-                remarks: null,
-                id: 'test-' + Date.now(),
-                created_at: new Date().toISOString()
-            },
-            remark: {
-                type: 'remark', 
-                name: 'Maria Santos',
-                remarks: 'Poor',
-                id: 'test-' + Date.now(),
-                created_at: new Date().toISOString()
-            }
-        };
-        
-        this.handleNewNotification(testNotifications[type]);
     }
 }
 
-// Initialize the notification system
-let notificationManager;
-
-document.addEventListener('DOMContentLoaded', function() {
-    notificationManager = new PusherNotificationManager();
-    notificationManager.requestNotificationPermission();
+// Update pagination controls
+function updatePaginationControls(viewType) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    const tableId = viewType === 'table' ? 'tableView' : 'listView';
     
-    // Notification bell click handler
-    const notifBell = document.getElementById('notifBell');
-    if (notifBell) {
-        notifBell.addEventListener('click', function() {
-            const dropdown = document.getElementById('notifDropdown');
-            const isHidden = dropdown.classList.contains('hidden');
-            
-            if (isHidden) {
-                dropdown.classList.remove('hidden');
-                notificationManager.markNotificationsAsRead();
-            } else {
-                dropdown.classList.add('hidden');
-            }
-        });
-    }
+    // Create or update pagination container
+    let paginationContainer = document.querySelector(`#${tableId} .pagination-container`);
     
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(event) {
-        const notifBell = document.getElementById('notifBell');
-        const dropdown = document.getElementById('notifDropdown');
+    if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.className = 'pagination-container';
         
-        if (dropdown && !dropdown.classList.contains('hidden') && 
-            notifBell && !notifBell.contains(event.target) && 
-            dropdown && !dropdown.contains(event.target)) {
-            dropdown.classList.add('hidden');
-        }
-    });
-
-    // Add test buttons for development (remove in production)
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        addTestButtons();
+        const tableContainer = document.querySelector(`#${tableId}`);
+        tableContainer.appendChild(paginationContainer);
     }
-});
-
-function addTestButtons() {
-    const testContainer = document.createElement('div');
-    testContainer.className = 'fixed bottom-4 right-4 z-50 flex flex-col gap-2';
-    testContainer.innerHTML = `
-        <button onclick="notificationManager.testNotification('application')" 
-                class="bg-blue-500 text-white px-3 py-2 rounded text-sm">
-            Test New Application
-        </button>
-        <button onclick="notificationManager.testNotification('remark')" 
-                class="bg-purple-500 text-white px-3 py-2 rounded text-sm">
-            Test Review Remark
-        </button>
+    
+    // Update pagination HTML
+    paginationContainer.innerHTML = `
+        <div class="pagination-info">
+            Showing ${state.filteredRows.length === 0 ? 0 : Math.min(state.filteredRows.length, (state.currentPage - 1) * state.rowsPerPage + 1)}-${Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length)} of ${state.filteredRows.length} entries
+        </div>
+        <div class="pagination-buttons">
+            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
+                <i class="fas fa-angle-double-left"></i> First
+            </button>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
+                <i class="fas fa-angle-left"></i> Previous
+            </button>
+            <div class="pagination-page-info">
+                Page 
+                <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)">
+                of ${totalPages}
+            </div>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+                Next <i class="fas fa-angle-right"></i>
+            </button>
+            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+                Last <i class="fas fa-angle-double-right"></i>
+            </button>
+        </div>
     `;
-    document.body.appendChild(testContainer);
 }
 
-// MODIFIED: Function to mark document as good (WITH proper event prevention)
-function markDocumentAsGood(documentType) {
-    Swal.fire({
-        title: 'Mark as Good?',
-        text: 'Are you sure you want to mark this document as good?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#28a745',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, Mark as Good',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Show loading state
-            Swal.fire({
-                title: 'Saving...',
-                text: 'Please wait while we save your feedback',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            // Save status without reason for good documents
-            saveDocumentStatus(documentType, 'good', '')
-            .then(() => {
-                // Track that this document has been rated
-                trackRatedDocument(documentType);
-
-                // Remove from updated documents if it was there
-                if (updatedDocuments && updatedDocuments.has(documentType)) {
-                    updatedDocuments.delete(documentType);
-                }
-
-                // Update the badge - remove NEW and show Good
-                updateDocumentBadges(documentType, 'good', false);
-
-                // UPDATE: Use Swal.fire with proper configuration
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Document marked as good.',
-                    icon: 'success',
-                    confirmButtonText: 'OK',
-                    customClass: {
-                        confirmButton: 'swal2-confirm-btn'
-                    }
-                }).then((result) => {
-                    // UPDATE: Only update UI when OK is clicked, no page refresh
-                    if (result.isConfirmed) {
-                        updateDocumentModalUI(documentType);
-                    }
-                });
-
-            })
-            .catch(error => {
-                console.error('Error saving status:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Failed to save document status. Please try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            });
-        }
-    });
-}
-
-// MODIFIED: Function to mark document as bad (WITH proper event prevention)
-function markDocumentAsBad(documentType) {
-    Swal.fire({
-        title: 'Mark as Bad?',
-        text: 'Please provide the reason why this document is marked as bad:',
-        icon: 'warning',
-        input: 'textarea',
-        inputLabel: 'Reason for marking as bad',
-        inputPlaceholder: 'Enter the reason why this document needs to be updated...',
-        inputAttributes: {
-            'aria-label': 'Enter the reason why this document needs to be updated',
-            'rows': 3
-        },
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Mark as Bad',
-        cancelButtonText: 'Cancel',
-        inputValidator: (value) => {
-            if (!value) {
-                return 'Please provide a reason for marking this document as bad';
-            }
-            if (value.length < 10) {
-                return 'Please provide a more detailed reason (at least 10 characters)';
-            }
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const reason = result.value;
-            
-            // Show loading state
-            Swal.fire({
-                title: 'Saving...',
-                text: 'Please wait while we save your feedback',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            // Save status with reason for bad documents
-            saveDocumentStatus(documentType, 'bad', reason)
-            .then(() => {
-                // Track that this document has been rated
-                trackRatedDocument(documentType);
-                
-                // Remove from updated documents if it was there
-                if (updatedDocuments && updatedDocuments.has(documentType)) {
-                    updatedDocuments.delete(documentType);
-                }
-                
-                // Update the badge - remove NEW and show Bad
-                updateDocumentBadges(documentType, 'bad', false);
-                
-                // UPDATE: Use Swal.fire with proper configuration
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Document marked as bad with reason saved.',
-                    icon: 'success',
-                    confirmButtonText: 'OK',
-                    customClass: {
-                        confirmButton: 'swal2-confirm-btn'
-                    }
-                }).then((result) => {
-                    // UPDATE: Only update UI when OK is clicked, no page refresh
-                    if (result.isConfirmed) {
-                        updateDocumentModalUI(documentType);
-                    }
-                });
-
-            })
-            .catch(error => {
-                console.error('Error saving status:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Failed to save document status. Please try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            });
-        }
-    });
-}
-// When a new application is submitted
-public function storeApplication(Request $request)
-{
-    // Your existing application submission logic...
+// Change page
+function changePage(viewType, page) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
     
-    // After saving the application
-    $applicationId = $savedApplication->application_id;
-    $this->triggerNewApplicationNotification($applicationId);
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updatePagination(viewType);
 }
 
-// When an application is reviewed
-public function reviewApplication($applicationPersonnelId)
-{
-    // Your existing review logic...
+// Go to specific page
+function goToPage(viewType, page) {
+    const state = paginationState[viewType];
+    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
     
-    // After reviewing
-    $this->triggerReviewedApplicationNotification($applicationPersonnelId);
+    page = parseInt(page);
+    if (isNaN(page) || page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updatePagination(viewType);
+}
+
+// NEW: Improved filter function
+function filterRows(viewType) {
+    try {
+        const searchInputId = viewType === 'table' ? 'searchInputTable' : 'searchInputList';
+        const barangaySelectId = viewType === 'table' ? 'barangaySelectTable' : 'barangaySelectList';
+        
+        const searchEl = document.getElementById(searchInputId);
+        const barangayEl = document.getElementById(barangaySelectId);
+        const searchValue = searchEl ? searchEl.value.toLowerCase().trim() : '';
+        const barangayValue = barangayEl ? barangayEl.value : '';
+
+        const state = paginationState[viewType];
+        
+        // Filter rows based on search criteria
+        const filteredRows = state.allRows.filter(row => {
+            const nameCell = row.cells[1]; // Name column
+            const barangayCell = row.cells[2]; // Barangay column
+
+            if (!nameCell || !barangayCell) return false;
+
+            const nameText = nameCell.textContent.toLowerCase().trim();
+            const barangayText = barangayCell.textContent.trim();
+
+            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
+            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
+
+            return matchesSearch && matchesBarangay;
+        });
+
+        // Update pagination state
+        state.filteredRows = filteredRows;
+        state.currentPage = 1; // Reset to first page
+        updatePagination(viewType);
+
+    } catch (e) {
+        console.error('filterRows error:', e);
+    }
+}
+
+// NEW: Clear filters function
+function clearFiltersTable() {
+    document.getElementById('searchInputTable').value = '';
+    document.getElementById('barangaySelectTable').value = '';
+    filterRows('table');
+}
+
+function clearFiltersList() {
+    document.getElementById('searchInputList').value = '';
+    document.getElementById('barangaySelectList').value = '';
+    filterRows('list');
+}
+
+// NEW: Debounce function for search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// NEW: Attach event listeners for filters
+function attachFilterListeners() {
+    const debounceDelay = 300;
+
+    // Table View listeners
+    const tableSearch = document.getElementById('searchInputTable');
+    const tableBrgy = document.getElementById('barangaySelectTable');
+    
+    if (tableSearch) {
+        tableSearch.addEventListener('input', debounce(() => {
+            filterRows('table');
+        }, debounceDelay));
+    }
+    
+    if (tableBrgy) {
+        tableBrgy.addEventListener('change', () => {
+            filterRows('table');
+        });
+    }
+
+    // List View listeners
+    const listSearch = document.getElementById('searchInputList');
+    const listBrgy = document.getElementById('barangaySelectList');
+    
+    if (listSearch) {
+        listSearch.addEventListener('input', debounce(() => {
+            filterRows('list');
+        }, debounceDelay));
+    }
+    
+    if (listBrgy) {
+        listBrgy.addEventListener('change', () => {
+            filterRows('list');
+        });
+    }
+}
+
+// Remove the old filterRows function if it exists
+if (window.filterRows) {
+    delete window.filterRows;
 }
 </script>
 
