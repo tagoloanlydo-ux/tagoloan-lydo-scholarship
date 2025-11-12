@@ -165,7 +165,7 @@
 
         <p>Please update your documents using the link below:</p>
         <p style="text-align: center;">
-            <a href="{{ route('scholar.showUpdateApplication', ['applicant_id' => $applicant_id]) . '?token=' . $updateToken . '&issues=' . $document_types }}" class="button">Update Documents</a>
+<a href="{{ $update_link }}" class="button">Update Documents</a>
         </p>
 
         <p class="urgent"><strong>Important:</strong> This link will expire in 24 hours. If you encounter any issues, please contact the LYDO Scholarship office.</p>

@@ -92,6 +92,7 @@
     border-color: #7c3aed;
     box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
 }
+
 .document-viewer-container {
     height: calc(100vh - 300px); /* A4 height equivalent */
     min-height: 800px; /* Minimum A4 height */
@@ -1776,6 +1777,80 @@ function submitRejection() {
 }
 function closeRejectionModal() {
     document.getElementById('rejectionModal').classList.add('hidden');
+    // Clear the rejection reason when closing
+    document.getElementById('rejectionReason').value = '';
+}
+function submitRejection() {
+    const applicationId = currentApplicationId;
+    const reason = document.getElementById('rejectionReason').value.trim();
+
+    if (!reason) {
+        Swal.fire('Error', 'Please provide a reason for rejection.', 'error');
+        return;
+    }
+
+    // Confirm rejection
+    Swal.fire({
+        title: 'Reject Initial Screening?',
+        text: 'Are you sure you want to reject this application for initial screening?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Reject',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const rejectSubmitBtn = document.getElementById('rejectSubmitBtn');
+            const rejectSubmitBtnText = document.getElementById('rejectSubmitBtnText');
+            const rejectSubmitBtnSpinner = document.getElementById('rejectSubmitBtnSpinner');
+
+            // Show loading state
+            rejectSubmitBtn.disabled = true;
+            rejectSubmitBtnText.textContent = 'Rejecting...';
+            rejectSubmitBtnSpinner.classList.remove('hidden');
+
+            // Make AJAX call to reject the application
+            fetch(`/mayor_staff/application/${applicationId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                },
+                body: JSON.stringify({ reason: reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Rejected!',
+                        text: 'Initial screening has been rejected successfully.',
+                        icon: 'success',
+                        showConfirmButton: true,
+                        allowOutsideClick: false
+                    }).then(() => {
+                        // Close both modals
+                        closeRejectionModal();
+                        closeApplicationModal();
+                        
+                        // Remove from table without reload
+                        removeApplicationFromTable(applicationId);
+                    });
+                } else {
+                    Swal.fire('Error', 'Failed to reject initial screening.', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Failed to reject initial screening.', 'error');
+            })
+            .finally(() => {
+                // Reset button state
+                rejectSubmitBtn.disabled = false;
+                rejectSubmitBtnText.textContent = 'Reject Application';
+                rejectSubmitBtnSpinner.classList.add('hidden');
+            });
+        }
+    });
 }
 function closeApplicationModal() {
     document.getElementById('applicationModal').classList.add('hidden');
@@ -2128,6 +2203,10 @@ function sendDocumentEmail() {
                 });
             });
 
+function rejectApplication() {
+    // Show the rejection modal instead of directly submitting
+    document.getElementById('rejectionModal').classList.remove('hidden');
+}
             function closeFloatingDropdown() {
                 if (activeDropdown && originalParent) {
                     activeDropdown.classList.add('hidden');
@@ -2215,6 +2294,8 @@ function sendDocumentEmail() {
     </script>
 <script src="{{ asset('js/app_spinner.js') }}"></script>
 <script src="{{ asset('js/application_paginate.js') }}"></script>
-
+<!-- Add this with your other script includes -->
+<script src="{{ asset('js/autorefresh.js') }}"></script>
+<script src="{{ asset('js/modalautorefresh.js') }}"></script>
     </body>
     </html>
