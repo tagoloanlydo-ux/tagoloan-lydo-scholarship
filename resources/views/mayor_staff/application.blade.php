@@ -2676,228 +2676,7 @@ function sendDocumentEmail() {
             });
         });
     </script>
-<script >
-// ========== PAGINATION CODE FOR APPLICATION ========== //
 
-// Pagination state for application
-const paginationState = {
-    table: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        filteredRows: [],
-        totalRows: 0
-    },
-    list: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        filteredRows: [],
-        totalRows: 0
-    }
-};
-
-// Initialize pagination for both tables in application
-function initializePagination() {
-    // Initialize table view pagination (Pending Review)
-    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr')).filter(row => 
-        !row.querySelector('td[colspan]') && row.cells.length >= 7
-    );
-    paginationState.table.filteredRows = tableRows;
-    paginationState.table.totalRows = tableRows.length;
-    updatePagination('table');
-    
-    // Initialize list view pagination (Reviewed Applications)
-    const listRows = Array.from(document.querySelectorAll('#listView tbody tr')).filter(row => 
-        !row.querySelector('td[colspan]') && row.cells.length >= 7
-    );
-    paginationState.list.filteredRows = listRows;
-    paginationState.list.totalRows = listRows.length;
-    updatePagination('list');
-}
-
-// Update pagination display
-function updatePagination(viewType) {
-    const state = paginationState[viewType];
-    const tableId = viewType === 'table' ? 'tableView' : 'listView';
-    const tableBody = document.querySelector(`#${tableId} tbody`);
-    
-    if (!tableBody) return;
-    
-    // Hide all rows first
-    const allRows = Array.from(tableBody.querySelectorAll('tr'));
-    allRows.forEach(row => {
-        if (!row.querySelector('td[colspan]')) {
-            row.style.display = 'none';
-        }
-    });
-    
-    // Calculate pagination
-    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
-    const endIndex = startIndex + state.rowsPerPage;
-    const pageRows = state.filteredRows.slice(startIndex, endIndex);
-    
-    // Show rows for current page
-    pageRows.forEach(row => {
-        row.style.display = '';
-    });
-    
-    // Update pagination controls
-    updatePaginationControls(viewType);
-    
-    // Show/hide "no data" message
-    const noDataRow = tableBody.querySelector('tr td[colspan]')?.parentElement;
-    if (noDataRow) {
-        if (state.filteredRows.length === 0) {
-            noDataRow.style.display = '';
-        } else {
-            noDataRow.style.display = 'none';
-        }
-    }
-}
-
-// Update pagination controls
-function updatePaginationControls(viewType) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    const tableId = viewType === 'table' ? 'tableView' : 'listView';
-    
-    // Create or update pagination container
-    let paginationContainer = document.querySelector(`#${tableId} .pagination-container`);
-    
-    if (!paginationContainer) {
-        paginationContainer = document.createElement('div');
-        paginationContainer.className = 'pagination-container';
-        
-        const tableContainer = document.querySelector(`#${tableId}`);
-        tableContainer.appendChild(paginationContainer);
-    }
-    
-    // Update pagination HTML
-    paginationContainer.innerHTML = `
-        <div class="pagination-info">
-            Showing ${state.filteredRows.length === 0 ? 0 : Math.min(state.filteredRows.length, (state.currentPage - 1) * state.rowsPerPage + 1)}-${Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length)} of ${state.filteredRows.length} entries
-        </div>
-        <div class="pagination-buttons">
-            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
-                <i class="fas fa-angle-double-left"></i> First
-            </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
-                <i class="fas fa-angle-left"></i> Previous
-            </button>
-            <div class="pagination-page-info">
-                Page 
-                <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)">
-                of ${totalPages}
-            </div>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Next <i class="fas fa-angle-right"></i>
-            </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Last <i class="fas fa-angle-double-right"></i>
-            </button>
-        </div>
-    `;
-}
-
-// Change page
-function changePage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
-    
-    // Scroll to top of table
-    const tableId = viewType === 'table' ? 'tableView' : 'listView';
-    const tableElement = document.getElementById(tableId);
-    if (tableElement) {
-        tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
-
-// Go to specific page
-function goToPage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    page = parseInt(page);
-    if (isNaN(page) || page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
-}
-
-// Update filter function to work with pagination
-function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
-    try {
-        const searchEl = document.getElementById(searchInputId);
-        const barangayEl = document.getElementById(barangaySelectId);
-        const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
-        const barangayValue = barangayEl ? barangayEl.value : '';
-
-        const tableBody = document.querySelector(tableBodySelector);
-        if (!tableBody) return;
-
-        const rows = Array.from(tableBody.querySelectorAll('tr')).filter(row => 
-            !row.querySelector('td[colspan]') && row.cells.length >= 7
-        );
-        const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
-
-        // Filter rows based on search criteria
-        const filteredRows = rows.filter(row => {
-            const nameCell = row.cells[1];
-            const barangayCell = row.cells[2];
-
-            if (!nameCell || !barangayCell) return false;
-
-            const nameText = nameCell.textContent.toLowerCase();
-            const barangayText = barangayCell.textContent.trim();
-
-            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
-            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
-
-            return matchesSearch && matchesBarangay;
-        });
-
-        // Update pagination state
-        paginationState[viewType].filteredRows = filteredRows;
-        paginationState[viewType].currentPage = 1; // Reset to first page
-        updatePagination(viewType);
-
-    } catch (e) {
-        console.error('filterRows error:', e);
-    }
-}
-
-// Initialize pagination when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize pagination
-    initializePagination();
-    
-    // Update existing filter functions to work with pagination
-    const originalFilterRows = window.filterRows;
-    if (originalFilterRows) {
-        window.filterRows = function(tableBodySelector, searchInputId, barangaySelectId) {
-            originalFilterRows(tableBodySelector, searchInputId, barangaySelectId);
-            // Re-initialize pagination after filtering
-            setTimeout(() => {
-                const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
-                const rows = Array.from(document.querySelectorAll(`${tableBodySelector} tr`)).filter(row => 
-                    !row.querySelector('td[colspan]') && row.cells.length >= 7
-                );
-                paginationState[viewType].filteredRows = rows;
-                updatePagination(viewType);
-            }, 100);
-        };
-    }
-});
-</script>
-<script src="{{ asset('js/app_spinner.js') }}"></script>
-<!-- Add Pusher JS (if not already included) -->
-<script src="https://js.pusher.com/7.0/pusher.min.js"></script>
 <script>
 // ========== PAGINATION CODE FOR APPLICATION ========== //
 
@@ -2924,7 +2703,7 @@ function initializePagination() {
         !row.querySelector('td[colspan]') && row.cells.length >= 7
     );
     paginationState.table.allRows = tableRows;
-    paginationState.table.filteredRows = tableRows; // Start with all rows
+    paginationState.table.filteredRows = tableRows;
     updatePagination('table');
     
     // Initialize list view pagination (Reviewed Applications)
@@ -2932,7 +2711,7 @@ function initializePagination() {
         !row.querySelector('td[colspan]') && row.cells.length >= 7
     );
     paginationState.list.allRows = listRows;
-    paginationState.list.filteredRows = listRows; // Start with all rows
+    paginationState.list.filteredRows = listRows;
     updatePagination('list');
 }
 
@@ -2967,7 +2746,6 @@ function updatePagination(viewType) {
     if (noDataRow) {
         if (state.filteredRows.length === 0) {
             noDataRow.style.display = '';
-            // Update the "no data" message text
             const noDataCell = noDataRow.querySelector('td[colspan]');
             if (noDataCell) {
                 noDataCell.textContent = 'No applications found matching your criteria.';
@@ -2984,18 +2762,14 @@ function updatePaginationControls(viewType) {
     const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
     const tableId = viewType === 'table' ? 'tableView' : 'listView';
     
-    // Create or update pagination container
     let paginationContainer = document.querySelector(`#${tableId} .pagination-container`);
     
     if (!paginationContainer) {
         paginationContainer = document.createElement('div');
         paginationContainer.className = 'pagination-container';
-        
-        const tableContainer = document.querySelector(`#${tableId}`);
-        tableContainer.appendChild(paginationContainer);
+        document.querySelector(`#${tableId}`).appendChild(paginationContainer);
     }
     
-    // Update pagination HTML
     paginationContainer.innerHTML = `
         <div class="pagination-info">
             Showing ${state.filteredRows.length === 0 ? 0 : Math.min(state.filteredRows.length, (state.currentPage - 1) * state.rowsPerPage + 1)}-${Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length)} of ${state.filteredRows.length} entries
@@ -3153,7 +2927,188 @@ function attachFilterListeners() {
 if (window.filterRows) {
     delete window.filterRows;
 }
+
+// Initialize pagination when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializePagination();
+    attachFilterListeners();
+});
 </script>
 
+<script>
+// ========== IMPROVED AUTO REFRESH TABLES ========== //
+
+let isAutoRefreshEnabled = true;
+let refreshInterval = 10000; // 10 seconds para mas stable
+
+// Function to refresh table data silently
+async function refreshTableData() {
+    if (!isAutoRefreshEnabled) return;
+    
+    try {
+        // Refresh only the currently visible table
+        const tableViewVisible = !document.getElementById('tableView').classList.contains('hidden');
+        const listViewVisible = !document.getElementById('listView').classList.contains('hidden');
+        
+        if (tableViewVisible) {
+            await refreshTableView();
+        } else if (listViewVisible) {
+            await refreshListView();
+        }
+        
+    } catch (error) {
+        console.error('Error refreshing tables:', error);
+    }
+}
+
+// Refresh Table View (Pending Review)
+async function refreshTableView() {
+    try {
+        const response = await fetch('/mayor_staff/application/table-data');
+        const data = await response.json();
+        
+        if (data.success && data.html) {
+            updateTableContent('tableView', data.html, 'table');
+        }
+    } catch (error) {
+        console.error('Error refreshing table view:', error);
+    }
+}
+
+// Refresh List View (Reviewed Applications)
+async function refreshListView() {
+    try {
+        const response = await fetch('/mayor_staff/application/list-data');
+        const data = await response.json();
+        
+        if (data.success && data.html) {
+            updateTableContent('listView', data.html, 'list');
+        }
+    } catch (error) {
+        console.error('Error refreshing list view:', error);
+    }
+}
+
+// Update table content without disrupting user experience
+function updateTableContent(tableId, newHtml, viewType) {
+    const tableContainer = document.getElementById(tableId);
+    const currentTableBody = tableContainer.querySelector('tbody');
+    
+    if (!currentTableBody) return;
+    
+    // Create temporary container to parse new HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = newHtml;
+    
+    const newTableBody = tempDiv.querySelector('tbody');
+    
+    if (newTableBody && currentTableBody.innerHTML !== newTableBody.innerHTML) {
+        // Preserve current pagination state
+        const currentPage = paginationState[viewType].currentPage;
+        const currentSearch = viewType === 'table' ? 
+            document.getElementById('searchInputTable')?.value : 
+            document.getElementById('searchInputList')?.value;
+        const currentBarangay = viewType === 'table' ?
+            document.getElementById('barangaySelectTable')?.value :
+            document.getElementById('barangaySelectList')?.value;
+        
+        // Update the table body
+        currentTableBody.innerHTML = newTableBody.innerHTML;
+        
+        // Re-initialize pagination
+        initializePaginationForView(viewType);
+        
+        // Restore pagination state
+        paginationState[viewType].currentPage = currentPage;
+        
+        // Re-apply filters if any
+        if (currentSearch || currentBarangay) {
+            setTimeout(() => {
+                filterRows(viewType);
+            }, 100);
+        } else {
+            updatePagination(viewType);
+        }
+        
+        console.log(`${viewType} view refreshed successfully`);
+    }
+}
+
+// Initialize pagination for specific view
+function initializePaginationForView(viewType) {
+    const tableRows = Array.from(document.querySelectorAll(`#${viewType === 'table' ? 'tableView' : 'listView'} tbody tr`)).filter(row => 
+        !row.querySelector('td[colspan]') && row.cells.length >= 7
+    );
+    
+    paginationState[viewType].allRows = tableRows;
+    paginationState[viewType].filteredRows = tableRows;
+    paginationState[viewType].currentPage = paginationState[viewType].currentPage || 1;
+    
+    updatePagination(viewType);
+}
+
+// Pause auto-refresh when user is interacting
+function pauseAutoRefresh() {
+    isAutoRefreshEnabled = false;
+}
+
+function resumeAutoRefresh() {
+    isAutoRefreshEnabled = true;
+}
+
+// Monitor user interactions to pause/resume auto-refresh
+document.addEventListener('DOMContentLoaded', function() {
+    // Pause when any modal is open
+    const modals = document.querySelectorAll('.modal-overlay');
+    modals.forEach(modal => {
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.attributeName === 'class') {
+                    if (!modal.classList.contains('hidden')) {
+                        pauseAutoRefresh();
+                    } else {
+                        // Check if any other modal is still open
+                        const anyModalOpen = Array.from(modals).some(m => !m.classList.contains('hidden'));
+                        if (!anyModalOpen) {
+                            // Small delay before resuming
+                            setTimeout(resumeAutoRefresh, 2000);
+                        }
+                    }
+                }
+            });
+        });
+        
+        observer.observe(modal, { attributes: true });
+    });
+    
+    // Pause when user is interacting with forms or inputs
+    const inputs = document.querySelectorAll('input, select, textarea, button');
+    inputs.forEach(input => {
+        input.addEventListener('focus', pauseAutoRefresh);
+        input.addEventListener('mousedown', pauseAutoRefresh);
+    });
+    
+    // Start auto-refresh after page loads
+    setTimeout(() => {
+        setInterval(refreshTableData, refreshInterval);
+    }, 3000);
+});
+
+// Override modal functions to pause/resume auto-refresh
+const originalOpenApplicationModal = window.openApplicationModal;
+window.openApplicationModal = function(applicationPersonnelId, source = 'pending') {
+    pauseAutoRefresh();
+    originalOpenApplicationModal(applicationPersonnelId, source);
+};
+
+const originalCloseApplicationModal = window.closeApplicationModal;
+window.closeApplicationModal = function() {
+    originalCloseApplicationModal();
+    setTimeout(resumeAutoRefresh, 2000);
+};
+</script>
+<script src="{{ asset('js/app_spinner.js') }}"></script>
+<!-- Add Pusher JS (if not already included) -->
+<script src="https://js.pusher.com/7.0/pusher.min.js"></script>
     </body>
     </html>
