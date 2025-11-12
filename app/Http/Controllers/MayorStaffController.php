@@ -1899,69 +1899,103 @@ public function deleteApplication($id)
         }
     }
 
-    public function getDocumentComments($applicationPersonnelId)
-    {
-        try {
-            $comments = DB::table('tbl_document_comments')
-                ->where('application_personnel_id', $applicationPersonnelId)
-                ->get()
-                ->keyBy('document_type');
+public function getDocumentComments($applicationPersonnelId)
+{
+    try {
+        // Get document statuses and reason from application_personnel
+        $applicationPersonnel = DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $applicationPersonnelId)
+            ->select([
+                'application_letter_status',
+                'cert_of_reg_status',
+                'grade_slip_status',
+                'brgy_indigency_status',
+                'student_id_status',
+                'reason'
+            ])
+            ->first();
 
-            // Also get document statuses from application_personnel
-            $statuses = DB::table('tbl_application_personnel')
-                ->where('application_personnel_id', $applicationPersonnelId)
-                ->select([
-                    'application_letter_status',
-                    'cert_of_reg_status',
-                    'grade_slip_status',
-                    'brgy_indigency_status',
-                    'student_id_status'
-                ])
-                ->first();
-
-            return response()->json([
-                'success' => true,
-                'comments' => $comments,
-                'statuses' => $statuses
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to load comments.'], 500);
+        // Convert to comments format for frontend compatibility
+        $comments = [];
+        $statuses = [];
+        $reasons = [];
+        
+        if ($applicationPersonnel) {
+            $statuses = [
+                'application_letter_status' => $applicationPersonnel->application_letter_status,
+                'cert_of_reg_status' => $applicationPersonnel->cert_of_reg_status,
+                'grade_slip_status' => $applicationPersonnel->grade_slip_status,
+                'brgy_indigency_status' => $applicationPersonnel->brgy_indigency_status,
+                'student_id_status' => $applicationPersonnel->student_id_status,
+            ];
+            
+            // Parse individual document reasons from JSON
+            if ($applicationPersonnel->reason) {
+                $reasonsData = json_decode($applicationPersonnel->reason, true);
+                if (is_array($reasonsData)) {
+                    $reasons = $reasonsData;
+                }
+            }
         }
-    }
 
-    public function saveDocumentStatus(Request $request)
-    {
-        $request->validate([
-            'application_personnel_id' => 'required|integer',
-            'document_type' => 'required|string',
-            'status' => 'required|in:good,bad'
+        return response()->json([
+            'success' => true,
+            'comments' => $comments,
+            'statuses' => $statuses,
+            'reasons' => $reasons // Include individual reasons
         ]);
-
-        try {
-            $statusColumn = $request->document_type . '_status';
-
-            // Update status in tbl_application_personnel
-            DB::table('tbl_application_personnel')
-                ->where('application_personnel_id', $request->application_personnel_id)
-                ->update([
-                    $statusColumn => $request->status,
-                    'updated_at' => now()
-                ]);
-
-            // Update is_bad in tbl_document_comments
-            DB::table('tbl_document_comments')
-                ->where('application_personnel_id', $request->application_personnel_id)
-                ->where('document_type', $request->document_type)
-                ->update([
-                    'is_bad' => $request->status === 'bad',
-                    'updated_at' => now()
-                ]);
-
-            return response()->json(['success' => true, 'message' => 'Document status updated successfully.']);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to update document status.'], 500);
-        }
+    } catch (\Exception $e) {
+        \Log::error('Error loading document comments: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Failed to load document status.'], 500);
     }
+}
+public function saveDocumentStatus(Request $request)
+{
+    $request->validate([
+        'application_personnel_id' => 'required|integer',
+        'document_type' => 'required|string',
+        'status' => 'required|in:good,bad',
+        'reason' => 'nullable|string|max:1000'
+    ]);
+
+    try {
+        $statusColumn = $request->document_type . '_status';
+        $reasonColumn = $request->document_type . '_reason'; // New column for individual document reasons
+
+        // Check if the reason column exists, if not we'll store in a JSON format in the general reason column
+        // For now, we'll store individual reasons in a JSON format in the general reason column
+        $currentReasons = DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $request->application_personnel_id)
+            ->value('reason');
+
+        $reasons = [];
+        if ($currentReasons) {
+            $reasons = json_decode($currentReasons, true) ?? [];
+        }
+
+        if ($request->status === 'bad') {
+            $reasons[$request->document_type] = $request->reason;
+        } else {
+            // Remove reason if status is good
+            unset($reasons[$request->document_type]);
+        }
+
+        // Update status and reasons in tbl_application_personnel
+        DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $request->application_personnel_id)
+            ->update([
+                $statusColumn => $request->status,
+                'reason' => !empty($reasons) ? json_encode($reasons) : null, // Store reasons as JSON
+                'updated_at' => now()
+            ]);
+
+        return response()->json(['success' => true, 'message' => 'Document status updated successfully.']);
+    } catch (\Exception $e) {
+        \Log::error('Error saving document status: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Failed to update document status.'], 500);
+    }
+}
+
 
     public function sendDocumentEmail(Request $request)
     {
