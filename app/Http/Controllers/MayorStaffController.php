@@ -479,8 +479,6 @@ public function application(Request $request)
     );
 }
 
-// Add these methods to your MayorStaffController class
-
 /**
  * Get table view data for auto-refresh
  */
@@ -506,17 +504,6 @@ public function getTableViewData(Request $request)
             ->where("ap.lydopers_id", $currentStaffId)
             ->where("ap.initial_screening", "Pending")
             ->orderBy("app.created_at", "desc");
-
-        if ($request->filled("search")) {
-            $query->where(function ($q) use ($request) {
-                $q->where("a.applicant_fname", "like", "%" . $request->search . "%")
-                  ->orWhere("a.applicant_lname", "like", "%" . $request->search . "%");
-            });
-        }
-
-        if ($request->filled("barangay")) {
-            $query->where("a.applicant_brgy", $request->barangay);
-        }
 
         $tableApplicants = $query->get();
 
@@ -557,20 +544,9 @@ public function getListViewData(Request $request)
                 "app.created_at"
             )
             ->where("a.applicant_acad_year", "=", now()->format("Y") . "-" . now()->addYear()->format("Y"))
-            ->where("ap.lydopers_id", $currentStaffId)
+            ->where("ap.lydepers_id", $currentStaffId)
             ->whereIn("ap.initial_screening", ["Approved", "Rejected"])
             ->orderBy("app.created_at", "desc");
-
-        if ($request->filled("search")) {
-            $query->where(function ($q) use ($request) {
-                $q->where("a.applicant_fname", "like", "%" . $request->search . "%")
-                  ->orWhere("a.applicant_lname", "like", "%" . $request->search . "%");
-            });
-        }
-
-        if ($request->filled("barangay")) {
-            $query->where("a.applicant_brgy", $request->barangay);
-        }
 
         $listApplicants = $query->get();
 

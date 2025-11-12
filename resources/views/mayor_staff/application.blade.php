@@ -3158,7 +3158,7 @@ if (window.filterRows) {
 // ========== AUTO REFRESH TABLES ========== //
 
 let isAutoRefreshEnabled = true;
-let refreshInterval = 2000; // 2 seconds
+let refreshInterval = 5000; // 5 seconds
 
 // Function to refresh table data silently
 async function refreshTableData() {
@@ -3215,28 +3215,20 @@ async function refreshListView() {
 function updateTableContent(tableId, newHtml, viewType) {
     const tableContainer = document.getElementById(tableId);
     const currentTableBody = tableContainer.querySelector('tbody');
-    const currentPagination = tableContainer.querySelector('.pagination-container');
     
-    // Create temporary container to parse new HTML
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = newHtml;
-    
-    const newTableBody = tempDiv.querySelector('tbody');
-    const newPagination = tempDiv.querySelector('.pagination-container');
-    
-    if (currentTableBody && newTableBody) {
-        // Check if the content actually changed before updating
-        if (currentTableBody.innerHTML !== newTableBody.innerHTML) {
+    if (currentTableBody) {
+        // Create temporary container to parse new HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = newHtml;
+        
+        const newTableBody = tempDiv.querySelector('tbody');
+        
+        if (newTableBody && currentTableBody.innerHTML !== newTableBody.innerHTML) {
             // Preserve current scroll position
             const scrollPosition = window.scrollY;
             
             // Smoothly update the table body
             currentTableBody.innerHTML = newTableBody.innerHTML;
-            
-            // Update pagination if it exists
-            if (currentPagination && newPagination) {
-                currentPagination.innerHTML = newPagination.innerHTML;
-            }
             
             // Re-attach event listeners
             reattachEventListeners(viewType);
@@ -3274,10 +3266,52 @@ function reattachEventListeners(viewType) {
             };
         }
     });
-    
-    // Re-attach filter listeners
-    attachFilterListenersForView(viewType);
 }
+
+// Initialize pagination for specific view
+function initializePaginationForView(viewType) {
+    const tableRows = Array.from(document.querySelectorAll(`#${viewType === 'table' ? 'tableView' : 'listView'} tbody tr`)).filter(row => 
+        !row.querySelector('td[colspan]') && row.cells.length >= 7
+    );
+    
+    paginationState[viewType].allRows = tableRows;
+    paginationState[viewType].filteredRows = tableRows;
+    paginationState[viewType].currentPage = 1;
+    
+    updatePagination(viewType);
+}
+
+// Pause auto-refresh when user is interacting with modals or forms
+function pauseAutoRefresh() {
+    isAutoRefreshEnabled = false;
+    console.log('Auto-refresh paused');
+}
+
+function resumeAutoRefresh() {
+    isAutoRefreshEnabled = true;
+    console.log('Auto-refresh resumed');
+}
+
+// Start auto-refresh when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Start auto-refresh after a short delay
+    setTimeout(() => {
+        setInterval(refreshTableData, refreshInterval);
+    }, 2000);
+});
+
+// Override modal functions to pause/resume auto-refresh
+const originalOpenApplicationModal = window.openApplicationModal;
+window.openApplicationModal = function(applicationPersonnelId, source = 'pending') {
+    pauseAutoRefresh();
+    originalOpenApplicationModal(applicationPersonnelId, source);
+};
+
+const originalCloseApplicationModal = window.closeApplicationModal;
+window.closeApplicationModal = function() {
+    originalCloseApplicationModal();
+    setTimeout(resumeAutoRefresh, 100);
+};
 
 // Initialize pagination for specific view
 function initializePaginationForView(viewType) {

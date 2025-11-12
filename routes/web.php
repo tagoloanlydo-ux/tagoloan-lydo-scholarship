@@ -175,12 +175,9 @@ Route::post('/test/new-application/{id}', [MayorStaffController::class, 'trigger
 Route::post('/test/reviewed-application/{id}', [MayorStaffController::class, 'triggerReviewedApplicationNotification']);
 Route::get('/mayor_staff/application/table-data', [MayorStaffController::class, 'getTableViewData']);
 Route::get('/mayor_staff/application/list-data', [MayorStaffController::class, 'getListViewData']);
-// Quick test route
-Route::get('/test-pusher', function() {
-    $applicationId = 1; // Change to a real application ID
-    $controller = app(App\Http\Controllers\MayorStaffController::class);
-    return $controller->triggerNewApplicationNotification($applicationId);
-});
+// Auto-refresh routes for application tables
+Route::get('/mayor_staff/application/table-data', [MayorStaffController::class, 'getTableViewData'])->name('mayor_staff.application.table_data');
+Route::get('/mayor_staff/application/list-data', [MayorStaffController::class, 'getListViewData'])->name('mayor_staff.application.list_data');
 });
 
 // Public routes for intake sheet
