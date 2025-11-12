@@ -594,14 +594,15 @@
                             class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
                         Cancel
                     </button>
-                    <form id="deleteForm" method="POST" style="display: inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit"
-                                class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">
-                            <i class="fas fa-trash mr-2"></i> Delete
-                        </button>
-                    </form>
+<!-- In your delete modal -->
+<form id="deleteForm" method="POST" style="display: inline;">
+    @csrf
+    @method('DELETE')
+    <button type="submit"
+            class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">
+        <i class="fas fa-trash mr-2"></i> Delete
+    </button>
+</form>
                 </div>
             </div>
         </div>
@@ -2127,34 +2128,30 @@ function confirmDeletePending(applicationPersonnelId, applicantName) {
         cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Submit delete request via AJAX
-            fetch(`/mayor_staff/application/${applicationPersonnelId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire('Deleted!', 'Application has been deleted.', 'success')
-                        .then(() => {
-                            // Remove row from table without reload
-                            removeApplicationFromTable(applicationPersonnelId);
-                        });
-                } else {
-                    Swal.fire('Error!', 'Failed to delete application.', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire('Error!', 'Failed to delete application.', 'error');
-            });
+            // Create a form and submit it (traditional way)
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/mayor_staff/application/${applicationPersonnelId}`;
+            
+            // Add CSRF token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = document.querySelector('input[name="_token"]').value;
+            form.appendChild(csrfToken);
+            
+            // Add method spoofing for DELETE
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
+            
+            document.body.appendChild(form);
+            form.submit();
         }
     });
 }
-
 function sendDocumentEmail() {
     const applicationPersonnelId = currentApplicationId;
 
