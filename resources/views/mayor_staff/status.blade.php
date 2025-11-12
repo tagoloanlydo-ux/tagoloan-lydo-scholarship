@@ -245,7 +245,7 @@
                                                 class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow view-intake-btn"
                                                 data-id="{{ $app->application_personnel_id }}"
                                                 data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}">
-                                                <i class="fas fa-eye mr-1"></i> View
+                                                <i class="fas fa-eye mr-1"></i> Review Application
                                             </button>
                                         </div>
                                     </td>
