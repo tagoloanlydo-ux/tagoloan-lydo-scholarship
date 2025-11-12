@@ -24,7 +24,124 @@
     max-height: 80vh;
     overflow-y: auto;
 }
+/* Pagination Styles for Application */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
 
+.pagination-info {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: 0.5rem 1rem;
+    background-color: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #6d28d9;
+    transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+    background-color: #d1d5db;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pagination-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.pagination-page-input {
+    width: 3.5rem;
+    padding: 0.4rem;
+    text-align: center;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    background-color: white;
+}
+
+.pagination-page-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Responsive design for pagination */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: center;
+    }
+
+    .pagination-buttons {
+        justify-content: center;
+    }
+
+    .pagination-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .pagination-info {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination-buttons {
+        gap: 0.25rem;
+    }
+
+    .pagination-btn {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.75rem;
+    }
+
+    .pagination-page-info {
+        font-size: 0.8rem;
+    }
+
+    .pagination-page-input {
+        width: 3rem;
+        padding: 0.3rem;
+    }
+}
 .document-viewer-container {
     height: calc(100vh - 300px); /* A4 height equivalent */
     min-height: 800px; /* Minimum A4 height */
@@ -2454,32 +2571,40 @@ function sendDocumentEmail() {
         });
     </script>
 <script >
-// ========== PAGINATION CODE START ========== //
+// ========== PAGINATION CODE FOR APPLICATION ========== //
 
-// Pagination state
+// Pagination state for application
 const paginationState = {
     table: {
         currentPage: 1,
         rowsPerPage: 15,
-        filteredRows: []
+        filteredRows: [],
+        totalRows: 0
     },
     list: {
         currentPage: 1,
         rowsPerPage: 15,
-        filteredRows: []
+        filteredRows: [],
+        totalRows: 0
     }
 };
 
-// Initialize pagination for both tables
+// Initialize pagination for both tables in application
 function initializePagination() {
-    // Initialize table view pagination
-    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
+    // Initialize table view pagination (Pending Review)
+    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr')).filter(row => 
+        !row.querySelector('td[colspan]') && row.cells.length >= 7
+    );
     paginationState.table.filteredRows = tableRows;
+    paginationState.table.totalRows = tableRows.length;
     updatePagination('table');
     
-    // Initialize list view pagination
-    const listRows = Array.from(document.querySelectorAll('#listView tbody tr'));
+    // Initialize list view pagination (Reviewed Applications)
+    const listRows = Array.from(document.querySelectorAll('#listView tbody tr')).filter(row => 
+        !row.querySelector('td[colspan]') && row.cells.length >= 7
+    );
     paginationState.list.filteredRows = listRows;
+    paginationState.list.totalRows = listRows.length;
     updatePagination('list');
 }
 
@@ -2492,8 +2617,11 @@ function updatePagination(viewType) {
     if (!tableBody) return;
     
     // Hide all rows first
-    state.filteredRows.forEach(row => {
-        row.style.display = 'none';
+    const allRows = Array.from(tableBody.querySelectorAll('tr'));
+    allRows.forEach(row => {
+        if (!row.querySelector('td[colspan]')) {
+            row.style.display = 'none';
+        }
     });
     
     // Calculate pagination
@@ -2508,35 +2636,46 @@ function updatePagination(viewType) {
     
     // Update pagination controls
     updatePaginationControls(viewType);
+    
+    // Show/hide "no data" message
+    const noDataRow = tableBody.querySelector('tr td[colspan]')?.parentElement;
+    if (noDataRow) {
+        if (state.filteredRows.length === 0) {
+            noDataRow.style.display = '';
+        } else {
+            noDataRow.style.display = 'none';
+        }
+    }
 }
 
 // Update pagination controls
 function updatePaginationControls(viewType) {
     const state = paginationState[viewType];
     const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    const tableId = viewType === 'table' ? 'tableView' : 'listView';
     
     // Create or update pagination container
-    let paginationContainer = document.querySelector(`#${viewType === 'table' ? 'tableView' : 'listView'} .pagination-container`);
+    let paginationContainer = document.querySelector(`#${tableId} .pagination-container`);
     
     if (!paginationContainer) {
         paginationContainer = document.createElement('div');
         paginationContainer.className = 'pagination-container';
         
-        const tableContainer = document.querySelector(`#${viewType === 'table' ? 'tableView' : 'listView'}`);
+        const tableContainer = document.querySelector(`#${tableId}`);
         tableContainer.appendChild(paginationContainer);
     }
     
     // Update pagination HTML
     paginationContainer.innerHTML = `
         <div class="pagination-info">
-            Showing ${Math.min(state.filteredRows.length, (state.currentPage - 1) * state.rowsPerPage + 1)}-${Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length)} of ${state.filteredRows.length} entries
+            Showing ${state.filteredRows.length === 0 ? 0 : Math.min(state.filteredRows.length, (state.currentPage - 1) * state.rowsPerPage + 1)}-${Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length)} of ${state.filteredRows.length} entries
         </div>
         <div class="pagination-buttons">
             <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
-                First
+                <i class="fas fa-angle-double-left"></i> First
             </button>
             <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
-                Previous
+                <i class="fas fa-angle-left"></i> Previous
             </button>
             <div class="pagination-page-info">
                 Page 
@@ -2544,10 +2683,10 @@ function updatePaginationControls(viewType) {
                 of ${totalPages}
             </div>
             <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Next
+                Next <i class="fas fa-angle-right"></i>
             </button>
             <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Last
+                Last <i class="fas fa-angle-double-right"></i>
             </button>
         </div>
     `;
@@ -2563,19 +2702,14 @@ function changePage(viewType, page) {
     
     state.currentPage = page;
     updatePagination(viewType);
+    
+    // Scroll to top of table
+    const tableId = viewType === 'table' ? 'tableView' : 'listView';
+    const tableElement = document.getElementById(tableId);
+    if (tableElement) {
+        tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
-function rejectApplication() {
-    // Open the rejection modal
-    document.getElementById('rejectionModal').classList.remove('hidden');
-    
-    // Clear any previous reason
-    document.getElementById('rejectionReason').value = '';
-    
-    // Focus on the reason textarea
-    setTimeout(() => {
-        document.getElementById('rejectionReason').focus();
-    }, 100);
-}rejectionModal
 
 // Go to specific page
 function goToPage(viewType, page) {
@@ -2590,8 +2724,70 @@ function goToPage(viewType, page) {
     updatePagination(viewType);
 }
 
+// Update filter function to work with pagination
+function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
+    try {
+        const searchEl = document.getElementById(searchInputId);
+        const barangayEl = document.getElementById(barangaySelectId);
+        const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
+        const barangayValue = barangayEl ? barangayEl.value : '';
 
+        const tableBody = document.querySelector(tableBodySelector);
+        if (!tableBody) return;
 
+        const rows = Array.from(tableBody.querySelectorAll('tr')).filter(row => 
+            !row.querySelector('td[colspan]') && row.cells.length >= 7
+        );
+        const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
+
+        // Filter rows based on search criteria
+        const filteredRows = rows.filter(row => {
+            const nameCell = row.cells[1];
+            const barangayCell = row.cells[2];
+
+            if (!nameCell || !barangayCell) return false;
+
+            const nameText = nameCell.textContent.toLowerCase();
+            const barangayText = barangayCell.textContent.trim();
+
+            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
+            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
+
+            return matchesSearch && matchesBarangay;
+        });
+
+        // Update pagination state
+        paginationState[viewType].filteredRows = filteredRows;
+        paginationState[viewType].currentPage = 1; // Reset to first page
+        updatePagination(viewType);
+
+    } catch (e) {
+        console.error('filterRows error:', e);
+    }
+}
+
+// Initialize pagination when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize pagination
+    initializePagination();
+    
+    // Update existing filter functions to work with pagination
+    const originalFilterRows = window.filterRows;
+    if (originalFilterRows) {
+        window.filterRows = function(tableBodySelector, searchInputId, barangaySelectId) {
+            originalFilterRows(tableBodySelector, searchInputId, barangaySelectId);
+            // Re-initialize pagination after filtering
+            setTimeout(() => {
+                const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
+                const rows = Array.from(document.querySelectorAll(`${tableBodySelector} tr`)).filter(row => 
+                    !row.querySelector('td[colspan]') && row.cells.length >= 7
+                );
+                paginationState[viewType].filteredRows = rows;
+                updatePagination(viewType);
+            }, 100);
+        };
+    }
+});
 </script>
 <script src="{{ asset('js/app_spinner.js') }}"></script>
 <!-- Add Pusher JS (if not already included) -->
