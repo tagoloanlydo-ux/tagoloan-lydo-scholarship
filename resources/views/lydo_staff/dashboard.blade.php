@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/dashrefresh.js') }}"></script>
     @vite('resources/js/app.js')
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
   <style>
@@ -28,6 +29,42 @@
     display: none;
     transition: opacity 0.3s ease;
     animation: fadeIn 1s ease forwards;
+}
+/* Card update animations */
+.card-updating {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-updating::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.card-updated {
+    animation: pulseUpdate 1s ease-in-out;
+}
+
+@keyframes pulseUpdate {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Ensure smooth transitions for card numbers */
+#applicantsCount, #pendingInitialCount, #approvedRenewalsCount, #pendingRenewalsCount {
+    transition: all 0.3s ease;
 }
 
 .spinner {

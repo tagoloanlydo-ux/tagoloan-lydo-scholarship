@@ -736,6 +736,7 @@
  <script src="{{ asset('js/logout.js') }}"></script>
 
 <script src="{{ asset('js/spinner.js') }}"></script>
-
+<!-- Add this line after your existing script imports -->
+<script src="{{ asset('js/mayordashrefresh.js') }}"></script>
 </div>
 </body>

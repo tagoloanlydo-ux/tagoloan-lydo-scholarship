@@ -2245,6 +2245,6 @@
     });
 </script>
 @endif
-
+<script src="{{ asset('js/screeningautorefresh.js') }}"></script>
 </body>
 </html>

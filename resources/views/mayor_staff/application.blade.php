@@ -1,147 +1,98 @@
 <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Scholarship Management</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-            <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholarship Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-        <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-        <link rel="stylesheet" href="{{ asset('css/application.css') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="{{ asset('css/application.css') }}" />
 
-        <!-- DataTables CSS -->
-        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.tailwindcss.min.css">
-        <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.tailwindcss.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
 
-    </head>
-    <style>
- /* Document Viewer Modal Styles */
+</head>
+<style>
+/* Document Viewer Modal Styles */
 .document-modal-content {
     max-height: 80vh;
     overflow-y: auto;
 }
-/* Pagination Styles for Application */
 .pagination-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-top: 1.5rem;
     padding: 1rem;
-    background: white;
+    background-color: white;
     border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    flex-wrap: wrap;
-    gap: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .pagination-info {
-    font-size: 0.9rem;
     color: #6b7280;
-    font-weight: 500;
+    font-size: 0.875rem;
 }
 
 .pagination-buttons {
     display: flex;
-    gap: 0.5rem;
     align-items: center;
-    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .pagination-btn {
-    padding: 0.5rem 1rem;
-    background-color: #7c3aed;
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.875rem;
-    font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: white;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .pagination-btn:hover:not(:disabled) {
-    background-color: #6d28d9;
-    transform: translateY(-1px);
+    background-color: #f9fafb;
+    border-color: #9ca3af;
 }
 
 .pagination-btn:disabled {
-    background-color: #d1d5db;
+    opacity: 0.5;
     cursor: not-allowed;
-    transform: none;
 }
 
 .pagination-page-info {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    margin: 0 1rem;
+    color: #6b7280;
     font-size: 0.875rem;
-    color: #374151;
 }
 
 .pagination-page-input {
     width: 3.5rem;
-    padding: 0.4rem;
-    text-align: center;
+    padding: 0.25rem 0.5rem;
     border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    background-color: white;
+    border-radius: 0.25rem;
+    text-align: center;
 }
 
 .pagination-page-input:focus {
     outline: none;
     border-color: #7c3aed;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
 }
 
-/* Responsive design for pagination */
-@media (max-width: 768px) {
-    .pagination-container {
-        flex-direction: column;
-        gap: 0.75rem;
-        text-align: center;
-    }
-
-    .pagination-buttons {
-        justify-content: center;
-    }
-
-    .pagination-btn {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
-    }
-
-    .pagination-info {
-        font-size: 0.8rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .pagination-buttons {
-        gap: 0.25rem;
-    }
-
-    .pagination-btn {
-        padding: 0.35rem 0.7rem;
-        font-size: 0.75rem;
-    }
-
-    .pagination-page-info {
-        font-size: 0.8rem;
-    }
-
-    .pagination-page-input {
-        width: 3rem;
-        padding: 0.3rem;
-    }
-}
 .document-viewer-container {
     height: calc(100vh - 300px); /* A4 height equivalent */
     min-height: 800px; /* Minimum A4 height */
@@ -233,247 +184,147 @@
     z-index: 10;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-.pagination-info {
-    font-size: 0.9rem;
-    color: #6b7280;
-    font-weight: 500;
-}
+</style>
+<body class="bg-gray-50">
 
-.pagination-buttons {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    flex-wrap: wrap;
-}
+    <!-- Loading Spinner Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-container">
+            <div class="spinner">
+                <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+            </div>
+            <div class="text-line">Loading...</div>
+        </div>
+    </div>
 
-.pagination-btn {
-    padding: 0.5rem 1rem;
-    background-color: #7c3aed;
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    font-size: 0.875rem;
-    font-weight: 500;
-}
+    <!-- Header -->
+<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
+        <div class="flex items-center">
+            <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
+                <h1 class="text-2xl font-bold text-white ml-4">Lydo Scholarship</h1>
+        </div>
 
-.pagination-btn:hover:not(:disabled) {
-    background-color: #6d28d9;
-    transform: translateY(-1px);
-}
+        <div class="flex items-center space-x-4">
+            <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
 
-.pagination-btn:disabled {
-    background-color: #d1d5db;
-    cursor: not-allowed;
-    transform: none;
-}
+            <div class="relative">
+                <!-- 🔔 Bell Icon -->
+                <button id="notifBell" class="relative focus:outline-none">
+                    <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
+                    @if($showBadge && $notifications->count() > 0)
+                        <span id="notifCount"
+                            class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
+                            {{ $notifications->count() }}
+                        </span>
+                    @endif
+                </button>
 
-.pagination-page-info {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    color: #374151;
-}
+                <!-- 🔽 Dropdown -->
+                <div id="notifDropdown"
+                    class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                    <div class="p-3 border-b font-semibold text-violet-600">Notifications</div>
+                    <ul class="max-h-60 overflow-y-auto">
+                        @forelse($notifications as $notif)
+                            <li class="px-4 py-2 hover:bg-gray-50 text-base border-b">
+                                {{-- New Application --}}
+                                @if($notif->type === 'application')
+                                    <p class="text-blue-600 font-medium">
+                                        📝 {{ $notif->name }} submitted a new application
+                                    </p>
+                                {{-- New Remark --}}
+                                @elseif($notif->type === 'remark')
+                                    <p class="text-purple-600 font-medium">
+                                        💬 New remark for {{ $notif->name }}:
+                                        <b>{{ $notif->remarks }}</b>
+                                    </p>
+                                @endif
 
-.pagination-page-input {
-    width: 3.5rem;
-    padding: 0.4rem;
-    text-align: center;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    background-color: white;
-}
-
-.pagination-page-input:focus {
-    outline: none;
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-}
-
-/* Responsive design for pagination */
-@media (max-width: 768px) {
-    .pagination-container {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .pagination-buttons {
-        justify-content: center;
-    }
-
-    .pagination-btn {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
-    }
-
-    .pagination-info {
-        font-size: 0.8rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .pagination-buttons {
-        gap: 0.25rem;
-    }
-
-    .pagination-btn {
-        padding: 0.35rem 0.7rem;
-        font-size: 0.75rem;
-    }
-
-    .pagination-page-info {
-        font-size: 0.8rem;
-    }
-
-    .pagination-page-input {
-        width: 3rem;
-        padding: 0.3rem;
-    }
-}
-    </style>
-    <body class="bg-gray-50">
-
-        <!-- Loading Spinner Overlay -->
-        <div id="loadingOverlay" class="loading-overlay">
-            <div class="loading-container">
-                <div class="spinner">
-                    <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+                                {{-- Time ago --}}
+                                <p class="text-xs text-gray-500">
+                                    {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
+                                </p>
+                            </li>
+                        @empty
+                            <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
+                        @endforelse
+                    </ul>
                 </div>
-                <div class="text-line">Loading...</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
+        <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
+            <ul class="side-menu top space-y-4">
+                <li>
+                    <a href="/mayor_staff/dashboard" class="w-ful flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                        <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
+                        <span class="ml-4 hidden md:block text-lg">Dashboard</span>
+                    </a>
+                </li>
+                <li class="relative">
+                    <button onclick="toggleDropdown('scholarMenu')"
+                        class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+                        <div class="flex items-center">
+                            <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl text-white-700"></i>
+                            <span class="ml-4 hidden md:block text-lg">Applicants</span>
+                        </div>
+                        <i class="bx bx-chevron-down ml-2"></i>
+                    </button>
+
+                    <!-- Dropdown Menul -->
+                    <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
+                        <li>
+                            <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-white bg-violet-600">
+                            <i class="bx bx-search-alt mr-2 text-white-700"></i> Review Applications
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/mayor_staff/status" class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                            <i class="bx bx-check-circle mr-2 text-white-700"></i> Scholarship Approval
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+                    <ul class="side-menu space-y-1">
+                        <li>
+                            <a href="/mayor_staff/settings" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                                <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl text-white-700"></i>
+                                <span class="ml-4 hidden md:block text-base">Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+
+        </nav>
+            <div class="p-2 md:p-4 border-t">
+                <form method="POST" action="{{ route('logout') }}" id="logoutForm">
+                    @csrf
+                        <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
+                            <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
+                            <span class="hidden md:block text-red-600">Logout</span>
+                        </button>
+                </form>
             </div>
         </div>
 
-        <!-- Header -->
-<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
-            <div class="flex items-center">
-                <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
-                    <h1 class="text-2xl font-bold text-white ml-4">Lydo Scholarship</h1>
-            </div>
-
-            <div class="flex items-center space-x-4">
-                <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
-
-                <div class="relative">
-                    <!-- 🔔 Bell Icon -->
-                    <button id="notifBell" class="relative focus:outline-none">
-                        <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-                        @if($showBadge && $notifications->count() > 0)
-                            <span id="notifCount"
-                                class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                                {{ $notifications->count() }}
-                            </span>
-                        @endif
-                    </button>
-
-                    <!-- 🔽 Dropdown -->
-                    <div id="notifDropdown"
-                        class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                        <div class="p-3 border-b font-semibold text-violet-600">Notifications</div>
-                        <ul class="max-h-60 overflow-y-auto">
-                            @forelse($notifications as $notif)
-                                <li class="px-4 py-2 hover:bg-gray-50 text-base border-b">
-                                    {{-- New Application --}}
-                                    @if($notif->type === 'application')
-                                        <p class="text-blue-600 font-medium">
-                                            📝 {{ $notif->name }} submitted a new application
-                                        </p>
-                                    {{-- New Remark --}}
-                                    @elseif($notif->type === 'remark')
-                                        <p class="text-purple-600 font-medium">
-                                            💬 New remark for {{ $notif->name }}:
-                                            <b>{{ $notif->remarks }}</b>
-                                        </p>
-                                    @endif
-
-                                    {{-- Time ago --}}
-                                    <p class="text-xs text-gray-500">
-                                        {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
-                                    </p>
-                                </li>
-                            @empty
-                                <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
-                            @endforelse
-                        </ul>
-                    </div>
+    <!-- Main Content -->
+    <div class="main-content-fixed text-[16px]">
+                <div class="p-10 bg-gray-50 min-h-screen rounded-lg shadow">
+                    <div class="flex justify-between items-center mb-6">
+                        <h5 class="text-3xl font-bold text-gray-800">Review Applicants Application</h5>
                 </div>
-            </div>
-        </header>
 
-        <!-- Sidebar -->
-        <div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
-            <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
-                <ul class="side-menu top space-y-4">
-                    <li>
-                        <a href="/mayor_staff/dashboard" class="w-ful flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                            <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
-                            <span class="ml-4 hidden md:block text-lg">Dashboard</span>
-                        </a>
-                    </li>
-                    <li class="relative">
-                        <button onclick="toggleDropdown('scholarMenu')"
-                            class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-                            <div class="flex items-center">
-                                <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl text-white-700"></i>
-                                <span class="ml-4 hidden md:block text-lg">Applicants</span>
+                    <div class="flex justify-start items-center mb-6 gap-4">
+                                    <!-- Tab Switch -->
+                        <div class="flex gap-2">
+                            <div id="pendingTab" class="tab active" onclick="showTable()">Pending Review</div>
+                            <div id="reviewedTab" class="tab" onclick="showList()">Reviewed Applications</div>
                             </div>
-                            <i class="bx bx-chevron-down ml-2"></i>
-                        </button>
-
-                        <!-- Dropdown Menul -->
-                        <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
-                            <li>
-                                <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-white bg-violet-600">
-                                <i class="bx bx-search-alt mr-2 text-white-700"></i> Review Applications
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/mayor_staff/status" class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                <i class="bx bx-check-circle mr-2 text-white-700"></i> Scholarship Approval
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-                        <ul class="side-menu space-y-1">
-                            <li>
-                                <a href="/mayor_staff/settings" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                    <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl text-white-700"></i>
-                                    <span class="ml-4 hidden md:block text-base">Settings</span>
-                                </a>
-                            </li>
-                        </ul>
-
-            </nav>
-                <div class="p-2 md:p-4 border-t">
-                    <form method="POST" action="{{ route('logout') }}" id="logoutForm">
-                        @csrf
-                            <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
-                                <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
-                                <span class="hidden md:block text-red-600">Logout</span>
-                            </button>
-                    </form>
-                </div>
-            </div>
-
-        <!-- Main Content -->
-        <div class="main-content-fixed text-[16px]">
-                    <div class="p-10 bg-gray-50 min-h-screen rounded-lg shadow">
-                        <div class="flex justify-between items-center mb-6">
-                            <h5 class="text-3xl font-bold text-gray-800">Review Applicants Application</h5>
-                    </div>
-
-                        <div class="flex justify-start items-center mb-6 gap-4">
-                                        <!-- Tab Switch -->
-                            <div class="flex gap-2">
-                                <div id="pendingTab" class="tab active" onclick="showTable()">Pending Review</div>
-                                <div id="reviewedTab" class="tab" onclick="showList()">Reviewed Applications</div>
-                                </div>
-                            </div>
-                <!-- ✅ Table View (Applicants without remarks) -->
-                <div id="tableView">
+                        </div>
+            <!-- ✅ Table View (Applicants without remarks) -->
+            <div id="tableView">
 <!-- Search and Filter Section for Table View -->
 <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
     <div class="flex gap-4 items-end">
@@ -504,39 +355,39 @@
         </div>
     </div>
 </div>
-                    <div class="mb-4">
-                        <h3 class="text-lg font-semibold text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
-                            The list below shows applicants who have submitted applications
-                        </h3>
-                    </div>
-                <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
-                    <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase text-sm">
-                        <tr>
-                            <th class="px-6 py-4 align-middle text-center">#</th>
-                            <th class="px-6 py-4 align-middle text-center">Name</th>
-                            <th class="px-6 py-4 align-middle text-center">Barangay</th>
-                            <th class="px-6 py-4 align-middle text-center">Gender</th>
-                            <th class="px-6 py-4 align-middle text-center">Birthday</th>
-                            <th class="px-6 py-4 align-middle text-center">Applications</th>
-                            <th class="px-6 py-4 align-middle text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white">
-                        @php $count = 1; @endphp
-                        @forelse($tableApplicants as $index => $app)
-                            <tr class="border-b border-gray-200 hover:bg-blue-50 transition-colors duration-200">
-                                <td class="px-6 py-4 text-center">{{ $count++ }}</td>
-                                <td class="px-6 py-4 text-center font-medium">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
-                                <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
-                                <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
-                                <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
-                                <td class="px-6 py-4 text-center">
-                                    <button type="button"
-                                        class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
-                                        onclick="openApplicationModal({{ $app->application_personnel_id }}, 'pending')">
-                                        Review Applications
-                                    </button>
-                                </td>
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        The list below shows applicants who have submitted applications
+                    </h3>
+                </div>
+            <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
+                <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase text-sm">
+                    <tr>
+                        <th class="px-6 py-4 align-middle text-center">#</th>
+                        <th class="px-6 py-4 align-middle text-center">Name</th>
+                        <th class="px-6 py-4 align-middle text-center">Barangay</th>
+                        <th class="px-6 py-4 align-middle text-center">Gender</th>
+                        <th class="px-6 py-4 align-middle text-center">Birthday</th>
+                        <th class="px-6 py-4 align-middle text-center">Applications</th>
+                        <th class="px-6 py-4 align-middle text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
+                    @php $count = 1; @endphp
+                    @forelse($tableApplicants as $index => $app)
+                        <tr class="border-b border-gray-200 hover:bg-blue-50 transition-colors duration-200">
+                            <td class="px-6 py-4 text-center">{{ $count++ }}</td>
+                            <td class="px-6 py-4 text-center font-medium">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
+                            <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
+                            <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
+                            <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
+                            <td class="px-6 py-4 text-center">
+                                <button type="button"
+                                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
+                                    onclick="openApplicationModal({{ $app->application_personnel_id }}, 'pending')">
+                                    Review Applications
+                                </button>
+                            </td>
 
 <td class="px-6 py-4 text-center">
     <!-- I-remove ang inline form at palitan ng button na may confirmDelete function -->
@@ -546,21 +397,22 @@
         <i class="fas fa-trash mr-2"></i>Delete
     </button>
 </td>
-                            </tr>
-                                            @empty
-                    <tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">No approved or rejected applications found.</td>
-                    </tr>
-                @endforelse
-                    </tbody>
-                </table>
-                <div class="mt-4">
-                <div id="paginationControls"></div>
-                </div>
+                        </tr>
+                                        @empty
+                <tr>
+                    <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">No approved or rejected applications found.</td>
+                </tr>
+            @endforelse
+                </tbody>
+            </table>
+            <div class="mt-4">
+            <!-- Pagination for Table View -->
+<div class="pagination-container" id="tablePagination"></div>
             </div>
+        </div>
 
-                <!-- ✅ List View (Approved and Rejected applications) -->
-        <div id="listView" class="hidden overflow-x-auto">
+            <!-- ✅ List View (Approved and Rejected applications) -->
+    <div id="listView" class="hidden overflow-x-auto">
 <!-- Search and Filter Section for List View -->
 <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
     <div class="flex gap-4 items-end">
@@ -596,30 +448,30 @@
                 The list below shows applicants who have approved and rejected screening
                 </h3>
             </div>
-                <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
-            <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
-                <tr>
-                <th class="px-6 py-4 align-middle text-center">#</th>
-                    <th class="px-6 py-4 align-middle text-center">Name</th>
-                    <th class="px-6 py-4 align-middle text-center">Barangay</th>
-                    <th class="px-6 py-4 align-middle text-center">Gender</th>
-                    <th class="px-6 py-4 align-middle text-center">Birthday</th>
-                    <th class="px-6 py-4 align-middle text-center">Initial Screening</th>
-                    <th class="px-6 py-4 align-middle text-center">Application</th>
-                    <th class="px-6 py-4 align-middle text-center">Action</th>
+            <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
+        <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
+            <tr>
+            <th class="px-6 py-4 align-middle text-center">#</th>
+                <th class="px-6 py-4 align-middle text-center">Name</th>
+                <th class="px-6 py-4 align-middle text-center">Barangay</th>
+                <th class="px-6 py-4 align-middle text-center">Gender</th>
+                <th class="px-6 py-4 align-middle text-center">Birthday</th>
+                <th class="px-6 py-4 align-middle text-center">Initial Screening</th>
+                <th class="px-6 py-4 align-middle text-center">Application</th>
+                <th class="px-6 py-4 align-middle text-center">Action</th>
 
-                </tr>
-            </thead>
-                            <tbody class="bg-white">
-                @php $count = 1; @endphp
-                @forelse($listApplicants as $index => $app)
-                    <tr class="border-b border-gray-200 hover:bg-green-50 transition-colors duration-200">
-                        <td class="px-6 py-4 text-center">{{ $count++ }}</td>
-                        <td class="px-6 py-4 text-center font-medium">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
-                        <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
-                        <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
-                        <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
-                        <td class="px-6 py-4 text-center">{{ $app->initial_screening }}</td>
+            </tr>
+        </thead>
+                        <tbody class="bg-white">
+            @php $count = 1; @endphp
+            @forelse($listApplicants as $index => $app)
+                <tr class="border-b border-gray-200 hover:bg-green-50 transition-colors duration-200">
+                    <td class="px-6 py-4 text-center">{{ $count++ }}</td>
+                    <td class="px-6 py-4 text-center font-medium">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
+                    <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
+                    <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
+                    <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
+                    <td class="px-6 py-4 text-center">{{ $app->initial_screening }}</td>
 <td class="px-6 py-4 text-center">
     <div class="relative inline-block">
         <button type="button"
@@ -633,21 +485,22 @@
               class="badge-updated hidden">Updated</span>
     </div>
 </td>
-                        <td class="px-6 py-4 text-center">
-                            <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openDeleteModal({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}', true)">
-                                <i class="fas fa-trash mr-2"></i>Delete
-                            </button>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">No approved or rejected applications found.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-                                <div class="mt-4">
-       <div id="paginationControls"></div>
+                    <td class="px-6 py-4 text-center">
+                        <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openDeleteModal({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}', true)">
+                            <i class="fas fa-trash mr-2"></i>Delete
+                        </button>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">No approved or rejected applications found.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+                            <div class="mt-4">
+                            <!-- Pagination for List View -->
+<div class="pagination-container" id="listPagination"></div>
     </div>
         </div>
         </div>
@@ -862,144 +715,6 @@
                 document.getElementById('reviewedTab').classList.add('active');
                 localStorage.setItem('viewMode', 'list');
             }
-
-// Replace the existing filterRows function with this improved version:
-function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
-    try {
-        const searchEl = document.getElementById(searchInputId);
-        const barangayEl = document.getElementById(barangaySelectId);
-        const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
-        const barangayValue = barangayEl ? barangayEl.value : '';
-
-        const tableBody = document.querySelector(tableBodySelector);
-        if (!tableBody) return;
-
-        const rows = Array.from(tableBody.querySelectorAll('tr'));
-        const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
-
-        // Filter rows based on search criteria
-        const filteredRows = rows.filter(row => {
-            // Skip header row or rows without enough cells
-            if (!row.cells || row.cells.length < 3 || row.querySelector('td[colspan]')) {
-                return false;
-            }
-
-            const nameCell = row.cells[1];
-            const barangayCell = row.cells[2];
-
-            if (!nameCell || !barangayCell) return false;
-
-            const nameText = nameCell.textContent.toLowerCase();
-            const barangayText = barangayCell.textContent.trim();
-
-            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
-            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
-
-            return matchesSearch && matchesBarangay;
-        });
-
-        // Update pagination state
-        paginationState[viewType].filteredRows = filteredRows;
-        paginationState[viewType].currentPage = 1; // Reset to first page
-        updatePagination(viewType);
-
-        // Show/hide rows based on filter
-        rows.forEach(row => {
-            if (!row.querySelector('td[colspan]')) { // Skip "no data" rows
-                row.style.display = 'none'; // Hide all rows initially
-            }
-        });
-
-        // Show only filtered rows for current page
-        const startIndex = 0;
-        const endIndex = paginationState[viewType].rowsPerPage;
-        filteredRows.slice(startIndex, endIndex).forEach(row => {
-            row.style.display = ''; // Show filtered rows
-        });
-
-        // Show "no results" message if no matches found
-        const noDataRow = tableBody.querySelector('tr td[colspan]')?.parentElement;
-        if (noDataRow) {
-            if (filteredRows.length === 0) {
-                noDataRow.style.display = '';
-            } else {
-                noDataRow.style.display = 'none';
-            }
-        }
-
-    } catch (e) {
-        console.error('filterRows error:', e);
-    }
-}
-
-// Add event listeners for both views
-function attachFilterListeners() {
-    const debounceDelay = 300; // Increased debounce delay for better performance
-
-    // Table View listeners
-    const tableSearch = document.getElementById('searchInputTable');
-    const tableBrgy = document.getElementById('barangaySelectTable');
-    
-    if (tableSearch) {
-        tableSearch.addEventListener('input', debounce(() => {
-            filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
-        }, debounceDelay));
-    }
-    
-    if (tableBrgy) {
-        tableBrgy.addEventListener('change', () => {
-            filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
-        });
-    }
-
-    // List View listeners
-    const listSearch = document.getElementById('searchInputList');
-    const listBrgy = document.getElementById('barangaySelectList');
-    
-    if (listSearch) {
-        listSearch.addEventListener('input', debounce(() => {
-            filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
-        }, debounceDelay));
-    }
-    
-    if (listBrgy) {
-        listBrgy.addEventListener('change', () => {
-            filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
-        });
-    }
-}
-
-// Clear filters functions
-function clearFiltersTable() {
-    document.getElementById('searchInputTable').value = '';
-    document.getElementById('barangaySelectTable').value = '';
-    filterRows('#tableView tbody', 'searchInputTable', 'barangaySelectTable');
-}
-
-function clearFiltersList() {
-    document.getElementById('searchInputList').value = '';
-    document.getElementById('barangaySelectList').value = '';
-    filterRows('#listView tbody', 'searchInputList', 'barangaySelectList');
-}
-
-// Initialize everything when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize pagination
-    initializePagination();
-    
-    // Attach filter listeners
-    attachFilterListeners();
-    
-    // Restore view mode from localStorage
-    const savedViewMode = localStorage.getItem('viewMode');
-    if (savedViewMode === 'list') {
-        showList();
-    } else {
-        showTable();
-    }
-    
-    console.log('Pagination and filters initialized successfully');
-});
 
             // ✅ Application Modal Functions
             const applications = @json($applications);
@@ -1306,129 +1021,6 @@ function trackDocumentUpdates(applicationPersonnelId) {
                 updatedDocuments.add(documentType);
                 console.log('Updated documents:', updatedDocuments);
             }
-
-// ========== SEARCH AND FILTER FUNCTIONS ========== //
-
-// Debounce function for search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Main filter function
-function filterRows(viewType) {
-    try {
-        const searchInputId = viewType === 'table' ? 'searchInputTable' : 'searchInputList';
-        const barangaySelectId = viewType === 'table' ? 'barangaySelectTable' : 'barangaySelectList';
-        
-        const searchEl = document.getElementById(searchInputId);
-        const barangayEl = document.getElementById(barangaySelectId);
-        const searchValue = searchEl ? searchEl.value.toLowerCase().trim() : '';
-        const barangayValue = barangayEl ? barangayEl.value : '';
-
-        const state = paginationState[viewType];
-        
-        // Filter rows based on search criteria
-        const filteredRows = state.allRows.filter(row => {
-            const nameCell = row.cells[1]; // Name column
-            const barangayCell = row.cells[2]; // Barangay column
-
-            if (!nameCell || !barangayCell) return false;
-
-            const nameText = nameCell.textContent.toLowerCase().trim();
-            const barangayText = barangayCell.textContent.trim();
-
-            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
-            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
-
-            return matchesSearch && matchesBarangay;
-        });
-
-        // Update pagination state
-        state.filteredRows = filteredRows;
-        state.currentPage = 1; // Reset to first page
-        updatePagination(viewType);
-
-    } catch (e) {
-        console.error('filterRows error:', e);
-    }
-}
-
-// Clear filters functions
-function clearFiltersTable() {
-    document.getElementById('searchInputTable').value = '';
-    document.getElementById('barangaySelectTable').value = '';
-    filterRows('table');
-}
-
-function clearFiltersList() {
-    document.getElementById('searchInputList').value = '';
-    document.getElementById('barangaySelectList').value = '';
-    filterRows('list');
-}
-
-// Attach event listeners for filters
-function attachFilterListeners() {
-    const debounceDelay = 300;
-
-    // Table View listeners
-    const tableSearch = document.getElementById('searchInputTable');
-    const tableBrgy = document.getElementById('barangaySelectTable');
-    
-    if (tableSearch) {
-        tableSearch.addEventListener('input', debounce(() => {
-            filterRows('table');
-        }, debounceDelay));
-    }
-    
-    if (tableBrgy) {
-        tableBrgy.addEventListener('change', () => {
-            filterRows('table');
-        });
-    }
-
-    // List View listeners
-    const listSearch = document.getElementById('searchInputList');
-    const listBrgy = document.getElementById('barangaySelectList');
-    
-    if (listSearch) {
-        listSearch.addEventListener('input', debounce(() => {
-            filterRows('list');
-        }, debounceDelay));
-    }
-    
-    if (listBrgy) {
-        listBrgy.addEventListener('change', () => {
-            filterRows('list');
-        });
-    }
-}
-
-// Initialize everything when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize pagination
-    initializePagination();
-    
-    // Attach filter listeners
-    attachFilterListeners();
-    
-    // Restore view mode from localStorage
-    const savedViewMode = localStorage.getItem('viewMode');
-    if (savedViewMode === 'list') {
-        showList();
-    } else {
-        showTable();
-    }
-    
-    console.log('Pagination and filters initialized successfully');
-});
 
             function loadDocumentComments(applicationPersonnelId) {
                 console.log('Loading comments for application:', applicationPersonnelId);
@@ -2070,7 +1662,6 @@ function removeApplicationFromTable(applicationId) {
             
             // Update ang row numbers at pagination
             updateRowNumbers();
-            updatePagination('table');
             
             // Show success message if no more rows
             if (document.querySelectorAll('#tableView tbody tr').length === 0) {
@@ -2186,6 +1777,80 @@ function submitRejection() {
 }
 function closeRejectionModal() {
     document.getElementById('rejectionModal').classList.add('hidden');
+    // Clear the rejection reason when closing
+    document.getElementById('rejectionReason').value = '';
+}
+function submitRejection() {
+    const applicationId = currentApplicationId;
+    const reason = document.getElementById('rejectionReason').value.trim();
+
+    if (!reason) {
+        Swal.fire('Error', 'Please provide a reason for rejection.', 'error');
+        return;
+    }
+
+    // Confirm rejection
+    Swal.fire({
+        title: 'Reject Initial Screening?',
+        text: 'Are you sure you want to reject this application for initial screening?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Reject',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const rejectSubmitBtn = document.getElementById('rejectSubmitBtn');
+            const rejectSubmitBtnText = document.getElementById('rejectSubmitBtnText');
+            const rejectSubmitBtnSpinner = document.getElementById('rejectSubmitBtnSpinner');
+
+            // Show loading state
+            rejectSubmitBtn.disabled = true;
+            rejectSubmitBtnText.textContent = 'Rejecting...';
+            rejectSubmitBtnSpinner.classList.remove('hidden');
+
+            // Make AJAX call to reject the application
+            fetch(`/mayor_staff/application/${applicationId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                },
+                body: JSON.stringify({ reason: reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Rejected!',
+                        text: 'Initial screening has been rejected successfully.',
+                        icon: 'success',
+                        showConfirmButton: true,
+                        allowOutsideClick: false
+                    }).then(() => {
+                        // Close both modals
+                        closeRejectionModal();
+                        closeApplicationModal();
+                        
+                        // Remove from table without reload
+                        removeApplicationFromTable(applicationId);
+                    });
+                } else {
+                    Swal.fire('Error', 'Failed to reject initial screening.', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Failed to reject initial screening.', 'error');
+            })
+            .finally(() => {
+                // Reset button state
+                rejectSubmitBtn.disabled = false;
+                rejectSubmitBtnText.textContent = 'Reject Application';
+                rejectSubmitBtnSpinner.classList.add('hidden');
+            });
+        }
+    });
 }
 function closeApplicationModal() {
     document.getElementById('applicationModal').classList.add('hidden');
@@ -2538,6 +2203,10 @@ function sendDocumentEmail() {
                 });
             });
 
+function rejectApplication() {
+    // Show the rejection modal instead of directly submitting
+    document.getElementById('rejectionModal').classList.remove('hidden');
+}
             function closeFloatingDropdown() {
                 if (activeDropdown && originalParent) {
                     activeDropdown.classList.add('hidden');
@@ -2554,7 +2223,7 @@ function sendDocumentEmail() {
             }
         </script>
         
-                                
+                            
     <script>
     document.getElementById("notifBell").addEventListener("click", function () {
             let dropdown = document.getElementById("notifDropdown");
@@ -2609,1097 +2278,25 @@ function sendDocumentEmail() {
     <script src="{{ asset('js/logout.js') }}"></script>
 
     <script>
-    // Real-time updates for new applications
-    let lastUpdate = new Date().toISOString();
-
-    function pollForUpdates() {
-        fetch(`/mayor_staff/application/updates?last_update=${encodeURIComponent(lastUpdate)}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.length > 0) {
-                    // Update lastUpdate to the latest created_at
-                    const latest = data.reduce((max, app) => app.created_at > max ? app.created_at : max, lastUpdate);
-                    lastUpdate = latest;
-
-                    // Append new rows to tableView
-                    const tableBody = document.querySelector('#tableView tbody');
-                    if (tableBody) {
-                        data.forEach(app => {
-                            const row = document.createElement('tr');
-                            row.className = 'border-b border-gray-200 hover:bg-blue-50 transition-colors duration-200';
-                            row.innerHTML = `
-                                <td class="px-6 py-4 text-center">${tableBody.rows.length + 1}</td>
-                                <td class="px-6 py-4 text-center font-medium">${app.applicant_fname} ${app.applicant_lname}</td>
-                                <td class="px-6 py-4 text-center">${app.applicant_brgy}</td>
-                                <td class="px-6 py-4 text-center">${app.applicant_gender}</td>
-                                <td class="px-6 py-4 text-center">${app.applicant_bdate}</td>
-                                <td class="px-6 py-4 text-center">
-                                    <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openApplicationModal(${app.application_personnel_id}, 'pending')">
-                                        View Applications
-                                    </button>
-                                </td>
-                                <td class="px-6 py-4 text-center relative">
-                                    <div class="dropdown">
-                                        <button class="text-gray-600 hover:text-gray-800 focus:outline-none" onclick="toggleDropdownMenu(${app.application_personnel_id})">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <div id="dropdown-menu-${app.application_personnel_id}" class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-
-                                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="openDeleteModal(${app.application_personnel_id}, '${app.applicant_fname} ${app.applicant_lname}')">
-                                                <i class="fas fa-trash mr-2"></i>Delete Application
-                                            </a>
-                                        </div>
-                                    </div>
-                                </td>
-                            `;
-                            tableBody.appendChild(row);
-                        });
-                    }
-                }
-            })
-            .catch(err => console.error('Polling error:', err));
-    }
-
-    // Poll every 10 seconds
-    setInterval(pollForUpdates, 10000);
-    </script>
-
-    <script>
         // Format dates when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.date-format').forEach(function(element) {
-                const rawDate = element.textContent.trim();
-                if (rawDate) {
-                    const formattedDate = moment(rawDate).format('MMMM D, YYYY');
-                    element.textContent = formattedDate;
-                }
-            });
-        });
+// Format dates when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.date-format').forEach(function(element) {
+        const rawDate = element.textContent.trim();
+        if (rawDate) {
+            const formattedDate = moment(rawDate).format('MMMM D YYYY'); // Removed the comma
+            element.textContent = formattedDate;
+        }
+    });
+});
     </script>
-<script >
-// ========== PAGINATION CODE FOR APPLICATION ========== //
-
-// Pagination state for application
-const paginationState = {
-    table: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        filteredRows: [],
-        totalRows: 0
-    },
-    list: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        filteredRows: [],
-        totalRows: 0
-    }
-};
-
-// Initialize pagination for both tables in application
-function initializePagination() {
-    // Initialize table view pagination (Pending Review)
-    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr')).filter(row => 
-        !row.querySelector('td[colspan]') && row.cells.length >= 7
-    );
-    paginationState.table.filteredRows = tableRows;
-    paginationState.table.totalRows = tableRows.length;
-    updatePagination('table');
+    <script>
     
-    // Initialize list view pagination (Reviewed Applications)
-    const listRows = Array.from(document.querySelectorAll('#listView tbody tr')).filter(row => 
-        !row.querySelector('td[colspan]') && row.cells.length >= 7
-    );
-    paginationState.list.filteredRows = listRows;
-    paginationState.list.totalRows = listRows.length;
-    updatePagination('list');
-}
-
-// Update pagination display
-function updatePagination(viewType) {
-    const state = paginationState[viewType];
-    const tableId = viewType === 'table' ? 'tableView' : 'listView';
-    const tableBody = document.querySelector(`#${tableId} tbody`);
-    
-    if (!tableBody) return;
-    
-    // Hide all rows first
-    const allRows = Array.from(tableBody.querySelectorAll('tr'));
-    allRows.forEach(row => {
-        if (!row.querySelector('td[colspan]')) {
-            row.style.display = 'none';
-        }
-    });
-    
-    // Calculate pagination
-    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
-    const endIndex = startIndex + state.rowsPerPage;
-    const pageRows = state.filteredRows.slice(startIndex, endIndex);
-    
-    // Show rows for current page
-    pageRows.forEach(row => {
-        row.style.display = '';
-    });
-    
-    // Update pagination controls
-    updatePaginationControls(viewType);
-    
-    // Show/hide "no data" message
-    const noDataRow = tableBody.querySelector('tr td[colspan]')?.parentElement;
-    if (noDataRow) {
-        if (state.filteredRows.length === 0) {
-            noDataRow.style.display = '';
-        } else {
-            noDataRow.style.display = 'none';
-        }
-    }
-}
-
-// Update pagination controls
-function updatePaginationControls(viewType) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    const tableId = viewType === 'table' ? 'tableView' : 'listView';
-    
-    // Create or update pagination container
-    let paginationContainer = document.querySelector(`#${tableId} .pagination-container`);
-    
-    if (!paginationContainer) {
-        paginationContainer = document.createElement('div');
-        paginationContainer.className = 'pagination-container';
-        
-        const tableContainer = document.querySelector(`#${tableId}`);
-        tableContainer.appendChild(paginationContainer);
-    }
-    
-    // Update pagination HTML
-    paginationContainer.innerHTML = `
-        <div class="pagination-info">
-            Showing ${state.filteredRows.length === 0 ? 0 : Math.min(state.filteredRows.length, (state.currentPage - 1) * state.rowsPerPage + 1)}-${Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length)} of ${state.filteredRows.length} entries
-        </div>
-        <div class="pagination-buttons">
-            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
-                <i class="fas fa-angle-double-left"></i> First
-            </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
-                <i class="fas fa-angle-left"></i> Previous
-            </button>
-            <div class="pagination-page-info">
-                Page 
-                <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)">
-                of ${totalPages}
-            </div>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Next <i class="fas fa-angle-right"></i>
-            </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Last <i class="fas fa-angle-double-right"></i>
-            </button>
-        </div>
-    `;
-}
-
-// Change page
-function changePage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
-    
-    // Scroll to top of table
-    const tableId = viewType === 'table' ? 'tableView' : 'listView';
-    const tableElement = document.getElementById(tableId);
-    if (tableElement) {
-        tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
-
-// Go to specific page
-function goToPage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    page = parseInt(page);
-    if (isNaN(page) || page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
-}
-
-// Update filter function to work with pagination
-function filterRows(tableBodySelector, searchInputId, barangaySelectId) {
-    try {
-        const searchEl = document.getElementById(searchInputId);
-        const barangayEl = document.getElementById(barangaySelectId);
-        const searchValue = searchEl ? searchEl.value.toLowerCase() : '';
-        const barangayValue = barangayEl ? barangayEl.value : '';
-
-        const tableBody = document.querySelector(tableBodySelector);
-        if (!tableBody) return;
-
-        const rows = Array.from(tableBody.querySelectorAll('tr')).filter(row => 
-            !row.querySelector('td[colspan]') && row.cells.length >= 7
-        );
-        const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
-
-        // Filter rows based on search criteria
-        const filteredRows = rows.filter(row => {
-            const nameCell = row.cells[1];
-            const barangayCell = row.cells[2];
-
-            if (!nameCell || !barangayCell) return false;
-
-            const nameText = nameCell.textContent.toLowerCase();
-            const barangayText = barangayCell.textContent.trim();
-
-            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
-            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
-
-            return matchesSearch && matchesBarangay;
-        });
-
-        // Update pagination state
-        paginationState[viewType].filteredRows = filteredRows;
-        paginationState[viewType].currentPage = 1; // Reset to first page
-        updatePagination(viewType);
-
-    } catch (e) {
-        console.error('filterRows error:', e);
-    }
-}
-
-// Initialize pagination when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize pagination
-    initializePagination();
-    
-    // Update existing filter functions to work with pagination
-    const originalFilterRows = window.filterRows;
-    if (originalFilterRows) {
-        window.filterRows = function(tableBodySelector, searchInputId, barangaySelectId) {
-            originalFilterRows(tableBodySelector, searchInputId, barangaySelectId);
-            // Re-initialize pagination after filtering
-            setTimeout(() => {
-                const viewType = tableBodySelector.includes('tableView') ? 'table' : 'list';
-                const rows = Array.from(document.querySelectorAll(`${tableBodySelector} tr`)).filter(row => 
-                    !row.querySelector('td[colspan]') && row.cells.length >= 7
-                );
-                paginationState[viewType].filteredRows = rows;
-                updatePagination(viewType);
-            }, 100);
-        };
-    }
-});
-</script>
+    </script>
 <script src="{{ asset('js/app_spinner.js') }}"></script>
-<!-- Add Pusher JS (if not already included) -->
-<script src="https://js.pusher.com/7.0/pusher.min.js"></script>
-<script>
-// ========== PAGINATION CODE FOR APPLICATION ========== //
-
-// Pagination state for application
-const paginationState = {
-    table: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        filteredRows: [],
-        allRows: []
-    },
-    list: {
-        currentPage: 1,
-        rowsPerPage: 15,
-        filteredRows: [],
-        allRows: []
-    }
-};
-
-// Initialize pagination for both tables in application
-function initializePagination() {
-    // Initialize table view pagination (Pending Review)
-    const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr')).filter(row => 
-        !row.querySelector('td[colspan]') && row.cells.length >= 7
-    );
-    paginationState.table.allRows = tableRows;
-    paginationState.table.filteredRows = tableRows; // Start with all rows
-    updatePagination('table');
-    
-    // Initialize list view pagination (Reviewed Applications)
-    const listRows = Array.from(document.querySelectorAll('#listView tbody tr')).filter(row => 
-        !row.querySelector('td[colspan]') && row.cells.length >= 7
-    );
-    paginationState.list.allRows = listRows;
-    paginationState.list.filteredRows = listRows; // Start with all rows
-    updatePagination('list');
-}
-
-// Update pagination display
-function updatePagination(viewType) {
-    const state = paginationState[viewType];
-    const tableId = viewType === 'table' ? 'tableView' : 'listView';
-    const tableBody = document.querySelector(`#${tableId} tbody`);
-    
-    if (!tableBody) return;
-    
-    // Hide all rows first
-    state.allRows.forEach(row => {
-        row.style.display = 'none';
-    });
-    
-    // Calculate pagination
-    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
-    const endIndex = startIndex + state.rowsPerPage;
-    const pageRows = state.filteredRows.slice(startIndex, endIndex);
-    
-    // Show rows for current page
-    pageRows.forEach(row => {
-        row.style.display = '';
-    });
-    
-    // Update pagination controls
-    updatePaginationControls(viewType);
-    
-    // Show/hide "no data" message
-    const noDataRow = tableBody.querySelector('tr td[colspan]')?.parentElement;
-    if (noDataRow) {
-        if (state.filteredRows.length === 0) {
-            noDataRow.style.display = '';
-            // Update the "no data" message text
-            const noDataCell = noDataRow.querySelector('td[colspan]');
-            if (noDataCell) {
-                noDataCell.textContent = 'No applications found matching your criteria.';
-            }
-        } else {
-            noDataRow.style.display = 'none';
-        }
-    }
-}
-
-// Update pagination controls
-function updatePaginationControls(viewType) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    const tableId = viewType === 'table' ? 'tableView' : 'listView';
-    
-    // Create or update pagination container
-    let paginationContainer = document.querySelector(`#${tableId} .pagination-container`);
-    
-    if (!paginationContainer) {
-        paginationContainer = document.createElement('div');
-        paginationContainer.className = 'pagination-container';
-        
-        const tableContainer = document.querySelector(`#${tableId}`);
-        tableContainer.appendChild(paginationContainer);
-    }
-    
-    // Update pagination HTML
-    paginationContainer.innerHTML = `
-        <div class="pagination-info">
-            Showing ${state.filteredRows.length === 0 ? 0 : Math.min(state.filteredRows.length, (state.currentPage - 1) * state.rowsPerPage + 1)}-${Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length)} of ${state.filteredRows.length} entries
-        </div>
-        <div class="pagination-buttons">
-            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
-                <i class="fas fa-angle-double-left"></i> First
-            </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
-                <i class="fas fa-angle-left"></i> Previous
-            </button>
-            <div class="pagination-page-info">
-                Page 
-                <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)">
-                of ${totalPages}
-            </div>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Next <i class="fas fa-angle-right"></i>
-            </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
-                Last <i class="fas fa-angle-double-right"></i>
-            </button>
-        </div>
-    `;
-}
-
-// Change page
-function changePage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
-}
-
-// Go to specific page
-function goToPage(viewType, page) {
-    const state = paginationState[viewType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    page = parseInt(page);
-    if (isNaN(page) || page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updatePagination(viewType);
-}
-
-// NEW: Improved filter function
-function filterRows(viewType) {
-    try {
-        const searchInputId = viewType === 'table' ? 'searchInputTable' : 'searchInputList';
-        const barangaySelectId = viewType === 'table' ? 'barangaySelectTable' : 'barangaySelectList';
-        
-        const searchEl = document.getElementById(searchInputId);
-        const barangayEl = document.getElementById(barangaySelectId);
-        const searchValue = searchEl ? searchEl.value.toLowerCase().trim() : '';
-        const barangayValue = barangayEl ? barangayEl.value : '';
-
-        const state = paginationState[viewType];
-        
-        // Filter rows based on search criteria
-        const filteredRows = state.allRows.filter(row => {
-            const nameCell = row.cells[1]; // Name column
-            const barangayCell = row.cells[2]; // Barangay column
-
-            if (!nameCell || !barangayCell) return false;
-
-            const nameText = nameCell.textContent.toLowerCase().trim();
-            const barangayText = barangayCell.textContent.trim();
-
-            const matchesSearch = searchValue === '' || nameText.includes(searchValue);
-            const matchesBarangay = barangayValue === '' || barangayText === barangayValue;
-
-            return matchesSearch && matchesBarangay;
-        });
-
-        // Update pagination state
-        state.filteredRows = filteredRows;
-        state.currentPage = 1; // Reset to first page
-        updatePagination(viewType);
-
-    } catch (e) {
-        console.error('filterRows error:', e);
-    }
-}
-
-// NEW: Clear filters function
-function clearFiltersTable() {
-    document.getElementById('searchInputTable').value = '';
-    document.getElementById('barangaySelectTable').value = '';
-    filterRows('table');
-}
-
-function clearFiltersList() {
-    document.getElementById('searchInputList').value = '';
-    document.getElementById('barangaySelectList').value = '';
-    filterRows('list');
-}
-
-// NEW: Debounce function for search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// NEW: Attach event listeners for filters
-function attachFilterListeners() {
-    const debounceDelay = 300;
-
-    // Table View listeners
-    const tableSearch = document.getElementById('searchInputTable');
-    const tableBrgy = document.getElementById('barangaySelectTable');
-    
-    if (tableSearch) {
-        tableSearch.addEventListener('input', debounce(() => {
-            filterRows('table');
-        }, debounceDelay));
-    }
-    
-    if (tableBrgy) {
-        tableBrgy.addEventListener('change', () => {
-            filterRows('table');
-        });
-    }
-
-    // List View listeners
-    const listSearch = document.getElementById('searchInputList');
-    const listBrgy = document.getElementById('barangaySelectList');
-    
-    if (listSearch) {
-        listSearch.addEventListener('input', debounce(() => {
-            filterRows('list');
-        }, debounceDelay));
-    }
-    
-    if (listBrgy) {
-        listBrgy.addEventListener('change', () => {
-            filterRows('list');
-        });
-    }
-}
-
-// Remove the old filterRows function if it exists
-if (window.filterRows) {
-    delete window.filterRows;
-}
-</script>
-<script>
-// ========== AUTO REFRESH TABLES ========== //
-
-let isAutoRefreshEnabled = true;
-let refreshInterval = 5000; // 5 seconds
-
-// Function to refresh table data silently
-// Function to refresh table data silently
-async function refreshTableData() {
-    if (!isAutoRefreshEnabled) return;
-    
-    try {
-        // Refresh both tables
-        await Promise.all([
-            refreshTableView(),
-            refreshListView()
-        ]);
-        
-        console.log('Tables refreshed silently');
-    } catch (error) {
-        console.error('Error refreshing tables:', error);
-    }
-}
-
-// Refresh Table View (Pending Review)
-async function refreshTableView() {
-    try {
-        const response = await fetch('/mayor_staff/application/table-data', {
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-            }
-        });
-        const data = await response.json();
-        
-        if (data.success && data.html) {
-            updateTableContent('tableView', data.html, 'table');
-        }
-    } catch (error) {
-        console.error('Error refreshing table view:', error);
-    }
-}
-
-// Refresh List View (Reviewed Applications)
-async function refreshListView() {
-    try {
-        const response = await fetch('/mayor_staff/application/list-data', {
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-            }
-        });
-        const data = await response.json();
-        
-        if (data.success && data.html) {
-            updateTableContent('listView', data.html, 'list');
-        }
-    } catch (error) {
-        console.error('Error refreshing list view:', error);
-    }
-}
-
-// Update table content without disrupting user experience
-function updateTableContent(tableId, newHtml, viewType) {
-    const tableContainer = document.getElementById(tableId);
-    const currentTableBody = tableContainer.querySelector('tbody');
-    
-    if (currentTableBody) {
-        // Create temporary container to parse new HTML
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = newHtml;
-        
-        const newTableBody = tempDiv.querySelector('tbody');
-        
-        if (newTableBody && currentTableBody.innerHTML !== newTableBody.innerHTML) {
-            // Update the table body
-            currentTableBody.innerHTML = newTableBody.innerHTML;
-            
-            // Re-attach event listeners
-            reattachEventListeners(viewType);
-            
-            // Re-initialize pagination for this view
-            initializePaginationForView(viewType);
-            
-            // Re-attach filter listeners
-            attachFilterListenersForView(viewType);
-            
-            console.log(`${viewType} view refreshed successfully`);
-        }
-    }
-}
-// Re-attach event listeners after table update
-function reattachEventListeners(viewType) {
-    // Re-attach click events for review buttons
-    document.querySelectorAll(`#${viewType === 'table' ? 'tableView' : 'listView'} button[onclick*="openApplicationModal"]`).forEach(button => {
-        const onclick = button.getAttribute('onclick');
-        if (onclick) {
-            button.onclick = function() {
-                eval(onclick);
-            };
-        }
-    });
-    
-    // Re-attach click events for delete buttons
-    document.querySelectorAll(`#${viewType === 'table' ? 'tableView' : 'listView'} button[onclick*="confirmDeletePending"], 
-                               #${viewType === 'table' ? 'tableView' : 'listView'} button[onclick*="openDeleteModal"]`).forEach(button => {
-        const onclick = button.getAttribute('onclick');
-        if (onclick) {
-            button.onclick = function() {
-                eval(onclick);
-            };
-        }
-    });
-}
-
-// Initialize pagination for specific view
-function initializePaginationForView(viewType) {
-    const tableRows = Array.from(document.querySelectorAll(`#${viewType === 'table' ? 'tableView' : 'listView'} tbody tr`)).filter(row => 
-        !row.querySelector('td[colspan]') && row.cells.length >= 7
-    );
-    
-    paginationState[viewType].allRows = tableRows;
-    paginationState[viewType].filteredRows = tableRows;
-    paginationState[viewType].currentPage = 1;
-    
-    updatePagination(viewType);
-}
-
-// Pause auto-refresh when user is interacting with modals or forms
-function pauseAutoRefresh() {
-    isAutoRefreshEnabled = false;
-    console.log('Auto-refresh paused');
-}
-
-function resumeAutoRefresh() {
-    isAutoRefreshEnabled = true;
-    console.log('Auto-refresh resumed');
-}
-
-// Start auto-refresh when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Start auto-refresh after a short delay
-    setTimeout(() => {
-        setInterval(refreshTableData, refreshInterval);
-    }, 2000);
-});
-
-// Override modal functions to pause/resume auto-refresh
-const originalOpenApplicationModal = window.openApplicationModal;
-window.openApplicationModal = function(applicationPersonnelId, source = 'pending') {
-    pauseAutoRefresh();
-    originalOpenApplicationModal(applicationPersonnelId, source);
-};
-
-const originalCloseApplicationModal = window.closeApplicationModal;
-window.closeApplicationModal = function() {
-    originalCloseApplicationModal();
-    setTimeout(resumeAutoRefresh, 100);
-};
-
-// Initialize pagination for specific view
-function initializePaginationForView(viewType) {
-    const tableRows = Array.from(document.querySelectorAll(`#${viewType === 'table' ? 'tableView' : 'listView'} tbody tr`)).filter(row => 
-        !row.querySelector('td[colspan]') && row.cells.length >= 7
-    );
-    
-    paginationState[viewType].allRows = tableRows;
-    paginationState[viewType].filteredRows = tableRows;
-    paginationState[viewType].currentPage = 1;
-    
-    updatePagination(viewType);
-}
-
-// Attach filter listeners for specific view
-function attachFilterListenersForView(viewType) {
-    const debounceDelay = 300;
-    
-    if (viewType === 'table') {
-        const tableSearch = document.getElementById('searchInputTable');
-        const tableBrgy = document.getElementById('barangaySelectTable');
-        
-        if (tableSearch) {
-            tableSearch.addEventListener('input', debounce(() => {
-                filterRows('table');
-            }, debounceDelay));
-        }
-        
-        if (tableBrgy) {
-            tableBrgy.addEventListener('change', () => {
-                filterRows('table');
-            });
-        }
-    } else {
-        const listSearch = document.getElementById('searchInputList');
-        const listBrgy = document.getElementById('barangaySelectList');
-        
-        if (listSearch) {
-            listSearch.addEventListener('input', debounce(() => {
-                filterRows('list');
-            }, debounceDelay));
-        }
-        
-        if (listBrgy) {
-            listBrgy.addEventListener('change', () => {
-                filterRows('list');
-            });
-        }
-    }
-}
-
-// Pause auto-refresh when user is interacting with modals or forms
-function pauseAutoRefresh() {
-    isAutoRefreshEnabled = false;
-    console.log('Auto-refresh paused');
-}
-
-function resumeAutoRefresh() {
-    isAutoRefreshEnabled = true;
-    console.log('Auto-refresh resumed');
-}
-
-// Monitor user interactions to pause/resume auto-refresh
-document.addEventListener('DOMContentLoaded', function() {
-    // Pause when any modal is open
-    const modals = document.querySelectorAll('.modal-overlay');
-    modals.forEach(modal => {
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.attributeName === 'class') {
-                    if (!modal.classList.contains('hidden')) {
-                        pauseAutoRefresh();
-                    } else {
-                        // Check if any other modal is still open
-                        const anyModalOpen = Array.from(modals).some(m => !m.classList.contains('hidden'));
-                        if (!anyModalOpen) {
-                            resumeAutoRefresh();
-                        }
-                    }
-                }
-            });
-        });
-        
-        observer.observe(modal, { attributes: true });
-    });
-    
-    // Pause when user is typing in search inputs
-    const searchInputs = document.querySelectorAll('input[type="text"]');
-    searchInputs.forEach(input => {
-        input.addEventListener('focus', pauseAutoRefresh);
-        input.addEventListener('blur', function() {
-            // Only resume if no modal is open
-            const anyModalOpen = Array.from(modals).some(m => !m.classList.contains('hidden'));
-            if (!anyModalOpen) {
-                resumeAutoRefresh();
-            }
-        });
-    });
-    
-    // Start auto-refresh
-    setInterval(refreshTableData, refreshInterval);
-});
-
-// Override the existing openApplicationModal to pause auto-refresh
-const originalOpenApplicationModal = window.openApplicationModal;
-window.openApplicationModal = function(applicationPersonnelId, source = 'pending') {
-    pauseAutoRefresh();
-    originalOpenApplicationModal(applicationPersonnelId, source);
-};
-
-// Override the existing closeApplicationModal to resume auto-refresh
-const originalCloseApplicationModal = window.closeApplicationModal;
-window.closeApplicationModal = function() {
-    originalCloseApplicationModal();
-    // Small delay to ensure modal is fully closed
-    setTimeout(resumeAutoRefresh, 100);
-};
-
-// Override other modal functions similarly
-const originalOpenDeleteModal = window.openDeleteModal;
-window.openDeleteModal = function(applicationPersonnelId, applicantName, isReviewedApplication = false) {
-    pauseAutoRefresh();
-    originalOpenDeleteModal(applicationPersonnelId, applicantName, isReviewedApplication);
-};
-
-const originalCloseDeleteModal = window.closeDeleteModal;
-window.closeDeleteModal = function() {
-    originalCloseDeleteModal();
-    setTimeout(resumeAutoRefresh, 100);
-};
-
-// Add similar overrides for other modal functions as needed
-</script>
-<script>
-// ========== AUTO REFRESH TABLES ========== //
-
-let isAutoRefreshEnabled = true;
-let refreshInterval = 2000; // 2 seconds
-
-// Function to refresh table data silently
-async function refreshTableData() {
-    if (!isAutoRefreshEnabled) return;
-    
-    try {
-        // Refresh both tables
-        await Promise.all([
-            refreshTableView(),
-            refreshListView()
-        ]);
-        
-        console.log('Tables refreshed silently');
-    } catch (error) {
-        console.error('Error refreshing tables:', error);
-    }
-}
-
-// Refresh Table View (Pending Review)
-async function refreshTableView() {
-    try {
-        const response = await fetch('/mayor_staff/application/table-data');
-        const data = await response.json();
-        
-        if (data.success && data.html) {
-            // Only update if the table view is currently visible
-            if (!document.getElementById('tableView').classList.contains('hidden')) {
-                updateTableContent('tableView', data.html, 'table');
-            }
-        }
-    } catch (error) {
-        console.error('Error refreshing table view:', error);
-    }
-}
-
-// Refresh List View (Reviewed Applications)
-async function refreshListView() {
-    try {
-        const response = await fetch('/mayor_staff/application/list-data');
-        const data = await response.json();
-        
-        if (data.success && data.html) {
-            // Only update if the list view is currently visible
-            if (!document.getElementById('listView').classList.contains('hidden')) {
-                updateTableContent('listView', data.html, 'list');
-            }
-        }
-    } catch (error) {
-        console.error('Error refreshing list view:', error);
-    }
-}
-
-// Update table content without disrupting user experience
-function updateTableContent(tableId, newHtml, viewType) {
-    const tableContainer = document.getElementById(tableId);
-    const currentTableBody = tableContainer.querySelector('tbody');
-    const currentPagination = tableContainer.querySelector('.pagination-container');
-    
-    // Create temporary container to parse new HTML
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = newHtml;
-    
-    const newTableBody = tempDiv.querySelector('tbody');
-    const newPagination = tempDiv.querySelector('.pagination-container');
-    
-    if (currentTableBody && newTableBody) {
-        // Check if the content actually changed before updating
-        if (currentTableBody.innerHTML !== newTableBody.innerHTML) {
-            // Preserve current scroll position
-            const scrollPosition = window.scrollY;
-            
-            // Smoothly update the table body
-            currentTableBody.innerHTML = newTableBody.innerHTML;
-            
-            // Update pagination if it exists
-            if (currentPagination && newPagination) {
-                currentPagination.innerHTML = newPagination.innerHTML;
-            }
-            
-            // Re-attach event listeners
-            reattachEventListeners(viewType);
-            
-            // Re-initialize pagination for the updated table
-            initializePaginationForView(viewType);
-            
-            // Restore scroll position
-            window.scrollTo(0, scrollPosition);
-            
-            console.log(`Table ${tableId} updated silently`);
-        }
-    }
-}
-
-// Re-attach event listeners after table update
-function reattachEventListeners(viewType) {
-    // Re-attach click events for review buttons
-    document.querySelectorAll(`#${viewType === 'table' ? 'tableView' : 'listView'} button[onclick*="openApplicationModal"]`).forEach(button => {
-        const onclick = button.getAttribute('onclick');
-        if (onclick) {
-            button.onclick = function() {
-                eval(onclick);
-            };
-        }
-    });
-    
-    // Re-attach click events for delete buttons
-    document.querySelectorAll(`#${viewType === 'table' ? 'tableView' : 'listView'} button[onclick*="confirmDeletePending"], 
-                               #${viewType === 'table' ? 'tableView' : 'listView'} button[onclick*="openDeleteModal"]`).forEach(button => {
-        const onclick = button.getAttribute('onclick');
-        if (onclick) {
-            button.onclick = function() {
-                eval(onclick);
-            };
-        }
-    });
-    
-    // Re-attach filter listeners
-    attachFilterListenersForView(viewType);
-}
-
-// Initialize pagination for specific view
-function initializePaginationForView(viewType) {
-    const tableRows = Array.from(document.querySelectorAll(`#${viewType === 'table' ? 'tableView' : 'listView'} tbody tr`)).filter(row => 
-        !row.querySelector('td[colspan]') && row.cells.length >= 7
-    );
-    
-    paginationState[viewType].allRows = tableRows;
-    paginationState[viewType].filteredRows = tableRows;
-    paginationState[viewType].currentPage = 1;
-    
-    updatePagination(viewType);
-}
-
-// Attach filter listeners for specific view
-function attachFilterListenersForView(viewType) {
-    const debounceDelay = 300;
-    
-    if (viewType === 'table') {
-        const tableSearch = document.getElementById('searchInputTable');
-        const tableBrgy = document.getElementById('barangaySelectTable');
-        
-        if (tableSearch) {
-            tableSearch.addEventListener('input', debounce(() => {
-                filterRows('table');
-            }, debounceDelay));
-        }
-        
-        if (tableBrgy) {
-            tableBrgy.addEventListener('change', () => {
-                filterRows('table');
-            });
-        }
-    } else {
-        const listSearch = document.getElementById('searchInputList');
-        const listBrgy = document.getElementById('barangaySelectList');
-        
-        if (listSearch) {
-            listSearch.addEventListener('input', debounce(() => {
-                filterRows('list');
-            }, debounceDelay));
-        }
-        
-        if (listBrgy) {
-            listBrgy.addEventListener('change', () => {
-                filterRows('list');
-            });
-        }
-    }
-}
-
-// Pause auto-refresh when user is interacting with modals or forms
-function pauseAutoRefresh() {
-    isAutoRefreshEnabled = false;
-    console.log('Auto-refresh paused');
-}
-
-function resumeAutoRefresh() {
-    isAutoRefreshEnabled = true;
-    console.log('Auto-refresh resumed');
-}
-
-// Monitor user interactions to pause/resume auto-refresh
-document.addEventListener('DOMContentLoaded', function() {
-    // Pause when any modal is open
-    const modals = document.querySelectorAll('.modal-overlay');
-    modals.forEach(modal => {
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.attributeName === 'class') {
-                    if (!modal.classList.contains('hidden')) {
-                        pauseAutoRefresh();
-                    } else {
-                        // Check if any other modal is still open
-                        const anyModalOpen = Array.from(modals).some(m => !m.classList.contains('hidden'));
-                        if (!anyModalOpen) {
-                            resumeAutoRefresh();
-                        }
-                    }
-                }
-            });
-        });
-        
-        observer.observe(modal, { attributes: true });
-    });
-    
-    // Pause when user is typing in search inputs
-    const searchInputs = document.querySelectorAll('input[type="text"]');
-    searchInputs.forEach(input => {
-        input.addEventListener('focus', pauseAutoRefresh);
-        input.addEventListener('blur', function() {
-            // Only resume if no modal is open
-            const anyModalOpen = Array.from(modals).some(m => !m.classList.contains('hidden'));
-            if (!anyModalOpen) {
-                resumeAutoRefresh();
-            }
-        });
-    });
-    
-    // Start auto-refresh
-    setInterval(refreshTableData, refreshInterval);
-});
-
-// Override the existing openApplicationModal to pause auto-refresh
-const originalOpenApplicationModal = window.openApplicationModal;
-window.openApplicationModal = function(applicationPersonnelId, source = 'pending') {
-    pauseAutoRefresh();
-    originalOpenApplicationModal(applicationPersonnelId, source);
-};
-
-// Override the existing closeApplicationModal to resume auto-refresh
-const originalCloseApplicationModal = window.closeApplicationModal;
-window.closeApplicationModal = function() {
-    originalCloseApplicationModal();
-    // Small delay to ensure modal is fully closed
-    setTimeout(resumeAutoRefresh, 100);
-};
-
-// Override other modal functions similarly
-const originalOpenDeleteModal = window.openDeleteModal;
-window.openDeleteModal = function(applicationPersonnelId, applicantName, isReviewedApplication = false) {
-    pauseAutoRefresh();
-    originalOpenDeleteModal(applicationPersonnelId, applicantName, isReviewedApplication);
-};
-
-const originalCloseDeleteModal = window.closeDeleteModal;
-window.closeDeleteModal = function() {
-    originalCloseDeleteModal();
-    setTimeout(resumeAutoRefresh, 100);
-};
-
-// Add similar overrides for other modal functions as needed
-</script>
+<script src="{{ asset('js/application_paginate.js') }}"></script>
+<!-- Add this with your other script includes -->
+<script src="{{ asset('js/autorefresh.js') }}"></script>
+<script src="{{ asset('js/modalautorefresh.js') }}"></script>
     </body>
     </html>
