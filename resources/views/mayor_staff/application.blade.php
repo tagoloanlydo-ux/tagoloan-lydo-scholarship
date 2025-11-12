@@ -1340,66 +1340,118 @@ function trackDocumentUpdates(applicationPersonnelId) {
                 }
             }
 
-// MODIFIED: Function to mark document as good (no reason needed)
+// MODIFIED: Function to mark document as good (WITHOUT confirmation, auto-close document viewer)
 function markDocumentAsGood(documentType) {
+    // Show loading state immediately
     Swal.fire({
-        title: 'Mark as Good?',
-        text: 'Are you sure you want to mark this document as good?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#28a745',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, Mark as Good',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Show loading state
-            Swal.fire({
-                title: 'Saving...',
-                text: 'Please wait while we save your feedback',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            // Save status without reason for good documents
-            saveDocumentStatus(documentType, 'good', '')
-            .then(() => {
-                // Track that this document has been rated
-                trackRatedDocument(documentType);
-
-                // Remove from updated documents if it was there
-                if (updatedDocuments && updatedDocuments.has(documentType)) {
-                    updatedDocuments.delete(documentType);
-                }
-
-                // Update the badge - remove NEW and show Good
-                updateDocumentBadges(documentType, 'good', false);
-
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Document marked as good.',
-                    icon: 'success',
-                    showConfirmButton: true,
-                    allowOutsideClick: false
-                });
-            })
-            .catch(error => {
-                console.error('Error saving status:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Failed to save document status. Please try again.',
-                    icon: 'error',
-                    showConfirmButton: true,
-                    allowOutsideClick: false
-                });
-            });
+        title: 'Saving...',
+        text: 'Please wait while we save your feedback',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
         }
+    });
+    
+    // Save status without reason for good documents
+    saveDocumentStatus(documentType, 'good', '')
+    .then(() => {
+        // Track that this document has been rated
+        trackRatedDocument(documentType);
+
+        // Remove from updated documents if it was there
+        if (updatedDocuments && updatedDocuments.has(documentType)) {
+            updatedDocuments.delete(documentType);
+        }
+
+        // Update the badge - remove NEW and show Good
+        updateDocumentBadges(documentType, 'good', false);
+
+        // Show success message and close document viewer when OK is clicked
+        Swal.fire({
+            title: 'Success!',
+            text: 'Document marked as good.',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            customClass: {
+                confirmButton: 'swal2-confirm-btn'
+            }
+        }).then((result) => {
+            // Close the document viewer modal when OK is clicked
+            if (result.isConfirmed) {
+                closeDocumentModal();
+                updateDocumentModalUI(documentType);
+            }
+        });
+
+    })
+    .catch(error => {
+        console.error('Error saving status:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: 'Failed to save document status. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
     });
 }
 
-// MODIFIED: Function to mark document as bad with reason input
+// MODIFIED: Function to mark document as good (WITHOUT confirmation, close document viewer only on OK click)
+function markDocumentAsGood(documentType) {
+    // Show loading state immediately
+    Swal.fire({
+        title: 'Saving...',
+        text: 'Please wait while we save your feedback',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // Save status without reason for good documents
+    saveDocumentStatus(documentType, 'good', '')
+    .then(() => {
+        // Track that this document has been rated
+        trackRatedDocument(documentType);
+
+        // Remove from updated documents if it was there
+        if (updatedDocuments && updatedDocuments.has(documentType)) {
+            updatedDocuments.delete(documentType);
+        }
+
+        // Update the badge - remove NEW and show Good
+        updateDocumentBadges(documentType, 'good', false);
+
+        // Show success message and close document viewer ONLY when OK is clicked
+        Swal.fire({
+            title: 'Success!',
+            text: 'Document marked as good.',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            customClass: {
+                confirmButton: 'swal2-confirm-btn'
+            }
+        }).then((result) => {
+            // ONLY close the document viewer modal when OK is clicked
+            if (result.isConfirmed) {
+                closeDocumentModal();
+            }
+            // Update UI regardless of OK click
+            updateDocumentModalUI(documentType);
+        });
+
+    })
+    .catch(error => {
+        console.error('Error saving status:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: 'Failed to save document status. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    });
+}
+
+// MODIFIED: Function to mark document as bad with reason input (WITH confirmation and reason, close document viewer on OK click)
 function markDocumentAsBad(documentType) {
     Swal.fire({
         title: 'Mark as Bad?',
@@ -1453,12 +1505,19 @@ function markDocumentAsBad(documentType) {
                 // Update the badge - remove NEW and show Bad
                 updateDocumentBadges(documentType, 'bad', false);
                 
+                // Show success message and close document viewer when OK is clicked
                 Swal.fire({
                     title: 'Success!',
                     text: 'Document marked as bad with reason saved.',
                     icon: 'success',
-                    showConfirmButton: true,
-                    allowOutsideClick: false
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    // Close the document viewer modal when OK is clicked
+                    if (result.isConfirmed) {
+                        closeDocumentModal();
+                    }
+                    // Update UI regardless of OK click
+                    updateDocumentModalUI(documentType);
                 });
             })
             .catch(error => {
@@ -1467,14 +1526,12 @@ function markDocumentAsBad(documentType) {
                     title: 'Error!',
                     text: 'Failed to save document status. Please try again.',
                     icon: 'error',
-                    showConfirmButton: true,
-                    allowOutsideClick: false
+                    confirmButtonText: 'OK'
                 });
             });
         }
     });
 }
-
 function saveDocumentStatus(documentType, status, reason = '') {
     const applicationPersonnelId = currentApplicationId;
 
