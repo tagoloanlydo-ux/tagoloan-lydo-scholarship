@@ -495,12 +495,18 @@
                     </div>
 
                     <!-- Documents Section -->
-                    <div class="intake-section" id="documents-section">
-                        <h3 class="intake-section-title">Documents</h3>
-                        <div id="modal-documents-container">
-                            <!-- Documents will be populated here by JavaScript -->
-                        </div>
-                    </div>
+            <div class="bg-white rounded-lg shadow-lg mb-6">
+    <div class="bg-purple-600 text-white px-6 py-4 rounded-t-lg">
+        <h3 class="text-lg font-semibold">
+            <i class="fas fa-file-alt mr-2"></i>Supporting Documents
+        </h3>
+    </div>
+    <div class="p-6">
+        <div id="modal-documents-container">
+            <!-- Documents will be dynamically inserted here -->
+        </div>
+    </div>
+</div>
 
                     <!-- Action Buttons -->
                     <div class="flex justify-end gap-4 mt-6 mb-6">
