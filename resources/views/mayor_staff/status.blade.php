@@ -518,9 +518,7 @@
             </div>
         </div>
     </div>
+<script src="{{ asset('js/status-script.js') }}"></script>
 
-    <script src="{{ asset('js/status-script.js') }}"></script>
-    <!-- Add this line after your existing script imports -->
-<script src="{{ asset('js/statusrefresh.js') }}"></script>
 </body>
 </html>
