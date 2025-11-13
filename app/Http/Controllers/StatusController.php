@@ -199,12 +199,11 @@ public function getIntakeSheet($applicationPersonnelId)
                 'head_barangay' => $appRow->applicant_brgy ?? null,
                 
                 // FIXED: Document paths - corrected to storage/document (singular)
-                'application_letter' => $appRow->application_letter ? asset('storage/document/' . $appRow->application_letter) : null,
-                'cert_of_reg' => $appRow->cert_of_reg ? asset('storage/document/' . $appRow->cert_of_reg) : null,
-                'grade_slip' => $appRow->grade_slip ? asset('storage/document/' . $appRow->grade_slip) : null,
-                'brgy_indigency' => $appRow->brgy_indigency ? asset('storage/document/' . $appRow->brgy_indigency) : null,
-                'student_id' => $appRow->student_id ? asset('storage/document/' . $appRow->student_id) : null,
-                
+                    'doc_application_letter' => $appRow->application_letter ? asset('storage/document/' . $appRow->application_letter) : null,
+    'doc_cert_reg' => $appRow->cert_of_reg ? asset('storage/document/' . $appRow->cert_of_reg) : null,
+    'doc_grade_slip' => $appRow->grade_slip ? asset('storage/document/' . $appRow->grade_slip) : null,
+    'doc_brgy_indigency' => $appRow->brgy_indigency ? asset('storage/document/' . $appRow->brgy_indigency) : null,
+    'doc_student_id' => $appRow->student_id ? asset('storage/document/' . $appRow->student_id) : null,
                 // Empty arrays - using frontend expected field names
                 'family_members' => [],
                 'social_service_records' => [],

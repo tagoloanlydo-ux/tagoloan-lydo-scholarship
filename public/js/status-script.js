@@ -443,8 +443,10 @@ function openIntakeSheetModal(id, name, type = 'intake') {
         });
 }
 
-// Document handling functions
+// Enhanced document handling functions
 function setupDocumentButtons(data) {
+    console.log('Setting up document buttons with data:', data);
+    
     // Store document URLs globally
     currentDocumentUrls = {
         application_letter: data.doc_application_letter || null,
@@ -454,28 +456,42 @@ function setupDocumentButtons(data) {
         student_id: data.doc_student_id || null
     };
 
-    // Define document order
+    // Define document order (same as mayor staff)
     const documentOrder = ['application_letter', 'cert_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
 
     // Get the documents container
     const documentsContainer = document.getElementById('modal-documents-container');
-    if (!documentsContainer) return;
+    if (!documentsContainer) {
+        console.error('Documents container not found');
+        return;
+    }
 
     // Clear existing content
     documentsContainer.innerHTML = '';
 
     // Collect available documents
-    const availableDocuments = documentOrder.filter(docType => currentDocumentUrls[docType]);
+    const availableDocuments = documentOrder.filter(docType => {
+        const hasDoc = currentDocumentUrls[docType] && currentDocumentUrls[docType] !== 'null';
+        console.log(`Document ${docType}:`, { 
+            url: currentDocumentUrls[docType], 
+            available: hasDoc 
+        });
+        return hasDoc;
+    });
+
+    console.log('Available documents:', availableDocuments);
 
     if (availableDocuments.length === 0) {
         documentsContainer.innerHTML = '<p class="text-center text-gray-500 py-8">No documents available for viewing.</p>';
         return;
     }
 
-    // Create document sections in rows
-    availableDocuments.forEach(docType => {
+    // Create document sections in rows (same layout as mayor staff)
+    availableDocuments.forEach((docType, index) => {
         const docUrl = currentDocumentUrls[docType];
         const title = documentTitles[docType];
+
+        console.log(`Creating document section for ${docType}:`, docUrl);
 
         const documentDiv = document.createElement('div');
         documentDiv.className = 'document-section mb-6 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden';
@@ -491,19 +507,28 @@ function setupDocumentButtons(data) {
                         width="100%"
                         height="500"
                         style="border: none;"
-                        title="${title}">
+                        title="${title}"
+                        onload="console.log('Document ${docType} loaded successfully')"
+                        onerror="console.error('Failed to load document ${docType}')">
                         <p class="p-4 text-center text-gray-500">Your browser does not support iframes.
                             <a href="${docUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 underline">Click here to view the document</a>
                         </p>
                     </iframe>
+                </div>
+                <div class="mt-2 flex justify-between items-center">
+                    <span class="text-sm text-gray-500">Document ${index + 1} of ${availableDocuments.length}</span>
+                    <a href="${docUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm font-medium">
+                        <i class="fas fa-external-link-alt mr-1"></i> Open in new tab
+                    </a>
                 </div>
             </div>
         `;
 
         documentsContainer.appendChild(documentDiv);
     });
-}
 
+    console.log('Document setup completed');
+}
 // Function to format date
 function formatDate(dateString) {
     if (!dateString || dateString === '-') return '-';
@@ -524,6 +549,8 @@ function formatDate(dateString) {
 function populateIntakeSheetModal(data, type = 'intake') {
     console.log('=== START POPULATE MODAL DEBUG ===');
     console.log('Full data received:', data);
+        console.log('Setting up document buttons...');
+    setupDocumentButtons(data);
     
     // Populate head of family section
     document.getElementById('modal-applicant-name').textContent = data.applicant_name || '-';
@@ -555,7 +582,7 @@ function populateIntakeSheetModal(data, type = 'intake') {
     console.log('Family Members Data:', data.family_members);
     console.log('Family Members Type:', typeof data.family_members);
     console.log('Family Members Count:', data.family_members ? data.family_members.length : 0);
-    
+       console.log('=== END POPULATE MODAL DEBUG ===');
     if (data.family_members && data.family_members.length > 0) {
         console.log('First Family Member Full Object:', data.family_members[0]);
         console.log('First Family Member Keys:', Object.keys(data.family_members[0]));
