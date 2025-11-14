@@ -29,13 +29,6 @@ header {
     flex-shrink: 0;
 }
 
-/* Content area - Scrollable */
-.flex-1.overflow-hidden.p-4.md\\:p-2.text-\\[16px\\].content-scrollable {
-    flex: 1;
-    overflow-y: auto;
-    height: 100%;
-}
-
 /* Ensure the main content container doesn't overflow */
 .bg-gray-50.min-h-screen.rounded-lg.shadow {
     min-height: 100%;

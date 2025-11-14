@@ -16,38 +16,12 @@ class LydoAdminController extends Controller
 
     public function announcement()
     {
-        $notifications = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select(
-                'tbl_applicant.applicant_fname as name',
-                'tbl_application_personnel.status as status',
-                'tbl_application_personnel.updated_at as created_at',
-                DB::raw("'application' as type")
-            )
-            ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-
-            ->unionAll(
-                DB::table('tbl_renewal')
-                    ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                    ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                    ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                    ->select(
-                        'tbl_applicant.applicant_fname as name',
-                        'tbl_renewal.renewal_status as status',
-                        'tbl_renewal.updated_at as created_at',
-                        DB::raw("'renewal' as type")
-                    )
-                    ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-            )
-            ->orderBy('created_at', 'desc')
-            ->get();
 
         $announcements = Announce::orderBy('date_posted', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('lydo_admin.announcement', compact('notifications', 'announcements'));
+        return view('lydo_admin.announcement', compact( 'announcements'));
     }
     public function updateAnnouncement(Request $request, $id)
     {
@@ -90,116 +64,120 @@ class LydoAdminController extends Controller
         \App\Models\Announce::where('announce_id', $announce_id)->delete();
         return redirect()->back()->with('success', 'Announcement deleted successfully!');
     }
-    public function index(Request $request)
-    {
-        $notifications = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select(
-                'tbl_applicant.applicant_fname as name',
-                'tbl_application_personnel.status as status',
-                'tbl_application_personnel.updated_at as created_at',
-                DB::raw("'application' as type")
-            )
-            ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-            
-            ->unionAll(
-                DB::table('tbl_renewal')
-                    ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                    ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                    ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                    ->select(
-                        'tbl_applicant.applicant_fname as name',
-                        'tbl_renewal.renewal_status as status',
-                        'tbl_renewal.updated_at as created_at',
-                        DB::raw("'renewal' as type")
-                    )
-                    ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-            )
-            ->orderBy('created_at', 'desc')
-            ->get(); 
+public function index(Request $request)
+{
 
-        // Get current academic year (use the most recent academic year from applicants)
-        $currentAcademicYear = DB::table('tbl_applicant')
-            ->select('applicant_acad_year')
-            ->orderBy('applicant_acad_year', 'desc')
-            ->value('applicant_acad_year');
+    // Get current academic year (use the most recent academic year from applicants)
+    $currentAcademicYear = DB::table('tbl_applicant')
+        ->select('applicant_acad_year')
+        ->orderBy('applicant_acad_year', 'desc')
+        ->value('applicant_acad_year');
 
-        // If no academic year found, use current year as fallback
-        if (!$currentAcademicYear) {
-            $currentAcademicYear = date('Y') . '-' . (date('Y') + 1);
-        }
-
-        // Get counts for dashboard cards
-        $totalApplicants = DB::table('tbl_applicant')
-            ->where('applicant_acad_year', $currentAcademicYear)
-            ->count();
-
-        $totalScholarsWholeYear = DB::table('tbl_scholar')
-            ->where('scholar_status', 'active')
-            ->count();
-
-        $inactiveScholars = DB::table('tbl_scholar')
-            ->where('scholar_status', 'inactive')
-            ->count();
-
-        // Get barangay distribution data
-        $barangayDistribution = DB::table('tbl_applicant')
-            ->select('applicant_brgy', DB::raw('COUNT(*) as count'))
-            ->where('applicant_acad_year', $currentAcademicYear)
-            ->groupBy('applicant_brgy')
-            ->orderBy('count', 'desc')
-            ->limit(10)
-            ->get();
-
-        // Get school distribution data
-        $schoolDistribution = DB::table('tbl_applicant')
-            ->select('applicant_school_name', DB::raw('COUNT(*) as count'))
-            ->where('applicant_acad_year', $currentAcademicYear)
-            ->groupBy('applicant_school_name')
-            ->orderBy('count', 'desc')
-            ->limit(10)
-            ->get();
-
-        return view('lydo_admin.dashboard', compact(
-            'notifications',
-            'totalApplicants',
-            'totalScholarsWholeYear',
-            'inactiveScholars',
-            'currentAcademicYear',
-            'barangayDistribution',
-            'schoolDistribution'
-        ));
+    // If no academic year found, use current year as fallback
+    if (!$currentAcademicYear) {
+        $currentAcademicYear = date('Y') . '-' . (date('Y') + 1);
     }
+
+    // Get counts for dashboard cards
+    $totalApplicants = DB::table('tbl_applicant')
+        ->where('applicant_acad_year', $currentAcademicYear)
+        ->count();
+
+    $totalScholarsWholeYear = DB::table('tbl_scholar')
+        ->where('scholar_status', 'active')
+        ->count();
+
+    $inactiveScholars = DB::table('tbl_scholar')
+        ->where('scholar_status', 'inactive')
+        ->count();
+
+    // ADDED: Count for graduated scholars
+    $graduatedScholars = DB::table('tbl_scholar')
+        ->where('scholar_status', 'graduated')
+        ->count();
+
+    // Get barangay distribution data
+    $barangayDistribution = DB::table('tbl_applicant')
+        ->select('applicant_brgy', DB::raw('COUNT(*) as count'))
+        ->where('applicant_acad_year', $currentAcademicYear)
+        ->groupBy('applicant_brgy')
+        ->orderBy('count', 'desc')
+        ->limit(10)
+        ->get();
+
+    // Get school distribution data
+    $schoolDistribution = DB::table('tbl_applicant')
+        ->select('applicant_school_name', DB::raw('COUNT(*) as count'))
+        ->where('applicant_acad_year', $currentAcademicYear)
+        ->groupBy('applicant_school_name')
+        ->orderBy('count', 'desc')
+        ->limit(10)
+        ->get();
+
+    // ADDED: Get scholar statistics per academic year for the line chart
+    $scholarStatsPerYear = $this->getScholarStatisticsPerYear();
+
+    return view('lydo_admin.dashboard', compact(
+        'totalApplicants',
+        'totalScholarsWholeYear',
+        'inactiveScholars',
+        'graduatedScholars',
+        'currentAcademicYear',
+        'barangayDistribution',
+        'schoolDistribution',
+        'scholarStatsPerYear' // ADDED: Pass scholar statistics to view
+    ));
+}
+
+// ADDED: New method to get scholar statistics per academic year
+private function getScholarStatisticsPerYear()
+{
+    // Get all unique academic years from scholars
+    $academicYears = DB::table('tbl_scholar as s')
+        ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+        ->select('a.applicant_acad_year')
+        ->distinct()
+        ->whereNotNull('a.applicant_acad_year')
+        ->orderBy('a.applicant_acad_year', 'asc')
+        ->pluck('applicant_acad_year');
+
+    $stats = [];
+
+    foreach ($academicYears as $year) {
+        $activeCount = DB::table('tbl_scholar as s')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->where('a.applicant_acad_year', $year)
+            ->where('s.scholar_status', 'active')
+            ->count();
+
+        $inactiveCount = DB::table('tbl_scholar as s')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->where('a.applicant_acad_year', $year)
+            ->where('s.scholar_status', 'inactive')
+            ->count();
+
+        $graduatedCount = DB::table('tbl_scholar as s')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->where('a.applicant_acad_year', $year)
+            ->where('s.scholar_status', 'graduated')
+            ->count();
+
+        $stats[] = [
+            'academic_year' => $year,
+            'active' => $activeCount,
+            'inactive' => $inactiveCount,
+            'graduated' => $graduatedCount
+        ];
+    }
+
+    return $stats;
+}
 public function lydo()
 {
-    $notifications = DB::table('tbl_application_personnel')
-        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-        ->select(
-            'tbl_applicant.applicant_fname as name',
-            'tbl_application_personnel.status as status',
-            'tbl_application_personnel.updated_at as created_at',
-            DB::raw("'application' as type")
-        )
-        ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-        
-        ->unionAll(
-            DB::table('tbl_renewal')
-                ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                ->select(
-                    'tbl_applicant.applicant_fname as name',
-                    'tbl_renewal.renewal_status as status',
-                    'tbl_renewal.updated_at as created_at',
-                    DB::raw("'renewal' as type")
-                )
-                ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-        )
-        ->orderBy('created_at', 'desc')
-        ->get(); 
-
     // Change from get() to paginate()
     $inactiveStaff = DB::table('tbl_lydopers')
         ->where('lydopers_role', 'lydo_staff')
@@ -212,7 +190,7 @@ public function lydo()
         ->where('lydopers_status', 'active')
         ->paginate(15); // Add pagination
 
-    return view('lydo_admin.lydo', compact('notifications', 'inactiveStaff', 'activeStaff'));
+    return view('lydo_admin.lydo', compact('inactiveStaff', 'activeStaff'));
 }
 
    
@@ -236,32 +214,6 @@ public function lydo()
 
     public function mayor()
     {
-        $notifications = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select(
-                'tbl_applicant.applicant_fname as name',
-                'tbl_application_personnel.status as status',
-                'tbl_application_personnel.updated_at as created_at',
-                DB::raw("'application' as type")
-            )
-            ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-            
-            ->unionAll(
-                DB::table('tbl_renewal')
-                    ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                    ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                    ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                    ->select(
-                        'tbl_applicant.applicant_fname as name',
-                        'tbl_renewal.renewal_status as status',
-                        'tbl_renewal.updated_at as created_at',
-                        DB::raw("'renewal' as type")
-                    )
-                    ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-            )
-            ->orderBy('created_at', 'desc')
-            ->get(); 
 
         $inactiveStaff = DB::table('tbl_lydopers')
             ->where('lydopers_role', 'mayor_staff')
@@ -273,38 +225,11 @@ public function lydo()
             ->where('lydopers_status', 'active')
             ->paginate(15, ['*'], 'active_page');
 
-        return view('lydo_admin.mayor', compact('notifications', 'inactiveStaff', 'activeStaff'));
+        return view('lydo_admin.mayor', compact( 'inactiveStaff', 'activeStaff'));
     }
 
 public function scholar(Request $request)
 {
-    $notifications = DB::table('tbl_application_personnel')
-        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-        ->select(
-            'tbl_applicant.applicant_fname as name',
-            'tbl_application_personnel.status as status',
-            'tbl_application_personnel.updated_at as created_at',
-            DB::raw("'application' as type")
-        )
-        ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-        
-        ->unionAll(
-            DB::table('tbl_renewal')
-                ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                ->select(
-                    'tbl_applicant.applicant_fname as name',
-                    'tbl_renewal.renewal_status as status',
-                    'tbl_renewal.updated_at as created_at',
-                    DB::raw("'renewal' as type")
-                )
-                ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-        )
-        ->orderBy('created_at', 'desc')
-        ->get();
-
     // Get scholars with applicant information - include both active and inactive
     $query = DB::table('tbl_scholar as s')
         ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
@@ -368,7 +293,7 @@ public function scholar(Request $request)
         ->orderBy('applicant_acad_year', 'desc')
         ->pluck('applicant_acad_year');
 
-    return view('lydo_admin.scholar', compact('notifications', 'scholars', 'barangays', 'academicYears', 'statusFilter'));
+    return view('lydo_admin.scholar', compact( 'scholars', 'barangays', 'academicYears', 'statusFilter'));
 }
     public function sendEmail(Request $request)
     {
@@ -439,32 +364,6 @@ public function scholar(Request $request)
 
 public function status()
 {
-    $notifications = DB::table('tbl_application_personnel')
-        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-        ->select(
-            'tbl_applicant.applicant_fname as name',
-            'tbl_application_personnel.status as status',
-            'tbl_application_personnel.updated_at as created_at',
-            DB::raw("'application' as type")
-        )
-        ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-
-        ->unionAll(
-            DB::table('tbl_renewal')
-                ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                ->select(
-                    'tbl_applicant.applicant_fname as name',
-                    'tbl_renewal.renewal_status as status',
-                    'tbl_renewal.updated_at as created_at',
-                    DB::raw("'renewal' as type")
-                )
-                ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-        )
-        ->orderBy('created_at', 'desc')
-        ->get();
 
     // Fetch active scholars without renewal applications
     $scholarsWithoutRenewal = DB::table('tbl_scholar as s')
@@ -520,7 +419,7 @@ public function status()
         ->orderBy('applicant_brgy', 'asc')
         ->pluck('applicant_brgy');
 
-    return view('lydo_admin.status', compact('notifications', 'scholarsWithoutRenewal', 'graduatingScholars', 'barangays'));
+    return view('lydo_admin.status', compact('scholarsWithoutRenewal', 'graduatingScholars', 'barangays'));
 }
 
 // Add new method for marking scholars as graduated
@@ -621,35 +520,6 @@ public function disbursement(Request $request)
 
         return response()->json($formattedDisbursements);
     }
-
-    $notifications = DB::table('tbl_application_personnel')
-        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-        ->select(
-            'tbl_applicant.applicant_fname as name',
-            'tbl_application_personnel.status as status',
-            'tbl_application_personnel.updated_at as created_at',
-            DB::raw("'application' as type")
-        )
-        ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-
-        ->unionAll(
-            DB::table('tbl_renewal')
-                ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                ->select(
-                    'tbl_applicant.applicant_fname as name',
-                    'tbl_renewal.renewal_status as status',
-                    'tbl_renewal.updated_at as created_at',
-                    DB::raw("'renewal' as type")
-                )
-                ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-        )
-        ->orderBy('created_at', 'desc')
-        ->get();
-
-    // Get scholars for the create form dropdown - FIXED QUERY
     $scholars = DB::table('tbl_scholar as s')
         ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
         ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
@@ -780,40 +650,13 @@ public function disbursement(Request $request)
 
     $signedDisbursements = $signedQuery->paginate(15);
 
-    return view('lydo_admin.disbursement', compact('notifications', 'disbursements', 'barangays', 'academicYears', 'semesters', 'scholars', 'signedDisbursements'));
+    return view('lydo_admin.disbursement', compact( 'disbursements', 'barangays', 'academicYears', 'semesters', 'scholars', 'signedDisbursements'));
 }
     public function settings()
     {
-        $notifications = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select(
-                'tbl_applicant.applicant_fname as name',
-                'tbl_application_personnel.status as status',
-                'tbl_application_personnel.updated_at as created_at',
-                DB::raw("'application' as type")
-            )
-            ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-
-            ->unionAll(
-                DB::table('tbl_renewal')
-                    ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                    ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                    ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                    ->select(
-                        'tbl_applicant.applicant_fname as name',
-                        'tbl_renewal.renewal_status as status',
-                        'tbl_renewal.updated_at as created_at',
-                        DB::raw("'renewal' as type")
-                    )
-                    ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-            )
-            ->orderBy('created_at', 'desc')
-            ->get();
-
         $settings = Settings::first() ?? new Settings();
 
-        return view('lydo_admin.settings', compact('notifications', 'settings'));
+        return view('lydo_admin.settings', compact('settings'));
     }
 
     public function updateDeadlines(Request $request)
@@ -892,33 +735,6 @@ public function disbursement(Request $request)
 
  public function applicants(Request $request)
 {
-    $notifications = DB::table('tbl_application_personnel')
-        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-        ->select(
-            'tbl_applicant.applicant_fname as name',
-            'tbl_application_personnel.status as status',
-            'tbl_application_personnel.updated_at as created_at',
-            DB::raw("'application' as type")
-        )
-        ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
-        
-        ->unionAll(
-            DB::table('tbl_renewal')
-                ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                ->select(
-                    'tbl_applicant.applicant_fname as name',
-                    'tbl_renewal.renewal_status as status',
-                    'tbl_renewal.updated_at as created_at',
-                    DB::raw("'renewal' as type")
-                )
-                ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-        )
-        ->orderBy('created_at', 'desc')
-        ->get();
-
       $query = DB::table('tbl_applicant')
         ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
         ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id')
@@ -971,7 +787,7 @@ public function disbursement(Request $request)
         ->orderBy('applicant_acad_year', 'desc')
         ->pluck('applicant_acad_year');
 
-    return view('lydo_admin.applicants', compact('notifications', 'applicants', 'barangays', 'academicYears', 'initialScreeningStatus'));
+    return view('lydo_admin.applicants', compact( 'applicants', 'barangays', 'academicYears', 'initialScreeningStatus'));
 }
     public function getAllFilteredApplicants(Request $request)
     {
@@ -1708,6 +1524,63 @@ public function generateApplicantsPdf(Request $request)
         \Log::error('PDF Generation Error: ' . $e->getMessage());
         return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
     }
+}
+
+public function dashboardData(Request $request)
+{
+    $currentAcademicYear = DB::table('tbl_applicant')
+        ->select('applicant_acad_year')
+        ->orderBy('applicant_acad_year', 'desc')
+        ->value('applicant_acad_year');
+
+    if (!$currentAcademicYear) {
+        $currentAcademicYear = date('Y') . '-' . (date('Y') + 1);
+    }
+
+    $totalApplicants = DB::table('tbl_applicant')
+        ->where('applicant_acad_year', $currentAcademicYear)
+        ->count();
+
+    $totalScholarsWholeYear = DB::table('tbl_scholar')
+        ->where('scholar_status', 'active')
+        ->count();
+
+    $inactiveScholars = DB::table('tbl_scholar')
+        ->where('scholar_status', 'inactive')
+        ->count();
+
+    $graduatedScholars = DB::table('tbl_scholar')
+        ->where('scholar_status', 'graduated')
+        ->count();
+
+    $barangayDistribution = DB::table('tbl_applicant')
+        ->select('applicant_brgy', DB::raw('COUNT(*) as count'))
+        ->where('applicant_acad_year', $currentAcademicYear)
+        ->groupBy('applicant_brgy')
+        ->orderBy('count', 'desc')
+        ->limit(10)
+        ->get();
+
+    $schoolDistribution = DB::table('tbl_applicant')
+        ->select('applicant_school_name', DB::raw('COUNT(*) as count'))
+        ->where('applicant_acad_year', $currentAcademicYear)
+        ->groupBy('applicant_school_name')
+        ->orderBy('count', 'desc')
+        ->limit(10)
+        ->get();
+
+    $scholarStatsPerYear = $this->getScholarStatisticsPerYear();
+
+    return response()->json([
+        'totalApplicants' => $totalApplicants,
+        'totalScholarsWholeYear' => $totalScholarsWholeYear,
+        'inactiveScholars' => $inactiveScholars,
+        'graduatedScholars' => $graduatedScholars,
+        'currentAcademicYear' => $currentAcademicYear,
+        'barangayDistribution' => $barangayDistribution,
+        'schoolDistribution' => $schoolDistribution,
+        'scholarStatsPerYear' => $scholarStatsPerYear
+    ]);
 }
 }
 

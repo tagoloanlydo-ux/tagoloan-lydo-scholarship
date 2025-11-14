@@ -100,65 +100,6 @@
             </div>
             <div class="flex items-center space-x-4">
                 <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Lydo Admin</span>
-<div class="relative">
-    <!-- 🔔 Bell Icon -->
-    <button id="notifBell" class="relative focus:outline-none">
-        <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-        @if($notifications->count() > 0)
-            <span id="notifCount"
-                class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                {{ $notifications->count() }}
-            </span>
-        @endif
-    </button>
-
-    <!-- 🔽 Dropdown -->
-    <div id="notifDropdown"
-         class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-        <div class="p-3 border-b font-semibold text-violet-600">Notifications</div>
-<ul class="max-h-60 overflow-y-auto">
-    @forelse($notifications as $notif)
-        <li class="px-4 py-2 hover:bg-gray-50 text-base border-b">
-            {{-- New Application --}}
-            @if($notif->type === 'application')
-                <p class="text-blue-600 font-medium">
-                    📝 {{ $notif->name }} submitted a new application
-                </p>
-            {{-- New Remark --}}
-            @elseif($notif->type === 'remark')
-                <p class="text-purple-600 font-medium">
-                    💬 New remark for {{ $notif->name }}:
-                    <b>{{ $notif->remarks }}</b>
-                </p>
-            @endif
-
-            {{-- Time ago --}}
-            <p class="text-xs text-gray-500">
-                {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
-            </p>
-        </li>
-    @empty
-        <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
-    @endforelse
-</ul>
-    </div>
-</div>
-
-<!-- ⚡ JS -->
-<script>
-    document.getElementById("notifBell").addEventListener("click", function () {
-        let dropdown = document.getElementById("notifDropdown");
-        dropdown.classList.toggle("hidden");
-
-        // remove badge when opened
-        let notifCount = document.getElementById("notifCount");
-        if (notifCount) {
-            notifCount.remove();
-        }
-    });
-</script>
-            </div>
-
         </header>
         <!-- Main Content -->
         <div class="flex flex-1 overflow-hidden">
@@ -325,102 +266,225 @@
                 </div>
             </div>
             <div class="flex-1 overflow-hidden p-2 md:p-5 text-[14px] overflow-y-auto">
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <!-- Current Academic Year Applicants -->
-                        <div class="bg-white rounded-xl shadow-md p-5 flex flex-col justify-between min-h-[180px]">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-600">Current Academic Year Applicants</p>
-                                    <h3 class="text-4xl font-extrabold text-indigo-600">{{ $totalApplicants }}</h3>
-                                </div>
-                                <div class="bg-indigo-100 rounded-full p-2 inline-flex items-center justify-center">
-                                    <i class="fas fa-users text-indigo-600 text-2xl"></i>
-                                </div>
+                <!-- Updated Cards Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <!-- Current Academic Year Applicants -->
+                    <div class="bg-white rounded-xl shadow-md p-5 flex flex-col justify-between min-h-[180px]">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Current Academic Year Applicants</p>
+                                <h3 class="text-4xl font-extrabold text-indigo-600">{{ $totalApplicants }}</h3>
                             </div>
-                            <div class="mt-3 text-sm bg-indigo-50 p-2 rounded-lg text-gray-600">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Applicants for {{ $currentAcademicYear }}
+                            <div class="bg-indigo-100 rounded-full p-2 inline-flex items-center justify-center">
+                                <i class="fas fa-users text-indigo-600 text-2xl"></i>
                             </div>
                         </div>
-
-                        <!-- Total Scholars -->
-                        <div class="bg-white rounded-xl shadow-md p-5 flex flex-col justify-between min-h-[180px]">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-600">Total Scholars</p>
-                                    <h3 class="text-4xl font-extrabold text-green-600">{{ $totalScholarsWholeYear }}</h3>
-                                </div>
-                                <div class="bg-green-100 rounded-full p-2 inline-flex items-center justify-center">
-                                    <i class="fas fa-graduation-cap text-green-600 text-2xl"></i>
-                                </div>
-                            </div>
-                            <div class="mt-3 text-sm bg-green-50 p-2 rounded-lg text-gray-600">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Active scholars across all years
-                            </div>
-                        </div>
-
-                        <!-- Inactive Scholars -->
-                        <div class="bg-white rounded-xl shadow-md p-5 flex flex-col justify-between min-h-[180px]">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm text-gray-600">Inactive Scholars</p>
-                                    <h3 class="text-4xl font-extrabold text-red-600">{{ $inactiveScholars }}</h3>
-                                </div>
-                                <div class="bg-red-100 rounded-full p-2 inline-flex items-center justify-center">
-                                    <i class="fas fa-user-times text-red-600 text-2xl"></i>
-                                </div>
-                            </div>
-                            <div class="mt-3 text-sm bg-red-50 p-2 rounded-lg text-gray-600">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Scholars who are currently inactive
-                            </div>
+                        <div class="mt-3 text-sm bg-indigo-50 p-2 rounded-lg text-gray-600">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Applicants for {{ $currentAcademicYear }}
                         </div>
                     </div>
 
-
-
-                    <!-- Distribution Section -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                        <!-- Barangay Distribution -->
-                        <div class="bg-white rounded-xl shadow-md p-4">
-                            <h3 class="text-lg font-semibold text-violet-700 mb-3">Top Barangays</h3>
-
-                            <div class="space-y-2 max-h-96 overflow-y-auto">
-                                @forelse($barangayDistribution as $barangay)
-                                    <div class="flex justify-between items-center p-2 bg-blue-50 rounded-lg border border-blue-100">
-                                        <span class="text-sm font-medium text-gray-700">{{ $barangay->applicant_brgy ?: 'Unknown' }}</span>
-                                        <span class="text-sm bg-blue-200 text-blue-800 px-2 py-1 rounded-full font-medium">
-                                            {{ $barangay->count }}
-                                        </span>
-                                    </div>
-                                @empty
-                                    <p class="text-gray-500 text-sm text-center py-4">No barangay data available</p>
-                                @endforelse
+                    <!-- Total Scholars -->
+                    <div class="bg-white rounded-xl shadow-md p-5 flex flex-col justify-between min-h-[180px]">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Total Scholars</p>
+                                <h3 class="text-4xl font-extrabold text-green-600">{{ $totalScholarsWholeYear }}</h3>
+                            </div>
+                            <div class="bg-green-100 rounded-full p-2 inline-flex items-center justify-center">
+                                <i class="fas fa-graduation-cap text-green-600 text-2xl"></i>
                             </div>
                         </div>
-
-                        <!-- School Distribution -->
-                        <div class="bg-white rounded-xl shadow-md p-4">
-                            <h3 class="text-lg font-semibold text-violet-700 mb-3">Top Schools</h3>
-
-                            <div class="space-y-2 max-h-96 overflow-y-auto">
-                                @forelse($schoolDistribution as $school)
-                                    <div class="flex justify-between items-center p-2 bg-green-50 rounded-lg border border-green-100">
-                                        <span class="text-sm font-medium text-gray-700">{{ $school->applicant_school_name ?: 'Unknown' }}</span>
-                                        <span class="text-sm bg-green-200 text-green-800 px-2 py-1 rounded-full font-medium">
-                                            {{ $school->count }}
-                                        </span>
-                                    </div>
-                                @empty
-                                    <p class="text-gray-500 text-sm text-center py-4">No school data available</p>
-                                @endforelse
-                            </div>
+                        <div class="mt-3 text-sm bg-green-50 p-2 rounded-lg text-gray-600">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Active scholars across all years
                         </div>
                     </div>
 
+                    <!-- Inactive Scholars -->
+                    <div class="bg-white rounded-xl shadow-md p-5 flex flex-col justify-between min-h-[180px]">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Inactive Scholars</p>
+                                <h3 class="text-4xl font-extrabold text-red-600">{{ $inactiveScholars }}</h3>
+                            </div>
+                            <div class="bg-red-100 rounded-full p-2 inline-flex items-center justify-center">
+                                <i class="fas fa-user-times text-red-600 text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-sm bg-red-50 p-2 rounded-lg text-gray-600">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Scholars who are currently inactive
+                        </div>
+                    </div>
 
+                    <!-- ADDED: Graduated Scholars Card -->
+                    <div class="bg-white rounded-xl shadow-md p-5 flex flex-col justify-between min-h-[180px]">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Graduated Scholars</p>
+                                <h3 class="text-4xl font-extrabold text-amber-600">{{ $graduatedScholars }}</h3>
+                            </div>
+                            <div class="bg-amber-100 rounded-full p-2 inline-flex items-center justify-center">
+                                <i class="fas fa-user-graduate text-amber-600 text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-sm bg-amber-50 p-2 rounded-lg text-gray-600">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Scholars who have successfully graduated
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Distribution Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <!-- Barangay Distribution -->
+                    <div class="bg-white rounded-xl shadow-md p-4">
+                        <h3 class="text-lg font-semibold text-violet-700 mb-3">Top Barangays</h3>
+                        <div class="space-y-2 max-h-96 overflow-y-auto">
+                            @forelse($barangayDistribution as $barangay)
+                                <div class="flex justify-between items-center p-2 bg-blue-50 rounded-lg border border-blue-100">
+                                    <span class="text-sm font-medium text-gray-700">{{ $barangay->applicant_brgy ?: 'Unknown' }}</span>
+                                    <span class="text-sm bg-blue-200 text-blue-800 px-2 py-1 rounded-full font-medium">
+                                        {{ $barangay->count }}
+                                    </span>
+                                </div>
+                            @empty
+                                <p class="text-gray-500 text-sm text-center py-4">No barangay data available</p>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <!-- School Distribution -->
+                    <div class="bg-white rounded-xl shadow-md p-4">
+                        <h3 class="text-lg font-semibold text-violet-700 mb-3">Top Schools</h3>
+                        <div class="space-y-2 max-h-96 overflow-y-auto">
+                            @forelse($schoolDistribution as $school)
+                                <div class="flex justify-between items-center p-2 bg-green-50 rounded-lg border border-green-100">
+                                    <span class="text-sm font-medium text-gray-700">{{ $school->applicant_school_name ?: 'Unknown' }}</span>
+                                    <span class="text-sm bg-green-200 text-green-800 px-2 py-1 rounded-full font-medium">
+                                        {{ $school->count }}
+                                    </span>
+                                </div>
+                            @empty
+                                <p class="text-gray-500 text-sm text-center py-4">No school data available</p>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADDED: Scholar Trends Line Chart Section -->
+                <div class="mt-6">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-violet-700 mb-4">Scholar Trends Per Academic Year</h3>
+                        <div class="h-80"> <!-- Fixed height for the chart -->
+                            <canvas id="scholarTrendsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+<script>
+    // Scholar Trends Line Chart
+    document.addEventListener('DOMContentLoaded', function() {
+        const scholarStats = @json($scholarStatsPerYear);
+        
+        if (scholarStats.length > 0) {
+            const academicYears = scholarStats.map(stat => stat.academic_year);
+            const activeCounts = scholarStats.map(stat => stat.active);
+            const inactiveCounts = scholarStats.map(stat => stat.inactive);
+            const graduatedCounts = scholarStats.map(stat => stat.graduated);
+
+            const ctx = document.getElementById('scholarTrendsChart').getContext('2d');
+            const scholarTrendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: academicYears,
+                    datasets: [
+                        {
+                            label: 'Active Scholars',
+                            data: activeCounts,
+                            borderColor: '#10b981', // green-500
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: false
+                        },
+                        {
+                            label: 'Inactive Scholars',
+                            data: inactiveCounts,
+                            borderColor: '#ef4444', // red-500
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            fill: false
+                        },
+                        {
+                            label: 'Graduated Scholars',
+                            data: graduatedCounts,
+                            borderColor: '#f59e0b', // amber-500
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Academic Year',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Number of Scholars',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        } else {
+            // If no data available, show message
+            document.getElementById('scholarTrendsChart').parentElement.innerHTML = 
+                '<p class="text-gray-500 text-center py-8">No scholar trend data available</p>';
+        }
+    });
+</script>
 
 <script>
     // Welcome modal using SweetAlert2 with user name and role, auto-dismiss after 4 seconds
@@ -447,6 +511,74 @@
         @endphp
     @endif
 </script>
+<!-- Palitan ito -->
+<script src="{{ asset('js/admin_dash_autorefresh.js') }}"></script>
+
+<script>
+    // Make chart globally accessible
+    let scholarTrendsChart = null;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Your existing chart initialization code
+        const scholarStats = @json($scholarStatsPerYear);
+        
+        if (scholarStats.length > 0) {
+            const academicYears = scholarStats.map(stat => stat.academic_year);
+            const activeCounts = scholarStats.map(stat => stat.active);
+            const inactiveCounts = scholarStats.map(stat => stat.inactive);
+            const graduatedCounts = scholarStats.map(stat => stat.graduated);
+
+            const ctx = document.getElementById('scholarTrendsChart').getContext('2d');
+            scholarTrendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: academicYears,
+                    datasets: [
+                        {
+                            label: 'Active Scholars',
+                            data: activeCounts,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: false
+                        },
+                        {
+                            label: 'Inactive Scholars',
+                            data: inactiveCounts,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            fill: false
+                        },
+                        {
+                            label: 'Graduated Scholars',
+                            data: graduatedCounts,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+            
+            // Make it globally accessible
+            window.scholarTrendsChart = scholarTrendsChart;
+        }
+    });
+</script>
+
+<!-- Include the auto-refresh script -->
+<script src="{{ asset('js/admin_dash_autorefresh.js') }}"></script>
 <script src="{{ asset('js/spinner.js') }}"></script>
 
 </div>
