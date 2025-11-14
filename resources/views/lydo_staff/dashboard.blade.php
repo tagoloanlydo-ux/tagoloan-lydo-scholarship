@@ -144,116 +144,23 @@
                    <!-- Navbar -->
                    <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Lydo Staff</span>
                 </div>
-<!-- Replace the notification bell section with this -->
-<div class="relative">
-    <!-- 🔔 Bell Icon -->
-    <button id="notifBell" class="relative focus:outline-none">
-        <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-        @if($notificationCount > 0)
-            <span id="notifCount"
-                class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                {{ $notificationCount }}
-            </span>
-        @endif
-    </button>
-
-    <!-- 🔽 Dropdown -->
-    <div id="notifDropdown"
-         class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-        <div class="p-3 border-b font-semibold text-violet-600 flex justify-between items-center">
-            <span>Notifications</span>
-            @if($notificationCount > 0)
-                <button id="markAllRead" class="text-xs text-blue-600 hover:text-blue-800">Mark all as read</button>
-            @endif
-        </div>
-        <ul class="max-h-60 overflow-y-auto">
-            @forelse($notifications as $notif)
-                <li class="px-4 py-2 hover:bg-gray-50 text-base border-b {{ $notif->notification_seen ? 'opacity-75' : 'bg-blue-50' }}">
-                    {{-- Only show approved applications --}}
-                    @if($notif->type === 'application' && $notif->status === 'Approved')
-                        <p class="text-blue-600 font-medium">
-                            📝 {{ $notif->name }} submitted a new application
-                        </p>
-                    {{-- New Remark --}}
-                    @elseif($notif->type === 'remark')
-                        <p class="text-purple-600 font-medium">
-                            💬 New remark for {{ $notif->name }}:
-                            <b>{{ $notif->remarks }}</b>
-                        </p>
-                    @endif
-
-                    {{-- Time ago --}}
-                    <p class="text-xs text-gray-500">
-                        {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
-                    </p>
-                </li>
-            @empty
-                <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
-            @endforelse
-        </ul>
-    </div>
-</div>
-
-<!-- Add this script section -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const notifBell = document.getElementById("notifBell");
-        const notifDropdown = document.getElementById("notifDropdown");
-        const notifCount = document.getElementById("notifCount");
-        const markAllRead = document.getElementById("markAllRead");
-
-        // Play graduation sound if needed
-        @if($playGraduationSound)
-            const audio = new Audio('{{ asset('sounds/notification.wav') }}');
-            audio.play().catch(e => console.log('Audio play failed:', e));
-        @endif
-
-        notifBell.addEventListener("click", function () {
-            notifDropdown.classList.toggle("hidden");
-
-            // Remove badge and mark as read when opened
-            if (notifCount) {
-                notifCount.remove();
-                
-                // Mark notifications as seen via AJAX
-                fetch('/lydo_admin/mark-notifications-seen', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
-                });
-            }
-        });
-
-        // Mark all as read button
-        if (markAllRead) {
-            markAllRead.addEventListener('click', function() {
-                if (notifCount) {
-                    notifCount.remove();
-                }
-                
-                fetch('/lydo_admin/mark-notifications-seen', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
-                }).then(() => {
-                    // Reload to update the list
-                    location.reload();
-                });
-            });
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!notifBell.contains(event.target) && !notifDropdown.contains(event.target)) {
-                notifDropdown.classList.add('hidden');
-            }
-        });
-    });
-</script>      
+                <div class="relative">
+                    <button id="notifBell" class="relative focus:outline-none">
+                        <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
+                        @if($badgeCount > 0)
+                            <span id="notifCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
+                                {{ $badgeCount }}
+                            </span>
+                        @endif
+                    </button>
+                    <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                        <div class="p-3 border-b font-semibold text-gray-700">Notifications</div>
+                        <ul class="max-h-60 overflow-y-auto"> @forelse($notifications as $notif) <li class="px-4 py-2 hover:bg-gray-50 text-sm border-b"> @if($notif->initial_screening == 'Approved') <p class="text-green-600 font-medium"> ✅ {{ $notif->name }} passed initial screening </p> @elseif($notif->status == 'Renewed') <p class="text-blue-600 font-medium"> 🔄 {{ $notif->name }} submitted renewal </p> @endif <p class="text-xs text-gray-500">
+                                    {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
+                                </p>
+                            </li> @empty <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li> @endforelse </ul>
+                    </div>
+                </div>         
             </div>
         </header>
         
