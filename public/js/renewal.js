@@ -349,9 +349,6 @@ function updateRenewalDocumentBadge(documentType, status) {
     }
 }
 
-
-
-// Function to check if any document has "New" status and hide action buttons
 function checkForNewDocumentStatus() {
     const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
     const actionButtons = document.getElementById('actionButtons');
@@ -367,17 +364,14 @@ function checkForNewDocumentStatus() {
         }
     });
     
-    // Hide action buttons if any document has "New" status
+    // DON'T hide action buttons completely - just show appropriate ones
     if (hasNewStatus) {
-        if (actionButtons) {
-            actionButtons.style.display = 'none';
-        }
-        console.log('Action buttons hidden due to NEW document status');
+        console.log('Documents have NEW status - showing appropriate buttons');
+        // Let checkAllRenewalDocumentsRated handle which buttons to show
     } else {
         console.log('No NEW document status found');
     }
 }
-
 // Enhanced loadRenewalDocumentStatuses function with NEW status check
 function loadRenewalDocumentStatuses(renewalId) {
     console.log('Loading document statuses for renewal:', renewalId);
@@ -471,60 +465,313 @@ function refreshDocumentStatuses(renewalId) {
     loadRenewalDocumentStatuses(renewalId);
 }
 
-// Enhanced checkAllRenewalDocumentsRated function with accurate counting
 function checkAllRenewalDocumentsRated() {
     const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
     
-    // First check if any document has "New" status
-    let hasNewStatus = false;
+    // Count documents by status
+    let goodCount = 0;
+    let badCount = 0;
+    let newCount = 0;
+    let unratedCount = 0;
+    
     documentTypes.forEach(docType => {
-        if (renewalDocumentStatuses[docType] && renewalDocumentStatuses[docType].toString().toLowerCase() === 'new') {
-            hasNewStatus = true;
-        }
+        const status = renewalDocumentStatuses[docType] ? renewalDocumentStatuses[docType].toString().toLowerCase() : '';
+        
+        if (status === 'good') goodCount++;
+        else if (status === 'bad') badCount++;
+        else if (status === 'new') newCount++;
+        else unratedCount++;
     });
     
-    // If any document has "New" status, hide action buttons and return
-    if (hasNewStatus) {
-        const actionButtons = document.getElementById('actionButtons');
-        if (actionButtons) {
-            actionButtons.style.display = 'none';
-        }
-        console.log('Action buttons hidden - documents have NEW status');
+    console.log(`Status counts - Good: ${goodCount}, Bad: ${badCount}, New: ${newCount}, Unrated: ${unratedCount}`);
+    
+    // Show action buttons if at least one document is rated
+    const actionButtons = document.getElementById('actionButtons');
+    if (goodCount + badCount > 0) {
+        actionButtons.style.display = 'flex';
+        updateRenewalActionButtons(goodCount, badCount, newCount);
+    } else {
+        actionButtons.style.display = 'none';
+    }
+}
+function updateRenewalActionButtons(goodCount, badCount, newCount = 0) {
+    console.log(`Good: ${goodCount}, Bad: ${badCount}, New: ${newCount}`);
+
+    const actionButtons = document.getElementById('actionButtons');
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
+    const approveBtn = document.getElementById('approveBtn');
+    const rejectBtn = document.getElementById('rejectBtn');
+
+    actionButtons.style.display = 'flex';
+
+    const totalDocuments = 3;
+    const allGood = goodCount === totalDocuments;
+    const hasBadDocuments = badCount > 0;
+    const hasNewDocuments = newCount > 0;
+    
+    if (allGood) {
+        // ALL DOCUMENTS ARE GOOD - Show ONLY APPROVE button
+        sendEmailBtn.style.display = 'none';
+        approveBtn.style.display = 'flex';
+        rejectBtn.style.display = 'none';
+        console.log('All documents good - showing ONLY Approve button');
+    } else if (hasBadDocuments) {
+        // HAS BAD DOCUMENTS - Show Send Email and Reject buttons
+        sendEmailBtn.style.display = 'flex';
+        approveBtn.style.display = 'none';
+        rejectBtn.style.display = 'flex';
+        console.log('Bad documents found - showing Send Email and Reject buttons');
+    } else if (hasNewDocuments) {
+        // HAS NEW DOCUMENTS - Show both buttons but Approve might be disabled
+        sendEmailBtn.style.display = 'none';
+        approveBtn.style.display = 'flex';
+        rejectBtn.style.display = 'flex';
+        console.log('New documents found - showing both buttons');
+    } else {
+        // MIXED or NOT ALL RATED - Show both Approve and Reject buttons
+        sendEmailBtn.style.display = 'none';
+        approveBtn.style.display = 'flex';
+        rejectBtn.style.display = 'flex';
+        console.log('Mixed status - showing both Approve and Reject buttons');
+    }
+}
+
+function updateRenewalStatus(renewalId, status) {
+    console.log('Updating renewal status:', { renewalId, status });
+    
+    if (!renewalId) {
+        console.error('No renewal ID provided');
+        Swal.fire('Error', 'Renewal ID not found. Please try again.', 'error');
         return;
     }
-    
-    // Check if all documents are rated (have 'good' or 'bad' status)
-    const allRated = documentTypes.every(docType => 
-        renewalDocumentStatuses[docType] && 
-        ['good', 'bad'].includes(renewalDocumentStatuses[docType].toString().toLowerCase())
-    );
-    
-    if (allRated) {
-        // Count good and bad documents accurately
-        let goodCount = 0;
-        let badCount = 0;
-        
-        documentTypes.forEach(docType => {
-            const status = renewalDocumentStatuses[docType].toString().toLowerCase();
-            if (status === 'good') {
-                goodCount++;
-            } else if (status === 'bad') {
-                badCount++;
+
+    // Show loading state
+    const approveBtn = document.getElementById('approveBtn');
+    const rejectBtn = document.getElementById('rejectBtn');
+    const approveText = document.getElementById('approveText');
+    const rejectText = document.getElementById('rejectText');
+    const approveSpinner = document.getElementById('approveSpinner');
+    const rejectSpinner = document.getElementById('rejectSpinner');
+
+    if (status === 'Approved') {
+        approveText.textContent = 'Approving...';
+        approveSpinner.classList.remove('hidden');
+        approveBtn.disabled = true;
+    } else {
+        rejectText.textContent = 'Rejecting...';
+        rejectSpinner.classList.remove('hidden');
+        rejectBtn.disabled = true;
+    }
+
+    // Prepare request data
+    const requestData = {
+        renewal_status: status
+    };
+
+    // If rejecting, ask for reason
+    if (status === 'Rejected') {
+        Swal.fire({
+            title: 'Reason for Rejection',
+            input: 'textarea',
+            inputLabel: 'Please provide the reason for rejection:',
+            inputPlaceholder: 'Enter reason here...',
+            inputAttributes: {
+                'aria-label': 'Enter reason for rejection'
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Submit Rejection',
+            cancelButtonText: 'Cancel',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Please provide a reason for rejection';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                requestData.reason = result.value;
+                submitStatusUpdate(renewalId, requestData, status);
+            } else {
+                // Reset buttons if cancelled
+                resetButtons();
             }
         });
-        
-        console.log(`All documents rated - Good: ${goodCount}, Bad: ${badCount}`);
-        
-        // Update action buttons based on document ratings
-        updateRenewalActionButtons(goodCount, badCount);
     } else {
-        console.log(`Not all documents rated: ${ratedRenewalDocuments.size}/3`);
-        // Hide action buttons if not all documents are rated
-        const actionButtons = document.getElementById('actionButtons');
-        if (actionButtons) {
-            actionButtons.style.display = 'none';
-        }
+        // For approval, submit directly
+        submitStatusUpdate(renewalId, requestData, status);
     }
+}
+
+// Add this function to handle sending correction request emails
+function sendEmailForBadDocuments() {
+    console.log('Sending email for bad documents...');
+    
+    if (!selectedRenewalId) {
+        console.error('No renewal ID selected');
+        Swal.fire('Error', 'No renewal application selected.', 'error');
+        return;
+    }
+
+    // Get all bad documents
+    const badDocuments = [];
+    const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
+    
+    documentTypes.forEach(docType => {
+        const status = renewalDocumentStatuses[docType];
+        if (status && status.toString().toLowerCase() === 'bad') {
+            badDocuments.push(docType);
+        }
+    });
+
+    if (badDocuments.length === 0) {
+        Swal.fire('Info', 'No documents marked as bad to send correction request for.', 'info');
+        return;
+    }
+
+    console.log('Bad documents found:', badDocuments);
+
+    // Show loading state
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
+    const sendEmailText = document.getElementById('sendEmailText');
+    const sendEmailSpinner = document.getElementById('sendEmailSpinner');
+    
+    if (sendEmailText) sendEmailText.textContent = 'Sending...';
+    if (sendEmailSpinner) sendEmailSpinner.classList.remove('hidden');
+    if (sendEmailBtn) sendEmailBtn.disabled = true;
+
+    // Send request to server
+    fetch('/lydo_staff/send-email-for-bad-documents', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken()
+        },
+        body: JSON.stringify({
+            renewal_id: selectedRenewalId,
+            bad_documents: badDocuments
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Email send response:', data);
+        
+        if (data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Correction request email sent successfully.',
+                icon: 'success',
+                confirmButtonColor: '#10b981'
+            }).then(() => {
+                // Optionally close the modal or refresh
+                closeApplicationModal();
+                location.reload();
+            });
+        } else {
+            throw new Error(data.message || 'Failed to send email');
+        }
+    })
+    .catch(error => {
+        console.error('Error sending correction email:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: 'Failed to send correction request: ' + error.message,
+            icon: 'error',
+            confirmButtonColor: '#ef4444'
+        });
+    })
+    .finally(() => {
+        // Reset button state
+        if (sendEmailText) sendEmailText.textContent = 'Send Correction Request';
+        if (sendEmailSpinner) sendEmailSpinner.classList.add('hidden');
+        if (sendEmailBtn) sendEmailBtn.disabled = false;
+    });
+}
+
+function submitStatusUpdate(renewalId, requestData, status) {
+    console.log('Submitting status update:', { renewalId, requestData, status });
+    
+    fetch(`/lydo_staff/update-renewal-status/${renewalId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken()
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: `Renewal ${status.toLowerCase()} successfully.`,
+                icon: 'success',
+                confirmButtonColor: '#10b981'
+            }).then(() => {
+                // Close modal and refresh page
+                closeApplicationModal();
+                location.reload();
+            });
+        } else {
+            throw new Error(data.message || 'Failed to update status');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating renewal status:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: 'Failed to update renewal status: ' + error.message,
+            icon: 'error',
+            confirmButtonColor: '#ef4444'
+        });
+    })
+    .finally(() => {
+        // Reset buttons
+        resetButtons();
+    });
+}
+
+function resetButtons() {
+    const approveText = document.getElementById('approveText');
+    const rejectText = document.getElementById('rejectText');
+    const approveSpinner = document.getElementById('approveSpinner');
+    const rejectSpinner = document.getElementById('rejectSpinner');
+    const approveBtn = document.getElementById('approveBtn');
+    const rejectBtn = document.getElementById('rejectBtn');
+    
+    if (approveText) approveText.textContent = 'Approve';
+    if (rejectText) rejectText.textContent = 'Reject';
+    if (approveSpinner) approveSpinner.classList.add('hidden');
+    if (rejectSpinner) rejectSpinner.classList.add('hidden');
+    if (approveBtn) approveBtn.disabled = false;
+    if (rejectBtn) rejectBtn.disabled = false;
+}
+
+// Enhanced CSRF token function
+function getCsrfToken() {
+    // Try meta tag first
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) {
+        const token = meta.getAttribute('content');
+        if (token) return token;
+    }
+    
+    // Try hidden input as fallback
+    const input = document.querySelector('input[name="_token"]');
+    if (input) return input.value;
+    
+    console.error('CSRF token not found');
+    return '';
 }
 
 // Fixed markRenewalDocumentAsGood function - success message stays until OK is clicked
@@ -844,12 +1091,9 @@ function loadRenewalDocumentComment(documentType) {
 }
 
 
+function updateRenewalActionButtons(goodCount, badCount, newCount = 0) {
+    console.log(`Good: ${goodCount}, Bad: ${badCount}, New: ${newCount}`);
 
-// Update action buttons based on document ratings - ONLY APPROVE BUTTON if all good
-function updateRenewalActionButtons(goodCount, badCount) {
-    console.log(`Good: ${goodCount}, Bad: ${badCount}`);
-
-    // Show action buttons
     const actionButtons = document.getElementById('actionButtons');
     const sendEmailBtn = document.getElementById('sendEmailBtn');
     const approveBtn = document.getElementById('approveBtn');
@@ -857,14 +1101,10 @@ function updateRenewalActionButtons(goodCount, badCount) {
 
     actionButtons.style.display = 'flex';
 
-    // NEW LOGIC: 
-    // - If ALL documents are good (goodCount === 3), show ONLY APPROVE button
-    // - If there are bad documents (badCount > 0), show Send Email and Reject buttons
-    // - If mixed (some good, some not rated yet), show both Approve and Reject
-    
     const totalDocuments = 3;
     const allGood = goodCount === totalDocuments;
     const hasBadDocuments = badCount > 0;
+    const hasNewDocuments = newCount > 0;
     
     if (allGood) {
         // ALL DOCUMENTS ARE GOOD - Show ONLY APPROVE button
@@ -878,6 +1118,12 @@ function updateRenewalActionButtons(goodCount, badCount) {
         approveBtn.style.display = 'none';
         rejectBtn.style.display = 'flex';
         console.log('Bad documents found - showing Send Email and Reject buttons');
+    } else if (hasNewDocuments) {
+        // HAS NEW DOCUMENTS - Show both buttons but Approve might be disabled
+        sendEmailBtn.style.display = 'none';
+        approveBtn.style.display = 'flex';
+        rejectBtn.style.display = 'flex';
+        console.log('New documents found - showing both buttons');
     } else {
         // MIXED or NOT ALL RATED - Show both Approve and Reject buttons
         sendEmailBtn.style.display = 'none';
@@ -886,7 +1132,6 @@ function updateRenewalActionButtons(goodCount, badCount) {
         console.log('Mixed status - showing both Approve and Reject buttons');
     }
 }
-
 // Update document modal UI based on current status
 function updateRenewalDocumentModalUI(documentType) {
     const status = renewalDocumentStatuses[documentType];

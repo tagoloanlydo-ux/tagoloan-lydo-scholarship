@@ -501,8 +501,7 @@
             <div id="applicationContent" class="p-6 space-y-6">
                 <!-- Dynamic content will be loaded here -->
             </div>
-
- <div class="flex justify-between items-center gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+<div class="flex justify-between items-center gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
     <div class="flex gap-3" id="actionButtons" style="display: none;">
         <button onclick="updateRenewalStatus(selectedRenewalId, 'Approved')"
                 class="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2"
@@ -528,11 +527,11 @@
             </div>
         </button>
         
-        <!-- Add Send Email Button -->
+        <!-- FIXED: Add Send Email Button with proper onclick handler -->
         <button onclick="sendEmailForBadDocuments()"
                 class="px-5 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition flex items-center gap-2"
                 id="sendEmailBtn" style="display: none;">
-            <span id="sendEmailText">Send Correction Request</span>
+            <span id="sendEmailText">Send Email</span>
             <div id="sendEmailSpinner" class="hidden">
                 <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
