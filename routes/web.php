@@ -48,8 +48,7 @@ Route::middleware(['role:lydo_admin'])->group(function () {
 
     Route::get('/lydo-admin/search', [LydoAdminController::class, 'search'])->name('LydoAdmin.search');
     Route::get('/applicants/search', [LydoAdminController::class, 'ajaxSearchApplicants'])->name('applicants.ajaxSearch');
-
-
+    Route::post('/lydo_admin/mark-graduated', [LydoAdminController::class, 'markAsGraduated'])->name('LydoAdmin.markAsGraduated');
     Route::get('/lydo_admin/dashboard', [LydoAdminController::class, 'index'])->name('LydoAdmin.dashboard');
     Route::get('/lydo_admin/lydo', [LydoAdminController::class, 'lydo'])->name('LydoAdmin.lydo');
     Route::get('/lydo_admin/mayor', [LydoAdminController::class, 'mayor'])->name('LydoAdmin.mayor');

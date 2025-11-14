@@ -435,69 +435,112 @@ public function scholar(Request $request)
         }
     }
 
-    public function status()
-    {
-        $notifications = DB::table('tbl_application_personnel')
-            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
-            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-            ->select(
-                'tbl_applicant.applicant_fname as name',
-                'tbl_application_personnel.status as status',
-                'tbl_application_personnel.updated_at as created_at',
-                DB::raw("'application' as type")
-            )
-            ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
+ // Sa LydoAdminController.php - i-update ang status method
 
-            ->unionAll(
-                DB::table('tbl_renewal')
-                    ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
-                    ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
-                    ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
-                    ->select(
-                        'tbl_applicant.applicant_fname as name',
-                        'tbl_renewal.renewal_status as status',
-                        'tbl_renewal.updated_at as created_at',
-                        DB::raw("'renewal' as type")
-                    )
-                    ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
-            )
-            ->orderBy('created_at', 'desc')
-            ->get();
+public function status()
+{
+    $notifications = DB::table('tbl_application_personnel')
+        ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
+        ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+        ->select(
+            'tbl_applicant.applicant_fname as name',
+            'tbl_application_personnel.status as status',
+            'tbl_application_personnel.updated_at as created_at',
+            DB::raw("'application' as type")
+        )
+        ->whereIn('tbl_application_personnel.status', ['Approved', 'Rejected'])
 
-        // Fetch active scholars without renewal applications
-        $scholarsWithoutRenewal = DB::table('tbl_scholar as s')
-            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
-            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-            ->leftJoin('tbl_renewal as r', 's.scholar_id', '=', 'r.scholar_id')
-->select(
-    's.scholar_id',
-    's.scholar_status',
-    'a.applicant_fname',
-    'a.applicant_mname',
-    'a.applicant_lname',
-    'a.applicant_suffix',
-    'a.applicant_email',
-    'a.applicant_contact_number',
-    'a.applicant_school_name',
-    'a.applicant_course',
-    'a.applicant_year_level',
-      'a.applicant_brgy',
-    DB::raw("CONCAT(a.applicant_fname, ' ', a.applicant_lname) as full_name")
-)
-            ->where('s.scholar_status', 'active')
+        ->unionAll(
+            DB::table('tbl_renewal')
+                ->join('tbl_scholar', 'tbl_renewal.scholar_id', '=', 'tbl_scholar.scholar_id')
+                ->join('tbl_application', 'tbl_scholar.application_id', '=', 'tbl_application.application_id')
+                ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+                ->select(
+                    'tbl_applicant.applicant_fname as name',
+                    'tbl_renewal.renewal_status as status',
+                    'tbl_renewal.updated_at as created_at',
+                    DB::raw("'renewal' as type")
+                )
+                ->whereIn('tbl_renewal.renewal_status', ['Approved', 'Rejected'])
+        )
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    // Fetch active scholars without renewal applications
+    $scholarsWithoutRenewal = DB::table('tbl_scholar as s')
+        ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+        ->leftJoin('tbl_renewal as r', 's.scholar_id', '=', 'r.scholar_id')
+        ->select(
+            's.scholar_id',
+            's.scholar_status',
+            'a.applicant_fname',
+            'a.applicant_mname',
+            'a.applicant_lname',
+            'a.applicant_suffix',
+            'a.applicant_email',
+            'a.applicant_contact_number',
+            'a.applicant_school_name',
+            'a.applicant_course',
+            'a.applicant_year_level',
+            'a.applicant_brgy',
+            DB::raw("CONCAT(a.applicant_fname, ' ', a.applicant_lname) as full_name")
+        )
+        ->where('s.scholar_status', 'active')
         ->whereNull('r.renewal_id')
         ->paginate(15);
 
-        // Get distinct barangays for filter dropdown
-        $barangays = DB::table('tbl_applicant')
-            ->select('applicant_brgy')
-            ->distinct()
-            ->orderBy('applicant_brgy', 'asc')
-            ->pluck('applicant_brgy');
+    // Fetch graduating scholars (4th Year and 5th Year)
+    $graduatingScholars = DB::table('tbl_scholar as s')
+        ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+        ->select(
+            's.scholar_id',
+            's.scholar_status',
+            'a.applicant_fname',
+            'a.applicant_mname',
+            'a.applicant_lname',
+            'a.applicant_suffix',
+            'a.applicant_email',
+            'a.applicant_contact_number',
+            'a.applicant_school_name',
+            'a.applicant_course',
+            'a.applicant_year_level',
+            'a.applicant_brgy',
+            DB::raw("CONCAT(a.applicant_fname, ' ', a.applicant_lname) as full_name")
+        )
+        ->where('s.scholar_status', 'active')
+        ->whereIn('a.applicant_year_level', ['4th Year', '5th Year'])
+        ->paginate(15);
 
-    return view('lydo_admin.status', compact('notifications', 'scholarsWithoutRenewal', 'barangays'));
-    }
+    // Get distinct barangays for filter dropdown
+    $barangays = DB::table('tbl_applicant')
+        ->select('applicant_brgy')
+        ->distinct()
+        ->orderBy('applicant_brgy', 'asc')
+        ->pluck('applicant_brgy');
 
+    return view('lydo_admin.status', compact('notifications', 'scholarsWithoutRenewal', 'graduatingScholars', 'barangays'));
+}
+
+// Add new method for marking scholars as graduated
+public function markAsGraduated(Request $request)
+{
+    $request->validate([
+        'selected_graduating_scholars' => 'required|array',
+        'selected_graduating_scholars.*' => 'exists:tbl_scholar,scholar_id'
+    ]);
+
+    DB::table('tbl_scholar')
+        ->whereIn('scholar_id', $request->selected_graduating_scholars)
+        ->update([
+            'scholar_status' => 'graduated',
+            'date_graduated' => now(),
+            'updated_at' => now()
+        ]);
+
+    return redirect()->back()->with('success', 'Scholars marked as graduated successfully!');
+}
     public function updateScholarStatus(Request $request)
     {
         $request->validate([

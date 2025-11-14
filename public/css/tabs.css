@@ -1,0 +1,104 @@
+/* Unified Tab Styling for Screening and Renewal Pages */
+
+:root {
+    --tab-primary-color: #7c3aed;
+    --tab-primary-dark: #6d28d9;
+    --tab-primary-light: #a78bfa;
+    --tab-green-color: #10b981;
+    --tab-green-dark: #059669;
+    --tab-green-light: #a7f3d0;
+    --tab-text-secondary: #64748b;
+    --tab-background-light: #f8fafc;
+    --tab-background-white: #ffffff;
+}
+
+/* Base Tab Styles */
+.tab {
+    cursor: pointer;
+    padding: 14px 28px;
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background: linear-gradient(145deg, var(--tab-background-white), var(--tab-background-light));
+    color: var(--tab-text-secondary);
+    border: 2px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    position: relative;
+    overflow: hidden;
+}
+
+.tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.tab:hover::before {
+    left: 100%;
+}
+
+/* Active Tab States */
+.tab.active {
+    background: linear-gradient(135deg, var(--tab-primary-color), var(--tab-primary-dark));
+    color: white;
+    border-color: var(--tab-primary-color);
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px) scale(1.02);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.tab.tab-green.active {
+    background: linear-gradient(135deg, var(--tab-green-color), var(--tab-green-dark));
+    color: white;
+    border-color: var(--tab-green-color);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px) scale(1.02);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover Effects */
+.tab:hover:not(.active) {
+    background: linear-gradient(145deg, #f1f5f9, #e2e8f0);
+    border-color: var(--tab-primary-light);
+    color: var(--tab-primary-color);
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.tab.tab-green:hover:not(.active) {
+    background: linear-gradient(145deg, var(--tab-green-light), #a7f3d0);
+    border-color: var(--tab-green-color);
+    color: #065f46;
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Active State for Click */
+.tab:active {
+    transform: translateY(0) scale(0.98);
+    transition: all 0.1s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tab {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tab {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
