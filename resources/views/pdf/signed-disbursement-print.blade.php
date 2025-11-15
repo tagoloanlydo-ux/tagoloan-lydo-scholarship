@@ -273,7 +273,6 @@
                     <th width="80">Semester</th>
                     <th width="80">Academic Year</th>
                     <th width="80">Amount</th>
-                    <th width="100">Date</th>
                     <th width="80">Signature</th>
                 </tr>
             </thead>
@@ -286,7 +285,7 @@
                     <td>{{ $disburse->applicant_brgy }}</td>
                     <td>{{ $disburse->disburse_semester }}</td>
                     <td>{{ $disburse->disburse_acad_year }}</td>
-                    <td class="amount">PHP {{ number_format($disburse->disburse_amount, 2) }}</td>                    <td>{{ \Carbon\Carbon::parse($disburse->disburse_date)->format('F d, Y') }}</td>                    <td>
+                    <td class="amount">PHP {{ number_format($disburse->disburse_amount, 2) }}</td>                           
                         @if($disburse->disburse_signature)
                             <img src="{{ $disburse->disburse_signature }}" class="signature-img" alt="Signature">
                         @else
