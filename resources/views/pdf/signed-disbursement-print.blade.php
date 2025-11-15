@@ -31,7 +31,7 @@
             max-width: none;
             background: #fff;
             margin: 0 auto;
-            padding: 0;
+            padding: 0 20px; /* Added equal padding left and right */
         }
 
         /* HEADER TABLE (3-column layout) */
@@ -119,7 +119,6 @@
         .table-container {
             width: 100%;
             margin: 20px 0;
-            padding: 0 15px; /* Equal left and right padding */
         }
 
         /* DATA TABLE - Optimized for landscape */
@@ -204,7 +203,7 @@
             padding: 60px 20px;
             background: #f8f9fa;
             border-radius: 8px;
-            margin: 30px 15px; /* Equal left and right margins */
+            margin: 30px 0; /* Equal margins */
             border: 1px solid #dee2e6;
         }
 
@@ -228,7 +227,7 @@
 
         /* FOOTER */
         .footer {
-            margin: 40px 15px 0 15px; /* Equal left and right margins */
+            margin: 40px 0 0 0; /* Equal margins */
             text-align: center;
             font-size: 11px;
             color: #6c757d;
@@ -263,18 +262,10 @@
             }
             .container {
                 width: 100%;
+                padding: 0 15px; /* Equal padding for print */
             }
             .data-table {
                 font-size: 10px;
-            }
-            .table-container {
-                padding: 0 10px; /* Balanced padding for print */
-            }
-            .footer {
-                margin: 40px 10px 0 10px; /* Balanced margins for print */
-            }
-            .no-data {
-                margin: 30px 10px; /* Balanced margins for print */
             }
         }
     </style>
