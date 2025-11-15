@@ -267,12 +267,12 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th width="40">#</th>
+                    <th width="20">#</th>
                     <th width="100">Scholar Name</th>
-                    <th width="90">Barangay</th>
-                    <th width="90">Semester</th>
-                    <th width="90">Academic Year</th>
-                    <th width="90">Amount</th>
+                    <th width="80">Barangay</th>
+                    <th width="80">Semester</th>
+                    <th width="80">Academic Year</th>
+                    <th width="80">Amount</th>
                     <th width="100">Date</th>
                     <th width="80">Signature</th>
                 </tr>
