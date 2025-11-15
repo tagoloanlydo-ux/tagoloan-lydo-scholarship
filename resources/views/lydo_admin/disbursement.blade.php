@@ -310,7 +310,18 @@
                 </select>
                 <p class="text-xs text-gray-500 mt-1">Select a barangay to filter scholars</p>
             </div>
-
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter Scholars by Academic Year</label>
+                    <select id="academicYearFilter" name="scholar_academic_year" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500">
+                        <option value="">All Academic Years</option>
+                        @foreach($scholarAcademicYears as $year)
+                            <option value="{{ $year }}" {{ request('scholar_academic_year') == $year ? 'selected' : '' }}>
+                                {{ $year }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Select academic year to filter scholars</p>
+                </div>
             <!-- Amount -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Amount (₱)</label>
@@ -363,26 +374,31 @@
             <div class="relative">
                 <div class="border border-gray-300 rounded-lg bg-white shadow-sm" style="height: 280px; overflow-y: auto;">
                     <table class="w-full">
-                        <thead class="bg-gray-50 sticky top-0">
-                            <tr>
-                                <th class="w-8 px-4 py-2">
-                                    <input type="checkbox" id="selectAllCheckbox" class="rounded border-gray-300 text-violet-600 focus:ring-violet-500">
-                                </th>
-                                <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Name</th>
-                                <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Barangay</th>
+                      <!-- Update the table header -->
+                    <thead class="bg-gray-50 sticky top-0">
+                        <tr>
+                            <th class="w-8 px-4 py-2">
+                                <input type="checkbox" id="selectAllCheckbox" class="rounded border-gray-300 text-violet-600 focus:ring-violet-500">
+                            </th>
+                            <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Name</th>
+                            <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Barangay</th>
+                            <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Academic Year</th> <!-- Add this column -->
+                        </tr>
+                    </thead>
+
+                    <!-- Update the table body -->
+                    <tbody id="scholarTableBody" class="divide-y divide-gray-200">
+                        @foreach($scholars as $scholar)
+                            <tr class="hover:bg-gray-50 scholar-row" data-scholar-id="{{ $scholar->scholar_id }}">
+                                <td class="px-4 py-2">
+                                    <input type="checkbox" name="scholar_ids[]" value="{{ $scholar->scholar_id }}" class="scholar-checkbox rounded border-gray-300 text-violet-600 focus:ring-violet-500">
+                                </td>
+                                <td class="px-4 py-2 text-sm text-gray-900">{{ $scholar->full_name }}</td>
+                                <td class="px-4 py-2 text-sm text-gray-500">{{ $scholar->applicant_brgy }}</td>
+                                <td class="px-4 py-2 text-sm text-gray-500">{{ $scholar->applicant_acad_year }}</td> <!-- Add this column -->
                             </tr>
-                        </thead>
-                        <tbody id="scholarTableBody" class="divide-y divide-gray-200">
-                            @foreach($scholars as $scholar)
-                                <tr class="hover:bg-gray-50 scholar-row" data-scholar-id="{{ $scholar->scholar_id }}">
-                                    <td class="px-4 py-2">
-                                        <input type="checkbox" name="scholar_ids[]" value="{{ $scholar->scholar_id }}" class="scholar-checkbox rounded border-gray-300 text-violet-600 focus:ring-violet-500">
-                                    </td>
-                                    <td class="px-4 py-2 text-sm text-gray-900">{{ $scholar->full_name }}</td>
-                                    <td class="px-4 py-2 text-sm text-gray-500">{{ $scholar->applicant_brgy }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
+                        @endforeach
+                    </tbody>
                     </table>
                 </div>
             </div>
@@ -434,7 +450,6 @@
                         @endforeach
                     </select>
                 </div>
-
                 <!-- Academic Year -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Academic Year</label>
@@ -844,6 +859,90 @@
             });
         }
 
+// Add event listeners to semester and academic year fields
+document.querySelector('select[name="semester"]').addEventListener('change', loadScholarsWithoutDuplicates);
+document.querySelector('input[name="academic_year"]').addEventListener('change', loadScholarsWithoutDuplicates);
+
+function loadScholarsWithoutDuplicates() {
+    const semester = document.querySelector('select[name="semester"]').value;
+    const academicYear = document.querySelector('input[name="academic_year"]').value;
+    
+    if (semester && academicYear) {
+        // Show loading state
+        const tableBody = document.getElementById('scholarTableBody');
+        tableBody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">Loading scholars...</td></tr>';
+        
+        fetch(`/lydo_admin/get-scholars-without-disbursement?semester=${encodeURIComponent(semester)}&academic_year=${encodeURIComponent(academicYear)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateScholarTable(data.scholars);
+                    updateSelectedCount(); // Reset selection count
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-red-500">Error loading scholars</td></tr>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                tableBody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-red-500">Error loading scholars</td></tr>';
+            });
+    }
+}
+
+function updateScholarTable(scholars) {
+    const tableBody = document.getElementById('scholarTableBody');
+    tableBody.innerHTML = '';
+    
+    if (scholars.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+                    <i class="fas fa-info-circle text-blue-500 text-lg mb-2 block"></i>
+                    No scholars available for the selected semester and academic year.
+                    <br><small class="text-sm">All scholars may already have disbursements for this period.</small>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    scholars.forEach(scholar => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50 scholar-row';
+        row.setAttribute('data-scholar-id', scholar.scholar_id);
+        row.innerHTML = `
+            <td class="px-4 py-2">
+                <input type="checkbox" name="scholar_ids[]" value="${scholar.scholar_id}" class="scholar-checkbox rounded border-gray-300 text-violet-600 focus:ring-violet-500">
+            </td>
+            <td class="px-4 py-2 text-sm text-gray-900">${scholar.full_name}</td>
+            <td class="px-4 py-2 text-sm text-gray-500">${scholar.applicant_brgy}</td>
+            <td class="px-4 py-2 text-sm text-gray-500">${scholar.applicant_acad_year}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+    
+    // Update event listeners for new checkboxes
+    attachCheckboxEvents();
+}
+
+function attachCheckboxEvents() {
+    const scholarCheckboxes = document.querySelectorAll('.scholar-checkbox');
+    scholarCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+    
+    // Reset select all checkbox
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    selectAllCheckbox.checked = false;
+    selectAllCheckbox.addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.scholar-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateSelectedCount();
+    });
+}
+
         // Search scholars by name
         function searchScholars() {
             const searchTerm = document.getElementById('scholarSearch').value.toLowerCase();
@@ -910,6 +1009,72 @@ document.getElementById('recordsPrintPdfBtn').addEventListener('click', function
     const semester = document.querySelector('select[name="semester"]').value;
     
     let url = '{{ route("LydoAdmin.generateDisbursementRecordsPdf") }}?';
+    
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (barangay) params.append('barangay', barangay);
+    if (academicYear) params.append('academic_year', academicYear);
+    if (semester) params.append('semester', semester);
+    
+    window.open(url + params.toString(), '_blank');
+});
+// Add this to your existing JavaScript
+const academicYearFilter = document.getElementById('academicYearFilter');
+
+// Filter scholars by academic year
+function filterScholarsByAcademicYear() {
+    const selectedAcademicYear = academicYearFilter.value.toLowerCase();
+    const rows = document.querySelectorAll('.scholar-row');
+
+    rows.forEach(row => {
+        const academicYear = row.querySelector('td:nth-child(3)').textContent.toLowerCase(); // Adjust index if needed
+        if (!selectedAcademicYear || academicYear.includes(selectedAcademicYear)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Add event listener
+academicYearFilter.addEventListener('change', filterScholarsByAcademicYear);
+
+function applyAllFilters() {
+    const selectedBarangay = barangayFilter.value.toLowerCase();
+    const selectedAcademicYear = academicYearFilter.value.toLowerCase();
+    const searchTerm = document.getElementById('scholarSearch').value.toLowerCase();
+    const rows = document.querySelectorAll('.scholar-row');
+
+    rows.forEach(row => {
+        const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase(); // Name column
+        const barangay = row.querySelector('td:nth-child(3)').textContent.toLowerCase(); // Barangay column
+        const academicYear = row.querySelector('td:nth-child(4)').textContent.toLowerCase(); // Academic Year column
+
+        const barangayMatch = !selectedBarangay || barangay.includes(selectedBarangay);
+        const academicYearMatch = !selectedAcademicYear || academicYear.includes(selectedAcademicYear);
+        const searchMatch = !searchTerm || name.includes(searchTerm);
+
+        if (barangayMatch && academicYearMatch && searchMatch) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Update all event listeners to use applyAllFilters
+barangayFilter.addEventListener('change', applyAllFilters);
+academicYearFilter.addEventListener('change', applyAllFilters);
+scholarSearch.addEventListener('input', applyAllFilters);
+
+// Add this JavaScript for Signed Disbursements Print PDF
+document.getElementById('signedPrintPdfBtn').addEventListener('click', function() {
+    const search = document.querySelector('#signedFilterForm input[name="search"]').value;
+    const barangay = document.querySelector('#signedFilterForm select[name="barangay"]').value;
+    const academicYear = document.querySelector('#signedFilterForm select[name="academic_year"]').value;
+    const semester = document.querySelector('#signedFilterForm select[name="semester"]').value;
+    
+    let url = '{{ route("LydoAdmin.generateSignedDisbursementPdf") }}?';
     
     const params = new URLSearchParams();
     if (search) params.append('search', search);

@@ -277,7 +277,7 @@ public function scholar(Request $request)
         $query->where('a.applicant_acad_year', $request->academic_year);
     }
 
-    $scholars = $query->get(0);
+   $scholars = $query->get();
 
     // Get distinct barangays for filter dropdown
     $barangays = DB::table('tbl_applicant')
@@ -359,6 +359,68 @@ public function scholar(Request $request)
             return response()->json(['success' => false, 'message' => 'Failed to send email: ' . $e->getMessage()]);
         }
     }
+
+public function sendBulkEmail(Request $request)
+{
+    try {
+        // Ensure we return JSON even on validation errors
+        $request->validate([
+            'scholar_ids' => 'required|string',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string',
+        ]);
+
+        $scholarIds = explode(',', $request->scholar_ids);
+        $scholarIds = array_map('trim', $scholarIds);
+        $subject = $request->subject;
+        $message = $request->message;
+
+        // Get scholar emails
+        $scholars = DB::table('tbl_scholar as s')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->whereIn('s.scholar_id', $scholarIds)
+            ->select('a.applicant_email', 'a.applicant_fname', 'a.applicant_lname')
+            ->get();
+
+        $emails = $scholars->pluck('applicant_email')->toArray();
+        $emails = array_filter($emails); // Remove empty emails
+
+        if (empty($emails)) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'No valid email addresses found for selected scholars.'
+            ]);
+        }
+
+        // Send email to all recipients
+        Mail::send('emails.plain-email', ['subject' => $subject, 'emailMessage' => $message], function ($mail) use ($emails, $subject) {
+            $mail->to($emails)
+                 ->subject($subject);
+        });
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Email sent successfully to ' . count($emails) . ' scholar(s)!'
+        ]);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        // Handle validation errors and return JSON
+        return response()->json([
+            'success' => false, 
+            'message' => 'Validation failed',
+            'errors' => $e->errors()
+        ], 422);
+    } catch (\Exception $e) {
+        \Log::error('Bulk email error: ' . $e->getMessage());
+        \Log::error('Bulk email stack trace: ' . $e->getTraceAsString());
+        
+        return response()->json([
+            'success' => false, 
+            'message' => 'Failed to send email: ' . $e->getMessage()
+        ], 500);
+    }
+}
 
  // Sa LydoAdminController.php - i-update ang status method
 
@@ -520,7 +582,9 @@ public function disbursement(Request $request)
 
         return response()->json($formattedDisbursements);
     }
-    $scholars = DB::table('tbl_scholar as s')
+
+    // Get scholars with academic year filtering
+    $scholarsQuery = DB::table('tbl_scholar as s')
         ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
         ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
         ->select(
@@ -529,11 +593,18 @@ public function disbursement(Request $request)
             'a.applicant_mname',
             'a.applicant_lname',
             'a.applicant_suffix',
-            'a.applicant_brgy', // ADD THIS LINE
+            'a.applicant_brgy',
+            'a.applicant_acad_year', // Add this
             DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
         )
-        ->where('s.scholar_status', 'active')
-        ->get();
+        ->where('s.scholar_status', 'active');
+
+    // Apply academic year filter for scholars
+    if ($request->has('scholar_academic_year') && !empty($request->scholar_academic_year)) {
+        $scholarsQuery->where('a.applicant_acad_year', $request->scholar_academic_year);
+    }
+
+    $scholars = $scholarsQuery->get();
 
     // Get UNSIGNED disbursement records (where disburse_signature is NULL)
     $unsignedQuery = DB::table('tbl_disburse as d')
@@ -650,7 +721,25 @@ public function disbursement(Request $request)
 
     $signedDisbursements = $signedQuery->paginate(15);
 
-    return view('lydo_admin.disbursement', compact( 'disbursements', 'barangays', 'academicYears', 'semesters', 'scholars', 'signedDisbursements'));
+    // Get distinct academic years for scholar filter dropdown
+    $scholarAcademicYears = DB::table('tbl_applicant')
+        ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
+        ->join('tbl_scholar', 'tbl_application.application_id', '=', 'tbl_scholar.application_id')
+        ->select('applicant_acad_year')
+        ->distinct()
+        ->where('tbl_scholar.scholar_status', 'active')
+        ->orderBy('applicant_acad_year', 'desc')
+        ->pluck('applicant_acad_year');
+
+    return view('lydo_admin.disbursement', compact(
+        'disbursements', 
+        'barangays', 
+        'academicYears', 
+        'semesters', 
+        'scholars', 
+        'signedDisbursements',
+        'scholarAcademicYears' // Add this
+    ));
 }
     public function settings()
     {
@@ -1002,91 +1091,153 @@ public function disbursement(Request $request)
         }
     }
 
-    public function createDisbursement(Request $request)
-    {
-        // Handle both array format (from disbursement.blade.php) and string format (from scholar.blade.php modal)
-        if (is_array($request->scholar_ids)) {
-            $request->validate([
-                'scholar_ids' => 'required|array',
-                'scholar_ids.*' => 'exists:tbl_scholar,scholar_id',
-                'amount' => 'required|numeric|min:0',
-                'disbursement_date' => 'required|date',
-                'semester' => 'required|string|in:1st Semester,2nd Semester,Summer',
-                'academic_year' => 'required|string',
-            ]);
-            $scholarIds = $request->scholar_ids;
-        } else {
-            $request->validate([
-                'scholar_ids' => 'required|string',
-                'amount' => 'required|numeric|min:0',
-                'disbursement_date' => 'required|date',
-                'semester' => 'required|string|in:1st Semester,2nd Semester,Summer',
-                'academic_year' => 'required|string',
-            ]);
-            $scholarIds = explode(',', $request->scholar_ids);
+public function createDisbursement(Request $request)
+{
+    // Handle both array format (from disbursement.blade.php) and string format (from scholar.blade.php modal)
+    if (is_array($request->scholar_ids)) {
+        $request->validate([
+            'scholar_ids' => 'required|array',
+            'scholar_ids.*' => 'exists:tbl_scholar,scholar_id',
+            'amount' => 'required|numeric|min:0',
+            'disbursement_date' => 'required|date',
+            'semester' => 'required|string|in:1st Semester,2nd Semester,Summer',
+            'academic_year' => 'required|string',
+        ]);
+        $scholarIds = $request->scholar_ids;
+    } else {
+        $request->validate([
+            'scholar_ids' => 'required|string',
+            'amount' => 'required|numeric|min:0',
+            'disbursement_date' => 'required|date',
+            'semester' => 'required|string|in:1st Semester,2nd Semester,Summer',
+            'academic_year' => 'required|string',
+        ]);
+        $scholarIds = explode(',', $request->scholar_ids);
+    }
+
+    $lydopersId = session('lydopers')->lydopers_id;
+    $academicYear = $request->academic_year;
+    $semester = $request->semester;
+    $disbursementDate = $request->disbursement_date;
+    $createdCount = 0;
+    $skippedScholars = [];
+    $skippedNames = [];
+    $successfulScholars = [];
+
+    try {
+        foreach ($scholarIds as $scholarId) {
+            $cleanScholarId = trim($scholarId);
+
+            // Check for existing disbursement for this scholar, year, and semester
+$existing = Disburse::where('scholar_id', $cleanScholarId)
+    ->where('disburse_acad_year', $academicYear)
+    ->where('disburse_semester', $semester)
+    ->exists();
+
+            if ($existing) {
+                // Get scholar name for message
+                $scholarName = DB::table('tbl_scholar as s')
+                    ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+                    ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+                    ->where('s.scholar_id', $cleanScholarId)
+                    ->value(DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname)"));
+
+                $skippedScholars[] = $cleanScholarId;
+                $skippedNames[] = $scholarName ?: $cleanScholarId;
+            } else {
+                Disburse::create([
+                    'scholar_id' => $cleanScholarId,
+                    'lydopers_id' => $lydopersId,
+                    'disburse_semester' => $semester,
+                    'disburse_acad_year' => $academicYear,
+                    'disburse_amount' => $request->amount,
+                    'disburse_date' => $disbursementDate,
+                ]);
+                
+                // Get scholar details for email notification
+                $scholar = DB::table('tbl_scholar as s')
+                    ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+                    ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+                    ->where('s.scholar_id', $cleanScholarId)
+                    ->select('a.applicant_email', 'a.applicant_fname', 'a.applicant_lname')
+                    ->first();
+
+                if ($scholar) {
+                    $successfulScholars[] = [
+                        'email' => $scholar->applicant_email,
+                        'name' => $scholar->applicant_fname . ' ' . $scholar->applicant_lname,
+                        'scholar_id' => $cleanScholarId
+                    ];
+                }
+                
+                $createdCount++;
+            }
         }
 
-        $lydopersId = session('lydopers')->lydopers_id;
-        $academicYear = $request->academic_year;
-        $semester = $request->semester;
-        $createdCount = 0;
-        $skippedScholars = [];
-        $skippedNames = [];
+        // Send email notifications to successful scholars
+        if (!empty($successfulScholars)) {
+            $this->sendDisbursementNotification($successfulScholars, $disbursementDate, $semester, $academicYear, $request->amount);
+        }
 
-        try {
-            foreach ($scholarIds as $scholarId) {
-                $cleanScholarId = trim($scholarId);
-
-                // Check for existing disbursement for this scholar, year, and semester
-                $existing = Disburse::where('scholar_id', $cleanScholarId)
-                    ->where('disburse_acad_year', $academicYear)
-                    ->where('disburse_semester', $semester)
-                    ->exists();
-
-                if ($existing) {
-                    // Get scholar name for message
-                    $scholarName = DB::table('tbl_scholar as s')
-                        ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
-                        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-                        ->where('s.scholar_id', $cleanScholarId)
-                        ->value(DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname)"));
-
-                    $skippedScholars[] = $cleanScholarId;
-                    $skippedNames[] = $scholarName ?: $cleanScholarId;
-                } else {
-                    Disburse::create([
-                        'scholar_id' => $cleanScholarId,
-                        'lydopers_id' => $lydopersId,
-                        'disburse_semester' => $semester,
-                        'disburse_acad_year' => $academicYear,
-                        'disburse_amount' => $request->amount,
-                        'disburse_date' => $request->disbursement_date,
-                    ]);
-                    $createdCount++;
-                }
-            }
-
-            if ($createdCount > 0) {
-                $message = "Disbursement created successfully for {$createdCount} scholar(s).";
-                if (!empty($skippedNames)) {
-                    $skippedList = implode(', ', array_slice($skippedNames, 0, 3));
-                    if (count($skippedNames) > 3) {
-                        $skippedList .= ' and others';
-                    }
-                    $message .= " Skipped duplicates for: {$skippedList} (same year and semester already exists).";
-                }
-                return redirect()->back()->with('success', $message);
-            } else {
+        if ($createdCount > 0) {
+            $message = "Disbursement created successfully for {$createdCount} scholar(s).";
+            if (!empty($skippedNames)) {
                 $skippedList = implode(', ', array_slice($skippedNames, 0, 3));
                 if (count($skippedNames) > 3) {
                     $skippedList .= ' and others';
                 }
-                return redirect()->back()->with('error', "No new disbursements created. Duplicates already exist for: {$skippedList} (same year and semester).");
+                $message .= " Skipped duplicates for: {$skippedList} (same year and semester already exists).";
             }
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to create disbursement: ' . $e->getMessage());
+            
+            // Add email notification info
+            if (!empty($successfulScholars)) {
+                $message .= " Email notifications sent to " . count($successfulScholars) . " scholar(s).";
+            }
+            
+            return redirect()->back()->with('success', $message);
+        } else {
+            $skippedList = implode(', ', array_slice($skippedNames, 0, 3));
+            if (count($skippedNames) > 3) {
+                $skippedList .= ' and others';
+            }
+            return redirect()->back()->with('error', "No new disbursements created. Duplicates already exist for: {$skippedList} (same year and semester).");
         }
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Failed to create disbursement: ' . $e->getMessage());
     }
+}
+
+// Add this new method to send disbursement notifications
+private function sendDisbursementNotification($scholars, $disbursementDate, $semester, $academicYear, $amount)
+{
+    try {
+        foreach ($scholars as $scholar) {
+            $formattedDate = \Carbon\Carbon::parse($disbursementDate)->format('F d, Y');
+            $formattedAmount = number_format($amount, 2);
+            
+            $emailData = [
+                'scholar_name' => $scholar['name'],
+                'disbursement_date' => $formattedDate,
+                'semester' => $semester,
+                'academic_year' => $academicYear,
+                'amount' => $formattedAmount,
+                'scholar_id' => $scholar['scholar_id']
+            ];
+
+            Mail::send('emails.disbursement-notification', $emailData, function ($message) use ($scholar) {
+                $message->to($scholar['email'])
+                        ->subject('Disbursement Schedule - LYDO Scholarship');
+            });
+        }
+        
+        \Log::info('Disbursement notifications sent to ' . count($scholars) . ' scholars');
+        return true;
+        
+    } catch (\Exception $e) {
+        \Log::error('Failed to send disbursement notifications: ' . $e->getMessage());
+        return false;
+    }
+}
 
 
     public function getScholarsByBarangay(Request $request)
@@ -1136,7 +1287,7 @@ public function disbursement(Request $request)
         ]);
     }
 
-    public function getScholarsWithoutDisbursement(Request $request)
+public function getScholarsWithoutDisbursement(Request $request)
 {
     try {
         $request->validate([
@@ -1144,14 +1295,17 @@ public function disbursement(Request $request)
             'semester' => 'required|string|in:1st Semester,2nd Semester,Summer'
         ]);
 
-        // Get scholars who don't have disbursements for the selected academic year and semester
+        $academicYear = $request->academic_year;
+        $semester = $request->semester;
+
+        // Get scholars who DON'T have disbursement for the selected academic year and semester
         $scholars = DB::table('tbl_scholar as s')
             ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
             ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-            ->leftJoin('tbl_disburse as d', function($join) use ($request) {
+            ->leftJoin('tbl_disburse as d', function($join) use ($academicYear, $semester) {
                 $join->on('s.scholar_id', '=', 'd.scholar_id')
-                     ->where('d.disburse_acad_year', $request->academic_year)
-                     ->where('d.disburse_semester', $request->semester);
+                     ->where('d.disburse_acad_year', $academicYear)
+                     ->where('d.disburse_semester', $semester);
             })
             ->select(
                 's.scholar_id',
@@ -1160,11 +1314,11 @@ public function disbursement(Request $request)
                 'a.applicant_lname',
                 'a.applicant_suffix',
                 'a.applicant_brgy',
-                'a.applicant_email',
+                'a.applicant_acad_year',
                 DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
             )
             ->where('s.scholar_status', 'active')
-            ->whereNull('d.disburse_id') // Only scholars without disbursement for this year/semester
+            ->whereNull('d.disburse_id') // This ensures we only get scholars without disbursement for the selected year/semester
             ->get();
 
         return response()->json([
@@ -1181,9 +1335,13 @@ public function disbursement(Request $request)
     }
 }
 
-    public function generateDisbursementPdf(Request $request)
-    {
-        // Get only signed disbursement records with applicant information
+public function generateDisbursementPdf(Request $request)
+{
+    try {
+        // Set time limit for PDF generation
+        set_time_limit(120); // 2 minutes
+        
+        // Get disbursement records with applicant information
         $query = DB::table('tbl_disburse as d')
             ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
             ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
@@ -1196,15 +1354,25 @@ public function disbursement(Request $request)
                 'd.disburse_signature',
                 'a.applicant_brgy',
                 DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
-            )
-            ->whereNotNull('d.disburse_signature'); // Only signed disbursements
+            );
+
+        // Determine if we want signed or unsigned disbursements
+        $type = $request->get('type', 'signed'); // Default to signed
+        if ($type === 'signed') {
+            $query->whereNotNull('d.disburse_signature'); // Only signed disbursements
+            $title = 'Signed Disbursements Report';
+        } else {
+            $query->whereNull('d.disburse_signature'); // Only unsigned disbursements
+            $title = 'Disbursement Records (Pending Signature)';
+        }
 
         // Apply filters
         if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
-                  ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%')
-                  ->orWhere('a.applicant_mname', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('a.applicant_fname', 'like', '%' . $search . '%')
+                  ->orWhere('a.applicant_lname', 'like', '%' . $search . '%')
+                  ->orWhere('a.applicant_mname', 'like', '%' . $search . '%');
             });
         }
 
@@ -1220,7 +1388,8 @@ public function disbursement(Request $request)
             $query->where('d.disburse_semester', $request->semester);
         }
 
-        $signedDisbursements = $query->get();
+        // Limit results for PDF generation
+        $disbursements = $query->limit(1000)->get();
 
         // Get filter info for page title
         $filters = [];
@@ -1237,11 +1406,19 @@ public function disbursement(Request $request)
             $filters[] = 'Semester: ' . $request->semester;
         }
 
-        $pdf = Pdf::loadView('pdf.disbursement-print', compact('signedDisbursements', 'filters'))
+        $pdf = Pdf::loadView('pdf.disbursement-print', compact('disbursements', 'filters', 'title'))
             ->setPaper('a4', 'landscape');
 
-        return $pdf->stream('disbursement-report-' . date('Y-m-d') . '.pdf');
+        $filename = $type === 'signed' ? 'signed-disbursement-report-' : 'disbursement-records-';
+        $filename .= date('Y-m-d') . '.pdf';
+
+        return $pdf->stream($filename);
+        
+    } catch (\Exception $e) {
+        \Log::error('PDF Generation Error: ' . $e->getMessage());
+        return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
     }
+}
 public function generateDisbursementRecordsPdf(Request $request)
 {
     try {
@@ -1581,6 +1758,69 @@ public function dashboardData(Request $request)
         'schoolDistribution' => $schoolDistribution,
         'scholarStatsPerYear' => $scholarStatsPerYear
     ]);
+}
+public function generateSignedDisbursementPdf(Request $request)
+{
+    try {
+        set_time_limit(120);
+        
+        $query = DB::table('tbl_disburse as d')
+            ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->select(
+                'd.disburse_semester',
+                'd.disburse_acad_year',
+                'd.disburse_amount',
+                'd.disburse_date',
+                'd.disburse_signature',
+                'a.applicant_brgy',
+                DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+            )
+            ->whereNotNull('d.disburse_signature'); // Only signed disbursements
+
+        // Apply filters
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('a.applicant_fname', 'like', '%' . $search . '%')
+                  ->orWhere('a.applicant_lname', 'like', '%' . $search . '%')
+                  ->orWhere('a.applicant_mname', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->has('barangay') && !empty($request->barangay)) {
+            $query->where('a.applicant_brgy', $request->barangay);
+        }
+
+        if ($request->has('academic_year') && !empty($request->academic_year)) {
+            $query->where('d.disburse_acad_year', $request->academic_year);
+        }
+
+        if ($request->has('semester') && !empty($request->semester)) {
+            $query->where('d.disburse_semester', $request->semester);
+        }
+
+        $signedDisbursements = $query->orderBy('a.applicant_lname')->get();
+
+        // Get filter info for display
+        $filters = [];
+        if ($request->search) $filters['search'] = $request->search;
+        if ($request->barangay) $filters['barangay'] = $request->barangay;
+        if ($request->academic_year) $filters['academic_year'] = $request->academic_year;
+        if ($request->semester) $filters['semester'] = $request->semester;
+
+        $pdf = Pdf::loadView('pdf.signed-disbursement-print', [
+            'signedDisbursements' => $signedDisbursements, 
+            'filters' => $filters
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream('signed-disbursement-report-' . date('Y-m-d') . '.pdf');
+        
+    } catch (\Exception $e) {
+        \Log::error('Signed PDF Generation Error: ' . $e->getMessage());
+        return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
+    }
 }
 
 }

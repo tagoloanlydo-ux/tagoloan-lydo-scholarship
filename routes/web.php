@@ -79,8 +79,8 @@ Route::middleware(['role:lydo_admin'])->group(function () {
     Route::post('/lydo_admin/get-scholar-names', [LydoAdminController::class, 'getScholarNames'])->name('LydoAdmin.getScholarNames');
     Route::post('/lydo_admin/create-disbursement', [LydoAdminController::class, 'createDisbursement'])->name('LydoAdmin.createDisbursement');
     Route::post('/lydo_admin/send-email-to-applicants', [LydoAdminController::class, 'sendEmailToApplicants'])->name('LydoAdmin.sendEmailToApplicants');
+    Route::post('/lydo_admin/send-bulk-email', [LydoAdminController::class, 'sendBulkEmail'])->name('send.bulk.email');
     Route::post('/lydo_admin/send-sms-to-applicants', [SmsController::class, 'sendSmsToApplicants'])->name('LydoAdmin.sendSmsToApplicants');
-    Route::get('/lydo_admin/report/pdf/scholars', [LydoAdminController::class, 'generateScholarsPdf'])->name('LydoAdmin.report.pdf.scholars');
     Route::get('/lydo_admin/report/pdf/scholars-by-barangay', [LydoAdminController::class, 'generateScholarsPdfByBarangay'])->name('LydoAdmin.report.pdf.scholarsByBarangay');
     Route::get('/lydo_admin/report/pdf/applicants', [LydoAdminController::class, 'generateApplicantsPdf'])->name('LydoAdmin.report.pdf.applicants');
     Route::get('/lydo_admin/report/pdf/renewal', [LydoAdminController::class, 'generateRenewalPdf'])->name('LydoAdmin.report.pdf.renewal');
@@ -89,10 +89,12 @@ Route::middleware(['role:lydo_admin'])->group(function () {
     Route::get('/lydo_admin/get-scholars-with-disbursement', [LydoAdminController::class, 'getScholarsWithDisbursement'])->name('LydoAdmin.getScholarsWithDisbursement');
     Route::get('/lydo_admin/generate-disbursement-records-pdf', [LydoAdminController::class, 'generateDisbursementRecordsPdf'])->name('LydoAdmin.generateDisbursementRecordsPdf');
     Route::get('/lydo_admin/disbursement-pdf', [LydoAdminController::class, 'generateDisbursementPdf'])->name('LydoAdmin.disbursementPdf');
-    Route::get('/lydo_admin/scholars/pdf', [LydoAdminController::class, 'generateScholarsPdf'])->name('LydoAdmin.scholars.pdf');
     Route::get('/lydo_admin/scholar/{scholarId}/documents', [LydoAdminController::class, 'getScholarDocuments'])->name('LydoAdmin.scholar.documents');
     Route::get('/lydo_admin/generate-applicants-pdf', [LydoAdminController::class, 'generateApplicantsPdf'])->name('lydo_admin.applicants.pdf');
-    Route::get('/lydo_admin/get-scholars-without-disbursement', [LydoAdminController::class, 'getScholarsWithoutDisbursement'])->name('LydoAdmin.getScholarsWithoutDisbursement');
+    Route::get('/lydo_admin/generate-signed-disbursement-pdf', [LydoAdminController::class, 'generateSignedDisbursementPdf'])->name('LydoAdmin.generateSignedDisbursementPdf');
+Route::get('/lydo_admin/generate-signed-disbursement-pdf', [LydoAdminController::class, 'generateSignedDisbursementPdf'])->name('LydoAdmin.generateSignedDisbursementPdf');
+Route::get('/lydo_admin/get-scholars-without-disbursement', [LydoAdminController::class, 'getScholarsWithoutDisbursement'])->name('LydoAdmin.getScholarsWithoutDisbursement');
+    Route::get('/lydo_admin/generate-scholars-pdf', [LydoAdminController::class, 'generateScholarsPdf'])->name('LydoAdmin.generateScholarsPdf');
 });
 
 Route::middleware(['role:lydo_staff'])->group(function () {
@@ -129,7 +131,8 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::post('/lydo_staff/mark-document-updated/{renewalId}', [RenewalController::class, 'markDocumentAsUpdated']);
 Route::get('/lydo_staff/pdf/intake-sheet-print/{application_personnel_id}', [LydoStaffController::class, 'generateIntakeSheetPdf'])
     ->name('lydo_staff.intake-sheet.pdf');
-    Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments']);});
+    Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments']);
+});
 
 // Mayor Staff Routes - Only accessible by mayor_staff role
 Route::middleware(['role:mayor_staff'])->group(function () {
@@ -167,7 +170,7 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::get('/mayor_staff/application/{id}/intake-sheet', [MayorStaffController::class, 'getIntakeSheet'])->name('mayor_staff.getIntakeSheet');
     Route::post('/mayor_staff/application/{id}/status', [MayorStaffController::class, 'updateApplicationStatus']);
     Route::get('/mayor_staff/intake-sheet/{id}', [StatusController::class, 'getIntakeSheet'])->name('mayor_staff.intake-sheet');
-    Route::put('/mayor_staff/settings/{id}', [MayorStaffController::class, 'updatePersonalInfo'])->name('MayorStaff.update');
+    Route::put('/mayor_staff/settings/{id}', [MayorStaffController::class, 'updatePersonalInfo'])->name('MayorStaff.updateSettings');
     Route::put('/mayor_staff/update-password', [MayorStaffController::class, 'updatePassword'])->name('MayorStaff.updatePassword');
     // Add these routes to your web.php file
 Route::post('/mayor_staff/mark-notifications-viewed', [MayorStaffController::class, 'markNotificationsViewed']);
