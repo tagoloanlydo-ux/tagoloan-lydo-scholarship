@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="{{ asset('css/admin_scholar.css') }}" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 </head>
@@ -148,315 +149,188 @@
 }
 </style>
 <body class="bg-gray-50">
-<div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner">
-                            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
-    </div>
-</div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner">
+            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+        </div>
+     </div>
 
     <div class="dashboard-grid">
         <!-- Header -->
-<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
-            <div class="flex items-center">
-                <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
-                <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
-            </div>
-            <div class="flex items-center space-x-4">
-                <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} Lydo Admin</span>
-<div class="relative">
-    <!-- 🔔 Bell Icon -->
-    <button id="notifBell" class="relative focus:outline-none">
-        <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-        @if($notifications->count() > 0)
-            <span id="notifCount"
-                class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                {{ $notifications->count() }}
-            </span>
-        @endif
-    </button>
-
-
-    <!-- 🔽 Dropdown -->
-    <div id="notifDropdown"
-         class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-white-200 z-50">
-        <div class="p-3 border-b font-semibold text-white-700">Notifications</div>
-<ul class="max-h-60 overflow-y-auto">
-    @forelse($notifications as $notif)
-        <li class="px-4 py-2 hover:bg-white-50 text-base border-b">
-            {{-- Application --}}
-            @if($notif->type === 'application')
-                <p class="font-medium 
-                    {{ $notif->status === 'Approved' ? 'text-green-600' : 'text-red-600' }}">
-                    📌 Application of {{ $notif->name }} was {{ $notif->status }}
-                </p>
-            @elseif($notif->type === 'renewal')
-                <p class="font-medium 
-                    {{ $notif->status === 'Approved' ? 'text-green-600' : 'text-red-600' }}">
-                    🔄 Renewal of {{ $notif->name }} was {{ $notif->status }}
-                </p>
-            @endif
-
-            {{-- Time ago --}}
-            <p class="text-xs text-gray-500">
-                {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
-            </p>
-        </li>
-    @empty
-        <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
-    @endforelse
-</ul>
-    </div>
-</div>
-
-<!-- ⚡ JS -->
-<script>
-    document.getElementById("notifBell").addEventListener("click", function () {
-        let dropdown = document.getElementById("notifDropdown");
-        dropdown.classList.toggle("hidden");
-
-        // remove badge when opened
-        let notifCount = document.getElementById("notifCount");
-        if (notifCount) {
-            notifCount.remove();
-        }
-    });
-</script>
-
-
-            </div>
-            
+        <header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
+                <div class="flex items-center">
+                    <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
+                    <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                  <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} Lydo Admin</span>
         </header>
-        <!-- Main Content -->
-      <div class="flex flex-1">
-            <!-- Sidebar -->
-            <div class="w-16 md:w-72 bg-white shadow-md flex flex-col transition-all duration-300">
-                <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
-                    <ul class="side-menu top space-y-4">
-        <li>
-          <a href="/lydo_admin/dashboard" class="idebar-item flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
-            <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Dashboard</span>
-          </a>
-        </li>
-<!-- Staff Dropdown -->
-<li class="relative">
-    <button onclick="toggleDropdown('staffMenu')"
-        class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-        <div class="flex items-center">
-            <i class="bx bxs-user-detail text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Staff</span>
-        </div>
-<i class="bx bx-chevron-down ml-2"></i>
-</button>
+                    <div class="flex flex-1">
+                            <!-- Sidebar -->
+                            <div class="w-16 md:w-72 bg-white shadow-md flex flex-col transition-all duration-300">
+                                <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
+                                    <ul class="side-menu top space-y-4">
+                        <li>
+                        <a href="/lydo_admin/dashboard" class="idebar-item flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
+                            <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
+                            <span class="ml-4 hidden md:block text-lg">Dashboard</span>
+                        </a>
+                        </li>
+                    <!-- Staff Dropdown -->
+                    <li class="relative">
+                        <button onclick="toggleDropdown('staffMenu')"
+                            class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+                            <div class="flex items-center">
+                                <i class="bx bxs-user-detail text-center mx-auto md:mx-0 text-xl"></i>
+                                <span class="ml-4 hidden md:block text-lg">Staff</span>
+                            </div>
+                    <i class="bx bx-chevron-down ml-2"></i>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <ul id="staffMenu" class="ml-10 mt-2 space-y-2 hidden">
+                        <li>
+                            <a href="/lydo_admin/lydo" 
+                            class="flex items-center p-2 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
+                            <i class="bx bx-user mr-2"></i> LYDO Staff
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/lydo_admin/mayor" 
+                            class="flex items-center p-2 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
+                            <i class="bx bx-building-house mr-2"></i> Mayor Staff
+                            </a>
+                        </li>
+                    </ul>
+                    <li>
+                        <a href="/lydo_admin/applicants" 
+                        class=" flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
+                            <div class="flex items-center">
+                                <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
+                                <span class="ml-4 hidden md:block text-lg">Applicants</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="relative">
+                        <button onclick="toggleDropdown('scholarMenu')"
+                            class="w-full flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+                            <div class="flex items-center">
+                                <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
+                                <span class="ml-4 hidden md:block text-lg">Scholar</span>
+                            </div>
+                            <i class="bx bx-chevron-down ml-2"></i>
+                        </button>
+                    <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
+                        <li>
+                            <a href="/lydo_admin/scholar" 
+                            class="flex items-center p-2 rounded-lg text-black-700 bg-violet-600 text-white">
+                            <i class="bx bx-list-ul mr-2"></i> List of Scholars
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/lydo_admin/status" 
+                            class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
+                            <i class="bx bx-check-circle mr-2"></i> Status
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/lydo_admin/disbursement" 
+                            class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
+                            <i class="bx bx-wallet mr-2"></i> Disbursement
+                            </a>
+                        </li>
+                    </ul>
 
-<!-- Dropdown Menu -->
-<ul id="staffMenu" class="ml-10 mt-2 space-y-2 hidden">
-    <li>
-        <a href="/lydo_admin/lydo" 
-           class="flex items-center p-2 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
-           <i class="bx bx-user mr-2"></i> LYDO Staff
-        </a>
-    </li>
-    <li>
-        <a href="/lydo_admin/mayor" 
-           class="flex items-center p-2 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
-           <i class="bx bx-building-house mr-2"></i> Mayor Staff
-        </a>
-    </li>
-</ul>
-
-
-<script>
-    function toggleDropdown(id) {
-        const menu = document.getElementById(id);
-        menu.classList.toggle("hidden");
-    }
-</script>
-
-<li>
-    <a href="/lydo_admin/applicants" 
-     class=" flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
-         <div class="flex items-center">
-            <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Applicants</span>
-        </div>
-    </a>
-</li>
-
-<!-- Scholar Dropdown -->
-<li class="relative">
-    <button onclick="toggleDropdown('scholarMenu')"
-        class="w-full flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-        <div class="flex items-center">
-            <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Scholar</span>
-        </div>
-        <i class="bx bx-chevron-down ml-2"></i>
-    </button>
-
-    <!-- Dropdown Menu -->
-<ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
-    <li>
-        <a href="/lydo_admin/scholar" 
-           class="flex items-center p-2 rounded-lg text-black-700 bg-violet-600 text-white">
-           <i class="bx bx-list-ul mr-2"></i> List of Scholars
-        </a>
-    </li>
-    <li>
-        <a href="/lydo_admin/status" 
-           class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
-           <i class="bx bx-check-circle mr-2"></i> Status
-        </a>
-    </li>
-    <li>
-        <a href="/lydo_admin/disbursement" 
-           class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
-           <i class="bx bx-wallet mr-2"></i> Disbursement
-        </a>
-    </li>
-</ul>
-
-</li>
-
-<script>
-    // Toggle dropdown and save state
-    function toggleDropdown(id) {
-        const menu = document.getElementById(id);
-        const isHidden = menu.classList.contains("hidden");
-
-        if (isHidden) {
-            menu.classList.remove("hidden");
-            localStorage.setItem(id, "open");
-        } else {
-            menu.classList.add("hidden");
-            localStorage.setItem(id, "closed");
-        }
-    }
-
-    // Restore dropdown state on page load
-    window.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll("ul[id]").forEach(menu => {
-            const state = localStorage.getItem(menu.id);
-            if (state === "open") {
-                menu.classList.remove("hidden");
-            }
-        });
-    });
-</script>
-
-<li>
-    <a href="/lydo_admin/announcement"
-       class=" flex items-center justify-between p-3 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
-        <div class="flex items-center">
-            <i class="bx bxs-megaphone text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Announcement</span>
-        </div>
-    </a>
-</li>
-      </ul>
-
-      <ul class="side-menu space-y-1">
-        <li>
-          <a href="/lydo_admin/settings" class=" flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
-            <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-base">Settings</span>
-          </a>
-        </li>
-      </ul>
+                    </li>
+                    <li>
+                        <a href="/lydo_admin/announcement"
+                        class=" flex items-center justify-between p-3 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
+                            <div class="flex items-center">
+                                <i class="bx bxs-megaphone text-center mx-auto md:mx-0 text-xl"></i>
+                                <span class="ml-4 hidden md:block text-lg">Announcement</span>
+                            </div>
+                        </a>
+                    </li>
+                    </ul>
+                    <ul class="side-menu space-y-1">
+                        <li>
+                        <a href="/lydo_admin/settings" class=" flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
+                            <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl"></i>
+                            <span class="ml-4 hidden md:block text-base">Settings</span>
+                        </a>
+                        </li>
+                    </ul>
                 </nav>
-  <div class="p-2 md:p-4 border-t">
-<form method="POST" action="{{ route('logout') }}" id="logoutForm"> @csrf <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
+                <div class="p-2 md:p-4 border-t">
+                    <form method="POST" action="{{ route('logout') }}" id="logoutForm"> @csrf <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
                             <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
                             <span class="hidden md:block text-red-600">Logout</span>
                         </button>
                     </form>
-
-<script>
-    document.getElementById('logoutForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        Swal.fire({
-            title: 'Are you sure you want to logout?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, logout',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                e.target.submit();
-            }
-        });
-    });
-</script>
-</div>
-            </div>
+                    </div>
+                </div>
             <div class="flex-1 overflow-auto p-4 md:p-5 text-[16px]">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-3xl font-bold text-gray-800">List of Scholars</h2>
                 </div>
-
-  
-<!-- Filter Section -->
-<div class="bg-white p-4 rounded-lg shadow-sm mb-6">
-    <form method="GET" action="{{ route('LydoAdmin.scholar') }}" id="filterForm">
-        <div class="flex flex-col md:flex-row gap-4">
-            <div class="flex-1">
-                <input type="text" id="searchInput" name="search" placeholder="Search by name..."
-                       class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black"
-                       value="{{ request('search') }}">
-            </div>
-            <div class="flex-1">
-                <select id="barangaySelect" name="barangay" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                    <option value="">All Barangays</option>
-                    @foreach($barangays as $barangay)
-                        <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
-                            {{ $barangay }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="flex-1">
-                <select id="academicYearSelect" name="academic_year" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                    <option value="">All Academic Years</option>
-                    @foreach($academicYears as $year)
-                        <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
-                            {{ $year }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <!-- Add Status Filter Dropdown -->
-            <div class="flex-1">
-                <select id="statusSelect" name="status" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                    <option value="active" {{ $statusFilter == 'active' ? 'selected' : '' }}>Active Scholars</option>
-                    <option value="inactive" {{ $statusFilter == 'inactive' ? 'selected' : '' }}>Inactive Scholars</option>
-                    <option value="all" {{ $statusFilter == 'all' ? 'selected' : '' }}>All Scholars</option>
-                </select>
-            </div>
-            <!-- Add Print to PDF Button -->
-            <div class="flex-1">
-                <button id="printPdfBtn" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center">
-                    <i class="fas fa-file-pdf mr-2"></i> Print to PDF
-                </button>
-            </div>
-        </div>
-    </form>
-</div>
-
+                 <!-- Filter Section -->
+                <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+                    <form method="GET" action="{{ route('LydoAdmin.scholar') }}" id="filterForm">
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1">
+                                <input type="text" id="searchInput" name="search" placeholder="Search by name..."
+                                    class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black"
+                                    value="{{ request('search') }}">
+                            </div>
+                            <div class="flex-1">
+                                <select id="barangaySelect" name="barangay" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                    <option value="">All Barangays</option>
+                                    @foreach($barangays as $barangay)
+                                        <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
+                                            {{ $barangay }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <select id="academicYearSelect" name="academic_year" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                    <option value="">All Academic Years</option>
+                                    @foreach($academicYears as $year)
+                                        <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
+                                            {{ $year }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <!-- Status Filter Dropdown -->
+                            <div class="flex-1">
+                                <select id="statusSelect" name="status" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                    <option value="active" {{ $statusFilter == 'active' ? 'selected' : '' }}>Active Scholars</option>
+                                    <option value="inactive" {{ $statusFilter == 'inactive' ? 'selected' : '' }}>Inactive Scholars</option>
+                                    <option value="graduated" {{ $statusFilter == 'graduated' ? 'selected' : '' }}>Graduated Scholars</option>
+                                    <option value="all" {{ $statusFilter == 'all' ? 'selected' : '' }}>All Scholars</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Print to PDF Button -->
+                            <div class="flex-1">
+                                <button type="button" id="printPdfBtn" class="w-full px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center">
+                                    <i class="fas fa-file-pdf mr-2"></i>Print to PDF
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
                 <!-- Scholars Table -->
                 <div class="bg-white  shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                        <div>
-                            <h3 class="text-lg font-semibold text-black-800">Scholars List</h3>
-                            <p class="text-sm text-black-600 mt-1">This table contains the list of active scholars currently enrolled in the scholarship program.</p>
-                        </div>
-                    <div class="flex space-x-2">
-                            <button id="generateAnnouncementBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
-                                Copy Names
-                            </button>
-                            <button id="sendEmailBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
-                                Email
+                        <!-- Add this after the table description and before the table -->
+                        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                            <div>
+                                <h3 class="text-lg font-semibold text-black-800">Scholars List</h3>
+                                <p class="text-sm text-black-600 mt-1">This table contains the list of active scholars currently enrolled in the scholarship program.</p>
+                            </div>
+                            <!-- Email Button - Hidden by default -->
+                            <button type="button" id="emailBtn" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm font-medium transition-colors">
+                                <i class="fas fa-envelope mr-2"></i>Send Email
                             </button>
                         </div>
                     </div>
@@ -525,611 +399,928 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- Pagination -->
-<!-- Pagination -->
-<div class="px-6 py-4 bg-white border-t border-gray-200">
-    <div class="pagination-container" id="paginationContainer"></div>
-</div>
+                    <div class="px-6 py-4 bg-white border-t border-gray-200">
+                        <div class="pagination-container" id="paginationContainer"></div>
+                    </div>
                 </div>
-
             </div>
 
-            <!-- Email Modal -->
-            <div id="emailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-                <div class="relative top-20 mx-auto p-6 border w-full max-w-3xl shadow-2xl rounded-xl bg-white">
-                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-envelope text-blue-600 mr-3"></i>
-                            Send Email
-                        </h3>
-                        <button type="button" id="closeEmailModal" class="text-gray-400 hover:text-gray-600 transition-colors">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-
-                    <form id="emailForm" method="POST" action="{{ route('LydoAdmin.sendEmail') }}" class="space-y-6">
-                        @csrf
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Recipients</label>
-                            <input type="text" id="emailTo" name="email" readonly class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 font-medium">
-                        </div>
-
-
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Subject</label>
-                                <input type="text" name="subject" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="Enter email subject">
+                <!-- Email Modal -->
+                <div id="emailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                    <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white">
+                        <div class="mt-3">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">Send Email to Selected Scholars</h3>
+                                <button id="closeEmailModal" class="text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-times"></i>
+                                </button>
                             </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Type</label>
-                                <select name="email_type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                                    <option value="plain">Plain Email</option>
-                                    <option value="account_creation">Resend Registration Link</option>
-                                </select>
+
+                            <form id="emailForm">
+                                @csrf
+                                <div class="mb-4">
+                                    <label for="emailSubject" class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                                    <input type="text" id="emailSubject" name="subject" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required placeholder="Enter email subject">
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="emailMessage" class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                                    <textarea id="emailMessage" name="message" rows="6" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required placeholder="Type your message here..."></textarea>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Recipients <span class="text-gray-500 text-sm">(</span><span id="recipientCount" class="text-gray-500 text-sm">0</span><span class="text-gray-500 text-sm"> selected)</span>
+                                    </label>
+                                    <div id="recipientsList" class="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-3 bg-gray-50">
+                                        <p class="text-gray-500 text-sm text-center">No recipients selected</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end space-x-3">
+                                    <button type="button" id="cancelEmail" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center">
+                                        <i class="fas fa-paper-plane mr-2"></i>Send Email
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                // Email functionality for bulk sending
+                document.addEventListener('DOMContentLoaded', function() {
+                    const emailBtn = document.getElementById('emailBtn');
+                    const emailModal = document.getElementById('emailModal');
+                    const closeEmailModal = document.getElementById('closeEmailModal');
+                    const cancelEmail = document.getElementById('cancelEmail');
+                    const emailForm = document.getElementById('emailForm');
+                    const recipientsList = document.getElementById('recipientsList');
+                    const recipientCount = document.getElementById('recipientCount');
+
+                    // Update email button visibility based on checkbox selection
+                    function updateEmailButton() {
+                        const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+                        
+                        if (selectedCheckboxes.length > 0) {
+                            emailBtn.classList.remove('hidden');
+                        } else {
+                            emailBtn.classList.add('hidden');
+                        }
+                    }
+
+                    // Show email modal
+                    emailBtn.addEventListener('click', function() {
+                        const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+                        
+                        if (selectedCheckboxes.length === 0) {
+                            Swal.fire({
+                                title: 'No Scholars Selected',
+                                text: 'Please select at least one scholar to send an email.',
+                                icon: 'warning',
+                                confirmButtonText: 'OK'
+                            });
+                            return;
+                        }
+
+                        // Update recipients list
+                        updateRecipientsList();
+                        emailModal.classList.remove('hidden');
+                    });
+
+                    // Update recipients list in modal
+                    function updateRecipientsList() {
+                        const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+                        
+                        recipientsList.innerHTML = '';
+                        recipientCount.textContent = selectedCheckboxes.length;
+
+                        if (selectedCheckboxes.length === 0) {
+                            recipientsList.innerHTML = '<p class="text-gray-500 text-sm text-center">No recipients selected</p>';
+                            return;
+                        }
+
+                        selectedCheckboxes.forEach(checkbox => {
+                            const scholarRow = checkbox.closest('tr');
+                            const scholarName = scholarRow.querySelector('td:nth-child(2) div').textContent.trim();
+                            const scholarEmail = checkbox.value;
+                            const scholarId = checkbox.getAttribute('data-scholar-id');
+
+                            const recipientDiv = document.createElement('div');
+                            recipientDiv.className = 'flex items-center justify-between py-2 px-3 bg-white rounded border-b border-gray-200 last:border-b-0';
+                            recipientDiv.innerHTML = `
+                                <div class="flex-1">
+                                    <div class="font-medium text-sm text-gray-800">${scholarName}</div>
+                                    <div class="text-xs text-gray-500">${scholarEmail}</div>
+                                </div>
+                                <button type="button" class="text-red-500 hover:text-red-700 text-sm remove-recipient ml-2" data-scholar-id="${scholarId}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            `;
+                            recipientsList.appendChild(recipientDiv);
+                        });
+
+                        // Add event listeners to remove buttons
+                        document.querySelectorAll('.remove-recipient').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const scholarId = this.getAttribute('data-scholar-id');
+                                const checkbox = document.querySelector(`.scholar-checkbox[data-scholar-id="${scholarId}"]`);
+                                if (checkbox) {
+                                    checkbox.checked = false;
+                                    updateEmailButton();
+                                    updateRecipientsList();
+                                }
+                            });
+                        });
+                    }
+
+                    // Close modal functions
+                    closeEmailModal.addEventListener('click', function() {
+                        emailModal.classList.add('hidden');
+                    });
+
+                    cancelEmail.addEventListener('click', function() {
+                        emailModal.classList.add('hidden');
+                    });
+
+                    // Close modal when clicking outside
+                    window.addEventListener('click', function(e) {
+                        if (e.target === emailModal) {
+                            emailModal.classList.add('hidden');
+                        }
+                    });
+
+                    // In your scholar.blade.php - update the email form submission
+                    emailForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+
+                        const subject = document.getElementById('emailSubject').value;
+                        const message = document.getElementById('emailMessage').value;
+                        
+                        // Get all selected scholar IDs
+                        const selectedScholarIds = Array.from(document.querySelectorAll('.scholar-checkbox:checked'))
+                            .map(checkbox => checkbox.getAttribute('data-scholar-id'));
+
+                        if (selectedScholarIds.length === 0) {
+                            Swal.fire({
+                                title: 'No Recipients',
+                                text: 'Please select at least one recipient.',
+                                icon: 'warning',
+                                confirmButtonText: 'OK'
+                            });
+                            return;
+                        }
+
+                        // Show loading state
+                        const submitBtn = this.querySelector('button[type="submit"]');
+                        const originalText = submitBtn.innerHTML;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+                        submitBtn.disabled = true;
+
+                        // Use FormData instead of JSON
+                        const formData = new FormData();
+                        formData.append('scholar_ids', selectedScholarIds.join(','));
+                        formData.append('subject', subject);
+                        formData.append('message', message);
+                        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+                        // Send bulk email via AJAX using FormData
+                        fetch('/lydo_admin/send-bulk-email', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            },
+                            credentials: 'same-origin',
+                            body: formData
+                        })
+                        .then(response => {
+                            // First, check if the response is JSON
+                            const contentType = response.headers.get('content-type');
+                            if (!contentType || !contentType.includes('application/json')) {
+                                // If not JSON, get the text and throw an error
+                                return response.text().then(text => {
+                                    throw new Error(`Server returned HTML instead of JSON. This usually indicates a server error. Response: ${text.substring(0, 200)}...`);
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: data.message || `Email sent successfully to ${selectedScholarIds.length} scholar(s)!`,
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                });
+                                emailModal.classList.add('hidden');
+                                emailForm.reset();
+                                
+                                // Uncheck all checkboxes after sending
+                                document.querySelectorAll('.scholar-checkbox:checked').forEach(checkbox => {
+                                    checkbox.checked = false;
+                                });
+                                updateEmailButton();
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: data.message || 'Failed to send email.',
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            // Error handling removed as requested
+                        })
+                        .finally(() => {
+                            submitBtn.innerHTML = originalText;
+                            submitBtn.disabled = false;
+                        });
+                    });
+
+                    // Add event listeners to checkboxes
+                    document.addEventListener('change', function(e) {
+                        if (e.target.classList.contains('scholar-checkbox')) {
+                            updateEmailButton();
+                        }
+                    });
+
+                    // Select all functionality
+                    document.getElementById('selectAll').addEventListener('change', function(e) {
+                        const isChecked = e.target.checked;
+                        const visibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox');
+                        
+                        visibleCheckboxes.forEach(checkbox => {
+                            checkbox.checked = isChecked;
+                        });
+                        
+                        updateEmailButton();
+                    });
+
+                    // Initialize email button state
+                    updateEmailButton();
+                });
+
+            // Add this debug function to check what's being sent
+            function debugEmailRequest() {
+                const selectedScholarIds = Array.from(document.querySelectorAll('.scholar-checkbox:checked'))
+                    .map(checkbox => checkbox.getAttribute('data-scholar-id'));
+                
+                const subject = document.getElementById('emailSubject').value;
+                const message = document.getElementById('emailMessage').value;
+                
+                console.log('Selected Scholar IDs:', selectedScholarIds);
+                console.log('Subject:', subject);
+                console.log('Message:', message);
+                console.log('CSRF Token:', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                
+                return {
+                    scholar_ids: selectedScholarIds.join(','),
+                    subject: subject,
+                    message: message
+                };
+            }
+
+            // Call this before your fetch request to debug
+            const debugData = debugEmailRequest();
+            console.log('Sending data:', debugData);
+                // Update the applyFilters function to include email button update
+                function applyFilters() {
+                    const searchValue = document.getElementById('searchInput').value.toLowerCase();
+                    const barangayValue = document.getElementById('barangaySelect').value;
+                    const academicYearValue = document.getElementById('academicYearSelect').value;
+                    const statusValue = document.getElementById('statusSelect').value;
+
+                    const rows = document.querySelectorAll('.scholar-row');
+                    let visibleCount = 0;
+
+                    rows.forEach(row => {
+                        const name = row.querySelector('td:nth-child(2) div').textContent.toLowerCase();
+                        const barangay = row.querySelector('td:nth-child(3) div').textContent;
+                        const academicYear = row.querySelector('td:nth-child(7) div').textContent;
+                        const statusElement = row.querySelector('td:nth-child(8) span');
+
+                        // Get status and normalize to lowercase for comparison
+                        let statusText = '';
+                        if (statusElement) {
+                            statusText = statusElement.textContent.trim().toLowerCase();
+                        }
+
+                        // Check if row matches all filters
+                        const matchesSearch = !searchValue || name.includes(searchValue);
+                        const matchesBarangay = !barangayValue || barangay === barangayValue;
+                        const matchesAcademicYear = !academicYearValue || academicYear === academicYearValue;
+
+                        // Fixed status matching logic
+                        let matchesStatus = true;
+                        if (statusValue !== 'all') {
+                            matchesStatus = statusText === statusValue.toLowerCase();
+                        }
+
+                        if (matchesSearch && matchesBarangay && matchesAcademicYear && matchesStatus) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+
+                    // Show no results message if needed
+                    showNoResultsMessage(visibleCount === 0);
+
+                    // Update select all checkbox and email button
+                    updateSelectAllCheckbox();
+                    updateEmailButton();
+                }
+
+                function updateSelectAllCheckbox() {
+                    const selectAll = document.getElementById('selectAll');
+                    const visibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox');
+                    const checkedVisibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox:checked');
+                    
+                    if (visibleCheckboxes.length === 0) {
+                        selectAll.checked = false;
+                        selectAll.indeterminate = false;
+                    } else if (checkedVisibleCheckboxes.length === visibleCheckboxes.length) {
+                        selectAll.checked = true;
+                        selectAll.indeterminate = false;
+                    } else if (checkedVisibleCheckboxes.length > 0) {
+                        selectAll.checked = false;
+                        selectAll.indeterminate = true;
+                    } else {
+                        selectAll.checked = false;
+                        selectAll.indeterminate = false;
+                    }
+                }
+
+                function updateEmailButton() {
+                    const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+                    const emailBtn = document.getElementById('emailBtn');
+                    
+                    if (selectedCheckboxes.length > 0) {
+                        emailBtn.classList.remove('hidden');
+                    } else {
+                        emailBtn.classList.add('hidden');
+                    }
+                }
+
+                function showNoResultsMessage(show) {
+                    let noResultsRow = document.querySelector('.no-results-row');
+                    
+                    if (show && !noResultsRow) {
+                        noResultsRow = document.createElement('tr');
+                        noResultsRow.className = 'no-results-row';
+                        noResultsRow.innerHTML = `
+                            <td colspan="9" class="text-center py-4 border border-gray-200 text-gray-500">
+                                No scholars found matching your filters.
+                            </td>
+                        `;
+                        document.querySelector('tbody').appendChild(noResultsRow);
+                    } else if (!show && noResultsRow) {
+                        noResultsRow.remove();
+                    }
+                }
+
+                // Debounce function
+                function debounce(func, wait) {
+                    let timeout;
+                    return function executedFunction(...args) {
+                        const later = () => {
+                            clearTimeout(timeout);
+                            func(...args);
+                        };
+                        clearTimeout(timeout);
+                        timeout = setTimeout(later, wait);
+                    };
+                }
+                </script>
+
+                <!-- Document Modal -->
+                <div id="documentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                    <div class="relative top-1 mx-auto p-4 md:p-6 border w-full max-w-6xl shadow-2xl rounded-xl bg-white max-h-[98vh] overflow-y-auto">
+                        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+                            <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                                <i class="fas fa-file-alt text-blue-600 mr-3"></i>
+                                Scholar Documents
+                                <span id="currentDocIndicator" class="ml-3 text-sm font-normal text-gray-600 hidden">
+                                    (Viewing: <span id="currentDocName" class="font-medium text-blue-600"></span>)
+                                </span>
+                            </h3>
+                            <div class="flex items-center space-x-2">
+                                <button id="fullscreenBtn" class="text-gray-400 hover:text-gray-600 transition-colors p-2" title="Toggle Fullscreen">
+                                    <i class="fas fa-expand text-lg"></i>
+                                </button>
+                                <button type="button" id="closeDocumentModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                                    <i class="fas fa-times text-xl"></i>
+                                </button>
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Message</label>
-                            <textarea name="message" required rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-vertical" placeholder="Enter your message"></textarea>
-                        </div>
-
-                        <input type="hidden" id="scholarId" name="scholar_id" value="">
-
-                        <!-- Loading Indicator -->
-                        <div id="emailLoading" class="hidden flex items-center justify-center py-4">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                            <span class="ml-3 text-base text-gray-600 font-medium">Sending email...</span>
-                        </div>
-
-                        <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200">
-                            <button type="button" id="cancelEmail" class="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
-                                Cancel
-                            </button>
-                            <button type="submit" id="sendEmailButton" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-                                <i class="fas fa-paper-plane mr-2"></i>Send Email
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Announcement Modal -->
-            <div id="announcementModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-                <div class="relative top-20 mx-auto p-6 border w-full max-w-2xl shadow-2xl rounded-xl bg-white">
-                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-                        <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                            <i class="fas fa-bullhorn text-green-600 mr-3"></i>
-                            Generated Announcement
-                        </h3>
-                        <button type="button" id="closeAnnouncementModal" class="text-gray-400 hover:text-gray-600 transition-colors">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-
-                    <div class="space-y-6">
-                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
-                            <div class="flex items-center mb-3">
-                                <i class="fas fa-info-circle text-green-600 mr-2"></i>
-                                <span class="text-sm font-medium text-green-800">Announcement Preview</span>
+                        <div class="space-y-6">
+                            <!-- Scholar Information -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h4 class="text-lg font-semibold text-blue-800 mb-2">Scholar Information</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <span class="text-sm font-medium text-blue-700">Name:</span>
+                                        <span id="docScholarName" class="text-sm text-blue-900 ml-2">-</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-sm font-medium text-blue-700">Email:</span>
+                                        <span id="docScholarEmail" class="text-sm text-blue-900 ml-2">-</span>
+                                    </div>
+                                </div>
                             </div>
-                            <p class="text-sm text-green-700">This announcement groups scholars by barangay with numbered lists for easy reference.</p>
-                        </div>
 
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                <i class="fas fa-file-alt text-gray-500 mr-2"></i>
-                                Announcement Content
-                            </label>
-                            <textarea id="announcementContent" readonly rows="12" class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-sm leading-relaxed resize-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors" placeholder="Announcement content will appear here..."></textarea>
-                        </div>
+                            <!-- Academic Period Selection -->
+                            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                <h4 class="text-lg font-semibold text-gray-800 mb-4">Select Academic Period</h4>
+                                <div class="flex flex-wrap gap-4" id="academicPeriodTabs">
+                                    <!-- Tabs will be dynamically generated here -->
+                                </div>
+                            </div>
 
-                        <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200">
-                            <button type="button" id="copyAnnouncement" class="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors shadow-sm flex items-center">
-                                <i class="fas fa-copy mr-2"></i>Copy to Clipboard
-                            </button>
-                            <button type="button" id="closeAnnouncement" class="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
-                                Close
-                            </button>
+                            <!-- Documents Section -->
+                            <div id="documentsSection">
+                                <!-- Documents will be dynamically loaded here based on selected academic period -->
+                            </div>
+
+                            <!-- No Documents Message -->
+                            <div id="noDocumentsMessage" class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center hidden">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl mb-3"></i>
+                                <h4 class="text-lg font-semibold text-yellow-800 mb-2">No Documents Found</h4>
+                                <p class="text-yellow-700">No documents submitted for this academic period.</p>
+                            </div>
+
+                            <div class="flex justify-end pt-4 border-t border-gray-200">
+                                <button type="button" id="closeDocument" class="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                                    Close
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-<!-- Document Modal -->
-<div id="documentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-1 mx-auto p-4 md:p-6 border w-full max-w-6xl shadow-2xl rounded-xl bg-white max-h-[98vh] overflow-y-auto">
-        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-            <h3 class="text-xl font-bold text-gray-900 flex items-center">
-                <i class="fas fa-file-alt text-blue-600 mr-3"></i>
-                Scholar Documents
-                <span id="currentDocIndicator" class="ml-3 text-sm font-normal text-gray-600 hidden">
-                    (Viewing: <span id="currentDocName" class="font-medium text-blue-600"></span>)
-                </span>
-            </h3>
-            <div class="flex items-center space-x-2">
-                <button id="fullscreenBtn" class="text-gray-400 hover:text-gray-600 transition-colors p-2" title="Toggle Fullscreen">
-                    <i class="fas fa-expand text-lg"></i>
-                </button>
-                <button type="button" id="closeDocumentModal" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="space-y-6">
-            <!-- Scholar Information -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 class="text-lg font-semibold text-blue-800 mb-2">Scholar Information</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <span class="text-sm font-medium text-blue-700">Name:</span>
-                        <span id="docScholarName" class="text-sm text-blue-900 ml-2">-</span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-blue-700">Email:</span>
-                        <span id="docScholarEmail" class="text-sm text-blue-900 ml-2">-</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Academic Period Selection -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4">
-                <h4 class="text-lg font-semibold text-gray-800 mb-4">Select Academic Period</h4>
-                <div class="flex flex-wrap gap-4" id="academicPeriodTabs">
-                    <!-- Tabs will be dynamically generated here -->
-                </div>
-            </div>
-
-            <!-- Documents Section -->
-            <div id="documentsSection">
-                <!-- Documents will be dynamically loaded here based on selected academic period -->
-            </div>
-
-            <!-- No Documents Message -->
-            <div id="noDocumentsMessage" class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center hidden">
-                <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl mb-3"></i>
-                <h4 class="text-lg font-semibold text-yellow-800 mb-2">No Documents Found</h4>
-                <p class="text-yellow-700">No documents submitted for this academic period.</p>
-            </div>
-
-            <div class="flex justify-end pt-4 border-t border-gray-200">
-                <button type="button" id="closeDocument" class="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-            <script>
+        <script>
                 // Notification bell functionality
-                document.getElementById("notifBell").addEventListener("click", function () {
-                    let dropdown = document.getElementById("notifDropdown");
-                    dropdown.classList.toggle("hidden");
+            document.getElementById("notifBell").addEventListener("click", function () {
+                let dropdown = document.getElementById("notifDropdown");
+                dropdown.classList.toggle("hidden");
 
                     // remove badge when opened
-                    let notifCount = document.getElementById("notifCount");
-                    if (notifCount) {
-                        notifCount.remove();
+                let notifCount = document.getElementById("notifCount");
+                 if (notifCount) {
+                     notifCount.remove();
+                    }
+            });
+
+
+            // Document Modal functionality
+            function openDocumentModal(scholarId) {
+                const modal = document.getElementById('documentModal');
+                const scholarName = document.getElementById('docScholarName');
+                const scholarEmail = document.getElementById('docScholarEmail');
+                const academicPeriodTabs = document.getElementById('academicPeriodTabs');
+                const documentsSection = document.getElementById('documentsSection');
+                const noDocumentsMessage = document.getElementById('noDocumentsMessage');
+
+                // Reset modal content
+                scholarName.textContent = '-';
+                scholarEmail.textContent = '-';
+                academicPeriodTabs.innerHTML = '';
+                documentsSection.innerHTML = '';
+                noDocumentsMessage.classList.add('hidden');
+
+                // Get scholar info from table
+                const scholarRow = document.querySelector(`.scholar-checkbox[data-scholar-id="${scholarId}"]`).closest('tr');
+                const scholarNameFromTable = scholarRow.querySelector('td:nth-child(2) div').textContent.trim();
+                const scholarEmailFromTable = scholarRow.querySelector('td:nth-child(4) div').textContent.trim();
+                
+                scholarName.textContent = scholarNameFromTable;
+                scholarEmail.textContent = scholarEmailFromTable;
+
+                // Show modal
+                modal.classList.remove('hidden');
+
+                // Fetch scholar documents grouped by academic period
+                fetch(`/lydo_admin/get-scholar-documents/${scholarId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.documents.length > 0) {
+                            // Group documents by academic year and semester
+                            const groupedDocuments = groupDocumentsByAcademicPeriod(data.documents);
+                            
+                            // Create tabs for each academic period
+                            createAcademicPeriodTabs(groupedDocuments, scholarId);
+                            
+                            // Load first tab by default
+                            if (Object.keys(groupedDocuments).length > 0) {
+                                const firstPeriod = Object.keys(groupedDocuments)[0];
+                                loadDocumentsForPeriod(groupedDocuments[firstPeriod], firstPeriod);
+                            }
+                        } else {
+                            noDocumentsMessage.classList.remove('hidden');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching documents:', error);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Failed to load scholar documents.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    });
+            }
+
+            // Group documents by academic year and semester
+            function groupDocumentsByAcademicPeriod(documents) {
+                const grouped = {};
+                
+                documents.forEach(doc => {
+                    const key = `${doc.renewal_acad_year}-${doc.renewal_semester}`;
+                    if (!grouped[key]) {
+                        grouped[key] = {
+                            academicYear: doc.renewal_acad_year,
+                            semester: doc.renewal_semester,
+                            dateSubmitted: doc.date_submitted,
+                            documents: []
+                        };
+                    }
+                    grouped[key].documents.push(doc);
+                });
+                
+                return grouped;
+            }
+
+            // Create tabs for academic periods
+            function createAcademicPeriodTabs(groupedDocuments, scholarId) {
+                const tabsContainer = document.getElementById('academicPeriodTabs');
+                
+                Object.keys(groupedDocuments).forEach((periodKey, index) => {
+                    const period = groupedDocuments[periodKey];
+                    const tab = document.createElement('button');
+                    tab.className = `px-4 py-2 rounded-lg border transition-colors ${
+                        index === 0 
+                        ? 'bg-blue-600 text-white border-blue-600' 
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`;
+                    tab.textContent = `${period.semester} - ${period.academicYear}`;
+                    tab.setAttribute('data-period', periodKey);
+                    
+                    tab.addEventListener('click', function() {
+                        // Update active tab
+                        document.querySelectorAll('#academicPeriodTabs button').forEach(btn => {
+                            btn.className = 'px-4 py-2 rounded-lg border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 transition-colors';
+                        });
+                        this.className = 'px-4 py-2 rounded-lg border bg-blue-600 text-white border-blue-600 transition-colors';
+                        
+                        // Load documents for selected period
+                        loadDocumentsForPeriod(groupedDocuments[periodKey], periodKey);
+                    });
+                    
+                    tabsContainer.appendChild(tab);
+                });
+            }
+
+            // Load documents for specific academic period
+            function loadDocumentsForPeriod(periodData, periodKey) {
+                const documentsSection = document.getElementById('documentsSection');
+                const noDocumentsMessage = document.getElementById('noDocumentsMessage');
+                
+                documentsSection.innerHTML = '';
+                
+                if (periodData.documents.length === 0) {
+                    noDocumentsMessage.classList.remove('hidden');
+                    return;
+                }
+                
+                noDocumentsMessage.classList.add('hidden');
+                
+                // Create period info
+                const periodInfo = document.createElement('div');
+                periodInfo.className = 'bg-green-50 border border-green-200 rounded-lg p-4 mb-4';
+                periodInfo.innerHTML = `
+                    <h4 class="text-lg font-semibold text-green-800 mb-2">Academic Period: ${periodData.semester} - ${periodData.academicYear}</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                        <div><span class="font-medium text-green-700">Date Submitted:</span> ${periodData.dateSubmitted || 'N/A'}</div>
+                    </div>
+                `;
+                documentsSection.appendChild(periodInfo);
+                
+                // Create documents grid
+                const documentsGrid = document.createElement('div');
+                documentsGrid.className = 'grid grid-cols-1 md:grid-cols-3 gap-4';
+                documentsGrid.id = 'documentsGrid';
+                
+                const documentTypes = [
+                    { key: 'renewal_cert_of_reg', name: 'Certificate of Registration', color: 'blue' },
+                    { key: 'renewal_grade_slip', name: 'Grade Slip', color: 'green' },
+                    { key: 'renewal_brgy_indigency', name: 'Barangay Indigency', color: 'purple' }
+                ];
+                
+                documentTypes.forEach((docType, index) => {
+                    const docContainer = document.createElement('div');
+                    docContainer.className = 'border-2 border-gray-300 rounded-lg p-4 bg-white transition-all duration-300 hover:border-blue-300 document-container';
+                    docContainer.setAttribute('data-doc-id', index + 1);
+                    
+                    const latestDocument = periodData.documents[0]; // Get the latest submission for this period
+                    
+                    const colorClasses = {
+                        blue: 'bg-blue-100 text-blue-800',
+                        green: 'bg-green-100 text-green-800',
+                        purple: 'bg-purple-100 text-purple-800'
+                    };
+                    
+                    let previewContent = '<span class="text-gray-500 text-sm">No document available</span>';
+                    let downloadButton = '';
+                    
+                    if (latestDocument[docType.key]) {
+                        const fileUrl = latestDocument[docType.key];
+                        previewContent = `<iframe src="${fileUrl}" class="w-full h-full border-0" style="min-height: 200px;"></iframe>`;
+                        downloadButton = `
+                            <a href="${fileUrl}" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center mt-3">
+                                <i class="fas fa-download mr-2"></i>Download
+                            </a>
+                        `;
+                    }
+                    
+                // Gawing almost full height agad
+            docContainer.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <h5 class="font-semibold text-gray-700 flex items-center">
+                        <span class="${colorClasses[docType.color]} text-xs font-bold px-2 py-1 rounded mr-2">${index + 1}</span>
+                        ${docType.name}
+                    </h5>
+                    <button class="text-blue-600 hover:text-blue-800 text-sm transition-colors expand-btn" title="Expand Document">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+                <div class="mb-3 h-96 border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300 document-preview">
+                    ${previewContent}
+                </div>
+                ${downloadButton}
+            `; 
+                    documentsGrid.appendChild(docContainer);
+                });
+                
+                documentsSection.appendChild(documentsGrid);
+                
+                // Re-attach expand functionality
+                attachExpandFunctionality();
+            }
+
+            // Attach expand functionality to document previews
+            function attachExpandFunctionality() {
+                let currentlyExpandedDoc = null;
+                
+                document.querySelectorAll('.expand-btn').forEach((button, index) => {
+                    const preview = button.closest('.document-container').querySelector('.document-preview');
+                    const icon = button.querySelector('i');
+                    const container = preview.closest('.border-2');
+                    const documentsGrid = document.getElementById('documentsGrid');
+                    const modal = document.getElementById('documentModal');
+                    
+                    // Set initial collapsed state
+                    preview.classList.remove('expanded');
+                    preview.style.maxHeight = '200px';
+                    icon.className = 'fas fa-expand';
+                    button.title = 'Expand Document';
+                    
+                    button.addEventListener('click', function() {
+                        const isExpanded = preview.classList.contains('expanded');
+                        
+                        if (isExpanded) {
+                            // Collapse current document
+                            preview.classList.remove('expanded');
+                            preview.style.maxHeight = '200px';
+                            container.classList.remove('md:col-span-3', 'col-span-1');
+                            documentsGrid.classList.remove('grid-cols-1');
+                            documentsGrid.classList.add('md:grid-cols-3');
+                            icon.className = 'fas fa-expand';
+                            button.title = 'Expand Document';
+                            currentlyExpandedDoc = null;
+                        } else {
+                            // If another document is expanded, collapse it first
+                            if (currentlyExpandedDoc !== null && currentlyExpandedDoc !== index) {
+                                const prevButton = document.querySelectorAll('.expand-btn')[currentlyExpandedDoc];
+                                const prevPreview = prevButton.closest('.document-container').querySelector('.document-preview');
+                                const prevContainer = prevPreview.closest('.border-2');
+                                const prevIcon = prevButton.querySelector('i');
+                                
+                                prevPreview.classList.remove('expanded');
+                                prevPreview.style.maxHeight = '200px';
+                                prevContainer.classList.remove('md:col-span-3', 'col-span-1');
+                                prevIcon.className = 'fas fa-expand';
+                                prevButton.title = 'Expand Document';
+                            }
+                            
+                            // Expand current document
+                            preview.classList.add('expanded');
+                            preview.style.maxHeight = 'none';
+                            container.classList.add('md:col-span-3', 'col-span-1');
+                            documentsGrid.classList.remove('md:grid-cols-3');
+                            documentsGrid.classList.add('grid-cols-1');
+                            icon.className = 'fas fa-compress';
+                            button.title = 'Collapse Document';
+                            currentlyExpandedDoc = index;
+                        }
+                    });
+                });
+            }
+            // Add this to your existing JavaScript
+            document.addEventListener('DOMContentLoaded', function() {
+                // Get filter elements
+                const searchInput = document.getElementById('searchInput');
+                const barangaySelect = document.getElementById('barangaySelect');
+                const academicYearSelect = document.getElementById('academicYearSelect');
+                const statusSelect = document.getElementById('statusSelect');
+                
+                // Add event listeners for real-time filtering
+                searchInput.addEventListener('input', debounce(applyFilters, 500));
+                barangaySelect.addEventListener('change', applyFilters);
+                academicYearSelect.addEventListener('change', applyFilters);
+                statusSelect.addEventListener('change', applyFilters);
+                
+            function applyFilters() {
+                const searchValue = searchInput.value.toLowerCase();
+                const barangayValue = barangaySelect.value;
+                const academicYearValue = academicYearSelect.value;
+                const statusValue = statusSelect.value;
+
+                const rows = document.querySelectorAll('.scholar-row');
+                let visibleCount = 0;
+
+                rows.forEach(row => {
+                    const name = row.querySelector('td:nth-child(2) div').textContent.toLowerCase();
+                    const barangay = row.querySelector('td:nth-child(3) div').textContent;
+                    const academicYear = row.querySelector('td:nth-child(7) div').textContent;
+                    const statusElement = row.querySelector('td:nth-child(8) span');
+
+                    // Get status and normalize to lowercase for comparison
+                    let statusText = '';
+                    if (statusElement) {
+                        statusText = statusElement.textContent.trim().toLowerCase();
+                    }
+
+                    // Check if row matches all filters
+                    const matchesSearch = !searchValue || name.includes(searchValue);
+                    const matchesBarangay = !barangayValue || barangay === barangayValue;
+                    const matchesAcademicYear = !academicYearValue || academicYear === academicYearValue;
+
+                    // Fixed status matching logic
+                    let matchesStatus = true;
+                    if (statusValue !== 'all') {
+                        matchesStatus = statusText === statusValue.toLowerCase();
+                    }
+
+                    if (matchesSearch && matchesBarangay && matchesAcademicYear && matchesStatus) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
                     }
                 });
-                // Add this to your existing JavaScript in scholar.blade.php
 
-// Print to PDF functionality
-document.getElementById('printPdfBtn').addEventListener('click', function() {
-    // Get current filter values
-    const search = document.getElementById('searchInput').value;
-    const barangay = document.getElementById('barangaySelect').value;
-    const academicYear = document.getElementById('academicYearSelect').value;
-    const status = document.getElementById('statusSelect').value;
+                // Show no results message if needed
+                showNoResultsMessage(visibleCount === 0);
 
-    // Build query string
-    const params = new URLSearchParams();
-    if (search) params.append('search', search);
-    if (barangay) params.append('barangay', barangay);
-    if (academicYear) params.append('academic_year', academicYear);
-    if (status) params.append('status', status);
-
-    // Open PDF in new tab
-    window.open(`/lydo_admin/scholars/pdf?${params.toString()}`, '_blank');
-});
-
-// Document Modal functionality
-function openDocumentModal(scholarId) {
-    const modal = document.getElementById('documentModal');
-    const scholarName = document.getElementById('docScholarName');
-    const scholarEmail = document.getElementById('docScholarEmail');
-    const academicPeriodTabs = document.getElementById('academicPeriodTabs');
-    const documentsSection = document.getElementById('documentsSection');
-    const noDocumentsMessage = document.getElementById('noDocumentsMessage');
-
-    // Reset modal content
-    scholarName.textContent = '-';
-    scholarEmail.textContent = '-';
-    academicPeriodTabs.innerHTML = '';
-    documentsSection.innerHTML = '';
-    noDocumentsMessage.classList.add('hidden');
-
-    // Get scholar info from table
-    const scholarRow = document.querySelector(`.scholar-checkbox[data-scholar-id="${scholarId}"]`).closest('tr');
-    const scholarNameFromTable = scholarRow.querySelector('td:nth-child(2) div').textContent.trim();
-    const scholarEmailFromTable = scholarRow.querySelector('td:nth-child(4) div').textContent.trim();
-    
-    scholarName.textContent = scholarNameFromTable;
-    scholarEmail.textContent = scholarEmailFromTable;
-
-    // Show modal
-    modal.classList.remove('hidden');
-
-    // Fetch scholar documents grouped by academic period
-    fetch(`/lydo_admin/get-scholar-documents/${scholarId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.documents.length > 0) {
-                // Group documents by academic year and semester
-                const groupedDocuments = groupDocumentsByAcademicPeriod(data.documents);
-                
-                // Create tabs for each academic period
-                createAcademicPeriodTabs(groupedDocuments, scholarId);
-                
-                // Load first tab by default
-                if (Object.keys(groupedDocuments).length > 0) {
-                    const firstPeriod = Object.keys(groupedDocuments)[0];
-                    loadDocumentsForPeriod(groupedDocuments[firstPeriod], firstPeriod);
-                }
-            } else {
-                noDocumentsMessage.classList.remove('hidden');
+                // Update select all checkbox
+                updateSelectAllCheckbox();
+                updateSendButton();
             }
-        })
-        .catch(error => {
-            console.error('Error fetching documents:', error);
-            Swal.fire({
-                title: 'Error!',
-                text: 'Failed to load scholar documents.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        });
-}
 
-// Group documents by academic year and semester
-function groupDocumentsByAcademicPeriod(documents) {
-    const grouped = {};
-    
-    documents.forEach(doc => {
-        const key = `${doc.renewal_acad_year}-${doc.renewal_semester}`;
-        if (!grouped[key]) {
-            grouped[key] = {
-                academicYear: doc.renewal_acad_year,
-                semester: doc.renewal_semester,
-                dateSubmitted: doc.date_submitted,
-                documents: []
-            };
-        }
-        grouped[key].documents.push(doc);
-    });
-    
-    return grouped;
-}
-
-// Create tabs for academic periods
-function createAcademicPeriodTabs(groupedDocuments, scholarId) {
-    const tabsContainer = document.getElementById('academicPeriodTabs');
-    
-    Object.keys(groupedDocuments).forEach((periodKey, index) => {
-        const period = groupedDocuments[periodKey];
-        const tab = document.createElement('button');
-        tab.className = `px-4 py-2 rounded-lg border transition-colors ${
-            index === 0 
-            ? 'bg-blue-600 text-white border-blue-600' 
-            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-        }`;
-        tab.textContent = `${period.semester} - ${period.academicYear}`;
-        tab.setAttribute('data-period', periodKey);
-        
-        tab.addEventListener('click', function() {
-            // Update active tab
-            document.querySelectorAll('#academicPeriodTabs button').forEach(btn => {
-                btn.className = 'px-4 py-2 rounded-lg border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 transition-colors';
-            });
-            this.className = 'px-4 py-2 rounded-lg border bg-blue-600 text-white border-blue-600 transition-colors';
-            
-            // Load documents for selected period
-            loadDocumentsForPeriod(groupedDocuments[periodKey], periodKey);
-        });
-        
-        tabsContainer.appendChild(tab);
-    });
-}
-
-// Load documents for specific academic period
-function loadDocumentsForPeriod(periodData, periodKey) {
-    const documentsSection = document.getElementById('documentsSection');
-    const noDocumentsMessage = document.getElementById('noDocumentsMessage');
-    
-    documentsSection.innerHTML = '';
-    
-    if (periodData.documents.length === 0) {
-        noDocumentsMessage.classList.remove('hidden');
-        return;
-    }
-    
-    noDocumentsMessage.classList.add('hidden');
-    
-    // Create period info
-    const periodInfo = document.createElement('div');
-    periodInfo.className = 'bg-green-50 border border-green-200 rounded-lg p-4 mb-4';
-    periodInfo.innerHTML = `
-        <h4 class="text-lg font-semibold text-green-800 mb-2">Academic Period: ${periodData.semester} - ${periodData.academicYear}</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-            <div><span class="font-medium text-green-700">Date Submitted:</span> ${periodData.dateSubmitted || 'N/A'}</div>
-        </div>
-    `;
-    documentsSection.appendChild(periodInfo);
-    
-    // Create documents grid
-    const documentsGrid = document.createElement('div');
-    documentsGrid.className = 'grid grid-cols-1 md:grid-cols-3 gap-4';
-    documentsGrid.id = 'documentsGrid';
-    
-    const documentTypes = [
-        { key: 'renewal_cert_of_reg', name: 'Certificate of Registration', color: 'blue' },
-        { key: 'renewal_grade_slip', name: 'Grade Slip', color: 'green' },
-        { key: 'renewal_brgy_indigency', name: 'Barangay Indigency', color: 'purple' }
-    ];
-    
-    documentTypes.forEach((docType, index) => {
-        const docContainer = document.createElement('div');
-        docContainer.className = 'border-2 border-gray-300 rounded-lg p-4 bg-white transition-all duration-300 hover:border-blue-300 document-container';
-        docContainer.setAttribute('data-doc-id', index + 1);
-        
-        const latestDocument = periodData.documents[0]; // Get the latest submission for this period
-        
-        const colorClasses = {
-            blue: 'bg-blue-100 text-blue-800',
-            green: 'bg-green-100 text-green-800',
-            purple: 'bg-purple-100 text-purple-800'
-        };
-        
-        let previewContent = '<span class="text-gray-500 text-sm">No document available</span>';
-        let downloadButton = '';
-        
-        if (latestDocument[docType.key]) {
-            const fileUrl = latestDocument[docType.key];
-            previewContent = `<iframe src="${fileUrl}" class="w-full h-full border-0" style="min-height: 200px;"></iframe>`;
-            downloadButton = `
-                <a href="${fileUrl}" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center mt-3">
-                    <i class="fas fa-download mr-2"></i>Download
-                </a>
-            `;
-        }
-        
-       // Gawing almost full height agad
-docContainer.innerHTML = `
-    <div class="flex justify-between items-center mb-3">
-        <h5 class="font-semibold text-gray-700 flex items-center">
-            <span class="${colorClasses[docType.color]} text-xs font-bold px-2 py-1 rounded mr-2">${index + 1}</span>
-            ${docType.name}
-        </h5>
-        <button class="text-blue-600 hover:text-blue-800 text-sm transition-colors expand-btn" title="Expand Document">
-            <i class="fas fa-expand"></i>
-        </button>
-    </div>
-    <div class="mb-3 h-96 border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300 document-preview">
-        ${previewContent}
-    </div>
-    ${downloadButton}
-`; 
-        documentsGrid.appendChild(docContainer);
-    });
-    
-    documentsSection.appendChild(documentsGrid);
-    
-    // Re-attach expand functionality
-    attachExpandFunctionality();
-}
-
-// Attach expand functionality to document previews
-function attachExpandFunctionality() {
-    let currentlyExpandedDoc = null;
-    
-    document.querySelectorAll('.expand-btn').forEach((button, index) => {
-        const preview = button.closest('.document-container').querySelector('.document-preview');
-        const icon = button.querySelector('i');
-        const container = preview.closest('.border-2');
-        const documentsGrid = document.getElementById('documentsGrid');
-        const modal = document.getElementById('documentModal');
-        
-        // Set initial collapsed state
-        preview.classList.remove('expanded');
-        preview.style.maxHeight = '200px';
-        icon.className = 'fas fa-expand';
-        button.title = 'Expand Document';
-        
-        button.addEventListener('click', function() {
-            const isExpanded = preview.classList.contains('expanded');
-            
-            if (isExpanded) {
-                // Collapse current document
-                preview.classList.remove('expanded');
-                preview.style.maxHeight = '200px';
-                container.classList.remove('md:col-span-3', 'col-span-1');
-                documentsGrid.classList.remove('grid-cols-1');
-                documentsGrid.classList.add('md:grid-cols-3');
-                icon.className = 'fas fa-expand';
-                button.title = 'Expand Document';
-                currentlyExpandedDoc = null;
-            } else {
-                // If another document is expanded, collapse it first
-                if (currentlyExpandedDoc !== null && currentlyExpandedDoc !== index) {
-                    const prevButton = document.querySelectorAll('.expand-btn')[currentlyExpandedDoc];
-                    const prevPreview = prevButton.closest('.document-container').querySelector('.document-preview');
-                    const prevContainer = prevPreview.closest('.border-2');
-                    const prevIcon = prevButton.querySelector('i');
+                function showNoResultsMessage(show) {
+                    let noResultsRow = document.querySelector('.no-results-row');
                     
-                    prevPreview.classList.remove('expanded');
-                    prevPreview.style.maxHeight = '200px';
-                    prevContainer.classList.remove('md:col-span-3', 'col-span-1');
-                    prevIcon.className = 'fas fa-expand';
-                    prevButton.title = 'Expand Document';
+                    if (show && !noResultsRow) {
+                        noResultsRow = document.createElement('tr');
+                        noResultsRow.className = 'no-results-row';
+                        noResultsRow.innerHTML = `
+                            <td colspan="9" class="text-center py-4 border border-gray-200 text-gray-500">
+                                No scholars found matching your filters.
+                            </td>
+                        `;
+                        document.querySelector('tbody').appendChild(noResultsRow);
+                    } else if (!show && noResultsRow) {
+                        noResultsRow.remove();
+                    }
                 }
                 
-                // Expand current document
-                preview.classList.add('expanded');
-                preview.style.maxHeight = 'none';
-                container.classList.add('md:col-span-3', 'col-span-1');
-                documentsGrid.classList.remove('md:grid-cols-3');
-                documentsGrid.classList.add('grid-cols-1');
-                icon.className = 'fas fa-compress';
-                button.title = 'Collapse Document';
-                currentlyExpandedDoc = index;
-            }
-        });
-    });
-}
-// Add this to your existing JavaScript
-document.addEventListener('DOMContentLoaded', function() {
-    // Get filter elements
-    const searchInput = document.getElementById('searchInput');
-    const barangaySelect = document.getElementById('barangaySelect');
-    const academicYearSelect = document.getElementById('academicYearSelect');
-    const statusSelect = document.getElementById('statusSelect');
-    
-    // Add event listeners for real-time filtering
-    searchInput.addEventListener('input', debounce(applyFilters, 500));
-    barangaySelect.addEventListener('change', applyFilters);
-    academicYearSelect.addEventListener('change', applyFilters);
-    statusSelect.addEventListener('change', applyFilters);
-    
-function applyFilters() {
-    const searchValue = searchInput.value.toLowerCase();
-    const barangayValue = barangaySelect.value;
-    const academicYearValue = academicYearSelect.value;
-    const statusValue = statusSelect.value;
-    
-    const rows = document.querySelectorAll('.scholar-row');
-    let visibleCount = 0;
-    
-    rows.forEach(row => {
-        const name = row.querySelector('td:nth-child(2) div').textContent.toLowerCase();
-        const barangay = row.querySelector('td:nth-child(3) div').textContent;
-        const academicYear = row.querySelector('td:nth-child(7) div').textContent;
-        const statusElement = row.querySelector('td:nth-child(8) span');
-        
-        // Get status and normalize to lowercase for comparison
-        let statusText = '';
-        if (statusElement) {
-            statusText = statusElement.textContent.trim().toLowerCase();
-        }
-        
-        // Debug logging
-        console.log('Row status:', statusText, 'Filter status:', statusValue);
-        
-        // Check if row matches all filters
-        const matchesSearch = !searchValue || name.includes(searchValue);
-        const matchesBarangay = !barangayValue || barangay === barangayValue;
-        const matchesAcademicYear = !academicYearValue || academicYear === academicYearValue;
-        
-        // Fixed status matching logic
-        let matchesStatus = true;
-        if (statusValue !== 'all') {
-            matchesStatus = statusText === statusValue.toLowerCase();
-        }
-        
-        console.log('Status match:', matchesStatus);
-        
-        if (matchesSearch && matchesBarangay && matchesAcademicYear && matchesStatus) {
-            row.style.display = '';
-            visibleCount++;
-        } else {
-            row.style.display = 'none';
-        }
-    });
-    
-    // Show no results message if needed
-    showNoResultsMessage(visibleCount === 0);
-    
-    // Update select all checkbox
-    updateSelectAllCheckbox();
-    updateSendButton();
-}
+                    function updateSelectAllCheckbox() {
+                        const selectAll = document.getElementById('selectAll');
+                        const visibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox');
+                        const checkedVisibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox:checked');
+                        
+                        if (visibleCheckboxes.length === 0) {
+                            selectAll.checked = false;
+                            selectAll.indeterminate = false;
+                        } else if (checkedVisibleCheckboxes.length === visibleCheckboxes.length) {
+                            selectAll.checked = true;
+                            selectAll.indeterminate = false;
+                        } else if (checkedVisibleCheckboxes.length > 0) {
+                            selectAll.checked = false;
+                            selectAll.indeterminate = true;
+                        } else {
+                            selectAll.checked = false;
+                            selectAll.indeterminate = false;
+                        }
+                        
+                        // Update email button visibility
+                        updateEmailButton();
+                    }
+                
+                // Debounce function to limit how often the filter runs during typing
+                function debounce(func, wait) {
+                    let timeout;
+                    return function executedFunction(...args) {
+                        const later = () => {
+                            clearTimeout(timeout);
+                            func(...args);
+                        };
+                        clearTimeout(timeout);
+                        timeout = setTimeout(later, wait);
+                    };
+                }
+                
+                // Initialize filters on page load
+                applyFilters();
+            });
+            // Close document modal
+            document.getElementById('closeDocumentModal').addEventListener('click', function() {
+                document.getElementById('documentModal').classList.add('hidden');
+            });
 
-    function showNoResultsMessage(show) {
-        let noResultsRow = document.querySelector('.no-results-row');
-        
-        if (show && !noResultsRow) {
-            noResultsRow = document.createElement('tr');
-            noResultsRow.className = 'no-results-row';
-            noResultsRow.innerHTML = `
-                <td colspan="9" class="text-center py-4 border border-gray-200 text-gray-500">
-                    No scholars found matching your filters.
-                </td>
-            `;
-            document.querySelector('tbody').appendChild(noResultsRow);
-        } else if (!show && noResultsRow) {
-            noResultsRow.remove();
-        }
-    }
-    
-    function updateSelectAllCheckbox() {
-        const selectAll = document.getElementById('selectAll');
-        const visibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox');
-        const checkedVisibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox:checked');
-        
-        if (visibleCheckboxes.length === 0) {
-            selectAll.checked = false;
-            selectAll.indeterminate = false;
-        } else if (checkedVisibleCheckboxes.length === visibleCheckboxes.length) {
-            selectAll.checked = true;
-            selectAll.indeterminate = false;
-        } else if (checkedVisibleCheckboxes.length > 0) {
-            selectAll.checked = false;
-            selectAll.indeterminate = true;
-        } else {
-            selectAll.checked = false;
-            selectAll.indeterminate = false;
-        }
-    }
-    
-    // Debounce function to limit how often the filter runs during typing
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-    
-    // Initialize filters on page load
-    applyFilters();
-});
-// Close document modal
-document.getElementById('closeDocumentModal').addEventListener('click', function() {
-    document.getElementById('documentModal').classList.add('hidden');
-});
+            document.getElementById('closeDocument').addEventListener('click', function() {
+                document.getElementById('documentModal').classList.add('hidden');
+            });
 
-document.getElementById('closeDocument').addEventListener('click', function() {
-    document.getElementById('documentModal').classList.add('hidden');
-});
+            // Close modal when clicking outside
+            window.addEventListener('click', function(e) {
+                const modal = document.getElementById('documentModal');
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+                        </script>
 
-// Close modal when clicking outside
-window.addEventListener('click', function(e) {
-    const modal = document.getElementById('documentModal');
-    if (e.target === modal) {
-        modal.classList.add('hidden');
-    }
-});
+            <script>
+            // Print to PDF functionality
+            document.getElementById('printPdfBtn').addEventListener('click', function() {
+                // Get current filter values
+                const searchValue = document.getElementById('searchInput').value;
+                const barangayValue = document.getElementById('barangaySelect').value;
+                const academicYearValue = document.getElementById('academicYearSelect').value;
+                const statusValue = document.getElementById('statusSelect').value;
+
+                // Build query parameters
+                const params = new URLSearchParams();
+
+                if (searchValue) params.append('search', searchValue);
+                if (barangayValue) params.append('barangay', barangayValue);
+                if (academicYearValue) params.append('academic_year', academicYearValue);
+                if (statusValue && statusValue !== 'all') params.append('status', statusValue);
+
+                // Generate PDF URL
+                const pdfUrl = `/lydo_admin/generate-scholars-pdf?${params.toString()}`;
+
+                // Show loading state
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating PDF...';
+                this.disabled = true;
+
+                // Open PDF in new tab
+                const newWindow = window.open(pdfUrl, '_blank');
+
+                // Reset button after a delay
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 3000);
+
+                setTimeout(() => {
+                    if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                        Swal.fire({
+                            title: 'PDF Generated',
+                            text: 'Your PDF is ready. If it didn\'t open automatically, check your browser\'s pop-up settings.',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                }, 2000);
+            });
+
+
             </script>
             <script src="{{ asset('js/filter_paginate.js') }}"></script>
             <script src="{{ asset('js/scholar.js') }}"></script>
             <script src="{{ asset('js/spinner.js') }}"></script>
-
+            <script src="{{ asset('js/scholar_logout.js') }}"></script>
+            <script src="{{ asset('js/toggle_dropdown.js') }}"></script>
         </div>
     </div>
 </body>

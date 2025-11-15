@@ -175,11 +175,6 @@
                                 <i class="fas fa-list mr-1"></i> Approved/Rejected
                             </button>
                         </div>
-                        <div class="flex gap-2">
-                            <button type="button" onclick="printCurrentTable()" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-md transition duration-200">
-                                <i class="fas fa-print mr-2"></i> Print
-                            </button>
-                        </div>
                     </div>
 
                     <!-- Pending Status Tab -->

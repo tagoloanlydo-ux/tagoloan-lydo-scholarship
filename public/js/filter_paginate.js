@@ -210,61 +210,63 @@ function initializeScholarFiltering() {
         }
     }
 
-    function filterScholarTable() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedBarangay = barangaySelect.value;
-        const selectedAcademicYear = academicYearSelect.value;
-        const selectedStatus = statusSelect.value;
+   function filterScholarTable() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedBarangay = barangaySelect.value;
+    const selectedAcademicYear = academicYearSelect.value;
+    const selectedStatus = statusSelect.value;
 
-        const filteredRows = paginationState.allRows.filter(row => {
-            const nameCell = row.cells[1];
-            const barangayCell = row.cells[2];
-            const academicYearCell = row.cells[6];
-            const statusCell = row.cells[7];
+    const filteredRows = paginationState.allRows.filter(row => {
+        const nameCell = row.cells[1];
+        const barangayCell = row.cells[2];
+        const academicYearCell = row.cells[6];
+        const statusCell = row.cells[7];
 
-            if (!nameCell || !barangayCell || !academicYearCell || !statusCell) return false;
+        if (!nameCell || !barangayCell || !academicYearCell || !statusCell) return false;
 
-            const name = nameCell.textContent.toLowerCase();
-            const barangay = barangayCell.textContent.trim();
-            const academicYear = academicYearCell.textContent.trim();
-            
-            // Get status from the badge text
-            const statusBadge = statusCell.querySelector('span');
-            const status = statusBadge ? statusBadge.textContent.trim().toLowerCase() : '';
-
-            const nameMatch = name.includes(searchTerm);
-            const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
-            const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
-            
-            // Status matching logic
-            let statusMatch = true;
-            if (selectedStatus === 'active') {
-                statusMatch = status === 'active';
-            } else if (selectedStatus === 'inactive') {
-                statusMatch = status === 'inactive';
-            }
-            // If 'all' is selected, statusMatch remains true
-
-            return nameMatch && barangayMatch && academicYearMatch && statusMatch;
-        });
-
-        // Sort filtered results alphabetically
-        const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
-
-        // Update filtered rows and reset to page 1
-        paginationState.filteredRows = sortedFilteredRows;
-        paginationState.currentPage = 1;
-        updateScholarPagination();
-        updateCheckboxStates();
+        const name = nameCell.textContent.toLowerCase();
+        const barangay = barangayCell.textContent.trim();
+        const academicYear = academicYearCell.textContent.trim();
         
-        // Update URL without reloading (optional)
-        updateURLParams({
-            search: searchTerm,
-            barangay: selectedBarangay,
-            academic_year: selectedAcademicYear,
-            status: selectedStatus
-        });
-    }
+        // Get status from the badge text
+        const statusBadge = statusCell.querySelector('span');
+        const status = statusBadge ? statusBadge.textContent.trim().toLowerCase() : '';
+
+        const nameMatch = name.includes(searchTerm);
+        const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+        const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
+        
+        // Status matching logic - UPDATED TO INCLUDE GRADUATED
+        let statusMatch = true;
+        if (selectedStatus === 'active') {
+            statusMatch = status === 'active';
+        } else if (selectedStatus === 'inactive') {
+            statusMatch = status === 'inactive';
+        } else if (selectedStatus === 'graduated') {
+            statusMatch = status === 'graduated';
+        }
+        // If 'all' is selected, statusMatch remains true
+
+        return nameMatch && barangayMatch && academicYearMatch && statusMatch;
+    });
+
+    // Sort filtered results alphabetically
+    const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
+
+    // Update filtered rows and reset to page 1
+    paginationState.filteredRows = sortedFilteredRows;
+    paginationState.currentPage = 1;
+    updateScholarPagination();
+    updateCheckboxStates();
+    
+    // Update URL without reloading (optional)
+    updateURLParams({
+        search: searchTerm,
+        barangay: selectedBarangay,
+        academic_year: selectedAcademicYear,
+        status: selectedStatus
+    });
+}
 
     // Add event listeners with debouncing
     if (searchInput) {
@@ -276,16 +278,16 @@ function initializeScholarFiltering() {
     if (academicYearSelect) {
         academicYearSelect.addEventListener('change', filterScholarTable);
     }
-    if (statusSelect) {
-        // When status changes, ask server for rows with that status, then apply client filters.
-        statusSelect.addEventListener('change', function() {
-            // Fetch server-side filtered rows (so inactive rows exist in DOM) then run client filter
-            fetchAndReplaceScholars().then(() => {
-                // after server rows are in DOM, apply client side filters (search/barangay/academicyear)
-                filterScholarTable();
-            });
+if (statusSelect) {
+    // When status changes, ask server for rows with that status, then apply client filters.
+    statusSelect.addEventListener('change', function() {
+        // Fetch server-side filtered rows (so graduated rows exist in DOM) then run client filter
+        fetchAndReplaceScholars().then(() => {
+            // after server rows are in DOM, apply client side filters (search/barangay/academicyear)
+            filterScholarTable();
         });
-    }
+    });
+}
 }
 
 // Update URL parameters without reloading

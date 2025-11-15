@@ -3,6 +3,7 @@
 // Global variables
 let signaturePad = null;
 let currentSignatureType = '';
+let currentReviewId = null; // Store ID for PDF printing
 let paginationState = {
     table: {
         currentPage: 1,
@@ -374,9 +375,11 @@ function closeEditRemarksModal() {
     document.body.classList.remove('modal-open');
 }
 
-// Review Modal functions
+// Review Modal functions - UPDATED WITH currentReviewId
 function openReviewModal(button) {
     const id = button.getAttribute("data-id");
+    currentReviewId = id; // STORE THE ID FOR PDF PRINTING
+    
     if (!id) {
         console.error('No ID provided');
         Swal.fire('Error', 'No applicant ID provided', 'error');
@@ -1440,100 +1443,21 @@ function saveAsDraft() {
     });
 }
 
-// Print Review Modal function
-function printReviewModal() {
-    const modalContent = document.getElementById('modalReviewContent');
-    if (!modalContent) {
-        console.error('Modal content not found');
+// PDF Printing Function - ADD THIS NEW FUNCTION
+function printScreeningPdf() {
+    if (!currentReviewId) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No applicant ID found for printing',
+            confirmButtonText: 'OK'
+        });
         return;
     }
 
-    const printContent = modalContent.innerHTML;
-    const printWindow = window.open('', '_blank', 'width=800,height=600');
-
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Family Intake Sheet Review</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    margin: 20px;
-                    color: #000;
-                    background: white;
-                }
-                .print-box {
-                    border: 2px solid #e2e8f0;
-                    border-radius: 8px;
-                    background: white;
-                    padding: 1rem;
-                    margin-bottom: 1rem;
-                    page-break-inside: avoid;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-bottom: 1rem;
-                }
-                th, td {
-                    border: 1px solid #e2e8f0;
-                    padding: 8px;
-                    text-align: left;
-                }
-                th {
-                    background: #f8fafc;
-                    font-weight: bold;
-                }
-                .review-columns {
-                    display: grid;
-                    grid-template-columns: 1fr;
-                    gap: 24px;
-                }
-                h1 {
-                    text-align: center;
-                    margin-bottom: 20px;
-                    color: #1e40af;
-                }
-                h4 {
-                    font-size: 1.1rem;
-                    margin-bottom: 0.5rem;
-                    color: #1e40af;
-                }
-                p {
-                    margin: 0.5rem 0;
-                }
-                .thin-border {
-                    border: 1px solid #e2e8f0;
-                }
-                @media print {
-                    body {
-                        margin: 0;
-                        font-size: 12px;
-                    }
-                    .print-box {
-                        break-inside: avoid;
-                    }
-                }
-            </style>
-        </head>
-        <body>
-            <h1>Family Intake Sheet Review</h1>
-            ${printContent}
-        </body>
-        </html>
-    `);
-
-    printWindow.document.close();
-    printWindow.focus();
-
-    // Wait for content to load then print
-    printWindow.onload = function() {
-        printWindow.print();
-        printWindow.close();
-    };
+    // Open PDF in new tab
+    const pdfUrl = `/lydo_staff/pdf/intake-sheet-print/${currentReviewId}`;
+    window.open(pdfUrl, '_blank');
 }
 
 // Utility functions

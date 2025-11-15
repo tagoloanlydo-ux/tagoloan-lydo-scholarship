@@ -98,69 +98,7 @@
                 <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
             </div>
             <div class="flex items-center space-x-4">
-                <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Lydo Admin</span>
-<div class="relative">
-    <!-- 🔔 Bell Icon -->
-    <button id="notifBell" class="relative focus:outline-none">
-        <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-        @if($notifications->count() > 0)
-            <span id="notifCount"
-                class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                {{ $notifications->count() }}
-            </span>
-        @endif
-    </button>
-
-
-    <!-- 🔽 Dropdown -->
-    <div id="notifDropdown"
-         class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-white-200 z-50">
-        <div class="p-3 border-b font-semibold text-white-700">Notifications</div>
-<ul class="max-h-60 overflow-y-auto">
-    @forelse($notifications as $notif)
-        <li class="px-4 py-2 hover:bg-white-50 text-base border-b">
-            {{-- Application --}}
-            @if($notif->type === 'application')
-                <p class="font-medium 
-                    {{ $notif->status === 'Approved' ? 'text-green-600' : 'text-red-600' }}">
-                    📌 Application of {{ $notif->name }} was {{ $notif->status }}
-                </p>
-            @elseif($notif->type === 'renewal')
-                <p class="font-medium 
-                    {{ $notif->status === 'Approved' ? 'text-green-600' : 'text-red-600' }}">
-                    🔄 Renewal of {{ $notif->name }} was {{ $notif->status }}
-                </p>
-            @endif
-
-            {{-- Time ago --}}
-            <p class="text-xs text-gray-500">
-                {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
-            </p>
-        </li>
-    @empty
-        <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
-    @endforelse
-</ul>
-    </div>
-</div>
-
-<!-- ⚡ JS -->
-<script>
-    document.getElementById("notifBell").addEventListener("click", function () {
-        let dropdown = document.getElementById("notifDropdown");
-        dropdown.classList.toggle("hidden");
-
-        // remove badge when opened
-        let notifCount = document.getElementById("notifCount");
-        if (notifCount) {
-            notifCount.remove();
-        }
-    });
-</script>
-
-
-            </div>
-            
+                <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Lydo Admin</span>   
         </header>
         <!-- Main Content -->
       <div class="flex flex-1 overflow-hidden">
@@ -209,7 +147,15 @@
     }
 </script>
 
-
+<li >
+    <a href="/lydo_admin/applicants" 
+     class=" flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
+         <div class="flex items-center">
+            <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
+            <span class="ml-4 hidden md:block text-lg">Applicants</span>
+        </div>
+    </a>
+</li>
 
 <!-- Scholar Dropdown -->
 <li class="relative">
@@ -271,15 +217,7 @@
         });
     });
 </script>
-<li>
-    <a href="/lydo_admin/applicants" 
-     class=" flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
-         <div class="flex items-center">
-            <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Applicants</span>
-        </div>
-    </a>
-</li>
+
 <li>
     <a href="/lydo_admin/announcement"
        class=" flex items-center justify-between p-3 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">

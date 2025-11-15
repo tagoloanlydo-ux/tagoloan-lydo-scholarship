@@ -1392,7 +1392,7 @@
                     </form>
                 </div>
             </div>
-            <div class="flex-1 overflow-hidden p-4 md:p-2 text-[16px] content-scrollable">
+            <div class="flex-1 p-4 md:p-2 text-[16px] content-scrollable">
                 <div class="p-4 bg-gray-50 min-h-screen rounded-lg shadow">
                     <div class="flex justify-between items-center mb-6">
                         <h5 class="text-3xl font-bold text-gray-800">Screening Applicants</h5>
@@ -2173,7 +2173,7 @@
 <div id="reviewModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 class="text-xl font-bold">Review Family Intake Sheet</h2>
+            <h2 class="text-base font-semibold">Review Family Intake Sheet</h2>
             <button class="modal-close" onclick="closeReviewModal()">&times;</button>
         </div>
 
@@ -2182,24 +2182,17 @@
         </div>
 
         <div class="modal-actions">
-            <button
-                type="button"
-                onclick="printReviewModal()"
-                class="bg-blue-500 text-white px-5 py-2 rounded hover:bg-blue-600 mr-2"
-            >
-                <i class="fas fa-print mr-1"></i> Print
+            <button type="button" onclick="printScreeningPdf()" 
+                class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium flex items-center justify-center">
+                <i class="fas fa-print mr-2"></i> Print PDF
             </button>
-            <button
-                type="button"
-                onclick="closeReviewModal()"
-                class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600"
-            >
+            <button type="button" onclick="closeReviewModal()" 
+                class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium flex items-center justify-center">
                 Close
             </button>
         </div>
     </div>
 </div>
-
 <!-- Signature Modal (TOP LEVEL - NOT NESTED) -->
 <div id="signatureModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
     <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">

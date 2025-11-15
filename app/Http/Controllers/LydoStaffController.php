@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use App\Services\EmailService;
 use App\Events\ApplicantUpdated;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Events\RenewalUpdated;
+
 use Illuminate\Validation\Rule;
 
 class LydoStaffController extends Controller
@@ -1148,5 +1150,166 @@ public function updatePassword(Request $request)
 
     return back()->with('success', 'Password updated successfully.');
 }
+public function generateIntakeSheetPdf($application_personnel_id)
+{
+    try {
+        \Log::info("Generating PDF for application_personnel_id: {$application_personnel_id}");
+        
+        // Get intake sheet data with ALL fields
+        $intakeSheet = \App\Models\FamilyIntakeSheet::where('application_personnel_id', $application_personnel_id)->first();
 
+        if (!$intakeSheet) {
+            \Log::error("Intake sheet not found for ID: {$application_personnel_id}");
+            return response()->json(['error' => 'Intake sheet not found'], 404);
+        }
+
+        // Get applicant data with ALL fields INCLUDING REMARKS
+        $applicantData = DB::table('tbl_application_personnel')
+            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
+            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+            ->where('tbl_application_personnel.application_personnel_id', $application_personnel_id)
+            ->select(
+                'tbl_applicant.applicant_fname',
+                'tbl_applicant.applicant_mname',
+                'tbl_applicant.applicant_lname',
+                'tbl_applicant.applicant_suffix',
+                'tbl_applicant.applicant_contact_number',
+                'tbl_applicant.applicant_gender',
+                'tbl_applicant.applicant_bdate',
+                'tbl_applicant.applicant_brgy',
+                'tbl_applicant.applicant_civil_status',
+                'tbl_applicant.applicant_email',
+                'tbl_applicant.applicant_contact_number',
+                'tbl_application_personnel.remarks' // THIS IS THE REMARKS FIELD
+            )
+            ->first();
+
+        if (!$applicantData) {
+            \Log::error("Applicant data not found for application_personnel_id: {$application_personnel_id}");
+            return response()->json(['error' => 'Applicant data not found'], 404);
+        }
+
+        // Parse family members
+        $familyMembers = [];
+        if ($intakeSheet->family_members) {
+            try {
+                $familyMembers = json_decode($intakeSheet->family_members, true) ?: [];
+            } catch (\Exception $e) {
+                \Log::error("Error parsing family members: " . $e->getMessage());
+                $familyMembers = [];
+            }
+        }
+
+        // Parse social service records
+        $socialServiceRecords = [];
+        if ($intakeSheet->social_service_records) {
+            try {
+                $socialServiceRecords = json_decode($intakeSheet->social_service_records, true) ?: [];
+            } catch (\Exception $e) {
+                \Log::error("Error parsing social service records: " . $e->getMessage());
+                $socialServiceRecords = [];
+            }
+        }
+
+        // Parse RV service records
+        $rvServiceRecords = [];
+        if ($intakeSheet->rv_service_records) {
+            try {
+                $rvServiceRecords = json_decode($intakeSheet->rv_service_records, true) ?: [];
+            } catch (\Exception $e) {
+                \Log::error("Error parsing RV service records: " . $e->getMessage());
+                $rvServiceRecords = [];
+            }
+        }
+
+        // Calculate age
+        $age = '';
+        if ($applicantData->applicant_bdate) {
+            try {
+                $birthdate = \Carbon\Carbon::parse($applicantData->applicant_bdate);
+                $age = $birthdate->age;
+            } catch (\Exception $e) {
+                $age = '';
+            }
+        }
+
+        // Prepare COMPLETE data for PDF - matching showIntakeSheet structure
+        $data = [
+            'serialNumber' => $intakeSheet->serial_number ?? 'N/A',
+            'head' => [
+                'within_tagoloan' => true, // Default values
+                'outside_tagoloan' => false,
+                '_4ps' => $intakeSheet->head_4ps ?? 'No',
+                'ipno' => $intakeSheet->head_ipno ?? '',
+                'lname' => $applicantData->applicant_lname ?? '',
+                'fname' => $applicantData->applicant_fname ?? '',
+                'mname' => $applicantData->applicant_mname ?? '',
+                'suffix' => $applicantData->applicant_suffix ?? '',
+                'contact' => $applicantData->applicant_contact_number ?? '',
+                'sex' => $applicantData->applicant_gender ?? '',
+                'age' => $age,
+                'address' => $intakeSheet->head_address ?? '',
+                'zone' => $intakeSheet->head_zone ?? '',
+                'barangay' => $intakeSheet->head_barangay ?? $applicantData->applicant_brgy ?? '',
+                'dob' => $applicantData->applicant_bdate ?? '',
+                'pob' => $intakeSheet->head_pob ?? '',
+                'civil' => $applicantData->applicant_civil_status ?? '',
+                'educ' => $intakeSheet->head_educ ?? '',
+                'occ' => $intakeSheet->head_occ ?? '',
+                'religion' => $intakeSheet->head_religion ?? '',
+                'remarks' => $applicantData->remarks ?? '', // REMARKS FROM APPLICATION_PERSONNEL
+            ],
+            'family' => $familyMembers,
+            'house' => [
+                'total_income' => $intakeSheet->house_total_income ?? 0,
+                'net_income' => $intakeSheet->house_net_income ?? 0,
+                'other_income' => $intakeSheet->other_income ?? 0,
+                'house' => $intakeSheet->house_house ?? '',
+                'lot' => $intakeSheet->house_lot ?? '',
+                'house_rent' => $intakeSheet->house_rent ?? 0,
+                'lot_rent' => $intakeSheet->lot_rent ?? 0,
+                'water' => $intakeSheet->house_water ?? 0,
+                'electric' => $intakeSheet->house_electric ?? 0,
+                'remarks' => $applicantData->remarks ?? '', // ALSO ADD TO HOUSE SECTION IF NEEDED
+            ],
+            'social_service_records' => $socialServiceRecords,
+            'rv_service_records' => $rvServiceRecords,
+            'signatures' => [
+                'client' => $intakeSheet->signature_client ?? null,
+                'worker' => $intakeSheet->signature_worker ?? null,
+                'officer' => $intakeSheet->signature_officer ?? null,
+            ],
+            'worker_info' => [
+                'worker_name' => $intakeSheet->worker_name ?? '',
+                'officer_name' => $intakeSheet->officer_name ?? '',
+    'date_entry' => $intakeSheet->date_entry ? \Carbon\Carbon::parse($intakeSheet->date_entry)->format('F d Y') : now()->format('F d Y'),            ],
+            'application_remarks' => $applicantData->remarks ?? '', // SEPARATE FIELD FOR REMARKS
+        ];
+
+        // Debug log to check data including remarks
+        \Log::info('PDF Data prepared:', [
+            'family_members_count' => count($familyMembers),
+            'social_records_count' => count($socialServiceRecords),
+            'rv_records_count' => count($rvServiceRecords),
+            'has_signatures' => !empty(array_filter($data['signatures'])),
+            'remarks' => $applicantData->remarks ?? 'No remarks'
+        ]);
+
+        // Generate PDF
+        $pdf = PDF::loadView('pdf.intake-sheet-print', $data)
+                  ->setPaper('legal', 'landscape')
+                  ->setOptions([
+                      'dpi' => 150,
+                      'defaultFont' => 'Arial',
+                      'isHtml5ParserEnabled' => true
+                  ]);
+
+        return $pdf->stream('family-intake-sheet-' . $application_personnel_id . '.pdf');
+
+    } catch (\Exception $e) {
+        \Log::error('PDF Generation Error: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        return response()->json(['error' => 'PDF generation failed: ' . $e->getMessage()], 500);
+    }
+}
 }
