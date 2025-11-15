@@ -273,7 +273,6 @@
                     <th width="90">Semester</th>
                     <th width="100">Academic Year</th>
                     <th width="90">Amount</th>
-                    <th width="100">Date</th>
                     <th width="80">Signature</th>
                 </tr>
             </thead>
@@ -287,7 +286,7 @@
                     <td>{{ $disburse->disburse_semester }}</td>
                     <td>{{ $disburse->disburse_acad_year }}</td>
                     <td class="amount">₱{{ number_format($disburse->disburse_amount, 2) }}</td>
-                    <td>{{ \Carbon\Carbon::parse($disburse->disburse_date)->format('M d, Y') }}</td>
+                   
                     <td>
                         @if($disburse->disburse_signature)
                             <img src="{{ $disburse->disburse_signature }}" class="signature-img" alt="Signature">
