@@ -120,25 +120,25 @@
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
-            font-size: 11px; /* Slightly smaller font for better fit */
+            font-size: 11px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             border: 1px solid #b8c3d6;
-            table-layout: fixed; /* Ensures consistent column widths */
+            table-layout: fixed;
         }
 
         .data-table th {
             background: #2c5aa0;
             color: white;
-            padding: 8px 6px; /* Reduced padding */
+            padding: 8px 6px;
             text-transform: uppercase;
-            font-size: 10px; /* Smaller font for headers */
+            font-size: 10px;
             font-weight: 600;
             border: 1px solid #1e3d6d;
             word-wrap: break-word;
         }
 
         .data-table td {
-            padding: 8px 6px; /* Reduced padding */
+            padding: 8px 6px;
             border: 1px solid #e0e0e0;
             text-align: center;
             word-wrap: break-word;
@@ -146,32 +146,36 @@
 
         .data-table td:first-child {
             text-align: center;
-            width: 5%; /* Fixed small width for sequence number */
+            width: 5%;
         }
 
         .data-table td:nth-child(2) {
             text-align: left;
-            width: 20%; /* Fixed width for scholar name */
+            width: 18%;
         }
 
         .data-table td:nth-child(3) {
-            width: 15%; /* Fixed width for barangay */
+            width: 12%;
         }
 
         .data-table td:nth-child(4) {
-            width: 12%; /* Fixed width for semester */
+            width: 12%;
         }
 
         .data-table td:nth-child(5) {
-            width: 15%; /* Fixed width for academic year */
+            width: 12%;
         }
 
         .data-table td:nth-child(6) {
-            width: 15%; /* Fixed width for amount */
+            width: 12%;
         }
 
         .data-table td:nth-child(7) {
-            width: 18%; /* Fixed width for signature */
+            width: 14%;
+        }
+
+        .data-table td:nth-child(8) {
+            width: 15%;
         }
 
         .data-table tr:nth-child(even) {
@@ -226,7 +230,7 @@
 
         /* SIGNATURE STYLING */
         .signature-img {
-            max-width: 70px; /* Slightly smaller for landscape */
+            max-width: 70px;
             max-height: 30px;
             border: 1px solid #e0e0e0;
             border-radius: 3px;
@@ -236,6 +240,12 @@
         .amount {
             font-weight: 600;
             color: #28a745;
+        }
+
+        /* DATE STYLING */
+        .date {
+            font-size: 10px;
+            color: #666;
         }
 
         /* Landscape-specific optimizations */
@@ -311,6 +321,7 @@
                     <th>Semester</th>
                     <th>Academic Year</th>
                     <th>Amount</th>
+                    <th>Date</th>
                     <th>Signature</th>
                 </tr>
             </thead>
@@ -324,6 +335,7 @@
                     <td>{{ $disburse->disburse_semester }}</td>
                     <td>{{ $disburse->disburse_acad_year }}</td>
                     <td class="amount">PHP {{ number_format($disburse->disburse_amount, 2) }}</td>
+                    <td class="date">{{ \Carbon\Carbon::parse($disburse->disburse_date)->format('F d, Y') }}</td>
                     <td>
                         @if($disburse->disburse_signature)
                             <img src="{{ $disburse->disburse_signature }}" class="signature-img" alt="Signature">
