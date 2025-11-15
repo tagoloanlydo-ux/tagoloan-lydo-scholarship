@@ -115,38 +115,63 @@
             margin-bottom: 3px;
         }
 
-        /* DATA TABLE - Adjusted for landscape */
+        /* DATA TABLE - Optimized for landscape */
         .data-table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
-            font-size: 12px;
+            font-size: 11px; /* Slightly smaller font for better fit */
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             border: 1px solid #b8c3d6;
+            table-layout: fixed; /* Ensures consistent column widths */
         }
 
         .data-table th {
             background: #2c5aa0;
             color: white;
-            padding: 10px 8px;
+            padding: 8px 6px; /* Reduced padding */
             text-transform: uppercase;
-            font-size: 11px;
+            font-size: 10px; /* Smaller font for headers */
             font-weight: 600;
             border: 1px solid #1e3d6d;
+            word-wrap: break-word;
         }
 
         .data-table td {
-            padding: 10px 8px;
+            padding: 8px 6px; /* Reduced padding */
             border: 1px solid #e0e0e0;
             text-align: center;
+            word-wrap: break-word;
         }
 
         .data-table td:first-child {
             text-align: center;
+            width: 5%; /* Fixed small width for sequence number */
         }
 
         .data-table td:nth-child(2) {
             text-align: left;
+            width: 20%; /* Fixed width for scholar name */
+        }
+
+        .data-table td:nth-child(3) {
+            width: 15%; /* Fixed width for barangay */
+        }
+
+        .data-table td:nth-child(4) {
+            width: 12%; /* Fixed width for semester */
+        }
+
+        .data-table td:nth-child(5) {
+            width: 15%; /* Fixed width for academic year */
+        }
+
+        .data-table td:nth-child(6) {
+            width: 15%; /* Fixed width for amount */
+        }
+
+        .data-table td:nth-child(7) {
+            width: 18%; /* Fixed width for signature */
         }
 
         .data-table tr:nth-child(even) {
@@ -201,8 +226,8 @@
 
         /* SIGNATURE STYLING */
         .signature-img {
-            max-width: 80px;
-            max-height: 35px;
+            max-width: 70px; /* Slightly smaller for landscape */
+            max-height: 30px;
             border: 1px solid #e0e0e0;
             border-radius: 3px;
         }
@@ -211,6 +236,19 @@
         .amount {
             font-weight: 600;
             color: #28a745;
+        }
+
+        /* Landscape-specific optimizations */
+        @media print {
+            body {
+                padding: 0;
+            }
+            .container {
+                width: 100%;
+            }
+            .data-table {
+                font-size: 10px;
+            }
         }
     </style>
 </head>
@@ -267,13 +305,13 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th width="20">#</th>
-                    <th width="100">Scholar Name</th>
-                    <th width="80">Barangay</th>
-                    <th width="80">Semester</th>
-                    <th width="80">Academic Year</th>
-                    <th width="80">Amount</th>
-                    <th width="80">Signature</th>
+                    <th>#</th>
+                    <th>Scholar Name</th>
+                    <th>Barangay</th>
+                    <th>Semester</th>
+                    <th>Academic Year</th>
+                    <th>Amount</th>
+                    <th>Signature</th>
                 </tr>
             </thead>
 
@@ -285,11 +323,12 @@
                     <td>{{ $disburse->applicant_brgy }}</td>
                     <td>{{ $disburse->disburse_semester }}</td>
                     <td>{{ $disburse->disburse_acad_year }}</td>
-                    <td class="amount">PHP {{ number_format($disburse->disburse_amount, 2) }}</td>                           
+                    <td class="amount">PHP {{ number_format($disburse->disburse_amount, 2) }}</td>
+                    <td>
                         @if($disburse->disburse_signature)
                             <img src="{{ $disburse->disburse_signature }}" class="signature-img" alt="Signature">
                         @else
-                            <span style="color: #28a745; font-weight: bold; font-size: 11px;">✓ SIGNED</span>
+                            <span style="color: #28a745; font-weight: bold; font-size: 10px;">✓ SIGNED</span>
                         @endif
                     </td>
                 </tr>
