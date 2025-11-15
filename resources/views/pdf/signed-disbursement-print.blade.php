@@ -115,21 +115,28 @@
             margin-bottom: 3px;
         }
 
+        /* TABLE CONTAINER FOR BALANCED MARGINS */
+        .table-container {
+            width: 100%;
+            margin: 20px 0;
+            padding: 0 15px; /* Equal left and right padding */
+        }
+
         /* DATA TABLE - Optimized for landscape */
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
             font-size: 11px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             border: 1px solid #b8c3d6;
             table-layout: fixed;
+            margin: 0 auto; /* Center the table */
         }
 
         .data-table th {
             background: #2c5aa0;
             color: white;
-            padding: 8px 6px;
+            padding: 10px 8px; /* Balanced padding */
             text-transform: uppercase;
             font-size: 10px;
             font-weight: 600;
@@ -138,7 +145,7 @@
         }
 
         .data-table td {
-            padding: 8px 6px;
+            padding: 10px 8px; /* Balanced padding */
             border: 1px solid #e0e0e0;
             text-align: center;
             word-wrap: break-word;
@@ -152,6 +159,7 @@
         .data-table td:nth-child(2) {
             text-align: left;
             width: 18%;
+            padding-left: 12px; /* Slightly more padding for text alignment */
         }
 
         .data-table td:nth-child(3) {
@@ -196,7 +204,7 @@
             padding: 60px 20px;
             background: #f8f9fa;
             border-radius: 8px;
-            margin: 30px 0;
+            margin: 30px 15px; /* Equal left and right margins */
             border: 1px solid #dee2e6;
         }
 
@@ -220,7 +228,7 @@
 
         /* FOOTER */
         .footer {
-            margin-top: 40px;
+            margin: 40px 15px 0 15px; /* Equal left and right margins */
             text-align: center;
             font-size: 11px;
             color: #6c757d;
@@ -258,6 +266,15 @@
             }
             .data-table {
                 font-size: 10px;
+            }
+            .table-container {
+                padding: 0 10px; /* Balanced padding for print */
+            }
+            .footer {
+                margin: 40px 10px 0 10px; /* Balanced margins for print */
+            }
+            .no-data {
+                margin: 30px 10px; /* Balanced margins for print */
             }
         }
     </style>
@@ -312,39 +329,43 @@
 
         <!-- CONTENT -->
         @if($signedDisbursements->count() > 0)
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Scholar Name</th>
-                    <th>Barangay</th>
-                    <th>Semester</th>
-                    <th>Academic Year</th>
-                    <th>Amount</th>
-                    <th>Signature</th>
-                </tr>
-            </thead>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Scholar Name</th>
+                        <th>Barangay</th>
+                        <th>Semester</th>
+                        <th>Academic Year</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Signature</th>
+                    </tr>
+                </thead>
 
-            <tbody>
-                @foreach($signedDisbursements as $disburse)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td class="text-left">{{ $disburse->full_name }}</td>
-                    <td>{{ $disburse->applicant_brgy }}</td>
-                    <td>{{ $disburse->disburse_semester }}</td>
-                    <td>{{ $disburse->disburse_acad_year }}</td>
-                    <td class="amount">PHP {{ number_format($disburse->disburse_amount, 2) }}</td>
-                    <td>
-                        @if($disburse->disburse_signature)
-                            <img src="{{ $disburse->disburse_signature }}" class="signature-img" alt="Signature">
-                        @else
-                            <span style="color: #28a745; font-weight: bold; font-size: 10px;">✓ SIGNED</span>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+                <tbody>
+                    @foreach($signedDisbursements as $disburse)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td class="text-left">{{ $disburse->full_name }}</td>
+                        <td>{{ $disburse->applicant_brgy }}</td>
+                        <td>{{ $disburse->disburse_semester }}</td>
+                        <td>{{ $disburse->disburse_acad_year }}</td>
+                        <td class="amount">PHP {{ number_format($disburse->disburse_amount, 2) }}</td>
+                        <td class="date">{{ \Carbon\Carbon::parse($disburse->disburse_date)->format('F d, Y') }}</td>
+                        <td>
+                            @if($disburse->disburse_signature)
+                                <img src="{{ $disburse->disburse_signature }}" class="signature-img" alt="Signature">
+                            @else
+                                <span style="color: #28a745; font-weight: bold; font-size: 10px;">✓ SIGNED</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
         @else
         <div class="no-data">
