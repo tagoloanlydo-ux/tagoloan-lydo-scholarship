@@ -13,14 +13,22 @@
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         }
 
+        /* Set page to landscape */
+        @page {
+            size: landscape;
+            margin: 0.5in;
+        }
+
         body {
             background: #ffffff;
             padding: 20px;
+            width: 100%;
+            height: 100%;
         }
 
         .container {
             width: 100%;
-            max-width: 1100px;
+            max-width: none;
             background: #fff;
             margin: 0 auto;
             padding: 0;
@@ -107,7 +115,7 @@
             margin-bottom: 3px;
         }
 
-        /* DATA TABLE */
+        /* DATA TABLE - Adjusted for landscape */
         .data-table {
             width: 100%;
             border-collapse: collapse;
