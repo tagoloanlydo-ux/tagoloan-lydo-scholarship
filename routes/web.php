@@ -127,7 +127,9 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/get-document-comments/{renewalId}', [RenewalController::class, 'getDocumentComments']);
     Route::post('/lydo_staff/request-document-update/{renewalId}', [RenewalController::class, 'requestDocumentUpdate']);
     Route::post('/lydo_staff/mark-document-updated/{renewalId}', [RenewalController::class, 'markDocumentAsUpdated']);
-Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments']);});
+Route::get('/lydo_staff/pdf/intake-sheet-print/{application_personnel_id}', [LydoStaffController::class, 'generateIntakeSheetPdf'])
+    ->name('lydo_staff.intake-sheet.pdf');
+    Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments']);});
 
 // Mayor Staff Routes - Only accessible by mayor_staff role
 Route::middleware(['role:mayor_staff'])->group(function () {

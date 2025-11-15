@@ -1582,5 +1582,6 @@ public function dashboardData(Request $request)
         'scholarStatsPerYear' => $scholarStatsPerYear
     ]);
 }
+
 }
 

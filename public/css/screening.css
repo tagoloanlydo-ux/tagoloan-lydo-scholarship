@@ -103,6 +103,7 @@ body.bg-gray-50 {
     border-radius: 4px;
 }
 /* Review Modal Specific Styles */
+/* Enhanced Professional Review Modal */
 #reviewModal {
     display: none;
     position: fixed;
@@ -119,16 +120,16 @@ body.bg-gray-50 {
 
 #reviewModal .modal-content {
     background: white;
-    border-radius: 16px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     max-width: 95%;
     width: 90%;
     margin: 2% auto;
-    padding: 2rem;
+    padding: 0;
     position: relative;
     max-height: 90vh;
     overflow-y: auto;
-    border: 1px solid var(--border-color);
+    border: 1px solid #e2e8f0;
     animation: modalSlideIn 0.3s ease-out;
 }
 
@@ -136,29 +137,25 @@ body.bg-gray-50 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 1rem;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    margin: -2rem -2rem 1.5rem -2rem;
     padding: 1.5rem 2rem;
-    border-radius: 16px 16px 0 0;
+    border-bottom: 1px solid #e2e8f0;
+    background: white;
+    border-radius: 12px 12px 0 0;
 }
 
 #reviewModal .modal-header h2 {
-    color: white;
+    color: #1e293b;
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 600;
     margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 #reviewModal .modal-close {
-    background: rgba(255, 255, 255, 0.2);
+    background: none;
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    color: white;
+    color: #64748b;
     padding: 0.5rem;
     border-radius: 50%;
     transition: all 0.3s ease;
@@ -170,28 +167,25 @@ body.bg-gray-50 {
 }
 
 #reviewModal .modal-close:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: rotate(90deg);
+    background: #f1f5f9;
+    color: #475569;
 }
 
 #reviewModal .modal-actions {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 2px solid var(--border-light);
-    background: var(--background-light);
-    margin: 2rem -2rem -2rem -2rem;
     padding: 1.5rem 2rem;
-    border-radius: 0 0 16px 16px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 0 0 12px 12px;
 }
 
 #reviewModal .modal-actions button {
     padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 10px;
-    font-weight: 600;
+    border-radius: 8px;
+    font-weight: 500;
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -201,78 +195,50 @@ body.bg-gray-50 {
 }
 
 #reviewModal .modal-actions button:first-child {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    background: #dc2626;
     color: white;
 }
 
 #reviewModal .modal-actions button:first-child:hover {
-    background: linear-gradient(135deg, #1d4ed8, #1e40af);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    background: #b91c1c;
+    transform: translateY(-1px);
 }
 
 #reviewModal .modal-actions button:last-child {
-    background: linear-gradient(135deg, #6b7280, #4b5563);
+    background: #6b7280;
     color: white;
 }
 
 #reviewModal .modal-actions button:last-child:hover {
-    background: linear-gradient(135deg, #4b5563, #374151);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
+    background: #4b5563;
+    transform: translateY(-1px);
 }
 
 /* Review Content Styling */
 #modalReviewContent {
     max-height: calc(90vh - 200px);
     overflow-y: auto;
-    padding: 1rem 0;
+    padding: 2rem;
 }
 
-/* Enhanced Print Box for Review Modal */
+/* Clean Print Box for Review Modal */
 #reviewModal .print-box {
     background: white;
-    border: 2px solid var(--border-light);
-    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
     position: relative;
-    overflow: hidden;
-}
-
-#reviewModal .print-box::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-}
-
-#reviewModal .print-box:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
-    border-color: var(--primary-light);
 }
 
 #reviewModal .print-box h4 {
-    color: var(--primary-color);
+    color: #1e293b;
     font-size: 1.1rem;
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--primary-lighter);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-#reviewModal .print-box h4::before {
-    content: '📋';
-    font-size: 1.2rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 /* Table Styling for Review Modal */
@@ -282,25 +248,26 @@ body.bg-gray-50 {
     margin: 1rem 0;
     font-size: 0.9rem;
     background: white;
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
 }
 
 #reviewModal table th {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
+    background: #f8fafc;
+    color: #374151;
     font-weight: 600;
     padding: 0.75rem;
     text-align: left;
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 #reviewModal table td {
     padding: 0.75rem;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid #f1f5f9;
     background: white;
 }
 
@@ -309,7 +276,7 @@ body.bg-gray-50 {
 }
 
 #reviewModal table tr:hover td {
-    background: var(--primary-lighter);
+    background: #f8fafc;
 }
 
 /* Review Columns Layout */
@@ -323,8 +290,8 @@ body.bg-gray-50 {
 #reviewModal img {
     max-width: 100%;
     height: auto;
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
     padding: 0.5rem;
     background: white;
 }
@@ -344,7 +311,7 @@ body.bg-gray-50 {
 @keyframes modalSlideIn {
     from {
         opacity: 0;
-        transform: translateY(-50px) scale(0.9);
+        transform: translateY(-30px) scale(0.95);
     }
     to {
         opacity: 1;
@@ -363,21 +330,21 @@ body.bg-gray-50 {
 
 /* Scrollbar Styling for Review Modal */
 #reviewModal ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 #reviewModal ::-webkit-scrollbar-track {
-    background: var(--secondary-color);
-    border-radius: 4px;
+    background: #f1f5f9;
+    border-radius: 3px;
 }
 
 #reviewModal ::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 4px;
+    background: #cbd5e1;
+    border-radius: 3px;
 }
 
 #reviewModal ::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-dark);
+    background: #94a3b8;
 }
 
 /* Responsive Design for Review Modal */
@@ -385,11 +352,11 @@ body.bg-gray-50 {
     #reviewModal .modal-content {
         width: 98%;
         margin: 1% auto;
-        padding: 1rem;
+        padding: 0;
     }
     
     #reviewModal .modal-header {
-        margin: -1rem -1rem 1rem -1rem;
+        margin: 0;
         padding: 1rem;
         flex-direction: column;
         gap: 1rem;
@@ -401,7 +368,7 @@ body.bg-gray-50 {
     }
     
     #reviewModal .modal-actions {
-        margin: 1rem -1rem -1rem -1rem;
+        margin: 0;
         padding: 1rem;
         flex-direction: column;
     }
@@ -409,6 +376,10 @@ body.bg-gray-50 {
     #reviewModal .modal-actions button {
         width: 100%;
         justify-content: center;
+    }
+    
+    #modalReviewContent {
+        padding: 1rem;
     }
     
     #reviewModal table {
@@ -433,7 +404,6 @@ body.bg-gray-50 {
     #reviewModal .modal-content {
         width: 99%;
         margin: 0.5% auto;
-        padding: 0.75rem;
     }
     
     #reviewModal table {
@@ -459,7 +429,7 @@ body.bg-gray-50 {
     #reviewModal .modal-header {
         background: white !important;
         color: black !important;
-        border-bottom: 2px solid black;
+        border-bottom: 1px solid black;
     }
     
     #reviewModal .modal-header h2 {
@@ -486,7 +456,7 @@ body.bg-gray-50 {
     justify-content: center;
     align-items: center;
     padding: 3rem;
-    color: var(--text-secondary);
+    color: #64748b;
     font-size: 1.1rem;
 }
 
@@ -506,8 +476,8 @@ body.bg-gray-50 {
 #reviewModal .error-state {
     text-align: center;
     padding: 2rem;
-    color: var(--danger-color);
-    background: var(--danger-light);
+    color: #dc2626;
+    background: #fef2f2;
     border-radius: 8px;
     margin: 1rem 0;
 }
