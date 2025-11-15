@@ -2192,7 +2192,7 @@
             </button>
         </div>
     </div>
-</div>
+</div>y
 
 <!-- Signature Modal (TOP LEVEL - NOT NESTED) -->
 <div id="signatureModal" class="fixed inset-0 hidden bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
