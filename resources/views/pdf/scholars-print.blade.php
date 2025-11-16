@@ -16,6 +16,7 @@
         body {
             background: #fff;
             padding: 15px;
+            font-size: 12px; /* Added base font size */
         }
 
         .container {
@@ -61,37 +62,38 @@
         }
 
         .name-section div {
-            font-size: 10px;
+            font-size: 12px; /* Changed from 10px to 14px */
             line-height: 1.2;
             margin-bottom: 2px;
         }
 
         .name-section strong {
-            font-size: 11px;
+            font-size: 12px; /* Changed from 11px to 14px */
             font-weight: 700;
         }
 
         /* FILTERS BOX */
         .filters-info {
             background: #eef3ff;
-            padding: 6px 10px;
+            padding: 8px 12px; /* Increased padding */
             margin: 10px 0 0;
             border-left: 4px solid #3f6ad8;
-            font-size: 9px;
+            font-size: 12px; /* Changed from 9px to 14px */
             border-radius: 4px;
             width: 100%;
         }
 
         .filters-info h3 {
-            margin-bottom: 2px;
-            font-size: 10px;
+            margin-bottom: 4px; /* Increased margin */
+            font-size: 12px; /* Changed from 10px to 14px */
             font-weight: 600;
             color: #324b7a;
         }
 
         .filters-info p {
-            margin: 1px 0;
+            margin: 3px 0; /* Increased margin */
             color: #555;
+            font-size: 14px; /* Added font size */
         }
 
         /* DATA TABLE - PORTRAIT OPTIMIZED */
@@ -99,25 +101,25 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
-            font-size: 9px;
+            font-size: 14px; /* Changed from 9px to 14px */
             border: 1px solid #b8c3d6;
         }
 
         .data-table th {
-            background: #324b7a;
-            color: white;
-            padding: 5px 3px;
+            background: #ddddddff;
+            color: black;
+            padding: 8px 5px; /* Increased padding */
             text-transform: uppercase;
-            font-size: 8px;
-            border: 1px solid #2d4170;
+            font-size: 13px; /* Changed from 8px to 13px */
+            border: 1px solid #c7c7c9ff;
             font-weight: 600;
         }
 
         .data-table td {
-            padding: 4px 3px;
-            border: 1px solid #cbd4e1;
-            font-size: 8px;
-            line-height: 1.2;
+            padding: 6px 4px; /* Increased padding */
+            border: 1px solid #cacbccff;
+            font-size: 14px; /* Changed from 8px to 14px */
+            line-height: 1.3;
         }
 
         .data-table tr:nth-child(even) {
@@ -135,20 +137,10 @@
         .footer {
             margin-top: 20px;
             text-align: center;
-            font-size: 9px;
+            font-size: 14px; /* Changed from 9px to 14px */
             color: #666;
             border-top: 1px solid #ccc;
-            padding-top: 8px;
-        }
-
-        .status-active {
-            color: #059669;
-            font-weight: 600;
-        }
-
-        .status-inactive {
-            color: #dc2626;
-            font-weight: 600;
+            padding-top: 10px; /* Increased padding */
         }
 
         /* Column widths optimized for portrait */
@@ -156,35 +148,46 @@
             width: 5%;
         }
         .col-name {
-            width: 20%;
+            width: 22%;
         }
         .col-barangay {
-            width: 12%;
+            width: 13%;
         }
         .col-email {
-            width: 18%;
+            width: 20%;
         }
         .col-school {
-            width: 18%;
+            width: 20%;
         }
         .col-course {
-            width: 17%;
-        }
-        .col-year {
-            width: 10%;
-        }
-        .col-status {
-            width: 8%;
+            width: 20%;
         }
 
         /* Compact styling */
         .compact-row td {
-            padding: 3px 2px;
+            padding: 5px 3px; /* Increased padding */
         }
 
         .name-format {
             font-weight: 600;
-            font-size: 8px;
+            font-size: 12px; /* Changed from 8px to 14px */
+        }
+
+        /* No scholars found styling */
+        .no-scholars {
+            padding: 40px; /* Increased padding */
+            text-align: center;
+        }
+
+        .no-scholars h3 {
+            color: #555;
+            font-size: 16px; /* Increased font size */
+            margin-bottom: 10px;
+        }
+
+        .no-scholars p {
+            color: #777;
+            font-size: 12px; /* Added font size */
         }
     </style>
 </head>
@@ -207,7 +210,7 @@
                         <div><strong>LOCAL YOUTH DEVELOPMENT OFFICE</strong></div>
                         <div><strong>SCHOLARSHIP MANAGEMENT SYSTEM</strong></div>
 
-                        @if(request('search') || request('barangay') || request('academic_year') || request('semester'))
+                        @if(request('search') || request('barangay') || request('academic_year') || request('semester') || request('status'))
                         <div class="filters-info">
                             <h3>Applied Filters:</h3>
                             @if(request('search'))
@@ -221,6 +224,9 @@
                             @endif
                             @if(request('semester'))
                                 <p><strong>Semester:</strong> {{ request('semester') }}</p>
+                            @endif
+                            @if(request('status'))
+                                <p><strong>Status:</strong> {{ ucfirst(request('status')) }}</p>
                             @endif
                         </div>
                         @endif
@@ -247,13 +253,11 @@
             <thead>
                 <tr>
                     <th class="text-center col-number">#</th>
-                    <th class="text-left col-name">Name</th>
+                    <th class="text-center col-name">Name</th>
                     <th class="text-center col-barangay">Barangay</th>
-                    <th class="text-left col-email">Email</th>
-                    <th class="text-left col-school">School</th>
-                    <th class="text-left col-course">Course</th>
-                    <th class="text-center col-year">Academic Year</th>
-                    <th class="text-center col-status">Status</th>
+                    <th class="text-center col-school">School</th>
+                    <th class="text-center col-course">Course</th>
+                    <th class="text-center">S.Y</th>
                 </tr>
             </thead>
 
@@ -261,28 +265,24 @@
                 @foreach($sortedScholars as $index => $scholar)
                 <tr class="compact-row">
                     <td class="text-center">{{ $loop->iteration }}</td>
-                    <td class="text-left name-format">
+                    <td class="text-center name-format">
                         {{ $scholar->applicant_lname }}{{ $scholar->applicant_suffix ? ' ' . $scholar->applicant_suffix : '' }}, 
                         {{ $scholar->applicant_fname }} 
                         {{ $scholar->applicant_mname ? $scholar->applicant_mname . ' ' : '' }}
                     </td>
                     <td class="text-center">{{ $scholar->applicant_brgy }}</td>
-                    <td class="text-left">{{ $scholar->applicant_email }}</td>
-                    <td class="text-left">{{ $scholar->applicant_school_name }}</td>
-                    <td class="text-left">{{ $scholar->applicant_course }}</td>
+                    <td class="text-center">{{ $scholar->applicant_school_name }}</td>
+                    <td class="text-center">{{ $scholar->applicant_course }}</td>
                     <td class="text-center">{{ $scholar->applicant_acad_year ?? 'N/A' }}</td>
-                    <td class="text-center {{ $scholar->scholar_status == 'active' ? 'status-active' : 'status-inactive' }}">
-                        {{ ucfirst($scholar->scholar_status) }}
-                    </td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
 
         @else
-        <div class="text-center" style="padding: 30px;">
-            <h3 style="color: #555; font-size: 14px;">No Scholars Found</h3>
-            <p style="color: #777; font-size: 12px;">No scholars match the current filter criteria.</p>
+        <div class="no-scholars">
+            <h3>No Scholars Found</h3>
+            <p>No scholars match the current filter criteria.</p>
         </div>
         @endif
 
