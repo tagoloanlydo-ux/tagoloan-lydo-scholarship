@@ -313,7 +313,7 @@
                             
                             <!-- Print to PDF Button -->
                             <div class="flex-1">
-                                <button type="button" id="printPdfBtn" class="w-full px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center">
+                                <button type="button" id="printPdfBtn" class="w-full px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center">
                                     <i class="fas fa-file-pdf mr-2"></i>Print to PDF
                                 </button>
                             </div>
@@ -328,10 +328,9 @@
                                 <h3 class="text-lg font-semibold text-black-800">Scholars List</h3>
                                 <p class="text-sm text-black-600 mt-1">This table contains the list of active scholars currently enrolled in the scholarship program.</p>
                             </div>
-                            <!-- Email Button - Hidden by default -->
-                            <button type="button" id="emailBtn" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm font-medium transition-colors">
-                                <i class="fas fa-envelope mr-2"></i>Send Email
-                            </button>
+                            <button type="button" id="sendEmailBtn" class="w-24 px-2 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"  disabled>
+                                <i class="fas fa-envelope mr-1"></i>Send
+                            </button>                 
                         </div>
                     </div>
                     
@@ -387,7 +386,7 @@
                                         </td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">
                                             <button class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors" onclick="openDocumentModal({{ $scholar->scholar_id }})">
-                                                Renewal history
+                                                Renewal History
                                             </button>
                                         </td>
                                    </tr>
@@ -404,402 +403,6 @@
                     </div>
                 </div>
             </div>
-
-                <!-- Email Modal -->
-                <div id="emailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-                    <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white">
-                        <div class="mt-3">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-lg font-medium text-gray-900">Send Email to Selected Scholars</h3>
-                                <button id="closeEmailModal" class="text-gray-400 hover:text-gray-600">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-
-                            <form id="emailForm">
-                                @csrf
-                                <div class="mb-4">
-                                    <label for="emailSubject" class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                                    <input type="text" id="emailSubject" name="subject" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required placeholder="Enter email subject">
-                                </div>
-
-                                <div class="mb-4">
-                                    <label for="emailMessage" class="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                                    <textarea id="emailMessage" name="message" rows="6" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required placeholder="Type your message here..."></textarea>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Recipients <span class="text-gray-500 text-sm">(</span><span id="recipientCount" class="text-gray-500 text-sm">0</span><span class="text-gray-500 text-sm"> selected)</span>
-                                    </label>
-                                    <div id="recipientsList" class="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-3 bg-gray-50">
-                                        <p class="text-gray-500 text-sm text-center">No recipients selected</p>
-                                    </div>
-                                </div>
-
-                                <div class="flex justify-end space-x-3">
-                                    <button type="button" id="cancelEmail" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">
-                                        Cancel
-                                    </button>
-                                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center">
-                                        <i class="fas fa-paper-plane mr-2"></i>Send Email
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <script>
-                // Email functionality for bulk sending
-                document.addEventListener('DOMContentLoaded', function() {
-                    const emailBtn = document.getElementById('emailBtn');
-                    const emailModal = document.getElementById('emailModal');
-                    const closeEmailModal = document.getElementById('closeEmailModal');
-                    const cancelEmail = document.getElementById('cancelEmail');
-                    const emailForm = document.getElementById('emailForm');
-                    const recipientsList = document.getElementById('recipientsList');
-                    const recipientCount = document.getElementById('recipientCount');
-
-                    // Update email button visibility based on checkbox selection
-                    function updateEmailButton() {
-                        const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
-                        
-                        if (selectedCheckboxes.length > 0) {
-                            emailBtn.classList.remove('hidden');
-                        } else {
-                            emailBtn.classList.add('hidden');
-                        }
-                    }
-
-                    // Show email modal
-                    emailBtn.addEventListener('click', function() {
-                        const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
-                        
-                        if (selectedCheckboxes.length === 0) {
-                            Swal.fire({
-                                title: 'No Scholars Selected',
-                                text: 'Please select at least one scholar to send an email.',
-                                icon: 'warning',
-                                confirmButtonText: 'OK'
-                            });
-                            return;
-                        }
-
-                        // Update recipients list
-                        updateRecipientsList();
-                        emailModal.classList.remove('hidden');
-                    });
-
-                    // Update recipients list in modal
-                    function updateRecipientsList() {
-                        const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
-                        
-                        recipientsList.innerHTML = '';
-                        recipientCount.textContent = selectedCheckboxes.length;
-
-                        if (selectedCheckboxes.length === 0) {
-                            recipientsList.innerHTML = '<p class="text-gray-500 text-sm text-center">No recipients selected</p>';
-                            return;
-                        }
-
-                        selectedCheckboxes.forEach(checkbox => {
-                            const scholarRow = checkbox.closest('tr');
-                            const scholarName = scholarRow.querySelector('td:nth-child(2) div').textContent.trim();
-                            const scholarEmail = checkbox.value;
-                            const scholarId = checkbox.getAttribute('data-scholar-id');
-
-                            const recipientDiv = document.createElement('div');
-                            recipientDiv.className = 'flex items-center justify-between py-2 px-3 bg-white rounded border-b border-gray-200 last:border-b-0';
-                            recipientDiv.innerHTML = `
-                                <div class="flex-1">
-                                    <div class="font-medium text-sm text-gray-800">${scholarName}</div>
-                                    <div class="text-xs text-gray-500">${scholarEmail}</div>
-                                </div>
-                                <button type="button" class="text-red-500 hover:text-red-700 text-sm remove-recipient ml-2" data-scholar-id="${scholarId}">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            `;
-                            recipientsList.appendChild(recipientDiv);
-                        });
-
-                        // Add event listeners to remove buttons
-                        document.querySelectorAll('.remove-recipient').forEach(btn => {
-                            btn.addEventListener('click', function() {
-                                const scholarId = this.getAttribute('data-scholar-id');
-                                const checkbox = document.querySelector(`.scholar-checkbox[data-scholar-id="${scholarId}"]`);
-                                if (checkbox) {
-                                    checkbox.checked = false;
-                                    updateEmailButton();
-                                    updateRecipientsList();
-                                }
-                            });
-                        });
-                    }
-
-                    // Close modal functions
-                    closeEmailModal.addEventListener('click', function() {
-                        emailModal.classList.add('hidden');
-                    });
-
-                    cancelEmail.addEventListener('click', function() {
-                        emailModal.classList.add('hidden');
-                    });
-
-                    // Close modal when clicking outside
-                    window.addEventListener('click', function(e) {
-                        if (e.target === emailModal) {
-                            emailModal.classList.add('hidden');
-                        }
-                    });
-
-                    // In your scholar.blade.php - update the email form submission
-                    emailForm.addEventListener('submit', function(e) {
-                        e.preventDefault();
-
-                        const subject = document.getElementById('emailSubject').value;
-                        const message = document.getElementById('emailMessage').value;
-                        
-                        // Get all selected scholar IDs
-                        const selectedScholarIds = Array.from(document.querySelectorAll('.scholar-checkbox:checked'))
-                            .map(checkbox => checkbox.getAttribute('data-scholar-id'));
-
-                        if (selectedScholarIds.length === 0) {
-                            Swal.fire({
-                                title: 'No Recipients',
-                                text: 'Please select at least one recipient.',
-                                icon: 'warning',
-                                confirmButtonText: 'OK'
-                            });
-                            return;
-                        }
-
-                        // Show loading state
-                        const submitBtn = this.querySelector('button[type="submit"]');
-                        const originalText = submitBtn.innerHTML;
-                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
-                        submitBtn.disabled = true;
-
-                        // Use FormData instead of JSON
-                        const formData = new FormData();
-                        formData.append('scholar_ids', selectedScholarIds.join(','));
-                        formData.append('subject', subject);
-                        formData.append('message', message);
-                        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-
-                        // Send bulk email via AJAX using FormData
-                        fetch('/lydo_admin/send-bulk-email', {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                'Accept': 'application/json'
-                            },
-                            credentials: 'same-origin',
-                            body: formData
-                        })
-                        .then(response => {
-                            // First, check if the response is JSON
-                            const contentType = response.headers.get('content-type');
-                            if (!contentType || !contentType.includes('application/json')) {
-                                // If not JSON, get the text and throw an error
-                                return response.text().then(text => {
-                                    throw new Error(`Server returned HTML instead of JSON. This usually indicates a server error. Response: ${text.substring(0, 200)}...`);
-                                });
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Success!',
-                                    text: data.message || `Email sent successfully to ${selectedScholarIds.length} scholar(s)!`,
-                                    icon: 'success',
-                                    confirmButtonText: 'OK'
-                                });
-                                emailModal.classList.add('hidden');
-                                emailForm.reset();
-                                
-                                // Uncheck all checkboxes after sending
-                                document.querySelectorAll('.scholar-checkbox:checked').forEach(checkbox => {
-                                    checkbox.checked = false;
-                                });
-                                updateEmailButton();
-                            } else {
-                                Swal.fire({
-                                    title: 'Error!',
-                                    text: data.message || 'Failed to send email.',
-                                    icon: 'error',
-                                    confirmButtonText: 'OK'
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            // Error handling removed as requested
-                        })
-                        .finally(() => {
-                            submitBtn.innerHTML = originalText;
-                            submitBtn.disabled = false;
-                        });
-                    });
-
-                    // Add event listeners to checkboxes
-                    document.addEventListener('change', function(e) {
-                        if (e.target.classList.contains('scholar-checkbox')) {
-                            updateEmailButton();
-                        }
-                    });
-
-                    // Select all functionality
-                    document.getElementById('selectAll').addEventListener('change', function(e) {
-                        const isChecked = e.target.checked;
-                        const visibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox');
-                        
-                        visibleCheckboxes.forEach(checkbox => {
-                            checkbox.checked = isChecked;
-                        });
-                        
-                        updateEmailButton();
-                    });
-
-                    // Initialize email button state
-                    updateEmailButton();
-                });
-
-            // Add this debug function to check what's being sent
-            function debugEmailRequest() {
-                const selectedScholarIds = Array.from(document.querySelectorAll('.scholar-checkbox:checked'))
-                    .map(checkbox => checkbox.getAttribute('data-scholar-id'));
-                
-                const subject = document.getElementById('emailSubject').value;
-                const message = document.getElementById('emailMessage').value;
-                
-                console.log('Selected Scholar IDs:', selectedScholarIds);
-                console.log('Subject:', subject);
-                console.log('Message:', message);
-                console.log('CSRF Token:', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-                
-                return {
-                    scholar_ids: selectedScholarIds.join(','),
-                    subject: subject,
-                    message: message
-                };
-            }
-
-            // Call this before your fetch request to debug
-            const debugData = debugEmailRequest();
-            console.log('Sending data:', debugData);
-                // Update the applyFilters function to include email button update
-                function applyFilters() {
-                    const searchValue = document.getElementById('searchInput').value.toLowerCase();
-                    const barangayValue = document.getElementById('barangaySelect').value;
-                    const academicYearValue = document.getElementById('academicYearSelect').value;
-                    const statusValue = document.getElementById('statusSelect').value;
-
-                    const rows = document.querySelectorAll('.scholar-row');
-                    let visibleCount = 0;
-
-                    rows.forEach(row => {
-                        const name = row.querySelector('td:nth-child(2) div').textContent.toLowerCase();
-                        const barangay = row.querySelector('td:nth-child(3) div').textContent;
-                        const academicYear = row.querySelector('td:nth-child(7) div').textContent;
-                        const statusElement = row.querySelector('td:nth-child(8) span');
-
-                        // Get status and normalize to lowercase for comparison
-                        let statusText = '';
-                        if (statusElement) {
-                            statusText = statusElement.textContent.trim().toLowerCase();
-                        }
-
-                        // Check if row matches all filters
-                        const matchesSearch = !searchValue || name.includes(searchValue);
-                        const matchesBarangay = !barangayValue || barangay === barangayValue;
-                        const matchesAcademicYear = !academicYearValue || academicYear === academicYearValue;
-
-                        // Fixed status matching logic
-                        let matchesStatus = true;
-                        if (statusValue !== 'all') {
-                            matchesStatus = statusText === statusValue.toLowerCase();
-                        }
-
-                        if (matchesSearch && matchesBarangay && matchesAcademicYear && matchesStatus) {
-                            row.style.display = '';
-                            visibleCount++;
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-
-                    // Show no results message if needed
-                    showNoResultsMessage(visibleCount === 0);
-
-                    // Update select all checkbox and email button
-                    updateSelectAllCheckbox();
-                    updateEmailButton();
-                }
-
-                function updateSelectAllCheckbox() {
-                    const selectAll = document.getElementById('selectAll');
-                    const visibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox');
-                    const checkedVisibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox:checked');
-                    
-                    if (visibleCheckboxes.length === 0) {
-                        selectAll.checked = false;
-                        selectAll.indeterminate = false;
-                    } else if (checkedVisibleCheckboxes.length === visibleCheckboxes.length) {
-                        selectAll.checked = true;
-                        selectAll.indeterminate = false;
-                    } else if (checkedVisibleCheckboxes.length > 0) {
-                        selectAll.checked = false;
-                        selectAll.indeterminate = true;
-                    } else {
-                        selectAll.checked = false;
-                        selectAll.indeterminate = false;
-                    }
-                }
-
-                function updateEmailButton() {
-                    const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
-                    const emailBtn = document.getElementById('emailBtn');
-                    
-                    if (selectedCheckboxes.length > 0) {
-                        emailBtn.classList.remove('hidden');
-                    } else {
-                        emailBtn.classList.add('hidden');
-                    }
-                }
-
-                function showNoResultsMessage(show) {
-                    let noResultsRow = document.querySelector('.no-results-row');
-                    
-                    if (show && !noResultsRow) {
-                        noResultsRow = document.createElement('tr');
-                        noResultsRow.className = 'no-results-row';
-                        noResultsRow.innerHTML = `
-                            <td colspan="9" class="text-center py-4 border border-gray-200 text-gray-500">
-                                No scholars found matching your filters.
-                            </td>
-                        `;
-                        document.querySelector('tbody').appendChild(noResultsRow);
-                    } else if (!show && noResultsRow) {
-                        noResultsRow.remove();
-                    }
-                }
-
-                // Debounce function
-                function debounce(func, wait) {
-                    let timeout;
-                    return function executedFunction(...args) {
-                        const later = () => {
-                            clearTimeout(timeout);
-                            func(...args);
-                        };
-                        clearTimeout(timeout);
-                        timeout = setTimeout(later, wait);
-                    };
-                }
-                </script>
-
                 <!-- Document Modal -->
                 <div id="documentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
                     <div class="relative top-1 mx-auto p-4 md:p-6 border w-full max-w-6xl shadow-2xl rounded-xl bg-white max-h-[98vh] overflow-y-auto">
@@ -865,6 +468,84 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Send Email Modal -->
+                <div id="sendEmailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                    <div class="relative top-1 mx-auto p-4 md:p-6 border w-full max-w-4xl shadow-2xl rounded-xl bg-white max-h-[98vh] overflow-y-auto">
+                        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+                            <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                                <i class="fas fa-envelope text-blue-600 mr-3"></i>
+                                Send Email to Scholars
+                            </h3>
+                            <button type="button" id="closeSendEmailModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+
+                        <form id="sendEmailForm" method="POST">
+                            @csrf
+                            <div class="space-y-6">
+                                <!-- Selected Scholars -->
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <h4 class="text-lg font-semibold text-blue-800 mb-2">Selected Scholars</h4>
+                                    <div id="selectedScholarsList" class="text-sm text-blue-700">
+                                        <!-- Selected scholars will be listed here -->
+                                    </div>
+                                    <input type="hidden" name="selected_emails" id="selectedEmailsInput">
+                                </div>
+
+                                <!-- Email Type -->
+                                <div>
+                                    <label for="emailType" class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                                    <select id="emailType" name="email_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="custom">Custom</option>
+                                        <option value="registration">Registration</option>
+                                    </select>
+                                </div>
+
+                                <!-- Email Subject -->
+                                <div>
+                                    <label for="emailSubject" class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                                    <input type="text" id="emailSubject" name="subject" required
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                           placeholder="Enter email subject">
+                                </div>
+
+                                <!-- Email Message -->
+                                <div>
+                                    <label for="emailMessage" class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                                    <textarea id="emailMessage" name="message" rows="8" required
+                                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                              placeholder="Enter your message here..."></textarea>
+                                </div>
+
+                                <!-- Send Options -->
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-3">Send Options</h4>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center">
+                                            <input type="radio" name="send_type" value="bulk" checked class="text-blue-600 focus:ring-blue-500">
+                                            <span class="ml-2 text-sm text-gray-700">Send to all selected scholars</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="radio" name="send_type" value="individual" class="text-blue-600 focus:ring-blue-500">
+                                            <span class="ml-2 text-sm text-gray-700">Send individual emails to each scholar</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end pt-6 border-t border-gray-200 mt-6 space-x-3">
+                                <button type="button" id="cancelSendEmail" class="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-paper-plane mr-2"></i>Send Email
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
         <script>
                 // Notification bell functionality
             document.getElementById("notifBell").addEventListener("click", function () {
@@ -899,9 +580,12 @@
                 const scholarRow = document.querySelector(`.scholar-checkbox[data-scholar-id="${scholarId}"]`).closest('tr');
                 const scholarNameFromTable = scholarRow.querySelector('td:nth-child(2) div').textContent.trim();
                 const scholarEmailFromTable = scholarRow.querySelector('td:nth-child(4) div').textContent.trim();
-                
+
                 scholarName.textContent = scholarNameFromTable;
                 scholarEmail.textContent = scholarEmailFromTable;
+
+                // Attach close event listeners
+                attachModalCloseListeners();
 
                 // Show modal
                 modal.classList.remove('hidden');
@@ -913,10 +597,10 @@
                         if (data.success && data.documents.length > 0) {
                             // Group documents by academic year and semester
                             const groupedDocuments = groupDocumentsByAcademicPeriod(data.documents);
-                            
+
                             // Create tabs for each academic period
                             createAcademicPeriodTabs(groupedDocuments, scholarId);
-                            
+
                             // Load first tab by default
                             if (Object.keys(groupedDocuments).length > 0) {
                                 const firstPeriod = Object.keys(groupedDocuments)[0];
@@ -928,13 +612,27 @@
                     })
                     .catch(error => {
                         console.error('Error fetching documents:', error);
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'Failed to load scholar documents.',
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
                     });
+            }
+
+            // Function to attach modal close listeners
+            function attachModalCloseListeners() {
+                // Close document modal
+                document.getElementById('closeDocumentModal').addEventListener('click', function() {
+                    document.getElementById('documentModal').classList.add('hidden');
+                });
+
+                document.getElementById('closeDocument').addEventListener('click', function() {
+                    document.getElementById('documentModal').classList.add('hidden');
+                });
+
+                // Close modal when clicking outside
+                window.addEventListener('click', function(e) {
+                    const modal = document.getElementById('documentModal');
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
             }
 
             // Group documents by academic year and semester
@@ -1250,22 +948,6 @@
                 // Initialize filters on page load
                 applyFilters();
             });
-            // Close document modal
-            document.getElementById('closeDocumentModal').addEventListener('click', function() {
-                document.getElementById('documentModal').classList.add('hidden');
-            });
-
-            document.getElementById('closeDocument').addEventListener('click', function() {
-                document.getElementById('documentModal').classList.add('hidden');
-            });
-
-            // Close modal when clicking outside
-            window.addEventListener('click', function(e) {
-                const modal = document.getElementById('documentModal');
-                if (e.target === modal) {
-                    modal.classList.add('hidden');
-                }
-            });
                         </script>
 
             <script>
@@ -1316,6 +998,158 @@
 
 
             </script>
+            
+            <script>
+            // Send Email Modal functionality
+            document.getElementById('sendEmailBtn').addEventListener('click', function() {
+                const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+                if (selectedCheckboxes.length === 0) {
+                    Swal.fire({
+                        title: 'No Scholars Selected',
+                        text: 'Please select at least one scholar to send an email.',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                const selectedScholars = [];
+                const selectedEmails = [];
+
+                selectedCheckboxes.forEach(checkbox => {
+                    const row = checkbox.closest('tr');
+                    const name = row.querySelector('td:nth-child(2) div').textContent.trim();
+                    const email = checkbox.value;
+
+                    selectedScholars.push(name);
+                    selectedEmails.push(email);
+                });
+
+                // Populate modal
+                const scholarsList = document.getElementById('selectedScholarsList');
+                scholarsList.innerHTML = selectedScholars.map(name => `<div class="mb-1">• ${name}</div>`).join('');
+
+                document.getElementById('selectedEmailsInput').value = selectedEmails.join(',');
+
+                // Show modal
+                document.getElementById('sendEmailModal').classList.remove('hidden');
+            });
+
+            // Close Send Email Modal
+            document.getElementById('closeSendEmailModal').addEventListener('click', function() {
+                document.getElementById('sendEmailModal').classList.add('hidden');
+            });
+
+            document.getElementById('cancelSendEmail').addEventListener('click', function() {
+                document.getElementById('sendEmailModal').classList.add('hidden');
+            });
+
+            // Close modal when clicking outside
+            window.addEventListener('click', function(e) {
+                const modal = document.getElementById('sendEmailModal');
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+
+            // Handle Send Email Form Submission
+            document.getElementById('sendEmailForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+
+                // Show loading state
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+                submitBtn.disabled = true;
+
+                // Submit form via AJAX
+                fetch('/lydo_admin/send-email-to-scholars', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Email Sent Successfully!',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+                        document.getElementById('sendEmailModal').classList.add('hidden');
+                        // Reset form
+                        this.reset();
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.message || 'Failed to send email.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'An error occurred while sending the email.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                })
+                .finally(() => {
+                    // Reset button
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+            });
+
+            // Update Send Email Button State
+            function updateSendButton() {
+                const sendEmailBtn = document.getElementById('sendEmailBtn');
+                const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+
+                if (selectedCheckboxes.length > 0) {
+                    sendEmailBtn.disabled = false;
+                    sendEmailBtn.classList.remove('disabled:bg-gray-400', 'disabled:cursor-not-allowed');
+                } else {
+                    sendEmailBtn.disabled = true;
+                    sendEmailBtn.classList.add('disabled:bg-gray-400', 'disabled:cursor-not-allowed');
+                }
+            }
+
+            // Update Email Button (alias for updateSendButton for consistency)
+            function updateEmailButton() {
+                updateSendButton();
+            }
+
+            // Initialize on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                updateSendButton();
+
+                // Email type pre-fill functionality
+                const emailTypeSelect = document.getElementById('emailType');
+                const emailSubjectInput = document.getElementById('emailSubject');
+                const emailMessageTextarea = document.getElementById('emailMessage');
+
+                emailTypeSelect.addEventListener('change', function() {
+                    if (this.value === 'registration') {
+                        emailSubjectInput.value = 'Account Registration Required';
+                        emailMessageTextarea.value = 'Dear Scholar,\n\nYou are required to complete your account registration to access the scholarship system.\n\nPlease visit the following link to Create your username and password:\n\n{{ route("scholar.scholar_reg") }}\n\nNote: For personalized access, you may receive an individual email with a secure link.\n\nBest regards,\nLYDO Scholarship Team';
+                    } else if (this.value === 'custom') {
+                        // Clear fields for custom emails
+                        emailSubjectInput.value = '';
+                        emailMessageTextarea.value = '';
+                    }
+                });
+            });
+            </script>
+
             <script src="{{ asset('js/filter_paginate.js') }}"></script>
             <script src="{{ asset('js/scholar.js') }}"></script>
             <script src="{{ asset('js/spinner.js') }}"></script>

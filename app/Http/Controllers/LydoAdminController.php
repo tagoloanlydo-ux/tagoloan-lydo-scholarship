@@ -228,73 +228,7 @@ public function lydo()
         return view('lydo_admin.mayor', compact( 'inactiveStaff', 'activeStaff'));
     }
 
-public function scholar(Request $request)
-{
-    // Get scholars with applicant information - include both active and inactive
-    $query = DB::table('tbl_scholar as s')
-        ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
-        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-        ->select(
-            's.scholar_id',
-            's.scholar_status',
-            's.date_activated',
-            'a.applicant_id',
-            'a.applicant_fname',
-            'a.applicant_mname',
-            'a.applicant_lname',
-            'a.applicant_suffix',
-            'a.applicant_brgy',
-            'a.applicant_email',
-            'a.applicant_contact_number',
-            'a.applicant_school_name',
-            'a.applicant_course',
-            'a.applicant_year_level',
-            'a.applicant_acad_year'
-        );
 
-    // Apply status filter - default to active
-    $statusFilter = $request->get('status', 'active');
-    if ($statusFilter === 'active') {
-        $query->where('s.scholar_status', 'active');
-    } elseif ($statusFilter === 'inactive') {
-        $query->where('s.scholar_status', 'inactive');
-    }
-    // If 'all' is selected, show both active and inactive
-
-    // Apply other filters
-    if ($request->has('search') && !empty($request->search)) {
-        $query->where(function($q) use ($request) {
-            $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
-              ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%');
-        });
-    }
-
-    if ($request->has('barangay') && !empty($request->barangay)) {
-        $query->where('a.applicant_brgy', $request->barangay);
-    }
-
-    if ($request->has('academic_year') && !empty($request->academic_year)) {
-        $query->where('a.applicant_acad_year', $request->academic_year);
-    }
-
-   $scholars = $query->get();
-
-    // Get distinct barangays for filter dropdown
-    $barangays = DB::table('tbl_applicant')
-        ->select('applicant_brgy')
-        ->distinct()
-        ->orderBy('applicant_brgy', 'asc')
-        ->pluck('applicant_brgy');
-
-    // Get distinct academic years for filter dropdown
-    $academicYears = DB::table('tbl_applicant')
-        ->select('applicant_acad_year')
-        ->distinct()
-        ->orderBy('applicant_acad_year', 'desc')
-        ->pluck('applicant_acad_year');
-
-    return view('lydo_admin.scholar', compact( 'scholars', 'barangays', 'academicYears', 'statusFilter'));
-}
     public function sendEmail(Request $request)
     {
         $request->validate([
@@ -360,69 +294,6 @@ public function scholar(Request $request)
         }
     }
 
-public function sendBulkEmail(Request $request)
-{
-    try {
-        // Ensure we return JSON even on validation errors
-        $request->validate([
-            'scholar_ids' => 'required|string',
-            'subject' => 'required|string|max:255',
-            'message' => 'required|string',
-        ]);
-
-        $scholarIds = explode(',', $request->scholar_ids);
-        $scholarIds = array_map('trim', $scholarIds);
-        $subject = $request->subject;
-        $message = $request->message;
-
-        // Get scholar emails
-        $scholars = DB::table('tbl_scholar as s')
-            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
-            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-            ->whereIn('s.scholar_id', $scholarIds)
-            ->select('a.applicant_email', 'a.applicant_fname', 'a.applicant_lname')
-            ->get();
-
-        $emails = $scholars->pluck('applicant_email')->toArray();
-        $emails = array_filter($emails); // Remove empty emails
-
-        if (empty($emails)) {
-            return response()->json([
-                'success' => false, 
-                'message' => 'No valid email addresses found for selected scholars.'
-            ]);
-        }
-
-        // Send email to all recipients
-        Mail::send('emails.plain-email', ['subject' => $subject, 'emailMessage' => $message], function ($mail) use ($emails, $subject) {
-            $mail->to($emails)
-                 ->subject($subject);
-        });
-
-        return response()->json([
-            'success' => true, 
-            'message' => 'Email sent successfully to ' . count($emails) . ' scholar(s)!'
-        ]);
-
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        // Handle validation errors and return JSON
-        return response()->json([
-            'success' => false, 
-            'message' => 'Validation failed',
-            'errors' => $e->errors()
-        ], 422);
-    } catch (\Exception $e) {
-        \Log::error('Bulk email error: ' . $e->getMessage());
-        \Log::error('Bulk email stack trace: ' . $e->getTraceAsString());
-        
-        return response()->json([
-            'success' => false, 
-            'message' => 'Failed to send email: ' . $e->getMessage()
-        ], 500);
-    }
-}
-
- // Sa LydoAdminController.php - i-update ang status method
 
 public function status()
 {
@@ -905,36 +776,6 @@ public function disbursement(Request $request)
         $applicantIds = $query->pluck('applicant_id');
 
         return response()->json(['applicant_ids' => $applicantIds]);
-    }
-
-    public function getAllFilteredScholars(Request $request)
-    {
-        $query = DB::table('tbl_scholar as s')
-            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
-            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-            ->select('s.scholar_id', 'a.applicant_email')
-            ->where('s.scholar_status', 'active');
-
-        // Apply the same filters as the main scholar method
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
-                  ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        if ($request->has('barangay') && !empty($request->barangay)) {
-            $query->where('a.applicant_brgy', $request->barangay);
-        }
-
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
-            $query->where('a.applicant_acad_year', $request->academic_year);
-        }
-
-        // Get all scholar emails that match the filters
-        $scholarEmails = $query->pluck('a.applicant_email');
-
-        return response()->json(['scholar_emails' => $scholarEmails]);
     }
 
     public function getScholarNames(Request $request)
@@ -1490,46 +1331,7 @@ public function generateDisbursementRecordsPdf(Request $request)
         return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
     }
 }
-public function getScholarDocuments($scholar_id)
-{
-    try {
-        $documents = DB::table('tbl_renewal')
-            ->where('scholar_id', $scholar_id)
-            ->select(
-                'renewal_cert_of_reg',
-                'renewal_grade_slip',
-                'renewal_brgy_indigency',
-                'renewal_semester',
-                'renewal_acad_year',
-                'date_submitted',
-                'renewal_status'
-            )
-            ->get();
 
-        // Process documents to generate proper URLs
-        $processedDocuments = $documents->map(function ($doc) {
-            return [
-                'renewal_cert_of_reg' => $this->getDocumentUrl($doc->renewal_cert_of_reg),
-                'renewal_grade_slip' => $this->getDocumentUrl($doc->renewal_grade_slip),
-                'renewal_brgy_indigency' => $this->getDocumentUrl($doc->renewal_brgy_indigency),
-                'renewal_semester' => $doc->renewal_semester,
-                'renewal_acad_year' => $doc->renewal_acad_year,
-                'date_submitted' => $doc->date_submitted,
-                'renewal_status' => $doc->renewal_status,
-            ];
-        });
-
-        return response()->json([
-            'success' => true,
-            'documents' => $processedDocuments
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Error fetching documents: ' . $e->getMessage()
-        ], 500);
-    }
-}
 
 // Helper method to generate proper document URLs
 private function getDocumentUrl($filePath)
@@ -1558,85 +1360,6 @@ private function getDocumentUrl($filePath)
 }
 
 
-public function generateScholarsPdf(Request $request)
-{
-    try {
-        // Set time limit for PDF generation
-        set_time_limit(120); // 2 minutes
-        
-        // Get scholars with applicant information - same query as scholar method
-        $query = DB::table('tbl_scholar as s')
-            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
-            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-            ->select(
-                's.scholar_id',
-                's.scholar_status',
-                's.date_activated',
-                'a.applicant_id',
-                'a.applicant_fname',
-                'a.applicant_mname',
-                'a.applicant_lname',
-                'a.applicant_suffix',
-                'a.applicant_brgy',
-                'a.applicant_email',
-                'a.applicant_contact_number',
-                'a.applicant_school_name',
-                'a.applicant_course',
-                'a.applicant_year_level',
-                'a.applicant_acad_year'
-            );
-
-        // Apply status filter
-        $statusFilter = $request->get('status', 'active');
-        if ($statusFilter === 'active') {
-            $query->where('s.scholar_status', 'active');
-        } elseif ($statusFilter === 'inactive') {
-            $query->where('s.scholar_status', 'inactive');
-        }
-
-        // Apply other filters
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
-                  ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        if ($request->has('barangay') && !empty($request->barangay)) {
-            $query->where('a.applicant_brgy', $request->barangay);
-        }
-
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
-            $query->where('a.applicant_acad_year', $request->academic_year);
-        }
-
-        $scholars = $query->get();
-
-        // Get filter info for page title
-        $filters = [];
-        if ($request->search) {
-            $filters[] = 'Search: ' . $request->search;
-        }
-        if ($request->barangay) {
-            $filters[] = 'Barangay: ' . $request->barangay;
-        }
-        if ($request->academic_year) {
-            $filters[] = 'Academic Year: ' . $request->academic_year;
-        }
-        if ($request->status) {
-            $filters[] = 'Status: ' . ucfirst($request->status);
-        }
-
-        $pdf = Pdf::loadView('pdf.scholars-print', compact('scholars', 'filters'))
-            ->setPaper('a4', 'portrait'); // Changed from 'landscape' to 'portrait'
-
-        return $pdf->stream('scholars-list-' . date('Y-m-d') . '.pdf');
-        
-    } catch (\Exception $e) {
-        \Log::error('PDF Generation Error: ' . $e->getMessage());
-        return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
-    }
-}
 public function generateApplicantsPdf(Request $request)
 {
     try {
@@ -1721,6 +1444,8 @@ public function dashboardData(Request $request)
     $totalScholarsWholeYear = DB::table('tbl_scholar')
         ->where('scholar_status', 'active')
         ->count();
+
+
 
     $inactiveScholars = DB::table('tbl_scholar')
         ->where('scholar_status', 'inactive')
@@ -1822,6 +1547,5 @@ public function generateSignedDisbursementPdf(Request $request)
         return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
     }
 }
-
 }
 
