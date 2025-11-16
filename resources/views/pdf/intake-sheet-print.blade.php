@@ -470,123 +470,128 @@
                     </td>
                 </tr>
             </table>
-                        <!-- FAMILY COMPOSITION SECTION -->
-                        <table class="section" style="width: 100%;">
-                            <tr>
-                                <td>
-                                    <div class="section-title">FAMILY COMPOSITION</div>
-                                    
-                                    <table class="data-table family-table" style="font-size: 15px; width: 100%; border-collapse: collapse;">
-                                        <thead>
-                                            <tr style="height: 70px; background-color: #f8f9fa;">
-                                                <th style="width: 4%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">#</th>
-                                                <th style="width: 18%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Name</th>
-                                                <th style="width: 10%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Relation</th>
-                                                <th style="width: 10%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Date of Birth</th>
-                                                <th style="width: 6%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Age</th>
-                                                <th style="width: 6%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Sex</th>
-                                                <th style="width: 10%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Civil Status</th>
-                                                <th style="width: 12%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Education</th>
-                                                <th style="width: 12%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Occupation</th>
-                                                <th style="width: 7%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Income</th>
-                                                <th style="width: 5%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Remarks</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @if(!empty($family) && count($family) > 0)
-                                                @foreach($family as $index => $member)
-                                                    <tr style="height: 60px;">
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $index + 1 }}</td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">
-                                                            @php
-                                                                $name = '';
-                                                                if (isset($member['name']) && !empty($member['name'])) {
-                                                                    $name = $member['name'];
-                                                                } else {
-                                                                    $name = trim(($member['fname'] ?? '') . ' ' . ($member['mname'] ?? '') . ' ' . ($member['lname'] ?? ''));
-                                                                }
-                                                            @endphp
-                                                            {{ $name }}
-                                                        </td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $member['relation'] ?? ($member['relationship'] ?? '') }}</td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">
-                                                            @php
-                                                                $birthDate = '';
-                                                                if (!empty($member['birth'])) {
-                                                                    $birthDate = \Carbon\Carbon::parse($member['birth'])->format('F d Y');
-                                                                } elseif (!empty($member['dob'])) {
-                                                                    $birthDate = \Carbon\Carbon::parse($member['dob'])->format('F d Y');
-                                                                } elseif (!empty($member['birthdate'])) {
-                                                                    $birthDate = \Carbon\Carbon::parse($member['birthdate'])->format('F d Y');
-                                                                }
-                                                            @endphp
-                                                            {{ $birthDate }}
-                                                        </td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">
-                                                            @php
-                                                                $age = '';
-                                                                if (!empty($member['age'])) {
-                                                                    $age = $member['age'];
-                                                                } elseif (!empty($member['birth'])) {
-                                                                    $age = \Carbon\Carbon::parse($member['birth'])->age;
-                                                                } elseif (!empty($member['dob'])) {
-                                                                    $age = \Carbon\Carbon::parse($member['dob'])->age;
-                                                                } elseif (!empty($member['birthdate'])) {
-                                                                    $age = \Carbon\Carbon::parse($member['birthdate'])->age;
-                                                                }
-                                                            @endphp
-                                                            {{ $age }}
-                                                        </td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $member['sex'] ?? ($member['gender'] ?? '') }}</td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $member['civil'] ?? ($member['civil_status'] ?? '') }}</td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $member['educ'] ?? ($member['education'] ?? '') }}</td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $member['occ'] ?? ($member['occupation'] ?? '') }}</td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;" class="currency">
-                                                            @if(!empty($member['income']) || !empty($member['monthly_income']))
-                                                                {{ number_format($member['income'] ?? $member['monthly_income'] ?? 0, 2) }}
-                                                            @endif
-                                                        </td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $member['remarks'] ?? '' }}</td>
-                                                    </tr>
-                                                @endforeach
-                                                
-                                                <!-- Add 5 empty rows only when there is data -->
-                                                @for($i = count($family) + 1; $i <= count($family) + 5; $i++)
-                                                    <tr style="height: 60px;">
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $i }}</td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                    </tr>
-                                                @endfor
-                                                
-                                            @else
-                                                <!-- Empty rows for printing when no data -->
-                                                @for($i = 1; $i <= 12; $i++)
-                                                    <tr style="height: 60px;">
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $i }}</td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                        <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                                    </tr>
-                                                @endfor
-                                            @endif
-                                        </tbody>
-                                    </table>
+  <!-- FAMILY COMPOSITION SECTION -->
+<table class="section" style="width: 100%;">
+    <tr>
+        <td>
+            <div class="section-title">FAMILY COMPOSITION</div>
+            
+            <table class="data-table family-table" style="font-size: 15px; width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="height: 70px; background-color: #f8f9fa;">
+                        <th style="width: 4%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">#</th>
+                        <th style="width: 18%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Name</th>
+                        <th style="width: 10%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Relation</th>
+                        <th style="width: 10%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Date of Birth</th>
+                        <th style="width: 6%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Age</th>
+                        <th style="width: 6%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Sex</th>
+                        <th style="width: 10%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Civil Status</th>
+                        <th style="width: 12%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Education</th>
+                        <th style="width: 12%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Occupation</th>
+                        <th style="width: 7%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Income</th>
+                        <th style="width: 5%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if(!empty($family) && count($family) > 0)
+                        @foreach($family as $index => $member)
+                            <tr style="height: 60px;">
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $index + 1 }}</td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">
+                                    @php
+                                        $name = '';
+                                        if (isset($member['name']) && !empty($member['name'])) {
+                                            $name = $member['name'];
+                                        } else {
+                                            $name = trim(($member['fname'] ?? '') . ' ' . ($member['mname'] ?? '') . ' ' . ($member['lname'] ?? ''));
+                                        }
+                                    @endphp
+                                    {{ $name }}
+                                </td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $member['relation'] ?? ($member['relationship'] ?? '') }}</td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">
+                                    @php
+                                        $birthDate = '';
+                                        if (!empty($member['birth'])) {
+                                            $birthDate = \Carbon\Carbon::parse($member['birth'])->format('F d Y');
+                                        } elseif (!empty($member['dob'])) {
+                                            $birthDate = \Carbon\Carbon::parse($member['dob'])->format('F d Y');
+                                        } elseif (!empty($member['birthdate'])) {
+                                            $birthDate = \Carbon\Carbon::parse($member['birthdate'])->format('F d Y');
+                                        }
+                                    @endphp
+                                    {{ $birthDate }}
+                                </td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">
+                                    @php
+                                        $age = '';
+                                        if (!empty($member['age'])) {
+                                            $age = $member['age'];
+                                        } elseif (!empty($member['birth'])) {
+                                            $age = \Carbon\Carbon::parse($member['birth'])->age;
+                                        } elseif (!empty($member['dob'])) {
+                                            $age = \Carbon\Carbon::parse($member['dob'])->age;
+                                        } elseif (!empty($member['birthdate'])) {
+                                            $age = \Carbon\Carbon::parse($member['birthdate'])->age;
+                                        }
+                                    @endphp
+                                    {{ $age }}
+                                </td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $member['sex'] ?? ($member['gender'] ?? '') }}</td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $member['civil'] ?? ($member['civil_status'] ?? '') }}</td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $member['educ'] ?? ($member['education'] ?? '') }}</td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $member['occ'] ?? ($member['occupation'] ?? '') }}</td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;" class="currency">
+                                    @if(!empty($member['income']) || !empty($member['monthly_income']))
+                                        {{ number_format($member['income'] ?? $member['monthly_income'] ?? 0, 2) }}
+                                    @endif
+                                </td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $member['remarks'] ?? '' }}</td>
+                            </tr>
+                        @endforeach
+                        
+                        @php
+                            $totalRows = count($family);
+                            $emptyRowsNeeded = max(8 - $totalRows, 0);
+                        @endphp
+                        
+                        <!-- Add empty rows to complete 8 total rows -->
+                        @for($i = $totalRows + 1; $i <= $totalRows + $emptyRowsNeeded; $i++)
+                            <tr style="height: 60px;">
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $i }}</td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                            </tr>
+                        @endfor
+                        
+                    @else
+                        <!-- Empty rows for printing when no data - show exactly 8 rows -->
+                        @for($i = 1; $i <= 8; $i++)
+                            <tr style="height: 60px;">
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $i }}</td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
+                            </tr>
+                        @endfor
+                    @endif
+                </tbody>
+            </table>
 
                                 <!-- INCOME AND HOUSING INFORMATION -->
                           <div style="margin-top: 8px;">
