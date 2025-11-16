@@ -711,17 +711,20 @@
                         </tr>
                     @endforeach
                     
-                    <!-- Fill remaining rows if less than 8 -->
-                    @if(count($rvServiceRecords) < 8)
-                        @for($r = count($rvServiceRecords); $r < 8; $r++)
-                            <tr>
-                                <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                            </tr>
-                        @endfor
-                    @endif
+                    @php
+                        $totalServiceRows = count($rvServiceRecords);
+                        $emptyServiceRowsNeeded = max(5 - $totalServiceRows, 0);
+                    @endphp
+                    
+                    <!-- Fill remaining rows if less than 5 -->
+                    @for($r = $totalServiceRows; $r < $totalServiceRows + $emptyServiceRowsNeeded; $r++)
+                        <tr>
+                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
+                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
+                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
+                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
+                        </tr>
+                    @endfor
                 @else
                     <!-- Show the sample data from your JSON string -->
                     <tr>
@@ -730,8 +733,8 @@
                         <td style="height: 60px; text-align: center; vertical-align: middle;">lk</td>
                         <td style="height: 60px; text-align: center; vertical-align: middle;">A. DEAD</td>
                     </tr>
-                    <!-- Empty rows for the rest -->
-                    @for($r = 1; $r < 8; $r++)
+                    <!-- Empty rows for the rest - total of 5 rows -->
+                    @for($r = 1; $r < 5; $r++)
                         <tr>
                             <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
                             <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
@@ -742,6 +745,7 @@
                 @endif
             </tbody>
         </table>
+
 
 
                         <!-- CLASSIFICATION CODES -->
