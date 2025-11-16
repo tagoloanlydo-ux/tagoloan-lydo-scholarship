@@ -476,7 +476,7 @@
         <td>
             <div class="section-title">FAMILY COMPOSITION</div>
             
-            <table class="data-table family-table" style="font-size: 12px; width: 100%; border-collapse: collapse;">
+            <table class="data-table family-table" style="font-size: 10px; width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="height: 70px; background-color: #f8f9fa;">
                         <th style="width: 4%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">#</th>
