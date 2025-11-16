@@ -476,7 +476,7 @@
         <td>
             <div class="section-title">FAMILY COMPOSITION</div>
             
-            <table class="data-table family-table" style="font-size: 15px; width: 100%; border-collapse: collapse;">
+            <table class="data-table family-table" style="font-size: 12px; width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="height: 70px; background-color: #f8f9fa;">
                         <th style="width: 4%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">#</th>
@@ -552,10 +552,10 @@
                         
                         @php
                             $totalRows = count($family);
-                            $emptyRowsNeeded = max(8 - $totalRows, 0);
+                            $emptyRowsNeeded = max(5 - $totalRows, 0);
                         @endphp
                         
-                        <!-- Add empty rows to complete 8 total rows -->
+                        <!-- Add empty rows to complete 5 total rows -->
                         @for($i = $totalRows + 1; $i <= $totalRows + $emptyRowsNeeded; $i++)
                             <tr style="height: 60px;">
                                 <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $i }}</td>
@@ -573,8 +573,8 @@
                         @endfor
                         
                     @else
-                        <!-- Empty rows for printing when no data - show exactly 8 rows -->
-                        @for($i = 1; $i <= 8; $i++)
+                        <!-- Empty rows for printing when no data - show exactly 5 rows -->
+                        @for($i = 1; $i <= 5; $i++)
                             <tr style="height: 60px;">
                                 <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $i }}</td>
                                 <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
