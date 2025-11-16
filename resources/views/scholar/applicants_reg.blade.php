@@ -739,6 +739,48 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeEventListeners();
   toggleButton(); // Set initial button state
 });
+
+// Add this script to automatically capitalize first letters
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to capitalize first letter of each word
+    function capitalizeWords(str) {
+        return str.replace(/\b\w/g, function(char) {
+            return char.toUpperCase();
+        });
+    }
+
+    // Function to handle input capitalization
+    function handleInputCapitalization(event) {
+        const input = event.target;
+        const cursorPosition = input.selectionStart;
+        
+        // Only process if there's a value
+        if (input.value) {
+            // Capitalize the input value
+            input.value = capitalizeWords(input.value);
+            
+            // Restore cursor position
+            input.setSelectionRange(cursorPosition, cursorPosition);
+        }
+    }
+
+    // Apply to all text inputs
+    const textInputs = document.querySelectorAll('input[type="text"]');
+    
+    textInputs.forEach(input => {
+        // Capitalize on blur (when user leaves the field)
+        input.addEventListener('blur', handleInputCapitalization);
+        
+        // Optional: Capitalize as user types (real-time)
+        // input.addEventListener('input', handleInputCapitalization);
+    });
+
+    // Also apply to the course input field specifically
+    const courseInput = document.getElementById('course');
+    if (courseInput) {
+        courseInput.addEventListener('blur', handleInputCapitalization);
+    }
+});
 </script>
 <style>
 /* Full screen container */
