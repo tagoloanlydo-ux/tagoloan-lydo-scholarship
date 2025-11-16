@@ -1282,8 +1282,8 @@ public function generateIntakeSheetPdf($application_personnel_id)
             'worker_info' => [
                 'worker_name' => $intakeSheet->worker_name ?? '',
                 'officer_name' => $intakeSheet->officer_name ?? '',
-    'date_entry' => $intakeSheet->date_entry ? \Carbon\Carbon::parse($intakeSheet->date_entry)->format('F d Y') : now()->format('F d Y'),            ],
-            'application_remarks' => $applicantData->remarks ?? '', // SEPARATE FIELD FOR REMARKS
+               'date_entry' => $intakeSheet->date_entry ? \Carbon\Carbon::parse($intakeSheet->date_entry)->format('F d Y') : now()->format('F d Y'),            ],
+                 'application_remarks' => $applicantData->remarks ?? '', // SEPARATE FIELD FOR REMARKS
         ];
 
         // Debug log to check data including remarks

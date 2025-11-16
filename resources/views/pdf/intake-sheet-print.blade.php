@@ -593,7 +593,7 @@
                                 <table style="width: 100%; border: none; font-family: Arial, sans-serif; font-size: 15px;">
                                     <tr>
                                         <td style="width: 25%; border: none; padding: 4px; vertical-align: top;">
-                                            <strong>Other Source of Income:</strong>
+                                            <strong>Other Source of Income:</strong><u>{{ $house['net_income'] ?? '__________' }}</u>
                                         </td>
                                         <td style="width: 25%; border: none; padding: 4px; vertical-align: top;">
                                             <strong>Lot:</strong> <u>{{ $house['lot'] ?? '__________' }}</u>
