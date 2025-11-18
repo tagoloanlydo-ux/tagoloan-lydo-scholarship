@@ -303,9 +303,10 @@
 <div class="flex-1">
     <select id="initialScreeningSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
         <option value="all" {{ $initialScreeningStatus == 'all' ? 'selected' : '' }}>All Status</option>
-        <option value="Approved" {{ $initialScreeningStatus == 'Approved' ? 'selected' : '' }}>Approved</option>
-        <option value="Rejected" {{ $initialScreeningStatus == 'Rejected' ? 'selected' : '' }}>Rejected</option>
-        <option value="Reviewed" {{ $initialScreeningStatus == 'Reviewed' ? 'selected' : '' }}>Reviewed</option>
+                <option value="Pending" {{ $initialScreeningStatus == 'Pending' ? 'selected' : '' }}>Pending For Initial Screening</option>
+        <option value="Approved" {{ $initialScreeningStatus == 'Approved' ? 'selected' : '' }}>Approved From Mayor Staff</option>
+        <option value="Rejected" {{ $initialScreeningStatus == 'Rejected' ? 'selected' : '' }}>Rejected From Mayor Staff</option>
+        <option value="Reviewed" {{ $initialScreeningStatus == 'Reviewed' ? 'selected' : '' }}>Reviewed From Lydo Staff</option>
     </select>
 </div>
     </div>
@@ -328,7 +329,8 @@
                     
                     <div class="overflow-x-auto">
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
-<thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
+<!-- In the table header section -->
+<thead class="bg-violet-600 to-teal-600 text-white uppercase text-sm">
     <tr>
         <th class="px-4 py-3 border border-gray-200 text-left">
             <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
@@ -338,10 +340,12 @@
         <th class="px-4 py-3 border border-gray-200 align-middle text-center">Email</th>
         <th class="px-4 py-3 border border-gray-200 align-middle text-center">School</th>
         <th class="px-4 py-3 border border-gray-200 align-middle text-center">Academic Year</th>
-        <!-- ADD THIS COLUMN -->
         <th class="px-4 py-3 border border-gray-200 align-middle text-center">Initial Screening</th>
+        <!-- NEW COLUMN: Application History -->
+        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Application History</th>
     </tr>
 </thead>
+
 <tbody>
     @forelse($applicants as $applicant)
         <tr class="hover:bg-gray-50 border-b">
@@ -367,25 +371,47 @@
             <td class="px-4 border border-gray-200 py-2 text-center">
                 <div class="text-sm text-gray-900">{{ $applicant->applicant_acad_year }}</div>
             </td>
-            <!-- ADD THIS CELL FOR STATUS -->
             <td class="px-4 border border-gray-200 py-2 text-center">
                 <span class="px-2 py-1 rounded-full text-xs font-semibold 
                     @if($applicant->initial_screening === 'Approved') bg-green-100 text-green-800
                     @elseif($applicant->initial_screening === 'Rejected') bg-red-100 text-red-800
+                    @elseif($applicant->initial_screening === 'Reviewed') bg-blue-100 text-blue-800
                     @else bg-yellow-100 text-yellow-800 @endif">
                     {{ $applicant->initial_screening ?? 'Pending' }}
                 </span>
             </td>
+            <!-- NEW COLUMN: Application History -->
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="flex gap-2 justify-center">
+                    @if(in_array($applicant->initial_screening, ['Approved', 'Rejected']))
+                        <!-- Show only documents for Approved/Rejected -->
+                        <button type="button" 
+                                onclick="viewApplicantDocuments('{{ $applicant->applicant_id }}', '{{ addslashes($applicant->applicant_fname) }} {{ addslashes($applicant->applicant_lname) }}', '{{ $applicant->initial_screening }}')"
+                                class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow">
+                            <i class="fas fa-file-alt mr-1"></i> View Documents
+                        </button>
+                    @elseif($applicant->initial_screening === 'Reviewed')
+                        <!-- Show intake sheet and documents for Reviewed -->
+                        <button type="button" 
+                                onclick="viewApplicantIntakeSheet('{{ $applicant->applicant_id }}', '{{ addslashes($applicant->applicant_fname) }} {{ addslashes($applicant->applicant_lname) }}', '{{ $applicant->initial_screening }}')"
+                                class="px-3 py-1 text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-lg shadow">
+                            <i class="fas fa-clipboard-list mr-1"></i> View Application
+                        </button>
+                    @else
+                        <!-- Pending or other status -->
+                        <span class="text-sm text-gray-500">No actions available</span>
+                    @endif
+                </div>
+            </td>
         </tr>
     @empty
         <tr>
-            <td colspan="8" class="px-4 py-2 text-center text-sm text-gray-500">
+            <td colspan="9" class="px-4 py-2 text-center text-sm text-gray-500">
                 No applicants found.
             </td>
         </tr>
     @endforelse
-</tbody>
-                        </table>
+</tbody>               </table>
                     </div>
 
                  
@@ -449,7 +475,150 @@
                     </div>
                 </div>
             </div>
+<!-- Application History Modal -->
+<div id="applicationHistoryModal" class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 transition-opacity duration-300">
+    <div class="relative top-4 mx-auto p-6 w-11/12 max-w-6xl max-h-[95vh] overflow-hidden bg-white rounded-2xl shadow-2xl transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+        <!-- Modern Header -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="w-8 h-8 rounded-lg">
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800" id="modalTitle">Application Details</h2>
+                    <p class="text-sm text-gray-500">Comprehensive application information</p>
+                </div>
+            </div>
+            <button onclick="closeApplicationModal()" class="w-10 h-10 bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 rounded-full flex items-center justify-center transition-colors duration-200 shadow-sm">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
 
+        <!-- Modal Body with Scroll -->
+        <div class="overflow-y-auto max-h-[calc(95vh-140px)] px-2">
+            <!-- Basic applicant info -->
+            <div class="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4 shadow-lg">
+                        <i class="fas fa-user-graduate text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800">Applicant Information</h3>
+                        <p class="text-sm text-gray-600">Basic details of the scholarship applicant</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="applicantBasicInfo">
+                    <!-- Basic info will be populated here -->
+                </div>
+            </div>
+
+            <!-- Intake Sheet Information (for Reviewed status) -->
+            <div id="intakeSheetInfo" class="hidden space-y-8">
+                <!-- Head of Family Section -->
+                <div class="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-100">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-home text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800">Head of Family</h3>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" id="headOfFamilyInfo">
+                        <!-- Head of family info will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Household Information Section -->
+                <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-xl border border-amber-100">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-house-user text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800">Household Information</h3>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="householdInfo">
+                        <!-- Household info will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Family Members Section -->
+                <div class="bg-gradient-to-r from-rose-50 to-pink-50 p-6 rounded-xl border border-rose-100">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-rose-500 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-users text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800">Family Members</h3>
+                    </div>
+                    <div class="overflow-x-auto shadow-sm rounded-lg border border-gray-200">
+                        <table class="w-full border-collapse bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Relation</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Birthdate</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Age</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Sex</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Civil Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Education</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Occupation</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Income</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="familyMembersTable" class="divide-y divide-gray-200">
+                                <!-- Family members will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Service Records Section -->
+                <div class="bg-gradient-to-r from-cyan-50 to-blue-50 p-6 rounded-xl border border-cyan-100">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-clipboard-list text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800">Social Service Records</h3>
+                    </div>
+                    <div class="overflow-x-auto shadow-sm rounded-lg border border-gray-200">
+                        <table class="w-full border-collapse bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Date</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Problem/Need</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Action/Assistance</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="serviceRecordsTable" class="divide-y divide-gray-200">
+                                <!-- Service records will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Section -->
+            <div class="bg-gradient-to-r from-purple-50 to-violet-50 p-6 rounded-xl border border-purple-100">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-file-alt text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Supporting Documents</h3>
+                </div>
+                <div id="documentsContainer" class="space-y-4">
+                    <!-- Documents will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end mt-6 pt-4 border-t border-gray-100">
+            <button onclick="closeApplicationModal()" class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm font-medium">
+                <i class="fas fa-times mr-2"></i>Close
+            </button>
+        </div>
+    </div>
+</div>
             <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize pagination and filtering
@@ -1023,6 +1192,344 @@ function updateUrlParameter(url, param, value) {
     urlObj.searchParams.set(param, value);
     return urlObj.toString();
 }
+</script>
+<script>
+// Application History Functions
+function viewApplicantDocuments(applicantId, applicantName, status) {
+    console.log('Viewing documents for:', { applicantId, applicantName, status });
+    
+    // Show loading
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
+    fetch(`/lydo_admin/applicant-documents/${applicantId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Documents API Response:', data);
+            
+            if (data.success) {
+                showApplicationModal(data.documents, null, applicantName, status, 'documents');
+            } else {
+                throw new Error(data.message || 'Failed to load documents');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching documents:', error);
+            Swal.fire('Error', 'Failed to load applicant documents.', 'error');
+        })
+        .finally(() => {
+            // Hide loading
+            document.getElementById('loadingOverlay').style.display = 'none';
+        });
+}
+
+function viewApplicantIntakeSheet(applicantId, applicantName, status) {
+    console.log('Viewing intake sheet for:', { applicantId, applicantName, status });
+    
+    // Show loading
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
+    // First, get the application_personnel_id for this applicant
+    fetch(`/lydo_admin/get-application-personnel/${applicantId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.application_personnel_id) {
+                // Now fetch the intake sheet
+                return fetch(`/lydo_admin/intake-sheet/${data.application_personnel_id}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(intakeData => {
+                        if (intakeData.success && intakeData.intakeSheet) {
+                            showApplicationModal(intakeData.intakeSheet.documents || intakeData.intakeSheet, intakeData.intakeSheet, applicantName, status, 'intake');
+                        } else {
+                            throw new Error(intakeData.message || 'Failed to load intake sheet');
+                        }
+                    });
+            } else {
+                throw new Error('No application personnel record found');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching intake sheet:', error);
+            Swal.fire('Error', 'Failed to load applicant intake sheet.', 'error');
+        })
+        .finally(() => {
+            // Hide loading
+            document.getElementById('loadingOverlay').style.display = 'none';
+        });
+}
+
+function showApplicationModal(documentsData, intakeSheetData, applicantName, status, type) {
+    const modal = document.getElementById('applicationHistoryModal');
+    const modalContent = document.getElementById('modalContent');
+    const modalTitle = document.getElementById('modalTitle');
+    const applicantBasicInfo = document.getElementById('applicantBasicInfo');
+    const intakeSheetInfo = document.getElementById('intakeSheetInfo');
+    const documentsContainer = document.getElementById('documentsContainer');
+
+    // Set modal title
+    modalTitle.textContent = `Application Details - ${applicantName}`;
+
+    // Populate basic applicant info
+    let basicInfoHtml = `
+        <p><strong>Name:</strong> ${applicantName}</p>
+        <p><strong>Status:</strong> <span class="px-2 py-1 rounded text-sm ${getStatusColor(status)}">${status}</span></p>
+    `;
+
+    if (intakeSheetData) {
+        basicInfoHtml += `
+            <p><strong>Gender:</strong> ${intakeSheetData.applicant_gender || '-'}</p>
+            <p><strong>Remarks:</strong> ${intakeSheetData.remarks || '-'}</p>
+            <p><strong>Barangay:</strong> ${intakeSheetData.head_barangay || '-'}</p>
+        `;
+    }
+
+    applicantBasicInfo.innerHTML = basicInfoHtml;
+
+    // Show/hide intake sheet info based on type
+    if (type === 'intake' && intakeSheetData) {
+        intakeSheetInfo.classList.remove('hidden');
+        populateIntakeSheetInfo(intakeSheetData);
+    } else {
+        intakeSheetInfo.classList.add('hidden');
+    }
+
+    // Populate documents
+    populateDocuments(documentsData || intakeSheetData);
+
+    // Show modal with animation
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+function populateIntakeSheetInfo(intakeSheetData) {
+    // Populate Head of Family Information
+    const headOfFamilyInfo = document.getElementById('headOfFamilyInfo');
+    headOfFamilyInfo.innerHTML = `
+        <div>
+            <p><strong>Name:</strong> ${intakeSheetData.applicant_name || '-'}</p>
+            <p><strong>Sex:</strong> ${intakeSheetData.applicant_gender || '-'}</p>
+            <p><strong>Remarks:</strong> ${intakeSheetData.remarks || '-'}</p>
+            <p><strong>Date of Birth:</strong> ${intakeSheetData.head_dob || '-'}</p>
+            <p><strong>Place of Birth:</strong> ${intakeSheetData.head_pob || '-'}</p>
+        </div>
+        <div>
+            <p><strong>Address:</strong> ${intakeSheetData.head_address || '-'}</p>
+            <p><strong>Zone:</strong> ${intakeSheetData.head_zone || '-'}</p>
+            <p><strong>Barangay:</strong> ${intakeSheetData.head_barangay || '-'}</p>
+            <p><strong>Religion:</strong> ${intakeSheetData.head_religion || '-'}</p>
+        </div>
+        <div>
+            <p><strong>Serial No.:</strong> ${intakeSheetData.serial_number || '-'}</p>
+            <p><strong>4Ps:</strong> ${intakeSheetData.head_4ps || '-'}</p>
+            <p><strong>IP No.:</strong> ${intakeSheetData.head_ipno || '-'}</p>
+            <p><strong>Education:</strong> ${intakeSheetData.head_educ || '-'}</p>
+            <p><strong>Occupation:</strong> ${intakeSheetData.head_occ || '-'}</p>
+        </div>
+    `;
+    
+    // Populate Household Information
+    const householdInfo = document.getElementById('householdInfo');
+    householdInfo.innerHTML = `
+        <div>
+            <p><strong>Total Family Income:</strong> ${formatCurrency(intakeSheetData.house_total_income)}</p>
+            <p><strong>Total Family Net Income:</strong> ${formatCurrency(intakeSheetData.house_net_income)}</p>
+            <p><strong>Other Source of Income:</strong> ${formatCurrency(intakeSheetData.other_income)}</p>
+        </div>
+        <div>
+            <p><strong>House (Owned/Rented):</strong> ${intakeSheetData.house_house || '-'}</p>
+            <p><strong>Lot (Owned/Rented):</strong> ${intakeSheetData.house_lot || '-'}</p>
+            <p><strong>Electricity Source:</strong> ${intakeSheetData.house_electric || '-'}</p>
+            <p><strong>Water:</strong> ${intakeSheetData.house_water || '-'}</p>
+        </div>
+    `;
+    
+    // Populate Family Members Table
+    const familyMembersTable = document.getElementById('familyMembersTable');
+    if (intakeSheetData.family_members && intakeSheetData.family_members.length > 0) {
+        let familyMembersHtml = '';
+        intakeSheetData.family_members.forEach(member => {
+            familyMembersHtml += `
+                <tr>
+                    <td>${member.NAME || member.name || '-'}</td>
+                    <td>${member.RELATION || member.relationship || '-'}</td>
+                    <td>${member.BIRTHDATE || member.birthdate || '-'}</td>
+                    <td>${member.AGE || member.age || '-'}</td>
+                    <td>${member.SEX || member.sex || '-'}</td>
+                    <td>${member['CIVIL STATUS'] || member.civil_status || '-'}</td>
+                    <td>${member['EDUCATIONAL ATTAINMENT'] || member.education || '-'}</td>
+                    <td>${member.OCCUPATION || member.occupation || '-'}</td>
+                    <td>${formatCurrency(member.INCOME || member.income)}</td>
+                    <td>${member.REMARKS || member.remarks || '-'}</td>
+                </tr>
+            `;
+        });
+        familyMembersTable.innerHTML = familyMembersHtml;
+    } else {
+        familyMembersTable.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500">No family members found</td></tr>';
+    }
+    
+    // Populate Service Records Table
+    const serviceRecordsTable = document.getElementById('serviceRecordsTable');
+    if (intakeSheetData.social_service_records && intakeSheetData.social_service_records.length > 0) {
+        let serviceRecordsHtml = '';
+        intakeSheetData.social_service_records.forEach(record => {
+            serviceRecordsHtml += `
+                <tr>
+                    <td>${record.DATE || record.date || '-'}</td>
+                    <td>${record['PROBLEM/NEED'] || record.problem || '-'}</td>
+                    <td>${record['ACTION/ASSISTANCE GIVEN'] || record.action || '-'}</td>
+                    <td>${record.REMARKS || record.remarks || '-'}</td>
+                </tr>
+            `;
+        });
+        serviceRecordsTable.innerHTML = serviceRecordsHtml;
+    } else {
+        serviceRecordsTable.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No service records found</td></tr>';
+    }
+}
+
+function populateDocuments(data) {
+    const documentsContainer = document.getElementById('documentsContainer');
+    const documentTitles = {
+        'doc_application_letter': 'Application Letter',
+        'doc_cert_reg': 'Certificate of Registration',
+        'doc_grade_slip': 'Grade Slip',
+        'doc_brgy_indigency': 'Barangay Indigency',
+        'doc_student_id': 'Student ID'
+    };
+
+    let documentsHtml = '';
+    let availableDocuments = 0;
+
+    Object.keys(documentTitles).forEach(docType => {
+        const docUrl = data[docType];
+        if (docUrl && docUrl !== 'null') {
+            availableDocuments++;
+            documentsHtml += `
+                <div class="document-section mb-6 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                        <h4 class="text-lg font-semibold text-gray-800">${documentTitles[docType]}</h4>
+                    </div>
+                    <div class="p-4">
+                        <div class="border border-gray-300 rounded-lg overflow-hidden">
+                            <iframe
+                                src="${docUrl}"
+                                width="100%"
+                                height="500"
+                                style="border: none;"
+                                title="${documentTitles[docType]}"
+                                onerror="this.closest('.document-section').innerHTML='<div class=\\'p-4 text-center text-red-500\\'>Failed to load document</div>'">
+                                <p class="p-4 text-center text-gray-500">Your browser does not support iframes.
+                                    <a href="${docUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 underline">Click here to view the document</a>
+                                </p>
+                            </iframe>
+                        </div>
+                        <div class="mt-2 flex justify-between items-center">
+                            <span class="text-sm text-gray-500">Document ${availableDocuments}</span>
+                            <a href="${docUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm font-medium">
+                                <i class="fas fa-external-link-alt mr-1"></i> Open in new tab
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    });
+
+    if (availableDocuments === 0) {
+        documentsHtml = '<p class="text-center text-gray-500 py-8">No documents available for viewing.</p>';
+    }
+
+    documentsContainer.innerHTML = documentsHtml;
+}
+
+function closeApplicationModal() {
+    const modal = document.getElementById('applicationHistoryModal');
+    const modalContent = document.getElementById('modalContent');
+
+    // Add closing animation
+    modalContent.classList.remove('scale-100', 'opacity-100');
+    modalContent.classList.add('scale-95', 'opacity-0');
+
+    // Hide modal after animation
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+// Helper functions
+function getStatusColor(status) {
+    switch(status) {
+        case 'Approved': return 'bg-green-100 text-green-800';
+        case 'Rejected': return 'bg-red-100 text-red-800';
+        case 'Reviewed': return 'bg-blue-100 text-blue-800';
+        default: return 'bg-gray-100 text-gray-800';
+    }
+}
+
+function formatCurrency(amount) {
+    if (!amount || isNaN(amount)) return '-';
+    return '₱' + parseFloat(amount).toLocaleString('en-PH', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+// Add CSS for intake sections
+const style = document.createElement('style');
+style.textContent = `
+    .intake-section {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .intake-section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    .intake-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .intake-table th,
+    .intake-table td {
+        border: 1px solid #e5e7eb;
+        padding: 0.75rem;
+        text-align: left;
+    }
+    .intake-table th {
+        background-color: #f9fafb;
+        font-weight: 600;
+        color: #374151;
+    }
+    .document-section {
+        margin-bottom: 1.5rem;
+    }
+`;
+document.head.appendChild(style);
 </script>
 <script src="{{ asset('js/spinner.js') }}"></script>
 

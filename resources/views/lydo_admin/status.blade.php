@@ -394,7 +394,7 @@
                                 <button type="button" id="copyNamesBtn" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm"> <!-- Smaller button -->
                                     Copy Names
                                 </button>
-                                <button type="button" id="sendEmailBtn" class="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm"> <!-- Smaller button -->
+                                <button type="button" id="sendEmailBtn" class="bg-violet-600 text-white px-3 py-1 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm"> <!-- Smaller button -->
                                     Email
                                 </button>
                                 <button type="button" id="updateStatusBtn" class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm"> <!-- Smaller button -->
@@ -409,7 +409,7 @@
 
                             <div class="overflow-x-auto">
                                 <table class="w-full table-auto border-collapse text-[15px] shadow-lg overflow-hidden border border-gray-200"> <!-- Smaller text -->
-                                    <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
+                                    <thead class="bg-gradient-to-r from-violet-600 to-teal-600 text-white uppercase text-sm">
                                         <tr>
                                             <th class="px-3 py-2 border border-gray-200 text-center"> <!-- Reduced padding -->
                                                 <input type="checkbox" id="selectAll" class="rounded border-gray-300">
@@ -481,7 +481,7 @@
 
                             <div class="overflow-x-auto">
                                 <table class="w-full table-auto border-collapse text-[15px] shadow-lg overflow-hidden border border-gray-200"> <!-- Smaller text -->
-                                    <thead class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white uppercase text-sm">
+                                    <thead class="bg-green-600 to-indigo-600 text-white uppercase text-sm">
                                         <tr>
                                             <th class="px-3 py-2 border border-gray-200 text-center"> <!-- Reduced padding -->
                                                 <input type="checkbox" id="graduatingSelectAll" class="rounded border-gray-300">

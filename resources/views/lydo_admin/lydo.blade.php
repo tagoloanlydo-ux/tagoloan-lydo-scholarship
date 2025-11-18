@@ -296,7 +296,7 @@
     <h2 class="text-lg font-semibold mb-2">Inactive Lydo Staff</h2>
     <p class="text-sm text-black-600 mb-4">This table lists all LYDO staff members who are currently inactive. These staff members are not allowed to use the Scholarship Management Account. Please click the ‘Activate’ button to allow them to access their account.</p>
     <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
-        <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
+        <thead class="bg-gradient-to-r from-violet-600 to-teal-600 text-white uppercase text-sm">
             <tr>
                 <th class="px-4 py-3 border border-gray-200 text-center">ID</th>
                 <th class="px-4 py-3 border border-gray-200 text-center">Name</th>

@@ -226,7 +226,7 @@
                     
                     <div class="overflow-x-auto">
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
-                            <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
+                            <thead class="bg-violet-600 to-teal-600 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider border border-gray-200">Title</th>
                                     <th class="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider border border-gray-200">Content</th>

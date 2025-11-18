@@ -896,5 +896,44 @@ private function getCurrentAcademicYear()
         ? $currentYear . '-' . ($currentYear + 1)
         : ($currentYear - 1) . '-' . $currentYear;
 }
+public function renewalHistory()
+{
+    $scholar = session('scholar');
+    if (!$scholar) {
+        return redirect()->route('scholar.login')->withErrors(['error' => 'Please login to view renewal history.']);
+    }
 
+    // Get all renewals for this scholar, ordered by most recent first
+    $renewals = \App\Models\Renewal::where('scholar_id', $scholar->scholar_id)
+        ->orderBy('renewal_acad_year', 'desc')
+        ->orderBy('renewal_semester', 'desc')
+        ->orderBy('date_submitted', 'desc')
+        ->paginate(10);
+
+    return view('scholar.renewal_history', compact('renewals'));
+}
+
+/**
+ * Get renewal details via AJAX
+ */
+public function getRenewalDetails($renewalId)
+{
+    $scholar = session('scholar');
+    if (!$scholar) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+    }
+
+    $renewal = \App\Models\Renewal::where('renewal_id', $renewalId)
+        ->where('scholar_id', $scholar->scholar_id)
+        ->first();
+
+    if (!$renewal) {
+        return response()->json(['success' => false, 'message' => 'Renewal not found'], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'renewal' => $renewal
+    ]);
+}
 }
