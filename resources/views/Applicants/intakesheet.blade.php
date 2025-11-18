@@ -9,7 +9,6 @@
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SignaturePad -->
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -177,6 +176,75 @@
       .print-header {
         display: none;
       }
+
+      /* Loading Spinner Styles */
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        animation: fadeIn 1s ease forwards;
+      }
+
+      .spinner {
+        width: 120px;
+        height: 120px;
+        animation: spin 2s linear infinite;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+      }
+
+      .spinner img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+      }
+
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      .fade-out {
+        animation: fadeOut 1s ease forwards;
+      }
+
+      @keyframes fadeOut {
+        to {
+          opacity: 0;
+          visibility: hidden;
+        }
+      }
+
+      /* Responsive spinner size */
+      @media (max-width: 768px) {
+        .spinner {
+          width: 80px;
+          height: 80px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .spinner {
+          width: 60px;
+          height: 60px;
+        }
+      }
     </style>
   </head>
   <body class="bg-gray-100 min-h-screen">
@@ -237,7 +305,9 @@
 
     <form id="intakeForm" class="space-y-6" method="POST" action="{{ route('submit.intake.sheet') }}">
     @csrf
-<input type="hidden" name="application_personnel_id" value="{{ $application_personnel_id ?? request()->route('application_personnel_id') }}">    <input type="hidden" name="token" value="{{ $token }}">
+      <input type="hidden" name="application_personnel_id" value="{{ $application_personnel_id ?? request()->route('application_personnel_id') }}">    <input type="hidden" name="token" value="{{ $token }}">
+      <input type="hidden" name="token" value="{{ $token }}">
+
         <section class="step" id="step-1">
           <h3 class="text-lg font-semibold mb-3">
             Step 1 — Head of the Family
@@ -631,30 +701,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Signatures Section -->
-          <div class="mt-6 space-y-4">
-            <h4 class="text-lg font-semibold">Signatures</h4>
-            
-            <!-- Family Head Signature -->
-            <div class="print-box p-4">
-              <p class="font-semibold mb-2">Family Head Signature:</p>
-              <div class="border border-gray-300 bg-white" style="height: 150px;">
-                <canvas id="signatureCanvas" class="w-full h-full"></canvas>
-              </div>
-              <div class="mt-2 flex gap-2">
-                <button type="button" onclick="clearSignature()" class="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600">
-                  Clear Signature
-                </button>
-                <button type="button" onclick="saveSignature()" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
-                  Save Signature
-                </button>
-              </div>
-              <input type="hidden" id="signature_client" name="signature_client">
-              <input type="hidden" id="signature_filename" name="signature_filename">
-
-            </div>
-          </div>
         </section>
 
  <!-- STEP 4: Review -->
@@ -712,13 +758,6 @@
             </tr>
           </table>
         </div>
-        <div class="print-box p-4">
-          <h4 class="font-semibold">Signatures</h4>
-          <div>
-            <p><strong>Family Head:</strong></p>
-            <div id="rv_sig_client"></div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -734,14 +773,6 @@
             Back
           </button>
 
-          <button
-            type="button"
-            id="printBtn"
-            onclick="handlePrint()"
-            class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 hidden"
-          >
-            Print
-          </button>
 
           <button
             type="button"
@@ -753,6 +784,13 @@
           </button>
         </div>
       </form>
+    </div>
+
+    <!-- Loading Spinner Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+      <div class="spinner">
+        <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+      </div>
     </div>
 
     <script src="{{ asset('js/intakesheet.js') }}"></script>

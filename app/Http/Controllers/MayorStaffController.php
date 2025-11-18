@@ -1839,7 +1839,6 @@ public function showIntakeSheet($application_personnel_id, Request $request)
             'head' => 'required|array',
             'family' => 'required|array',
             'house' => 'required|array',
-            'signatures' => 'array',
         ]);
 
         // Verify token
@@ -1858,25 +1857,6 @@ public function showIntakeSheet($application_personnel_id, Request $request)
             return response()->json(['success' => false, 'message' => 'Intake sheet already submitted.']);
         }
 
-        // Handle signature storage
-        $signaturePaths = [];
-        if (isset($request->signatures) && is_array($request->signatures)) {
-            foreach ($request->signatures as $key => $signatureData) {
-                if ($signatureData && strpos($signatureData, 'data:image') === 0) {
-                    // Decode base64 image
-                    $imageData = explode(',', $signatureData);
-                    $image = base64_decode($imageData[1]);
-
-                    // Generate filename
-                    $filename = 'signature_' . $request->application_personnel_id . '_' . $key . '_' . time() . '.png';
-
-                    // Store in storage/signatures folder
-                    Storage::put('signatures/' . $filename, $image);
-
-                    $signaturePaths[$key] = 'signatures/' . $filename;
-                }
-            }
-        }
 
         // Prepare data for insertion
         $data = [
@@ -1905,9 +1885,6 @@ public function showIntakeSheet($application_personnel_id, Request $request)
             'house_water' => $request->house['water'] ?? null,
             'house_electric' => $request->house['electric'] ?? null,
             'family_members' => json_encode($request->family),
-            'signature_client' => $signaturePaths['client'] ?? null,
-            'signature_worker' => $signaturePaths['worker'] ?? null,
-            'signature_officer' => $signaturePaths['officer'] ?? null,
             'date_entry' => now(),
         ];
 
@@ -2079,5 +2056,76 @@ public function showIntakeSheet($application_personnel_id, Request $request)
             ], 500);
         }
     }
+public function submitIntakeSheet(Request $request)
+{
+    $request->validate([
+        'application_personnel_id' => 'required|integer',
+        'token' => 'required|string',
+        'head' => 'required|array',
+        'family' => 'required|array',
+        'house' => 'required|array',
+    ]);
 
+    // Verify token
+    $applicationPersonnel = DB::table('tbl_application_personnel')
+        ->where('application_personnel_id', $request->application_personnel_id)
+        ->where('intake_sheet_token', $request->token)
+        ->first();
+
+    if (!$applicationPersonnel) {
+        return response()->json(['success' => false, 'message' => 'Invalid token or application not found.']);
+    }
+
+    // Check if intake sheet already submitted
+    $existingSheet = FamilyIntakeSheet::where('application_personnel_id', $request->application_personnel_id)->first();
+    if ($existingSheet) {
+        return response()->json(['success' => false, 'message' => 'Intake sheet already submitted.']);
+    }
+
+    // Generate serial number
+    $serialNumber = 'FIS-' . now()->format('Ymd-His');
+
+    // Prepare data for insertion
+    $data = [
+        'application_personnel_id' => $request->application_personnel_id,
+        'head_4ps' => $request->head['_4ps'] ?? null,
+        'head_ipno' => $request->head['ipno'] ?? null,
+        'head_address' => $request->head['address'] ?? null,
+        'head_zone' => $request->head['zone'] ?? null,
+        'head_barangay' => $request->head['barangay'] ?? null,
+        'head_pob' => $request->head['pob'] ?? null,
+        'head_dob' => $request->head['dob'] ?? null,
+        'head_educ' => $request->head['educ'] ?? null,
+        'head_occ' => $request->head['occ'] ?? null,
+        'head_religion' => $request->head['religion'] ?? null,
+        'serial_number' => $serialNumber,
+        'location' => $request->location ?? null,
+        'house_total_income' => $request->house['total_income'] ?? null,
+        'house_net_income' => $request->house['net_income'] ?? null,
+        'other_income' => $request->house['other_income'] ?? null,
+        'house_house' => $request->house['house'] ?? null,
+        'house_house_value' => $request->house['house_value'] ?? null,
+        'house_lot' => $request->house['lot'] ?? null,
+        'house_lot_value' => $request->house['lot_value'] ?? null,
+        'house_house_rent' => $request->house['house_rent'] ?? null,
+        'house_lot_rent' => $request->house['lot_rent'] ?? null,
+        'house_water' => $request->house['water'] ?? null,
+        'house_electric' => $request->house['electric'] ?? null,
+        'family_members' => json_encode($request->family),
+        'date_entry' => now(),
+    ];
+
+    // Create the intake sheet
+    $intakeSheet = FamilyIntakeSheet::create($data);
+
+    // Update application_personnel to mark as submitted
+    DB::table('tbl_application_personnel')
+        ->where('application_personnel_id', $request->application_personnel_id)
+        ->update(['intake_sheet_submitted' => true, 'updated_at' => now()]);
+
+    return response()->json([
+        'success' => true, 
+        'message' => 'Family intake sheet submitted successfully!'
+    ]);
+}
 }

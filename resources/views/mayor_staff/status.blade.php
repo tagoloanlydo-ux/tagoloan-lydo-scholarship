@@ -102,61 +102,60 @@
 
         <!-- Main Content -->
         <div class="flex flex-1 overflow-hidden">
-            <!-- Sidebar -->
-            <div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
-                <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
-                    <ul class="side-menu top space-y-4">
-                        <li>
-                            <a href="/mayor_staff/dashboard" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
-                                <span class="ml-4 hidden md:block text-lg">Dashboard</span>
-                            </a>
-                        </li>
-                        <li class="relative">
-                            <button onclick="toggleDropdown('scholarMenu')"
-                                class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-                                <div class="flex items-center">
-                                    <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
-                                    <span class="ml-4 hidden md:block text-lg">Applicants</span>
-                                </div>
-                                <i class="bx bx-chevron-down ml-2"></i>
-                            </button>
-
-                            <!-- Dropdown Menu -->
-                            <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
-                                <li>
-                                    <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                        <i class="bx bx-search-alt mr-2"></i> Review Applications
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="/mayor_staff/status" class="flex items-center p-2 rounded-lg text-gray-700 bg-violet-600 text-white">
-                                        <i class="bx bx-check-circle mr-2"></i> Scholarship Approval
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <ul class="side-menu space-y-1">
-                        <li>
-                            <a href="/mayor_staff/settings" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl"></i>
-                                <span class="ml-4 hidden md:block text-base">Settings</span>
-                            </a>
-                        </li>
-                    </ul>
-
-                </nav>
-                    <div class="p-2 md:p-4 border-t">
-                        <form method="POST" action="{{ route('logout') }}" id="logoutForm">
-                            @csrf
-                                <button type="button" onclick="confirmLogout()" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
-                                    <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
-                                    <span class="hidden md:block text-red-600">Logout</span>
-                                </button>
-                        </form>
+ <!-- Sidebar -->
+<div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
+    <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
+        <ul class="side-menu top space-y-4">
+            <li>
+                <a href="/mayor_staff/dashboard" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                    <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
+                    <span class="ml-4 hidden md:block text-lg">Dashboard</span>
+                </a>
+            </li>
+            <li class="relative">
+                <button onclick="toggleDropdown('scholarMenu')"
+                    class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+                    <div class="flex items-center">
+                        <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl text-white-700"></i>
+                        <span class="ml-4 hidden md:block text-lg">Applicants</span>
                     </div>
-                </div>
+                    <i class="bx bx-chevron-down ml-2"></i>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
+                    <li>
+                        <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                            <i class="bx bx-search-alt mr-2 text-white-700"></i> Review Applications
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/mayor_staff/status" class="flex items-center p-2 rounded-lg text-white bg-violet-600">
+                            <i class="bx bx-check-circle mr-2 text-white-700"></i> Scholarship Approval
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="side-menu space-y-1">
+            <li>
+                <a href="/mayor_staff/settings" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                    <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl text-white-700"></i>
+                    <span class="ml-4 hidden md:block text-base">Settings</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <div class="p-2 md:p-4 border-t">
+        <form method="POST" action="{{ route('logout') }}" id="logoutForm">
+            @csrf
+            <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
+                <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
+                <span class="hidden md:block text-red-600">Logout</span>
+            </button>
+        </form>
+    </div>
+</div>
             
             <!-- Main content (fixed, scrollable area) -->
             <div class="main-content-fixed text-[16px]">

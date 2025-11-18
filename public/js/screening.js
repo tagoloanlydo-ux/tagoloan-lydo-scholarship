@@ -1,8 +1,6 @@
 // screening.js - All JavaScript functionality
 
 // Global variables
-let signaturePad = null;
-let currentSignatureType = '';
 let currentReviewId = null; // Store ID for PDF printing
 let paginationState = {
     table: {
@@ -375,7 +373,7 @@ function closeEditRemarksModal() {
     document.body.classList.remove('modal-open');
 }
 
-// Review Modal functions - UPDATED WITH currentReviewId
+// Review Modal functions
 function openReviewModal(button) {
     const id = button.getAttribute("data-id");
     currentReviewId = id; // STORE THE ID FOR PDF PRINTING
@@ -435,7 +433,7 @@ function closeReviewModal() {
     document.body.classList.remove('modal-open');
 }
 
-// Populate Review Modal - UPDATED SIGNATURE PART
+// Populate Review Modal
 function populateReviewModal(d) {
     if (!d) {
         console.error('No data received');
@@ -597,9 +595,9 @@ function populateReviewModal(d) {
                     </table>
                 </div>
 
-                <!-- Health & Signatures Section - UPDATED FOR FAMILY HEAD SIGNATURE -->
+                <!-- Worker Information Section -->
                 <div class="print-box p-4">
-                    <h4 class="font-semibold mb-3">Health & Signatures</h4>
+                    <h4 class="font-semibold mb-3">Worker Information</h4>
                     <table class="min-w-full text-sm">
                         <tr>
                             <td><strong>Worker Name:</strong> ${d.worker_name || "N/A"}</td>
@@ -607,35 +605,6 @@ function populateReviewModal(d) {
                             <td><strong>Date Entry:</strong> ${formatDate(d.date_entry)}</td>
                         </tr>
                     </table>
-                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <p><strong>Family Head Signature:</strong></p>
-                            <div class="mt-2">
-                                ${d.signature_client ?
-                                    `<img src="${d.signature_client}" style="max-width: 100%; height: 80px; border: 1px solid #ccc;" alt="Family Head Signature" />` :
-                                    '<p class="text-xs text-gray-500">No signature available</p>'
-                                }
-                            </div>
-                        </div>
-                        <div>
-                            <p><strong>Worker Signature:</strong></p>
-                            <div class="mt-2">
-                                ${d.signature_worker ?
-                                    `<img src="${d.signature_worker}" style="max-width: 100%; height: 80px; border: 1px solid #ccc;" alt="Worker Signature" />` :
-                                    '<p class="text-xs text-gray-500">No signature available</p>'
-                                }
-                            </div>
-                        </div>
-                        <div>
-                            <p><strong>Officer Signature:</strong></p>
-                            <div class="mt-2">
-                                ${d.signature_officer ?
-                                    `<img src="${d.signature_officer}" style="max-width: 100%; height: 80px; border: 1px solid #ccc;" alt="Officer Signature" />` :
-                                    '<p class="text-xs text-gray-500">No signature available</p>'
-                                }
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -769,10 +738,9 @@ function addRvServiceRecordRow() {
         <td class="border px-2 py-1">
             <select name="service_record_remarks[]" class="w-full border-none focus:ring-0">
                 <option value="">Select Remarks</option>
-                <option value="A. DEAD">A. DEAD</option>
-                <option value="B. INJURED">B. INJURED</option>
-                <option value="C. MISSING">C. MISSING</option>
-                <option value="D. With Illness">D. With Illness</option>
+                <option value="Poor">Poor</option>
+                <option value="Ultra Poor">Ultra Poor</option>
+                <option value="Non Poor">Non Poor</option>  
             </select>
         </td>
         <td class="border px-2 py-1 text-center">
@@ -1154,12 +1122,6 @@ function populateEditModal(data) {
         safeSetValue('officer_name', data.officer_name);
     }
 
-    // Handle client signature - INALIS ANG SIGNATURE PREVIEW
-    if (data.signature_client) {
-        document.getElementById('signature_client').value = data.signature_client;
-        // Remove signature preview creation
-    }
-
     // Populate family members
     if (data.family_members) {
         try {
@@ -1243,88 +1205,6 @@ function safeSetSelectInCell(cell, value) {
     const select = cell.querySelector('select');
     if (select) {
         select.value = value || '';
-    }
-}
-
-// Signature modal functions
-function openSignatureModal(type) {
-    currentSignatureType = type;
-    document.getElementById('signatureModalTitle').textContent = type.charAt(0).toUpperCase() + type.slice(1) + ' Signature';
-    document.getElementById('signatureModal').classList.remove('hidden');
-    document.body.classList.add('modal-open');
-
-    // Initialize signature pad
-    const canvas = document.getElementById('signatureCanvas');
-    signaturePad = new SignaturePad(canvas, {
-        backgroundColor: 'rgb(255, 255, 255)',
-        penColor: 'rgb(0, 0, 0)',
-        minWidth: 1,
-        maxWidth: 3
-    });
-
-    // Resize canvas for proper rendering
-    resizeCanvas(canvas);
-}
-
-function closeSignatureModal() {
-    document.getElementById('signatureModal').classList.add('hidden');
-    document.body.classList.remove('modal-open');
-    if (signaturePad) {
-        signaturePad.clear();
-    }
-}
-
-function clearSignature() {
-    if (signaturePad) {
-        signaturePad.clear();
-    }
-}
-
-function saveSignature() {
-    if (!signaturePad) return;
-
-    if (signaturePad.isEmpty()) {
-        Swal.fire({
-            title: 'No Signature',
-            text: 'Please provide a signature before saving.',
-            icon: 'warning',
-            confirmButtonText: 'OK'
-        });
-        return;
-    }
-
-    const signatureData = signaturePad.toDataURL();
-    document.getElementById('signature_' + currentSignatureType).value = signatureData;
-
-    // Update button text to show signature is saved
-    const button = document.querySelector(`button[onclick="openSignatureModal('${currentSignatureType}')"]`);
-    if (button) {
-        const span = button.querySelector('span');
-        if (span) {
-            span.textContent = 'Signature Saved ✓';
-        }
-        button.classList.remove('bg-white', 'hover:bg-gray-50');
-        button.classList.add('bg-green-100', 'hover:bg-green-200', 'text-green-800');
-    }
-
-    closeSignatureModal();
-
-    Swal.fire({
-        title: 'Signature Saved',
-        text: 'The signature has been saved successfully.',
-        icon: 'success',
-        timer: 1500,
-        showConfirmButton: false
-    });
-}
-
-function resizeCanvas(canvas) {
-    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-    canvas.width = canvas.offsetWidth * ratio;
-    canvas.height = canvas.offsetHeight * ratio;
-    canvas.getContext('2d').scale(ratio, ratio);
-    if (signaturePad) {
-        signaturePad.clear();
     }
 }
 
@@ -1443,7 +1323,7 @@ function saveAsDraft() {
     });
 }
 
-// PDF Printing Function - ADD THIS NEW FUNCTION
+// PDF Printing Function
 function printScreeningPdf() {
     if (!currentReviewId) {
         Swal.fire({
