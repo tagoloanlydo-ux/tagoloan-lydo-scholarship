@@ -48,6 +48,8 @@ Route::prefix('staging')->group(function () {
             Route::get('/renewal_app', [RenewalController::class, 'getScholarRenewals']);
             Route::get('/renewals', [RenewalController::class, 'getScholarRenewals']);
             Route::post('/submit_renewal', [RenewalController::class, 'submitScholarRenewal']);
+            Route::get('/renewal-history', [RenewalController::class, 'getRenewalHistory']);
+            Route::get('/renewal/{renewalId}/details', [RenewalController::class, 'getRenewalDetails']);
         });
 
      

@@ -277,4 +277,111 @@ class ScholarRenewalController extends Controller
             return $this->errorResponse('Failed to submit renewal: ' . $e->getMessage(), 500);
         }
     }
+
+    /**
+     * Get renewal history for authenticated scholar (API version of renewalHistory())
+     */
+    public function getRenewalHistory(Request $request)
+    {
+        try {
+            // Get the authenticated scholar
+            $user = auth()->user();
+            if (!$user) {
+                return $this->errorResponse('Unauthorized', 401);
+            }
+
+            // Map user to scholar (adjust based on your user-scholar relationship)
+            $scholarId = $user->scholar_id ?? $user->id; // Adjust as needed
+
+            // Get all renewals for this scholar, ordered by most recent first
+            $renewals = Renewal::where('scholar_id', $scholarId)
+                ->orderBy('renewal_acad_year', 'desc')
+                ->orderBy('renewal_semester', 'desc')
+                ->orderBy('date_submitted', 'desc')
+                ->paginate(10);
+
+            // Format data for mobile app
+            $formattedRenewals = $renewals->map(function ($renewal) {
+                return [
+                    'renewal_id' => $renewal->renewal_id,
+                    'academic_year' => $renewal->renewal_acad_year,
+                    'semester' => $renewal->renewal_semester,
+                    'year_level' => $renewal->renewal_year_level ?? $renewal->applicant_year_level ?? 'N/A',
+                    'date_submitted' => $renewal->date_submitted->format('M d, Y'),
+                    'status' => $renewal->renewal_status,
+                    'remarks' => $renewal->remarks ?? null,
+                ];
+            });
+
+            return $this->paginatedResponse([
+                'renewals' => $formattedRenewals,
+                'pagination' => [
+                    'current_page' => $renewals->currentPage(),
+                    'last_page' => $renewals->lastPage(),
+                    'per_page' => $renewals->perPage(),
+                    'total' => $renewals->total(),
+                    'next_page_url' => $renewals->nextPageUrl(),
+                    'prev_page_url' => $renewals->previousPageUrl(),
+                ]
+            ], 'Renewal history retrieved successfully');
+
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to retrieve renewal history: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get renewal details for authenticated scholar (API version of getRenewalDetails($renewalId))
+     */
+    public function getRenewalDetails($renewalId)
+    {
+        try {
+            // Get the authenticated scholar
+            $user = auth()->user();
+            if (!$user) {
+                return $this->errorResponse('Unauthorized', 401);
+            }
+
+            // Map user to scholar (adjust based on your user-scholar relationship)
+            $scholarId = $user->scholar_id ?? $user->id; // Adjust as needed
+
+            $renewal = Renewal::where('renewal_id', $renewalId)
+                ->where('scholar_id', $scholarId)
+                ->first();
+
+            if (!$renewal) {
+                return $this->errorResponse('Renewal not found', 404);
+            }
+
+            // Format data for mobile app
+            $formattedRenewal = [
+                'renewal_id' => $renewal->renewal_id,
+                'academic_year' => $renewal->renewal_acad_year,
+                'semester' => $renewal->renewal_semester,
+                'year_level' => $renewal->renewal_year_level ?? $renewal->applicant_year_level ?? 'N/A',
+                'date_submitted' => $renewal->date_submitted->toISOString(),
+                'status' => $renewal->renewal_status,
+                'remarks' => $renewal->remarks ?? null,
+                'documents' => [
+                    'certificate_of_registration' => [
+                        'path' => $renewal->renewal_cert_of_reg ? url('storage/' . $renewal->renewal_cert_of_reg) : null,
+                        'status' => $renewal->cert_of_reg_status ?? 'Not reviewed',
+                    ],
+                    'grade_slip' => [
+                        'path' => $renewal->renewal_grade_slip ? url('storage/' . $renewal->renewal_grade_slip) : null,
+                        'status' => $renewal->grade_slip_status ?? 'Not reviewed',
+                    ],
+                    'barangay_indigency' => [
+                        'path' => $renewal->renewal_brgy_indigency ? url('storage/' . $renewal->renewal_brgy_indigency) : null,
+                        'status' => $renewal->brgy_indigency_status ?? 'Not reviewed',
+                    ],
+                ],
+            ];
+
+            return $this->successResponse($formattedRenewal, 'Renewal details retrieved successfully');
+
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to retrieve renewal details: ' . $e->getMessage(), 500);
+        }
+    }
 }
