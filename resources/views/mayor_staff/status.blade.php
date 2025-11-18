@@ -102,60 +102,61 @@
 
         <!-- Main Content -->
         <div class="flex flex-1 overflow-hidden">
- <!-- Sidebar -->
-<div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
-    <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
-        <ul class="side-menu top space-y-4">
-            <li>
-                <a href="/mayor_staff/dashboard" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                    <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
-                    <span class="ml-4 hidden md:block text-lg">Dashboard</span>
-                </a>
-            </li>
-            <li class="relative">
-                <button onclick="toggleDropdown('scholarMenu')"
-                    class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-                    <div class="flex items-center">
-                        <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl text-white-700"></i>
-                        <span class="ml-4 hidden md:block text-lg">Applicants</span>
-                    </div>
-                    <i class="bx bx-chevron-down ml-2"></i>
-                </button>
+            <!-- Sidebar -->
+            <div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
+                <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
+                    <ul class="side-menu top space-y-4">
+                        <li>
+                            <a href="/mayor_staff/dashboard" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                                <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
+                                <span class="ml-4 hidden md:block text-lg">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="relative">
+                            <button onclick="toggleDropdown('scholarMenu')"
+                                class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+                                <div class="flex items-center">
+                                    <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
+                                    <span class="ml-4 hidden md:block text-lg">Applicants</span>
+                                </div>
+                                <i class="bx bx-chevron-down ml-2"></i>
+                            </button>
 
-                <!-- Dropdown Menu -->
-                <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
-                    <li>
-                        <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                            <i class="bx bx-search-alt mr-2 text-white-700"></i> Review Applications
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/mayor_staff/status" class="flex items-center p-2 rounded-lg text-white bg-violet-600">
-                            <i class="bx bx-check-circle mr-2 text-white-700"></i> Scholarship Approval
-                        </a>
-                    </li>
-                </ul>
-            </li>
-        </ul>
-        <ul class="side-menu space-y-1">
-            <li>
-                <a href="/mayor_staff/settings" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                    <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl text-white-700"></i>
-                    <span class="ml-4 hidden md:block text-base">Settings</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-    <div class="p-2 md:p-4 border-t">
-        <form method="POST" action="{{ route('logout') }}" id="logoutForm">
-            @csrf
-            <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
-                <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
-                <span class="hidden md:block text-red-600">Logout</span>
-            </button>
-        </form>
-    </div>
-</div>
+                            <!-- Dropdown Menu -->
+                            <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
+                                <li>
+                                    <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                                        <i class="bx bx-search-alt mr-2"></i> Review Applications
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/mayor_staff/status" class="flex items-center p-2 rounded-lg text-gray-700 bg-violet-600 text-white">
+                                        <i class="bx bx-check-circle mr-2"></i> Scholarship Approval
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul class="side-menu space-y-1">
+                        <li>
+                            <a href="/mayor_staff/settings" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                                <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl"></i>
+                                <span class="ml-4 hidden md:block text-base">Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                </nav>
+                    <div class="p-2 md:p-4 border-t">
+                        <form method="POST" action="{{ route('logout') }}" id="logoutForm">
+                            @csrf
+                                <button type="button" onclick="confirmLogout()" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
+                                    <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
+                                    <span class="hidden md:block text-red-600">Logout</span>
+                                </button>
+                        </form>
+                    </div>
+                </div>
             
             <!-- Main content (fixed, scrollable area) -->
             <div class="main-content-fixed text-[16px]">
@@ -292,44 +293,60 @@
                         </div>
                         
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
-                            <thead class="bg-gradient-to-r from-green-600 to-green-800 text-white uppercase text-sm">
-                                <tr>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">#</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Full Name</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">School Name</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($listApplications ?? [] as $index => $app)
-                                <tr class="hover:bg-gray-50 border-b" data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}" data-barangay="{{ $app->barangay }}" data-status="{{ $app->status }}">
-                                    <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
-                                    <td class="px-4 border border-gray-200 py-2 text-center">
-                                        {{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}
-                                    </td>
-                                    <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->barangay }}</td>
-                                    <td class="px-4 border border-gray-200 py-2 text-center">
-                                        {{ $app->school ?? 'N/A' }}
-                                    </td>
-                                    <td class="px-4 border border-gray-200 py-2 text-center">
-                                        <span class="px-2 py-1 text-sm rounded-lg
-                                            @if($app->status == 'Approved') bg-green-100 text-green-800
-                                            @elseif($app->status == 'Rejected') bg-red-100 text-red-800
-                                            @else bg-gray-100 text-gray-800
-                                            @endif">
-                                            {{ $app->status }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="5" class="text-center py-4 border border-gray-200 text-gray-500">
-                                        0 results
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
+                        <!-- In the Approved/Rejected table header -->
+                        <thead class="bg-gradient-to-r from-green-600 to-green-800 text-white uppercase text-sm">
+                            <tr>
+                                <th class="px-4 py-3 border border-gray-200 text-center">#</th>
+                                <th class="px-4 py-3 border border-gray-200 text-center">Full Name</th>
+                                <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
+                                <th class="px-4 py-3 border border-gray-200 text-center">School Name</th>
+                                <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
+                                <th class="px-4 py-3 border border-gray-200 text-center">Actions</th> <!-- NEW COLUMN -->
+                            </tr>
+                        </thead>
+
+                        <!-- In the Approved/Rejected table body -->
+                        <tbody>
+                            @forelse($listApplications ?? [] as $index => $app)
+                            <tr class="hover:bg-gray-50 border-b" data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}" data-barangay="{{ $app->barangay }}" data-status="{{ $app->status }}">
+                                <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
+                                <td class="px-4 border border-gray-200 py-2 text-center">
+                                    {{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}
+                                </td>
+                                <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->barangay }}</td>
+                                <td class="px-4 border border-gray-200 py-2 text-center">
+                                    {{ $app->school ?? 'N/A' }}
+                                </td>
+                                <td class="px-4 border border-gray-200 py-2 text-center">
+                                    <span class="px-2 py-1 text-sm rounded-lg
+                                        @if($app->status == 'Approved') bg-green-100 text-green-800
+                                        @elseif($app->status == 'Rejected') bg-red-100 text-red-800
+                                        @else bg-gray-100 text-gray-800
+                                        @endif">
+                                        {{ $app->status }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2 border border-gray-200 text-center">
+                                    <div class="flex gap-2 justify-center">
+                                        <button
+                                            title="View Application Details"
+                                            class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow view-details-btn"
+                                            data-id="{{ $app->application_personnel_id }}"
+                                            data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}"
+                                            data-status="{{ $app->status }}">
+                                            <i class="fas fa-eye mr-1"></i> View Details
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-4 border border-gray-200 text-gray-500">
+                                    0 results
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
                         </table>
                         
                         <!-- Pagination for List View -->

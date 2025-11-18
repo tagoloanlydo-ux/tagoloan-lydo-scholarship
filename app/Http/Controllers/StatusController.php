@@ -308,15 +308,7 @@ public function getIntakeSheet($applicationPersonnelId)
             'worker_name' => $intakeSheet->worker_name ?? null,
             'officer_name' => $intakeSheet->officer_name ?? null,
             'date_entry' => $intakeSheet->date_entry ? (string)$intakeSheet->date_entry : null,
-            'signature_client' => $intakeSheet->signature_client ? asset('storage/' . $intakeSheet->signature_client) : null,
-            'signature_worker' => $intakeSheet->signature_worker ? asset('storage/' . $intakeSheet->signature_worker) : null,
-            'signature_officer' => $intakeSheet->signature_officer ? asset('storage/' . $intakeSheet->signature_officer) : null,
-
-            // Add signature data for frontend display
-            'signature_worker_data' => $intakeSheet->signature_worker ? asset('storage/' . $intakeSheet->signature_worker) : null,
-            'signature_officer_data' => $intakeSheet->signature_officer ? asset('storage/' . $intakeSheet->signature_officer) : null,
-            'signature_client_data' => $intakeSheet->signature_client ? asset('storage/' . $intakeSheet->signature_client) : null, 
-
+           
             // FIXED: Document paths - corrected to storage/document (singular)
             'doc_application_letter' => $appRow->application_letter ? asset('storage/' . $appRow->application_letter) : null,
             'doc_cert_reg' => $appRow->cert_of_reg ? asset('storage/' . $appRow->cert_of_reg) : null,

@@ -16,7 +16,6 @@
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 </head>
-
 <body class="bg-gray-50">
 <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner">
@@ -86,10 +85,10 @@
 
             </div>
         </header>
-        <div class="flex flex-1 overflow-hidden"> 
+       <div class="flex flex-1 overflow-hidden">
             <div class="w-20 md:w-80 bg-white shadow-md flex flex-col transition-all duration-300">
                 <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
-                    <ul class="side-menu top space-y-4">
+                         <ul class="side-menu top space-y-4">
                         <li>
                             <a href="/lydo_staff/dashboard"  class="flex items-center  p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
                                 <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
