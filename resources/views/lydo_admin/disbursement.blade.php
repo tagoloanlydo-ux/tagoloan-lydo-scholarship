@@ -334,7 +334,17 @@
                 <input type="date" name="disbursement_date" id="disbursement_date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
                 <small class="error-message text-red-500 text-sm"></small>
             </div>
+            <!-- Location Field -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Disbursement Location</label>
+                <input type="text" name="disbursement_location" placeholder="Enter disbursement location" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
+            </div>
 
+            <!-- Time Field -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Disbursement Time</label>
+                <input type="time" name="disbursement_time" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500" required>
+            </div>
             <!-- Semester -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
@@ -769,6 +779,151 @@
         const recordsContent = document.getElementById('tab-content-records');
         const signedContent = document.getElementById('tab-content-signed');
 
+  // Replace the existing form submission code with this:
+const disbursementForm = document.querySelector('form[method="POST"]');
+if (disbursementForm) {
+    disbursementForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const selectedCount = document.querySelectorAll('.scholar-checkbox:checked').length;
+        const amount = document.querySelector('input[name="amount"]').value;
+        const semester = document.querySelector('select[name="semester"]').value;
+        const academicYear = document.querySelector('input[name="academic_year"]').value;
+        const disbursementDate = document.querySelector('input[name="disbursement_date"]').value;
+        const location = document.querySelector('input[name="disbursement_location"]').value;
+        const time = document.querySelector('input[name="disbursement_time"]').value;
+
+        // Validate required fields
+        if (!location || !time) {
+            Swal.fire({
+                title: 'Missing Information',
+                text: 'Please fill in both disbursement location and time before submitting.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        if (selectedCount === 0) {
+            Swal.fire({
+                title: 'No Scholars Selected',
+                text: 'Please select at least one scholar before creating disbursement.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // Format date for display
+        const formattedDate = new Date(disbursementDate).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Format time for display
+        const formattedTime = new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+
+        // Simple confirmation first
+        Swal.fire({
+            title: 'Are you sure you want to submit?',
+            text: 'Please confirm before proceeding with the disbursement creation.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#7e22ce',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, Submit',
+            cancelButtonText: 'Cancel'
+        }).then((simpleResult) => {
+            if (simpleResult.isConfirmed) {
+                // Proceed to detailed confirmation
+                Swal.fire({
+                    title: 'Confirm Disbursement Creation',
+                    html: `
+                        <div class="text-left">
+                            <p class="mb-4 font-semibold text-gray-700">Please review the disbursement details:</p>
+
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Number of Scholars:</span>
+                                    <span class="text-violet-600 font-bold">${selectedCount}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Amount per Scholar:</span>
+                                    <span class="text-green-600 font-bold">₱${parseFloat(amount).toLocaleString()}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Total Amount:</span>
+                                    <span class="text-green-600 font-bold">₱${(parseFloat(amount) * selectedCount).toLocaleString()}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Semester:</span>
+                                    <span class="text-gray-700">${semester}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Academic Year:</span>
+                                    <span class="text-gray-700">${academicYear}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Disbursement Date:</span>
+                                    <span class="text-gray-700">${formattedDate}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Time:</span>
+                                    <span class="text-gray-700">${formattedTime}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium">Location:</span>
+                                    <span class="text-gray-700">${location}</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <p class="text-xs text-yellow-700 flex items-center gap-2">
+                                    <i class="fas fa-exclamation-triangle text-yellow-500"></i>
+                                    <span>This action will create disbursement records for ${selectedCount} scholar(s) and cannot be undone.</span>
+                                </p>
+                            </div>
+                        </div>
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#7e22ce',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Yes, Create Disbursement',
+                    cancelButtonText: 'Cancel',
+                    width: '500px',
+                    customClass: {
+                        popup: 'rounded-lg',
+                        confirmButton: 'px-4 py-2 rounded-lg font-medium',
+                        cancelButton: 'px-4 py-2 rounded-lg font-medium'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Show loading state
+                        Swal.fire({
+                            title: 'Creating Disbursement...',
+                            text: 'Please wait while we process your request',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // Submit the form after a brief delay to show the loading state
+                        setTimeout(() => {
+                            disbursementForm.submit();
+                        }, 500);
+                    }
+                });
+            }
+        });
+    });
+}
         // Function to switch tabs
         function switchTab(tabName) {
             // Hide all content

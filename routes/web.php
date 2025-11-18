@@ -27,7 +27,7 @@ Route::get('/scholar/scholar_registration', [ScholarController::class, 'showScho
 Route::post('/scholar/login', [ScholarController::class, 'login'])->name('scholar.login.submit');
 Route::post('/scholar/register', [ScholarController::class, 'registerScholar'])->name('scholar.register');
 Route::get('/scholar/forgot-password', [ScholarController::class, 'showForgotPasswordForm'])->name('scholar.forgot-password');
- Route::get('/scholar/announcements', [ScholarController::class, 'announcements'])->name('scholar.announcements');
+Route::get('/scholar/announcements', [ScholarController::class, 'announcements'])->name('scholar.announcements');
 Route::post('/scholar/forgot-password', [ScholarController::class, 'sendResetLink'])->name('scholar.password.email');
 Route::post('/scholar/verify-otp', [ScholarController::class, 'verifyOtp'])->name('scholar.password.verifyOtp');
 Route::get('/scholar/applicationupdate/{applicant_id}', [ScholarController::class, 'showUpdateApplication'])->name('scholar.showUpdateApplication');
@@ -91,9 +91,12 @@ Route::middleware(['role:lydo_admin'])->group(function () {
     Route::get('/lydo_admin/scholar/{scholarId}/documents', [LydoAdminController::class, 'getScholarDocuments'])->name('LydoAdmin.scholar.documents');
     Route::get('/lydo_admin/generate-applicants-pdf', [LydoAdminController::class, 'generateApplicantsPdf'])->name('lydo_admin.applicants.pdf');
     Route::get('/lydo_admin/generate-signed-disbursement-pdf', [LydoAdminController::class, 'generateSignedDisbursementPdf'])->name('LydoAdmin.generateSignedDisbursementPdf');
-Route::get('/lydo_admin/generate-signed-disbursement-pdf', [LydoAdminController::class, 'generateSignedDisbursementPdf'])->name('LydoAdmin.generateSignedDisbursementPdf');
-Route::get('/lydo_admin/get-scholars-without-disbursement', [LydoAdminController::class, 'getScholarsWithoutDisbursement'])->name('LydoAdmin.getScholarsWithoutDisbursement');
-Route::get('/lydo_admin/generate-scholars-pdf', [AdminScholarController::class, 'generateScholarsPdf'])->name('LydoAdmin.generateScholarsPdf');
+    Route::get('/lydo_admin/generate-signed-disbursement-pdf', [LydoAdminController::class, 'generateSignedDisbursementPdf'])->name('LydoAdmin.generateSignedDisbursementPdf');
+    Route::get('/lydo_admin/get-scholars-without-disbursement', [LydoAdminController::class, 'getScholarsWithoutDisbursement'])->name('LydoAdmin.getScholarsWithoutDisbursement');
+    Route::get('/lydo_admin/generate-scholars-pdf', [AdminScholarController::class, 'generateScholarsPdf'])->name('LydoAdmin.generateScholarsPdf');
+    Route::get('/lydo_admin/applicant-documents/{applicantId}', [LydoAdminController::class, 'getApplicantDocuments']);
+    Route::get('/lydo_admin/get-application-personnel/{applicantId}', [LydoAdminController::class, 'getApplicationPersonnelId']);
+    Route::get('/lydo_admin/intake-sheet/{applicationPersonnelId}', [LydoAdminController::class, 'getIntakeSheet']);
 });
 
 Route::middleware(['role:lydo_staff'])->group(function () {
@@ -128,8 +131,7 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::get('/lydo_staff/get-document-comments/{renewalId}', [RenewalController::class, 'getDocumentComments']);
     Route::post('/lydo_staff/request-document-update/{renewalId}', [RenewalController::class, 'requestDocumentUpdate']);
     Route::post('/lydo_staff/mark-document-updated/{renewalId}', [RenewalController::class, 'markDocumentAsUpdated']);
-Route::get('/lydo_staff/pdf/intake-sheet-print/{application_personnel_id}', [LydoStaffController::class, 'generateIntakeSheetPdf'])
-    ->name('lydo_staff.intake-sheet.pdf');
+    Route::get('/lydo_staff/pdf/intake-sheet-print/{application_personnel_id}', [LydoStaffController::class, 'generateIntakeSheetPdf'])->name('lydo_staff.intake-sheet.pdf');
     Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments']);
 });
 
@@ -171,37 +173,33 @@ Route::middleware(['role:mayor_staff'])->group(function () {
     Route::get('/mayor_staff/intake-sheet/{id}', [StatusController::class, 'getIntakeSheet'])->name('mayor_staff.intake-sheet');
     Route::put('/mayor_staff/settings/{id}', [MayorStaffController::class, 'updatePersonalInfo'])->name('MayorStaff.updateSettings');
     Route::put('/mayor_staff/update-password', [MayorStaffController::class, 'updatePassword'])->name('MayorStaff.updatePassword');
-    // Add these routes to your web.php file
-Route::post('/mayor_staff/mark-notifications-viewed', [MayorStaffController::class, 'markNotificationsViewed']);
-Route::get('/mayor_staff/check-new-notifications', [MayorStaffController::class, 'checkNewNotifications']);
-Route::get('/mayor_staff/get-unread-notification-count', [MayorStaffController::class, 'getUnreadNotificationCount']);
-Route::get('/mayor_staff/get-notification-content', [MayorStaffController::class, 'getNotificationContent']);
-// Notification test routes
-Route::post('/test/new-application/{id}', [MayorStaffController::class, 'triggerNewApplicationNotification']);
-Route::post('/test/reviewed-application/{id}', [MayorStaffController::class, 'triggerReviewedApplicationNotification']);
-Route::get('/mayor_staff/application/table-data', [MayorStaffController::class, 'getTableViewData']);
-Route::get('/mayor_staff/application/list-data', [MayorStaffController::class, 'getListViewData']);
-// Auto-refresh routes for application tables
-Route::get('/mayor_staff/application/table-data', [MayorStaffController::class, 'getTableViewData'])->name('mayor_staff.application.table_data');
-Route::get('/mayor_staff/application/list-data', [MayorStaffController::class, 'getListViewData'])->name('mayor_staff.application.list_data');
+    Route::post('/mayor_staff/mark-notifications-viewed', [MayorStaffController::class, 'markNotificationsViewed']);
+    Route::get('/mayor_staff/check-new-notifications', [MayorStaffController::class, 'checkNewNotifications']);
+    Route::get('/mayor_staff/get-unread-notification-count', [MayorStaffController::class, 'getUnreadNotificationCount']);
+    Route::get('/mayor_staff/get-notification-content', [MayorStaffController::class, 'getNotificationContent']);
+    Route::post('/test/new-application/{id}', [MayorStaffController::class, 'triggerNewApplicationNotification']);
+    Route::post('/test/reviewed-application/{id}', [MayorStaffController::class, 'triggerReviewedApplicationNotification']);
+    Route::get('/mayor_staff/application/table-data', [MayorStaffController::class, 'getTableViewData']);
+    Route::get('/mayor_staff/application/list-data', [MayorStaffController::class, 'getListViewData']);
+    Route::get('/mayor_staff/application/table-data', [MayorStaffController::class, 'getTableViewData'])->name('mayor_staff.application.table_data');
+    Route::get('/mayor_staff/application/list-data', [MayorStaffController::class, 'getListViewData'])->name('mayor_staff.application.list_data');
 });
 
-// Public routes for intake sheet
 Route::get('/intake-sheet/{application_personnel_id}', [MayorStaffController::class, 'showIntakeSheet'])->name('intake_sheet.show');
-Route::get('/intake-sheet-submitted', function () {return view('Applicants.intakesheet_submitted');})->name('intake_sheet.submitted');
-Route::post('/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheet'])->name('submit.intake.sheet');
-Route::get('/print-intake-sheet/{id}', [IntakeSheetController::class, 'printView'])->name('intake.print');
-
-// Option 2: Or update your existing route to use the dashed version
-Route::get('/print-intake-sheet/{id}', [IntakeSheetController::class, 'printView'])->name('intake.print');
+    Route::get('/intake-sheet-submitted', function () {return view('Applicants.intakesheet_submitted');})->name('intake_sheet.submitted');
+    Route::post('/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheet'])->name('submit.intake.sheet');
+    Route::get('/print-intake-sheet/{id}', [IntakeSheetController::class, 'printView'])->name('intake.print');
+    Route::get('/print-intake-sheet/{id}', [IntakeSheetController::class, 'printView'])->name('intake.print');
+   
 Route::middleware(['scholar.auth'])->group(function () {
-
     Route::get('/scholar/renewal_app', [ScholarController::class, 'showRenewalApp'])->name('scholar.renewal_app');
     Route::post('/scholar/submit_renewal', [ScholarController::class, 'submitRenewal'])->name('scholar.submit_renewal');
     Route::get('/scholar/dashboard', [ScholarController::class, 'dashboard'])->name('scholar.dashboard');
     Route::get('/scholar/settings', [ScholarController::class, 'showSettings'])->name('scholar.settings');
     Route::post('/scholar/settings/update', [ScholarController::class, 'updateSettings'])->name('scholar.settings.update');
     Route::post('/scholar/logout', [ScholarController::class, 'logout'])->name('scholar.logout');
+    Route::get('/scholar/renewal-history', [ScholarController::class, 'renewalHistory'])->name('scholar.renewal_history');
+    Route::get('/scholar/renewal/{renewalId}/details', [ScholarController::class, 'getRenewalDetails']);
    });
 
 use App\Http\Controllers\SmsController;

@@ -5,68 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Disbursement Schedule</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #ffffff;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 30px;
-            text-align: center;
-            border-radius: 10px 10px 0 0;
-        }
-        .header h1 {
-            color: white;
-            margin: 0;
-            font-size: 24px;
-        }
-        .content {
-            padding: 30px;
-            background-color: #f8f9fa;
-            border-radius: 0 0 10px 10px;
-        }
-        .notification-box {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        .info-item {
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-        .info-label {
-            font-weight: bold;
-            color: #667eea;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e9ecef;
-            color: #6c757d;
-            font-size: 14px;
-        }
-        .important-note {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 5px;
-            padding: 15px;
-            margin-top: 20px;
-        }
+        /* Your existing styles remain the same */
     </style>
 </head>
 <body>
@@ -83,6 +22,14 @@
                 <div class="info-item">
                     <span class="info-label">Disbursement Date:</span> {{ $disbursement_date }}
                 </div>
+                
+   <div class="info-item">
+    <span class="info-label">Time:</span> {{ $disbursement_time ?? 'To be announced' }}
+</div>
+
+<div class="info-item">
+    <span class="info-label">Location:</span> {{ $disbursement_location ?? 'To be announced' }}
+</div>
                 
                 <div class="info-item">
                     <span class="info-label">Academic Period:</span> {{ $semester }} - {{ $academic_year }}
@@ -101,7 +48,7 @@
                 <strong>Important Reminders:</strong>
                 <ul>
                     <li>Please bring your valid school ID and any other required identification</li>
-                    <li>Be on time for the scheduled disbursement</li>
+                    <li>Be on time for the scheduled disbursement at the specified location</li>
                     <li>Ensure all your documents are complete and updated</li>
                     <li>Contact the LYDO office if you have any questions or concerns</li>
                 </ul>

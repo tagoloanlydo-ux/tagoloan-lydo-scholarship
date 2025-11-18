@@ -1294,4 +1294,5 @@ public function generateIntakeSheetPdf($application_personnel_id)
         return response()->json(['error' => 'PDF generation failed: ' . $e->getMessage()], 500);
     }
 }
+
     }

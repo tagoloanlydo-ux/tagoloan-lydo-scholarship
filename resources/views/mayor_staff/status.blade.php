@@ -538,4 +538,12 @@
 <script src="{{ asset('js/status-script.js') }}"></script>
 
 </body>
+</html>             </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="{{ asset('js/status-script.js') }}"></script>
+
+</body>
 </html>

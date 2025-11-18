@@ -267,7 +267,7 @@
             </div>
             <div class="flex-1 overflow-hidden p-4 md:p-2 text-[14px]">
 
-  <section class="flex-grow">
+  <section class="flex-grow overflow-y-auto">
   <div class="flex flex-col md:flex-row md:space-x-1 max-full-5xl mx-full">
     <!-- Profile Card -->
     <aside class="flex-shrink-0 rounded-2xl bg-white p-10 mb-10 md:mb-0 w-full md:w-80 text-center shadow-lg border border-gray-100">
@@ -387,11 +387,19 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
           <label class="block text-base text-gray-600 mb-1">First Name</label>
-          <input type="text" name="lydopers_fname" value="{{ session('lydopers')->lydopers_fname }}" class="w-full bg-gray-50 border rounded-xl  px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+          <input type="text" name="lydopers_fname" value="{{ session('lydopers')->lydopers_fname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+        </div>
+        <div>
+          <label class="block text-base text-gray-600 mb-1">Middle Name</label>
+          <input type="text" name="lydopers_mname" value="{{ session('lydopers')->lydopers_mname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
         </div>
         <div>
           <label class="block text-base text-gray-600 mb-1">Last Name</label>
           <input type="text" name="lydopers_lname" value="{{ session('lydopers')->lydopers_lname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+        </div>
+        <div>
+          <label class="block text-base text-gray-600 mb-1">Suffix</label>
+          <input type="text" name="lydopers_suffix" value="{{ session('lydopers')->lydopers_suffix }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
         </div>
         <div class="md:col-span-2">
           <label class="block text-base text-gray-600 mb-1">Email</label>
@@ -406,7 +414,13 @@
           <input type="text" name="lydopers_contact_number" value="{{ session('lydopers')->lydopers_contact_number }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
         </div>
         <div>
-          <label class="block text-base text-gray-600 mb-1">Date of Birth</label>
+            <label class="block text-base text-gray-600 mb-1">Date of Birth</label>
+            <input
+                type="date"
+                name="lydopers_bdate"
+                value="{{ session('lydopers')->lydopers_bdate }}"
+                class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+            />
         </div>
       </div>
 
