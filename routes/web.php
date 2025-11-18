@@ -189,8 +189,7 @@ Route::get('/mayor_staff/application/list-data', [MayorStaffController::class, '
 // Public routes for intake sheet
 Route::get('/intake-sheet/{application_personnel_id}', [MayorStaffController::class, 'showIntakeSheet'])->name('intake_sheet.show');
 Route::get('/intake-sheet-submitted', function () {return view('Applicants.intakesheet_submitted');})->name('intake_sheet.submitted');
-Route::post('/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheetPublic'])->name('submit.intake.sheet');
-// Option 1: Add the dashed route
+Route::post('/submit-intake-sheet', [MayorStaffController::class, 'submitIntakeSheet'])->name('submit.intake.sheet');
 Route::get('/print-intake-sheet/{id}', [IntakeSheetController::class, 'printView'])->name('intake.print');
 
 // Option 2: Or update your existing route to use the dashed version

@@ -74,9 +74,7 @@ return new class extends Migration
             $table->string('worker_name')->nullable();
             $table->string('officer_name')->nullable();
             $table->date('date_entry')->nullable();
-            $table->longText('signature_client')->nullable();
-            $table->longText('signature_worker')->nullable();
-            $table->longText('signature_officer')->nullable();
+
 
             $table->timestamps();
         });

@@ -561,11 +561,7 @@ public function showIntakeSheet($application_personnel_id)
         $data['house_total_income'] = $intakeSheet->house_total_income;
         $data['house_net_income'] = $intakeSheet->house_net_income;
         
-        // ADD SIGNATURE FIELDS
-        $data['signature_client'] = $intakeSheet->signature_client;
-        $data['signature_worker'] = $intakeSheet->signature_worker;
-        $data['signature_officer'] = $intakeSheet->signature_officer;
-        
+
         // Worker and officer names - prioritize intake sheet data, fallback to current session
         $data['worker_name'] = $intakeSheet->worker_name ?: $currentStaffName;
         $data['officer_name'] = $intakeSheet->officer_name ?: '';
@@ -595,10 +591,7 @@ public function showIntakeSheet($application_personnel_id)
             'other_income' => null,
             'house_total_income' => null,
             'house_net_income' => null,
-            // Include empty signature fields
-            'signature_client' => null,
-            'signature_worker' => null,
-            'signature_officer' => null,
+
             // Worker and officer names with current staff as default
             'worker_name' => $currentStaffName,
             'officer_name' => null,
@@ -641,10 +634,6 @@ public function updateIntakeSheet(Request $request, $application_personnel_id)
         'social_service_records' => 'nullable',
         'rv_service_records' => 'nullable',
 
-        // Signatures (store in intake sheet)
-        'signature_client' => 'nullable|string',
-        'signature_worker' => 'nullable|string',
-        'signature_officer' => 'nullable|string',
 
         // Application personnel fields (may not exist on tbl_application_personnel)
         'worker_name' => 'nullable|string|max:255',
@@ -685,8 +674,7 @@ public function updateIntakeSheet(Request $request, $application_personnel_id)
             'serial_number','location',
             'other_income','house_total_income','house_net_income','house_house','house_value','house_lot','lot_value',
             'house_rent','lot_rent','house_water','house_electric','house_remarks', // Updated field names
-            'family_members','social_service_records','rv_service_records',
-            'signature_client','signature_worker','signature_officer'
+            'family_members','social_service_records','rv_service_records'
         ];
 
         foreach ($intakeFields as $field) {
@@ -1274,11 +1262,6 @@ public function generateIntakeSheetPdf($application_personnel_id)
             ],
             'social_service_records' => $socialServiceRecords,
             'rv_service_records' => $rvServiceRecords,
-            'signatures' => [
-                'client' => $intakeSheet->signature_client ?? null,
-                'worker' => $intakeSheet->signature_worker ?? null,
-                'officer' => $intakeSheet->signature_officer ?? null,
-            ],
             'worker_info' => [
                 'worker_name' => $intakeSheet->worker_name ?? '',
                 'officer_name' => $intakeSheet->officer_name ?? '',
@@ -1291,7 +1274,6 @@ public function generateIntakeSheetPdf($application_personnel_id)
             'family_members_count' => count($familyMembers),
             'social_records_count' => count($socialServiceRecords),
             'rv_records_count' => count($rvServiceRecords),
-            'has_signatures' => !empty(array_filter($data['signatures'])),
             'remarks' => $applicantData->remarks ?? 'No remarks'
         ]);
 

@@ -3,12 +3,6 @@ let currentStep = 1;
 const totalSteps = 4;
 const progressBar = document.getElementById("progressBar");
 
-// SignaturePad instances
-const signaturePads = {};
-
-// Signature variables
-let signaturePad = null;
-
 // localStorage key
 const STORAGE_KEY = 'familyIntakeFormData';
 
@@ -29,19 +23,12 @@ function generateSerialNumber() {
 function saveFormData() {
   try {
     const data = collectData();
-    
-    // Optimize signature data for storage
-    if (data.signatures && data.signatures.client) {
-      data.signatures.client = optimizeSignatureData(data.signatures.client);
-    }
-    
     data.currentStep = currentStep;
     
     // Check if data is too large
     const dataString = JSON.stringify(data);
     if (dataString.length > 5000000) { // 5MB limit
-      console.warn('Data too large, clearing signatures');
-      data.signatures.client = null; // Remove signature if too large
+      console.warn('Data too large, clearing some data');
     }
     
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -49,19 +36,9 @@ function saveFormData() {
     console.error('Error saving to localStorage:', e);
     // Fallback: save without signatures
     const data = collectData();
-    data.signatures.client = null;
     data.currentStep = currentStep;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }
-}
-
-function optimizeSignatureData(dataURL) {
-  // Basic optimization - you can enhance this later
-  // For now, just ensure it's not empty and return as-is
-  if (!dataURL || dataURL === 'data:,') {
-    return null;
-  }
-  return dataURL;
 }
 
 // Load form data from localStorage
@@ -152,17 +129,27 @@ function populateForm(data) {
   document.getElementById('lot_rent').value = data.house.lot_rent || '';
   document.getElementById('house_water').value = data.house.water || '';
   document.getElementById('house_electric').value = data.house.electric || '';
-
-  // Signatures
-  if (data.signatures.client && signaturePad) {
-    signaturePad.fromDataURL(data.signatures.client);
-    document.getElementById('signature_client').value = data.signatures.client;
-  }
 }
 
 // Clear localStorage on submit
 function clearFormData() {
   localStorage.removeItem(STORAGE_KEY);
+}
+
+// Show loading spinner
+function showLoadingSpinner() {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+  }
+}
+
+// Hide loading spinner
+function hideLoadingSpinner() {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+  }
 }
 
 function showStep(step) {
@@ -174,12 +161,7 @@ function showStep(step) {
   document.getElementById("nextBtn").innerText =
     step === totalSteps ? "Submit" : "Next";
   progressBar.style.width = (step / totalSteps) * 100 + "%";
-  // Show Print button only on review step
-  if (step === totalSteps) {
-    document.getElementById("printBtn").classList.remove("hidden");
-  } else {
-    document.getElementById("printBtn").classList.add("hidden");
-  }
+  
   // Adjust navigation alignment
   const navControls = document.getElementById("navControls");
   if (step === 1) {
@@ -193,9 +175,6 @@ function showStep(step) {
     validateStep2();
   }
   if (step === 3) {
-    // Resize signature canvas when Step 3 is shown
-    const c = document.getElementById("signatureCanvas");
-    if (c) resizeCanvasForSignature(c);
     validateStep3();
   }
   if (step === totalSteps) {
@@ -220,7 +199,16 @@ function nextPrev(delta) {
 
 function handleNext() {
   if (currentStep === totalSteps) {
-    submitForm();
+    if (validateAllSteps()) {
+      submitForm();
+    } else {
+      Swal.fire({
+        title: 'Validation Error',
+        text: 'Please fill all required fields before submitting.',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      });
+    }
   } else {
     // Perform validation for the current step
     if (currentStep === 1) {
@@ -364,183 +352,7 @@ function deleteRow(btn) {
   } else alert("At least one family member row is required.");
 }
 
-function resizeCanvasForSignature(canvas) {
-  const ratio = Math.max(window.devicePixelRatio || 1, 1);
-  canvas.width = canvas.offsetWidth * ratio;
-  canvas.height = canvas.offsetHeight * ratio;
-  canvas.getContext("2d").scale(ratio, ratio);
-  
-  // Re-initialize SignaturePad after resize if it exists
-  if (signaturePad) {
-    signaturePad.clear();
-  }
-}
-
-// Initialize signature pad - REPLACE THE EXISTING FUNCTION
-function initializeSignaturePad() {
-  const canvas = document.getElementById('signatureCanvas');
-  if (!canvas) return;
-  
-  // Resize canvas
-  resizeCanvasForSignature(canvas);
-  
-  // Initialize SignaturePad
-  signaturePad = new SignaturePad(canvas, {
-    backgroundColor: 'rgb(255, 255, 255)',
-    penColor: 'rgb(0, 0, 0)',
-    minWidth: 1,
-    maxWidth: 3
-  });
-  
-  // Load saved signature if exists
-  loadSavedSignature();
-}
-
-// Clear signature - REPLACE THE EXISTING FUNCTION
-function clearSignature() {
-  if (signaturePad) {
-    signaturePad.clear();
-    document.getElementById('signature_client').value = '';
-    saveFormData(); // Update localStorage
-  }
-}
-
-
-// Save signature - REPLACE THE EXISTING FUNCTION
-// Save signature - UPDATED VERSION
-function saveSignature() {
-  if (!signaturePad) return;
-
-  if (signaturePad.isEmpty()) {
-    Swal.fire({
-      title: 'No Signature',
-      text: 'Please provide a signature before saving.',
-      icon: 'warning',
-      confirmButtonText: 'OK'
-    });
-    return;
-  }
-
-  const signatureData = signaturePad.toDataURL();
-  document.getElementById('signature_client').value = signatureData;
-  
-  // Generate a filename
-  const timestamp = new Date().getTime();
-  const filename = `signature_${timestamp}.png`;
-  document.getElementById('signature_filename').value = filename;
-  
-  saveFormData(); // Save to localStorage
-  
-  Swal.fire({
-    title: 'Signature Saved',
-    text: 'Family head signature has been saved successfully.',
-    icon: 'success',
-    timer: 1500,
-    showConfirmButton: false
-  });
-}
-
-// Replace the entire submitForm function with this:
-async function submitForm() {
-  // Validate signature
-  const signatureData = document.getElementById('signature_client').value;
-  const signatureFilename = document.getElementById('signature_filename').value;
-  
-  if (!signatureData) {
-    Swal.fire({
-      title: 'Signature Required',
-      text: 'Please provide and save the family head signature before submitting.',
-      icon: 'warning',
-      confirmButtonText: 'OK'
-    });
-    return;
-  }
-
-  // Show confirmation dialog
-  const result = await Swal.fire({
-    title: 'Are you sure?',
-    text: 'Are you sure you want to submit the family intake sheet?',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, submit it!',
-    cancelButtonText: 'Cancel'
-  });
-
-  if (!result.isConfirmed) {
-    return; // User cancelled
-  }
-
-  try {
-    // Get the form element
-    const form = document.getElementById('intakeForm');
-    
-    // Create a FormData object from the form
-    const formData = new FormData(form);
-    
-    // Add the collected data as JSON
-    const data = collectData();
-    formData.append('form_data', JSON.stringify(data));
-    
-    // Add signature data
-    formData.append('signature_data', signatureData);
-    formData.append('signature_filename', signatureFilename);
-
-    const response = await fetch(form.action, {
-      method: 'POST',
-      headers: {
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-        'Accept': 'application/json'
-      },
-      body: formData
-    });
-
-    const result = await response.json();
-    
-    if (response.ok) {
-      Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: result.message || 'Family intake sheet submitted successfully!',
-        confirmButtonText: 'OK'
-      }).then(() => {
-        clearFormData();
-        // Redirect to a success page or home
-        window.location.href = '/submission-success';
-      });
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Submission Failed',
-        text: result.message || 'Error submitting form. Please try again.',
-        confirmButtonText: 'OK'
-      });
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'An unexpected error occurred. Please try again.',
-      confirmButtonText: 'OK'
-    });
-  }
-}
-
-// Load saved signature from localStorage - REPLACE THE EXISTING FUNCTION
-function loadSavedSignature() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    const data = JSON.parse(saved);
-    if (data.signatures && data.signatures.client && signaturePad) {
-      signaturePad.fromDataURL(data.signatures.client);
-      document.getElementById('signature_client').value = data.signatures.client;
-    }
-  }
-}
-
-// Collect data
+// Collect data - UPDATED VERSION
 function collectData() {
   // Get the values directly from the form inputs
   const fname = document.getElementById('applicant_fname').value;
@@ -548,14 +360,7 @@ function collectData() {
   const lname = document.getElementById('applicant_lname').value;
   const suffix = document.getElementById('applicant_suffix').value;
   
-  const applicant = {
-    fname: fname,
-    mname: mname,
-    lname: lname,
-    suffix: suffix,
-    gender: document.querySelector('input[name="applicant_gender"]:checked')?.value || "",
-  };
-
+  // Head data - make sure all required fields are included
   const head = {
     _4ps: getVal("head_4ps"),
     ipno: getVal("head_ipno"),
@@ -569,7 +374,7 @@ function collectData() {
     religion: getVal("head_religion"),
     sex: document.querySelector('input[name="applicant_gender"]:checked')?.value || "",
     serial: getVal("serial_number"),
-    // Include names in head as well for backward compatibility
+    // Include names in head as well
     fname: fname,
     mname: mname,
     lname: lname,
@@ -580,18 +385,32 @@ function collectData() {
 
   const family = [];
   document.querySelectorAll("#familyTable tbody tr").forEach((tr) => {
-    family.push({
-      name: tr.querySelector(".fm-name")?.value || "",
-      relation: tr.querySelector(".fm-relation")?.value || "",
-      birth: tr.querySelector(".fm-birth")?.value || "",
-      age: tr.querySelector(".fm-age")?.value || "",
-      sex: tr.querySelector(".fm-sex")?.value || "",
-      civil: tr.querySelector(".fm-civil")?.value || "",
-      educ: tr.querySelector(".fm-educ")?.value || "",
-      occ: tr.querySelector(".fm-occ")?.value || "",
-      income: tr.querySelector(".fm-income")?.value || "",
-      remarks: tr.querySelector(".fm-remarks")?.value || "",
-    });
+    const name = tr.querySelector(".fm-name")?.value || "";
+    const relation = tr.querySelector(".fm-relation")?.value || "";
+    const birth = tr.querySelector(".fm-birth")?.value || "";
+    const age = tr.querySelector(".fm-age")?.value || "";
+    const sex = tr.querySelector(".fm-sex")?.value || "";
+    const civil = tr.querySelector(".fm-civil")?.value || "";
+    const educ = tr.querySelector(".fm-educ")?.value || "";
+    const occ = tr.querySelector(".fm-occ")?.value || "";
+    const income = tr.querySelector(".fm-income")?.value || "";
+    const remarks = tr.querySelector(".fm-remarks")?.value || "";
+    
+    // Only add if there's at least a name
+    if (name.trim() !== '') {
+      family.push({
+        name: name,
+        relation: relation,
+        birth: birth,
+        age: age,
+        sex: sex,
+        civil: civil,
+        educ: educ,
+        occ: occ,
+        income: income,
+        remarks: remarks,
+      });
+    }
   });
 
   const house = {
@@ -608,17 +427,13 @@ function collectData() {
     electric: getVal("house_electric"),
   };
 
-  const signatures = {
-    client: document.getElementById('signature_client').value || null
-  };
-
   return {
-    applicant,
-    head,
-    location,
-    family,
-    house,
-    signatures,
+    head: head,
+    location: location,
+    family: family,
+    house: house,
+    application_personnel_id: document.querySelector('input[name="application_personnel_id"]').value,
+    token: document.querySelector('input[name="token"]').value
   };
 }
 
@@ -640,7 +455,7 @@ function populateReview() {
   
   document.getElementById("rv_serial").innerText = serial;
   document.getElementById("printSerial").innerText = serial;
-    document.getElementById("printSerialNumber").textContent = serial; // ADD THIS LINE
+  document.getElementById("printSerialNumber").textContent = serial;
 
   // FIX: Get full name directly from form inputs to ensure it shows correctly
   const fullName = [
@@ -655,7 +470,7 @@ function populateReview() {
   document.getElementById("rv_head_table").innerHTML = `
     <table class="min-w-full text-sm">
       <tr>
-        <td><strong>Sex:</strong> ${d.head.sex || d.applicant.gender || "-"}</td>
+        <td><strong>Sex:</strong> ${d.head.sex || "-"}</td>
         <td><strong>4Ps:</strong> ${d.head._4ps || "-"}</td>
         <td><strong>IP No.:</strong> ${d.head.ipno || "-"}</td>
       </tr>
@@ -709,24 +524,6 @@ function populateReview() {
   `;
     tbody.appendChild(tr);
   });
-
-  // Signatures
-// In populateReview() function, update the signature display section:
-const rvSigClient = document.getElementById("rv_sig_client");
-rvSigClient.innerHTML = "";
-
-// If we have a signature in localStorage for preview, show it
-const signatureData = document.getElementById('signature_client').value;
-if (signatureData) {
-    const img = document.createElement("img");
-    img.src = signatureData;
-    img.style.maxWidth = "100%";
-    img.style.height = "80px";
-    img.style.border = "1px solid #ccc";
-    rvSigClient.appendChild(img);
-} else {
-    rvSigClient.innerHTML = '<p class="text-xs text-gray-500">Signature will be saved to file</p>';
-}
 }
 
 function formatDate(dateString) {
@@ -750,82 +547,6 @@ function escapeHtml(s) {
         "'": "&#39;",
       }[m])
   );
-}
-
-// Submit form function
-async function submitForm() {
-  // Validate signature
-  const signatureData = document.getElementById('signature_client').value;
-  if (!signatureData) {
-    Swal.fire({
-      title: 'Signature Required',
-      text: 'Please provide and save the family head signature before submitting.',
-      icon: 'warning',
-      confirmButtonText: 'OK'
-    });
-    return;
-  }
-
-  // Show confirmation dialog
-  const result = await Swal.fire({
-    title: 'Are you sure?',
-    text: 'Are you sure you want to submit the family intake sheet?',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, submit it!',
-    cancelButtonText: 'Cancel'
-  });
-
-  if (!result.isConfirmed) {
-    return; // User cancelled
-  }
-
-  const data = collectData();
-  // Add application_personnel_id from URL
-  data.application_personnel_id = window.location.pathname.split('/').pop();
-  // Add token from URL query parameter
-  const urlParams = new URLSearchParams(window.location.search);
-  data.token = urlParams.get('token');
-  try {
-    const response = await fetch('/submit-intake-sheet', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-      },
-      body: JSON.stringify(data)
-    });
-    const result = await response.json();
-    if (response.ok) {
-      Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: result.message || 'Family intake sheet submitted successfully!',
-        confirmButtonText: 'OK'
-      }).then(() => {
-        clearFormData();
-        // Optionally redirect
-        window.location.href = '/'; // or wherever appropriate
-      });
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Submission Failed',
-        text: result.message || 'Error submitting form. Please try again.',
-        confirmButtonText: 'OK'
-      });
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'An unexpected error occurred. Please try again.',
-      confirmButtonText: 'OK'
-    });
-  }
 }
 
 // Validate Step 1 fields and disable Next button if required fields are empty
@@ -896,9 +617,100 @@ function validateStep3() {
   nextBtn.style.opacity = isFilled ? '1' : '0.5';
 }
 
+// Validate all steps before submission
+function validateAllSteps() {
+  const head = collectData().head;
+  
+  // Check required head fields
+  const requiredHeadFields = ['_4ps', 'address', 'zone', 'pob', 'educ', 'occ', 'religion'];
+  const missingFields = requiredHeadFields.filter(field => !head[field] || head[field].trim() === '');
+  
+  if (missingFields.length > 0) {
+    console.log('Missing head fields:', missingFields);
+    return false;
+  }
+  
+  // Check if at least one family member exists
+  const family = collectData().family;
+  if (family.length === 0) {
+    console.log('No family members added');
+    return false;
+  }
+  
+  return true;
+}
+
+async function submitForm() {
+  // Show confirmation dialog
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: 'Are you sure you want to submit the family intake sheet?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, submit it!',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (!result.isConfirmed) {
+    return; // User cancelled
+  }
+
+  // Show loading spinner
+  showLoadingSpinner();
+
+  try {
+    const data = collectData();
+
+    console.log('Submitting data:', data);
+
+    const response = await fetch('/submit-intake-sheet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      hideLoadingSpinner();
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: result.message || 'Family intake sheet submitted successfully! You will receive an email with your PDF copy shortly.',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        clearFormData();
+        // Redirect to home page
+        window.location.href = '/';
+      });
+    } else {
+      hideLoadingSpinner();
+      Swal.fire({
+        icon: 'error',
+        title: 'Submission Failed',
+        text: result.message || 'Error submitting form. Please try again.',
+        confirmButtonText: 'OK'
+      });
+    }
+  } catch (error) {
+    hideLoadingSpinner();
+    console.error('Error:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'An unexpected error occurred. Please try again.',
+      confirmButtonText: 'OK'
+    });
+  }
+}
+
 // Setup on load
 window.addEventListener("load", () => {
-  initializeSignaturePad();
   loadFormData();
   showStep(currentStep);
   
@@ -969,57 +781,3 @@ window.addEventListener("load", () => {
   // Initial validation
   validateStep1();
 });
-
-window.addEventListener("resize", () => {
-  const canvas = document.getElementById('signatureCanvas');
-  if (canvas) resizeCanvasForSignature(canvas);
-});
-
-// Handle print functionality
-function handlePrint() {
-  // Update the print serial number
-  const serialNumber = document.getElementById('serial_number').value || generateSerialNumber();
-  document.getElementById('printSerialNumber').textContent = serialNumber;
-  
-  // Show only the review area for printing
-  document.querySelectorAll('.step').forEach(step => {
-    step.classList.add('hidden');
-  });
-  document.getElementById('step-4').classList.remove('hidden');
-  
-  // Wait a moment for DOM to update, then print
-  setTimeout(() => {
-    window.print();
-    
-    // Restore the view after printing
-    setTimeout(() => {
-      showStep(currentStep);
-    }, 100);
-  }, 100);
-}
-// Handle print functionality
-// Update the handlePrint function in intakesheet.js
-async function handlePrint() {
-    const data = collectData();
-    const serial = document.getElementById('serial_number').value || generateSerialNumber();
-    
-    // Add the serial number to the data
-    data.head.serial = serial;
-    
-    try {
-        // Get the application_personnel_id from the URL
-        const applicationPersonnelId = window.location.pathname.split('/').pop();
-        
-        // Use the correct route - remove the dash
-        const printWindow = window.open(`/print-intake-sheet/${applicationPersonnelId}?data=${encodeURIComponent(JSON.stringify(data))}`, '_blank');
-        
-    } catch (error) {
-        console.error('Error opening print window:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Print Error',
-            text: 'Unable to open print view. Please try again.',
-            confirmButtonText: 'OK'
-        });
-    }
-}

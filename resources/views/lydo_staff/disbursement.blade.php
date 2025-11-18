@@ -293,7 +293,7 @@
         </header>
 
         <div class="flex flex-1 overflow-hidden">
-            <div class="w-16 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
+            <div class="w-20 md:w-80 bg-white shadow-md flex flex-col transition-all duration-300">
                 <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
                     <ul class="side-menu top space-y-4">
                         <li>
@@ -306,7 +306,7 @@
                             <a href="/lydo_staff/screening" class="flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
                                 <div class="flex items-center">
                                     <i class="bx bxs-file-blank text-center mx-auto md:mx-0 text-xl"></i>
-                                    <span class="ml-4 hidden md:block text-lg">Screening</span>
+                                    <span class="ml-4 hidden md:block text-lg">Applicant Interview</span>
                                 </div>
                                 @if($pendingScreening > 0)
                                     <span class="ml-2 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">

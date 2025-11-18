@@ -63,6 +63,17 @@ function initializeModalEvents() {
         });
     });
 
+    // View details buttons for Approved/Rejected applications
+    document.querySelectorAll('.view-details-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            const status = this.getAttribute('data-status');
+            console.log('Opening details modal for:', id, name, status);
+            openApplicationDetailsModal(id, name, status);
+        });
+    });
+
     // Approve button
     const approveBtn = document.getElementById('approveBtn');
     if (approveBtn) {
@@ -242,7 +253,7 @@ function initializeFiltering() {
         const filteredRows = paginationState.list.allRows.filter(row => {
             const nameCell = row.cells[1];
             const barangayCell = row.cells[2];
-            const statusCell = row.cells[4];
+            const statusCell = row.cells[4]; // Status is now in column 4 (changed from 5 due to new Actions column)
 
             if (!nameCell || !barangayCell || !statusCell) return false;
 
@@ -443,6 +454,66 @@ function openIntakeSheetModal(id, name, type = 'intake') {
         });
 }
 
+// Add this new function for application details modal
+function openApplicationDetailsModal(id, name, status) {
+    console.log('openApplicationDetailsModal called with:', { id, name, status });
+    
+    if (!id) {
+        console.error('No ID provided for modal');
+        Swal.fire('Error', 'No application ID provided.', 'error');
+        return;
+    }
+
+    currentApplicationId = id;
+    currentApplicationName = name;
+
+    // Show loading
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'flex';
+    }
+
+    // Fetch application details data
+    fetch(`/mayor_staff/intake-sheet/${id}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Application Details API Response:', data);
+            
+            if (data.success && data.intakeSheet) {
+                populateApplicationDetailsModal(data.intakeSheet, name, status);
+                // Display the modal
+                const modal = document.getElementById('intakeSheetModal');
+                if (modal) {
+                    modal.style.display = 'block';
+                    console.log('Application details modal displayed successfully');
+                } else {
+                    console.error('Modal element not found');
+                }
+            } else {
+                throw new Error(data.message || 'Failed to load application details');
+            }
+            
+            // Hide loading
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching application details:', error);
+            Swal.fire('Error', 'Failed to load application details.', 'error');
+            
+            // Hide loading
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
+        });
+}
+
 // Enhanced document handling functions
 function setupDocumentButtons(data) {
     console.log('Setting up document buttons with data:', data);
@@ -529,6 +600,7 @@ function setupDocumentButtons(data) {
 
     console.log('Document setup completed');
 }
+
 // Function to format date
 function formatDate(dateString) {
     if (!dateString || dateString === '-') return '-';
@@ -549,7 +621,7 @@ function formatDate(dateString) {
 function populateIntakeSheetModal(data, type = 'intake') {
     console.log('=== START POPULATE MODAL DEBUG ===');
     console.log('Full data received:', data);
-        console.log('Setting up document buttons...');
+    console.log('Setting up document buttons...');
     setupDocumentButtons(data);
     
     // Populate head of family section
@@ -582,7 +654,8 @@ function populateIntakeSheetModal(data, type = 'intake') {
     console.log('Family Members Data:', data.family_members);
     console.log('Family Members Type:', typeof data.family_members);
     console.log('Family Members Count:', data.family_members ? data.family_members.length : 0);
-       console.log('=== END POPULATE MODAL DEBUG ===');
+    console.log('=== END POPULATE MODAL DEBUG ===');
+    
     if (data.family_members && data.family_members.length > 0) {
         console.log('First Family Member Full Object:', data.family_members[0]);
         console.log('First Family Member Keys:', Object.keys(data.family_members[0]));
@@ -692,38 +765,129 @@ function populateIntakeSheetModal(data, type = 'intake') {
     // Setup document buttons
     setupDocumentButtons(data);
 
-    // Populate signatures and photos
+    // Populate signatures and photos (removed signature fields)
     document.getElementById('modal-worker-fullname').textContent = data.worker_name || '-';
     document.getElementById('modal-officer-fullname').textContent = data.officer_name || '-';
     document.getElementById('modal-date-entry').textContent = formatDate(data.date_entry);
 
-    // Handle signatures with better error handling
-    const workerSignatureDiv = document.getElementById('modal-worker-signature');
-    const officerSignatureDiv = document.getElementById('modal-officer-signature');
-    const clientSignatureDiv = document.getElementById('modal-client-signature-large');
+    // Note: Signature display code has been removed as requested
+}
 
-    // Worker signature
-    if (data.signature_worker_data) {
-        workerSignatureDiv.innerHTML = `<img src="${data.signature_worker_data}" alt="Worker Signature" style="max-width:180px;height:60px;object-fit:contain; border: 1px solid #ccc;">`;
+// Add this function to populate the modal for approved/rejected applications
+function populateApplicationDetailsModal(data, name, status) {
+    console.log('Populating application details modal:', { data, name, status });
+    
+    // Set up document buttons
+    setupDocumentButtons(data);
+    
+    // Populate head of family section
+    document.getElementById('modal-applicant-name').textContent = name || '-';
+    document.getElementById('modal-applicant-gender').textContent = data.applicant_gender || '-';
+    document.getElementById('modal-remarks').textContent = data.remarks || '-';
+    document.getElementById('modal-head-dob').textContent = data.head_dob || '-';
+    document.getElementById('modal-head-pob').textContent = data.head_pob || '-';
+    document.getElementById('modal-head-address').textContent = data.head_address || '-';
+    document.getElementById('modal-head-zone').textContent = data.head_zone || '-';
+    document.getElementById('modal-head-barangay').textContent = data.head_barangay || '-';
+    document.getElementById('modal-head-religion').textContent = data.head_religion || '-';
+    document.getElementById('modal-serial-number').textContent = data.serial_number || '-';
+    document.getElementById('modal-head-4ps').textContent = data.head_4ps || '-';
+    document.getElementById('modal-head-ipno').textContent = data.head_ipno || '-';
+    document.getElementById('modal-head-educ').textContent = data.head_educ || '-';
+    document.getElementById('modal-head-occ').textContent = data.head_occ || '-';
+
+    // Populate household information
+    document.getElementById('modal-house-total-income').textContent = data.house_total_income || '-';
+    document.getElementById('modal-house-net-income').textContent = data.house_net_income || '-';
+    document.getElementById('modal-other-income').textContent = data.other_income || '-';
+    document.getElementById('modal-house-house').textContent = data.house_house || '-';
+    document.getElementById('modal-house-lot').textContent = data.house_lot || '-';
+    document.getElementById('modal-house-electric').textContent = data.house_electric || '-';
+    document.getElementById('modal-house-water').textContent = data.house_water || '-';
+
+    // Populate family members
+    const familyMembersTbody = document.getElementById('modal-family-members');
+    familyMembersTbody.innerHTML = '';
+    
+    if (data.family_members && data.family_members.length > 0) {
+        data.family_members.forEach((member, index) => {
+            const name = member.NAME || member.name || 'NO NAME';
+            const relation = member.RELATION || member.relationship || member.relation || 'NO RELATION';
+            const birthdate = member.BIRTHDATE || member.birthdate || 'NO BIRTHDATE';
+            const age = member.AGE || member.age || 'NO AGE';
+            const sex = member.SEX || member.sex || member.gender || 'NO SEX';
+            const civilStatus = member['CIVIL STATUS'] || member.civil_status || 'NO CIVIL STATUS';
+            const education = member['EDUCATIONAL ATTAINMENT'] || member.education || 'NO EDUCATION';
+            const occupation = member.OCCUPATION || member.occupation || 'NO OCCUPATION';
+            const income = member.INCOME || member.monthly_income || member.income || 'NO INCOME';
+            const remarks = member.REMARKS || member.remarks || 'NO REMARKS';
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${name}</td>
+                <td>${relation}</td>
+                <td>${birthdate}</td>
+                <td>${age}</td>
+                <td>${sex}</td>
+                <td>${civilStatus}</td>
+                <td>${education}</td>
+                <td>${occupation}</td>
+                <td>${income}</td>
+                <td>${remarks}</td>
+            `;
+            familyMembersTbody.appendChild(row);
+        });
     } else {
-        workerSignatureDiv.innerHTML = '<p class="text-xs text-gray-500">No signature available</p>';
+        familyMembersTbody.innerHTML = '<tr><td colspan="10" class="text-center py-4">No family members found</td></tr>';
     }
 
-    // Officer signature  
-    if (data.signature_officer_data) {
-        officerSignatureDiv.innerHTML = `<img src="${data.signature_officer_data}" alt="Officer Signature" style="max-width:180px;height:60px;object-fit:contain; border: 1px solid #ccc;">`;
+    // Populate service records
+    const serviceRecordsTbody = document.getElementById('modal-service-records');
+    serviceRecordsTbody.innerHTML = '';
+    
+    if (data.social_service_records && data.social_service_records.length > 0) {
+        data.social_service_records.forEach((record, index) => {
+            const date = record.DATE || record.date || '-';
+            const problem = record['PROBLEM/NEED'] || record.problem || record.problem_need || '-';
+            const action = record['ACTION/ASSISTANCE GIVEN'] || record.action || record.action_assistance || '-';
+            const remarks = record.REMARKS || record.remarks || '-';
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${date}</td>
+                <td>${problem}</td>
+                <td>${action}</td>
+                <td>${remarks}</td>
+            `;
+            serviceRecordsTbody.appendChild(row);
+        });
     } else {
-        officerSignatureDiv.innerHTML = '<p class="text-xs text-gray-500">No signature available</p>';
+        serviceRecordsTbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">No service records found</td></tr>';
     }
 
-    // Client signature
-    if (data.signature_client_data) {
-        clientSignatureDiv.innerHTML = `<img src="${data.signature_client_data}" alt="Client Signature" style="max-width:300px;height:80px;object-fit:contain; border: 1px solid #ccc;">`;
+    // Update action buttons based on status
+    const approveBtn = document.getElementById('approveBtn');
+    const rejectBtn = document.getElementById('rejectBtn');
+    
+    if (status === 'Approved') {
+        approveBtn.style.display = 'none';
+        rejectBtn.style.display = 'inline-block';
+        rejectBtn.innerHTML = '<i class="fas fa-times mr-2"></i> Change to Rejected';
+    } else if (status === 'Rejected') {
+        approveBtn.style.display = 'inline-block';
+        approveBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Change to Approved';
+        rejectBtn.style.display = 'none';
     } else {
-        clientSignatureDiv.innerHTML = '<p class="text-xs text-gray-500">No signature available</p>';
+        approveBtn.style.display = 'inline-block';
+        rejectBtn.style.display = 'inline-block';
+        approveBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Approve';
+        rejectBtn.innerHTML = '<i class="fas fa-times mr-2"></i> Reject';
     }
 
-    console.log('=== END POPULATE MODAL DEBUG ===');
+    // Populate signatures and other data
+    document.getElementById('modal-worker-fullname').textContent = data.worker_name || '-';
+    document.getElementById('modal-officer-fullname').textContent = data.officer_name || '-';
+    document.getElementById('modal-date-entry').textContent = formatDate(data.date_entry);
 }
 
 // Application approval/rejection functions
@@ -939,7 +1103,7 @@ function updateTableView(applicants) {
                             class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow view-intake-btn"
                             data-id="${app.application_personnel_id}"
                             data-name="${app.fname} ${app.mname} ${app.lname} ${app.suffix}">
-                            <i class="fas fa-eye mr-1"></i> View
+                            <i class="fas fa-eye mr-1"></i> Review Application
                         </button>
                     </div>
                 </td>
@@ -957,12 +1121,13 @@ function updateTableView(applicants) {
     updatePagination('table');
 }
 
+// Update the updateListView function to include the new button
 function updateListView(applications) {
     const tbody = document.querySelector('#listView tbody');
     if (!tbody) return;
 
     if (applications.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 border border-gray-200 text-gray-500">0 results</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 border border-gray-200 text-gray-500">0 results</td></tr>';
         return;
     }
 
@@ -986,18 +1151,31 @@ function updateListView(applications) {
                         ${app.status}
                     </span>
                 </td>
+                <td class="px-4 py-2 border border-gray-200 text-center">
+                    <div class="flex gap-2 justify-center">
+                        <button
+                            title="View Application Details"
+                            class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow view-details-btn"
+                            data-id="${app.application_personnel_id}"
+                            data-name="${app.fname} ${app.mname} ${app.lname} ${app.suffix}"
+                            data-status="${app.status}">
+                            <i class="fas fa-eye mr-1"></i> View Details
+                        </button>
+                    </div>
+                </td>
             </tr>
         `;
     });
 
     tbody.innerHTML = html;
     
+    // Re-attach event listeners to new buttons
+    initializeModalEvents();
+    
     // Update pagination
     initializeData();
     updatePagination('list');
 }
-
-
 
 // Logout confirmation function
 function confirmLogout() {

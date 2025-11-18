@@ -54,9 +54,7 @@ class FamilyIntakeSheet extends Model
         'worker_name',
         'officer_name',
         'date_entry',
-        'signature_client',
-        'signature_worker',
-        'signature_officer',
+
     ];
 
     /**
