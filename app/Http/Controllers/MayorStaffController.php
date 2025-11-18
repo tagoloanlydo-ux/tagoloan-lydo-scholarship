@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use App\Models\Application;
 use App\Models\Scholar;
 use App\Models\Announce;
+use App\Models\Lydopers;
 use App\Models\FamilyIntakeSheet;
 use App\Http\Controllers\SmsController;
 
@@ -979,55 +980,55 @@ public function deleteApplication($id)
         }
     }
 
-    public function updatePersonalInfo(Request $request, $id)
-    {
-        $request->validate([
-            'lydopers_fname' => 'required|string|max:255',
-            'lydopers_lname' => 'required|string|max:255',
-            'lydopers_email' => 'required|email|unique:tbl_lydopers,lydopers_email,' . $id,
-            'lydopers_address' => 'required|string|max:500',
-            'lydopers_contact_number' => 'required|string|max:20',
+public function updatePersonalInfo(Request $request, $id)
+{
+    $request->validate([
+        'lydopers_fname' => 'required|string|max:255',
+        'lydopers_lname' => 'required|string|max:255',
+        'lydopers_email' => 'required|email|unique:tbl_lydopers,lydopers_email,' . $id . ',lydopers_id', // FIXED LINE
+        'lydopers_address' => 'required|string|max:500',
+        'lydopers_contact_number' => 'required|string|max:20',
+    ]);
+
+    DB::table('tbl_lydopers')
+        ->where('lydopers_id', $id)
+        ->update([
+            'lydopers_fname' => $request->lydopers_fname,
+            'lydopers_lname' => $request->lydopers_lname,
+            'lydopers_email' => $request->lydopers_email,
+            'lydopers_address' => $request->lydopers_address,
+            'lydopers_contact_number' => $request->lydopers_contact_number,
+            'updated_at' => now(),
         ]);
 
-        DB::table('tbl_lydopers')
-            ->where('lydopers_id', $id)
-            ->update([
-                'lydopers_fname' => $request->lydopers_fname,
-                'lydopers_lname' => $request->lydopers_lname,
-                'lydopers_email' => $request->lydopers_email,
-                'lydopers_address' => $request->lydopers_address,
-                'lydopers_contact_number' => $request->lydopers_contact_number,
-                'updated_at' => now(),
-            ]);
+    // Update session
+    $updatedUser = DB::table('tbl_lydopers')->where('lydopers_id', $id)->first();
+    session(['lydopers' => $updatedUser]);
 
-        // Update session
-        $updatedUser = DB::table('tbl_lydopers')->find($id);
-        session(['lydopers' => $updatedUser]);
+    return redirect()->back()->with('success', 'Personal information updated successfully.');
+}
 
-        return redirect()->back()->with('success', 'Personal information updated successfully.');
+public function updatePassword(Request $request)
+{
+    $request->validate([
+        'current_password' => 'required',
+        'new_password' => 'required|min:8|confirmed',
+    ]);
+
+    $user = session('lydopers');
+    if (!Hash::check($request->current_password, $user->lydopers_password)) {
+        return redirect()->back()->with('error', 'Current password is incorrect.');
     }
 
-    public function updatePassword(Request $request)
-    {
-        $request->validate([
-            'current_password' => 'required',
-            'new_password' => 'required|min:8|confirmed',
+    DB::table('tbl_lydopers')
+        ->where('lydopers_id', $user->lydopers_id) // Make sure this uses lydopers_id
+        ->update([
+            'lydopers_password' => Hash::make($request->new_password),
+            'updated_at' => now(),
         ]);
 
-        $user = session('lydopers');
-        if (!Hash::check($request->current_password, $user->lydopers_password)) {
-            return redirect()->back()->with('error', 'Current password is incorrect.');
-        }
-
-        DB::table('tbl_lydopers')
-            ->where('lydopers_id', $user->lydopers_id)
-            ->update([
-                'lydopers_password' => Hash::make($request->new_password),
-                'updated_at' => now(),
-            ]);
-
-        return redirect()->back()->with('success', 'Password updated successfully.');
-    }
+    return redirect()->back()->with('success', 'Password updated successfully.');
+}
 
     public function markNotificationsViewed(Request $request)
     {

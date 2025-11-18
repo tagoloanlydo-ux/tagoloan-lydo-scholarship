@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,10 +12,40 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
+    <style>
+        .status-badge {
+            @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+        }
+        .status-approved {
+            @apply bg-green-100 text-green-800;
+        }
+        .status-rejected {
+            @apply bg-red-100 text-red-800;
+        }
+        .status-pending {
+            @apply bg-yellow-100 text-yellow-800;
+        }
+        .document-card {
+            @apply border rounded-lg p-4 hover:shadow-md transition-shadow duration-200;
+        }
+        .document-status {
+            @apply text-xs px-2 py-1 rounded font-medium;
+        }
+        .status-good {
+            @apply bg-green-100 text-green-800;
+        }
+        .status-bad {
+            @apply bg-red-100 text-red-800;
+        }
+        .status-pending-review {
+            @apply bg-gray-100 text-gray-800;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50">
     <div class="dashboard-grid">
+        <!-- Header -->
         <header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
             <div class="flex items-center">
                 <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg">
@@ -27,7 +58,9 @@
             </div>
         </header>
 
+        <!-- Main Layout -->
         <div class="flex flex-1 overflow-hidden">
+            <!-- Sidebar -->
             <div class="w-16 md:w-64 bg-white shadow-md flex flex-col transition-all duration-300">
                 <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
                     <ul class="side-menu top space-y-4">
@@ -68,6 +101,7 @@
                 </div>
             </div>
 
+            <!-- Main Content -->
             <div class="flex-1 overflow-y-auto p-4 md:p-6">
                 <!-- Page Header -->
                 <div class="max-w-6xl mx-auto">
@@ -104,17 +138,17 @@
                                                 <td class="py-4 px-4 text-sm text-gray-800">{{ $renewal->date_submitted->format('M d, Y') }}</td>
                                                 <td class="py-4 px-4">
                                                     @if($renewal->renewal_status == 'Approved')
-                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                                        <span class="status-badge status-approved">
                                                             <i class="fa-solid fa-check-circle mr-1"></i>
                                                             Approved
                                                         </span>
                                                     @elseif($renewal->renewal_status == 'Rejected')
-                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                                        <span class="status-badge status-rejected">
                                                             <i class="fa-solid fa-times-circle mr-1"></i>
                                                             Rejected
                                                         </span>
                                                     @else
-                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                                        <span class="status-badge status-pending">
                                                             <i class="fa-solid fa-clock mr-1"></i>
                                                             Pending
                                                         </span>
@@ -122,8 +156,8 @@
                                                 </td>
                                                 <td class="py-4 px-4">
                                                     <button onclick="viewRenewalDetails({{ $renewal->renewal_id }})" 
-                                                            class="text-violet-600 hover:text-violet-800 transition duration-200">
-                                                        <i class="fa-solid fa-eye mr-1"></i>
+                                                            class="text-violet-600 hover:text-violet-800 transition duration-200 flex items-center">
+                                                        <i class="fa-solid fa-eye mr-2"></i>
                                                         View Details
                                                     </button>
                                                 </td>
@@ -180,6 +214,47 @@
         </div>
     </div>
 
+    <!-- Document Viewer Modal -->
+    <div id="documentViewerModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-[60]">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                <div class="bg-gradient-to-r from-violet-600 to-purple-600 p-6 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-white flex items-center">
+                        <i class="fa-solid fa-file-pdf mr-3"></i>
+                        <span id="documentTitle">Document Viewer</span>
+                    </h3>
+                    <button onclick="closeDocumentViewer()" class="text-white hover:text-violet-200 transition duration-200 text-2xl">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-6 flex flex-col h-[70vh]">
+                    <div class="flex justify-between items-center mb-4">
+                        <div id="documentStatus" class="text-sm font-medium"></div>
+                        <div class="flex space-x-3">
+                            <button id="downloadDocumentBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center">
+                                <i class="fa-solid fa-download mr-2"></i>
+                                Download
+                            </button>
+                            <button onclick="closeDocumentViewer()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 border rounded-lg bg-gray-100 overflow-hidden">
+                        <iframe id="documentFrame" src="" class="w-full h-full" frameborder="0"></iframe>
+                    </div>
+                    
+                    <div class="mt-4 text-sm text-gray-600 text-center">
+                        <i class="fa-solid fa-info-circle mr-2"></i>
+                        You can view the document above or download it for offline reference
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // View renewal details
         function viewRenewalDetails(renewalId) {
@@ -197,32 +272,33 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        const renewal = data.renewal;
                         document.getElementById('renewalDetailsContent').innerHTML = `
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Academic Information</h4>
-                                    <div class="space-y-3">
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-4">Academic Information</h4>
+                                    <div class="space-y-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-600">Academic Year</label>
-                                            <p class="text-gray-800">${data.renewal.renewal_acad_year}</p>
+                                            <p class="text-gray-800 font-semibold">${renewal.renewal_acad_year}</p>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-600">Semester</label>
-                                            <p class="text-gray-800">${data.renewal.renewal_semester}</p>
+                                            <p class="text-gray-800 font-semibold">${renewal.renewal_semester}</p>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-600">Year Level</label>
-                                            <p class="text-gray-800">${data.renewal.applicant_year_level || 'N/A'}</p>
+                                            <p class="text-gray-800 font-semibold">${renewal.applicant_year_level || 'N/A'}</p>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <div>
-                                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Application Details</h4>
-                                    <div class="space-y-3">
+                                    <h4 class="text-lg font-semibold text-gray-800 mb-4">Application Details</h4>
+                                    <div class="space-y-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-600">Date Submitted</label>
-                                            <p class="text-gray-800">${new Date(data.renewal.date_submitted).toLocaleDateString('en-US', { 
+                                            <p class="text-gray-800 font-semibold">${new Date(renewal.date_submitted).toLocaleDateString('en-US', { 
                                                 year: 'numeric', 
                                                 month: 'long', 
                                                 day: 'numeric' 
@@ -230,23 +306,23 @@
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-600">Status</label>
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                                                data.renewal.renewal_status === 'Approved' ? 'bg-green-100 text-green-800' :
-                                                data.renewal.renewal_status === 'Rejected' ? 'bg-red-100 text-red-800' :
-                                                'bg-yellow-100 text-yellow-800'
+                                            <span class="status-badge ${
+                                                renewal.renewal_status === 'Approved' ? 'status-approved' :
+                                                renewal.renewal_status === 'Rejected' ? 'status-rejected' :
+                                                'status-pending'
                                             }">
                                                 <i class="fa-solid ${
-                                                    data.renewal.renewal_status === 'Approved' ? 'fa-check-circle' :
-                                                    data.renewal.renewal_status === 'Rejected' ? 'fa-times-circle' :
+                                                    renewal.renewal_status === 'Approved' ? 'fa-check-circle' :
+                                                    renewal.renewal_status === 'Rejected' ? 'fa-times-circle' :
                                                     'fa-clock'
-                                                } mr-1"></i>
-                                                ${data.renewal.renewal_status}
+                                                } mr-2"></i>
+                                                ${renewal.renewal_status}
                                             </span>
                                         </div>
-                                        ${data.renewal.remarks ? `
+                                        ${renewal.remarks ? `
                                         <div>
                                             <label class="block text-sm font-medium text-gray-600">Remarks</label>
-                                            <p class="text-gray-800">${data.renewal.remarks}</p>
+                                            <p class="text-gray-800 bg-gray-50 p-3 rounded-lg border">${renewal.remarks}</p>
                                         </div>
                                         ` : ''}
                                     </div>
@@ -256,62 +332,9 @@
                             <div class="border-t pt-6">
                                 <h4 class="text-lg font-semibold text-gray-800 mb-4">Submitted Documents</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div class="border rounded-lg p-4">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <span class="font-medium text-gray-700">Certificate of Registration</span>
-                                            <span class="text-xs px-2 py-1 rounded ${
-                                                data.renewal.cert_of_reg_status === 'good' ? 'bg-green-100 text-green-800' :
-                                                data.renewal.cert_of_reg_status === 'bad' ? 'bg-red-100 text-red-800' :
-                                                'bg-gray-100 text-gray-800'
-                                            }">
-                                                ${data.renewal.cert_of_reg_status || 'Not reviewed'}
-                                            </span>
-                                        </div>
-                                        ${data.renewal.renewal_cert_of_reg ? `
-                                        <a href="/storage/${data.renewal.renewal_cert_of_reg}" target="_blank" 
-                                           class="text-violet-600 hover:text-violet-800 text-sm flex items-center">
-                                            <i class="fa-solid fa-file-pdf mr-1"></i> View Document
-                                        </a>
-                                        ` : '<p class="text-gray-500 text-sm">No document</p>'}
-                                    </div>
-                                    
-                                    <div class="border rounded-lg p-4">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <span class="font-medium text-gray-700">Grade Slip</span>
-                                            <span class="text-xs px-2 py-1 rounded ${
-                                                data.renewal.grade_slip_status === 'good' ? 'bg-green-100 text-green-800' :
-                                                data.renewal.grade_slip_status === 'bad' ? 'bg-red-100 text-red-800' :
-                                                'bg-gray-100 text-gray-800'
-                                            }">
-                                                ${data.renewal.grade_slip_status || 'Not reviewed'}
-                                            </span>
-                                        </div>
-                                        ${data.renewal.renewal_grade_slip ? `
-                                        <a href="/storage/${data.renewal.renewal_grade_slip}" target="_blank" 
-                                           class="text-violet-600 hover:text-violet-800 text-sm flex items-center">
-                                            <i class="fa-solid fa-file-pdf mr-1"></i> View Document
-                                        </a>
-                                        ` : '<p class="text-gray-500 text-sm">No document</p>'}
-                                    </div>
-                                    
-                                    <div class="border rounded-lg p-4">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <span class="font-medium text-gray-700">Barangay Indigency</span>
-                                            <span class="text-xs px-2 py-1 rounded ${
-                                                data.renewal.brgy_indigency_status === 'good' ? 'bg-green-100 text-green-800' :
-                                                data.renewal.brgy_indigency_status === 'bad' ? 'bg-red-100 text-red-800' :
-                                                'bg-gray-100 text-gray-800'
-                                            }">
-                                                ${data.renewal.brgy_indigency_status || 'Not reviewed'}
-                                            </span>
-                                        </div>
-                                        ${data.renewal.renewal_brgy_indigency ? `
-                                        <a href="/storage/${data.renewal.renewal_brgy_indigency}" target="_blank" 
-                                           class="text-violet-600 hover:text-violet-800 text-sm flex items-center">
-                                            <i class="fa-solid fa-file-pdf mr-1"></i> View Document
-                                        </a>
-                                        ` : '<p class="text-gray-500 text-sm">No document</p>'}
-                                    </div>
+                                    ${createDocumentCard('Certificate of Registration', renewal.renewal_cert_of_reg, renewal.cert_of_reg_status, 'renewal_cert_of_reg')}
+                                    ${createDocumentCard('Grade Slip', renewal.renewal_grade_slip, renewal.grade_slip_status, 'renewal_grade_slip')}
+                                    ${createDocumentCard('Barangay Indigency', renewal.renewal_brgy_indigency, renewal.brgy_indigency_status, 'renewal_brgy_indigency')}
                                 </div>
                             </div>
                         `;
@@ -330,11 +353,89 @@
                     document.getElementById('renewalDetailsContent').innerHTML = `
                         <div class="text-center py-8">
                             <i class="fa-solid fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
-                            <h4 class="text-xl font-semibold text-gray-700 mb-2">Error Loading Details</h4>
-                            <p class="text-gray-600">Unable to load renewal details. Please try again.</p>
+                            <h4 class="text-xl font-semibold text-gray-700 mb-2">Connection Error</h4>
+                            <p class="text-gray-600">Unable to load renewal details. Please check your connection and try again.</p>
                         </div>
                     `;
                 });
+        }
+
+        // Create document card HTML
+        function createDocumentCard(title, filePath, status, documentType) {
+            if (!filePath) {
+                return `
+                    <div class="document-card bg-red-50 border-red-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="font-semibold text-gray-700">${title}</span>
+                            <span class="document-status status-bad">Missing</span>
+                        </div>
+                        <div class="text-center py-4">
+                            <i class="fa-solid fa-file-circle-xmark text-3xl text-red-400 mb-2"></i>
+                            <p class="text-red-600 text-sm">Document not submitted</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const statusClass = status === 'good' ? 'status-good' : 
+                              status === 'bad' ? 'status-bad' : 'status-pending-review';
+            const statusText = status === 'good' ? 'Approved' : 
+                             status === 'bad' ? 'Needs Update' : 'Under Review';
+
+            return `
+                <div class="document-card hover:shadow-lg cursor-pointer transition-all duration-300"
+                     onclick="viewDocument('${title}', '${filePath}', '${statusText}', '${documentType}')">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="font-semibold text-gray-700">${title}</span>
+                        <span class="document-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="text-center py-4">
+                        <i class="fa-solid fa-file-pdf text-4xl text-red-500 mb-3"></i>
+                        <p class="text-gray-600 text-sm mb-2">Click to view document</p>
+                        <button class="text-violet-600 hover:text-violet-800 text-sm font-medium flex items-center justify-center w-full">
+                            <i class="fa-solid fa-eye mr-2"></i>
+                            Preview Document
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // View document in modal
+        function viewDocument(title, filePath, status, documentType) {
+            const fullPath = `/storage/${filePath}`;
+            
+            document.getElementById('documentTitle').textContent = title;
+            document.getElementById('documentStatus').innerHTML = `
+                Status: <span class="${status === 'Approved' ? 'text-green-600' : status === 'Needs Update' ? 'text-red-600' : 'text-yellow-600'}">${status}</span>
+            `;
+            
+            // Set download button
+            document.getElementById('downloadDocumentBtn').onclick = function() {
+                downloadDocument(fullPath, `${documentType}.pdf`);
+            };
+            
+            // Set iframe source
+            document.getElementById('documentFrame').src = fullPath;
+            
+            // Show modal
+            document.getElementById('documentViewerModal').classList.remove('hidden');
+        }
+
+        // Download document
+        function downloadDocument(filePath, fileName) {
+            const link = document.createElement('a');
+            link.href = filePath;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Close document viewer
+        function closeDocumentViewer() {
+            document.getElementById('documentViewerModal').classList.add('hidden');
+            document.getElementById('documentFrame').src = '';
         }
 
         // Close details modal
@@ -342,19 +443,24 @@
             document.getElementById('renewalDetailsModal').classList.add('hidden');
         }
 
-        // Close modal on outside click and escape key
+        // Close modals on outside click and escape key
         document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('renewalDetailsModal');
+            const detailsModal = document.getElementById('renewalDetailsModal');
+            const documentModal = document.getElementById('documentViewerModal');
             
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    closeDetailsModal();
-                }
+            [detailsModal, documentModal].forEach(modal => {
+                modal?.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        if (modal === detailsModal) closeDetailsModal();
+                        if (modal === documentModal) closeDocumentViewer();
+                    }
+                });
             });
             
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-                    closeDetailsModal();
+                if (e.key === 'Escape') {
+                    if (!detailsModal.classList.contains('hidden')) closeDetailsModal();
+                    if (!documentModal.classList.contains('hidden')) closeDocumentViewer();
                 }
             });
         });
@@ -376,6 +482,17 @@
                 }
             });
         });
+
+        // Show success message if exists
+        @if(session('success'))
+            Swal.fire({
+                title: 'Success!',
+                text: '{{ session('success') }}',
+                icon: 'success',
+                confirmButtonColor: '#7c3aed',
+                confirmButtonText: 'OK'
+            });
+        @endif
     </script>
 </body>
 </html>

@@ -46,6 +46,12 @@
                             </a>
                         </li>
                         <li>
+                            <a href="{{ route('scholar.renewal_history') }}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                                <i class="bx bx-history text-center mx-auto md:mx-0 text-xl"></i>
+                                <span class="ml-4 hidden md:block text-lg">Renewal History</span>
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('scholar.settings') }}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
                                 <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl"></i>
                                 <span class="ml-4 hidden md:block text-lg">Settings</span>
@@ -196,14 +202,6 @@
                             <li class="flex items-center">
                                 <i class="fa-solid fa-check-circle text-green-500 mr-3"></i>
                                 Barangay Indigency
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fa-solid fa-check-circle text-green-500 mr-3"></i>
-                                Current Semester and Academic Year
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fa-solid fa-check-circle text-green-500 mr-3"></i>
-                                Updated Year Level
                             </li>
                         </ul>
                     </div>

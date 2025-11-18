@@ -14,6 +14,18 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
   <style>
+  /* Toggle Password Button Styles */
+.toggle-password {
+    transition: color 0.3s ease;
+}
+
+.toggle-password:hover {
+    color: #7c3aed;
+}
+
+.toggle-password.active {
+    color: #7c3aed;
+}
  .loading-overlay {
     position: fixed;
     top: 0;
@@ -203,7 +215,7 @@
                     </form>
                 </div>
             </div>
-            <div class="flex-1 overflow-hidden p-4 md:p-2 text-[14px]">
+            <div class="flex-1 overflow-y-auto p-4 md:p-2 text-[14px]">
 
         <section class="flex-grow">
             <div class="flex flex-col md:flex-row md:space-x-1 max-full-5xl mx-full">
@@ -260,11 +272,17 @@
     @method('PUT')
     <h1 class="text-base font-semibold text-gray-800 mb-8">Update Personal Information</h1>
 
+    @if(session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6" role="alert">
+            <span class="block sm:inline">{{ session('success') }}</span>
+        </div>
+    @endif
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <!-- First Name -->
         <div>
             <label class="block text-base text-gray-600 mb-1">First Name</label>
-            <input type="text" name="lydopers_fname" value="{{ session('lydopers')->lydopers_fname }}" 
+            <input type="text" name="lydopers_fname" value="{{ session('lydopers')->lydopers_fname }}"
                    class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
                    oninput="validateName(this, 'fnameError')"/>
             <div id="fnameError" class="text-red-500 text-sm mt-1 hidden"></div>
@@ -273,14 +291,36 @@
             @enderror
         </div>
 
+        <!-- Middle Name -->
+        <div>
+            <label class="block text-base text-gray-600 mb-1">Middle Name</label>
+            <input type="text" name="lydopers_mname" value="{{ session('lydopers')->lydopers_mname }}"
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validateName(this, 'mnameError')"/>
+            <div id="mnameError" class="text-red-500 text-sm mt-1 hidden"></div>
+            @error('lydopers_mname')
+                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+            @enderror
+        </div>
+
         <!-- Last Name -->
         <div>
             <label class="block text-base text-gray-600 mb-1">Last Name</label>
-            <input type="text" name="lydopers_lname" value="{{ session('lydopers')->lydopers_lname }}" 
+            <input type="text" name="lydopers_lname" value="{{ session('lydopers')->lydopers_lname }}"
                    class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
                    oninput="validateName(this, 'lnameError')"/>
             <div id="lnameError" class="text-red-500 text-sm mt-1 hidden"></div>
             @error('lydopers_lname')
+                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <!-- Suffix -->
+        <div>
+            <label class="block text-base text-gray-600 mb-1">Suffix</label>
+            <input type="text" name="lydopers_suffix" value="{{ session('lydopers')->lydopers_suffix }}"
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+            @error('lydopers_suffix')
                 <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
             @enderror
         </div>
@@ -307,17 +347,16 @@
             @enderror
         </div>
 
-        <!-- Phone Number -->
-        <div>
-            <label class="block text-base text-gray-600 mb-1">Phone Number</label>
-            <input type="tel" name="lydopers_contact_number" value="{{ session('lydopers')->lydopers_contact_number }}" 
-                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
-                   oninput="validatePhone(this)"/>
-            <div id="phoneError" class="text-red-500 text-sm mt-1 hidden"></div>
-            @error('lydopers_contact_number')
-                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-            @enderror
-        </div>
+<div>
+    <label class="block text-base text-gray-600 mb-1">Phone Number</label>
+    <input type="tel" name="lydopers_contact_number" value="{{ session('lydopers')->lydopers_contact_number }}" 
+           class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+           oninput="validatePhone(this)"/>
+    <div id="phoneError" class="text-red-500 text-sm mt-1 hidden"></div>
+    @error('lydopers_contact_number')
+        <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+    @enderror
+</div>
 
         <!-- Date of Birth -->
         <div>
@@ -399,8 +438,8 @@ function validatePhone(input) {
     const value = input.value.trim();
     const errorElement = document.getElementById('phoneError');
     
-    // More flexible Philippine mobile number regex
-    const phoneRegex = /^(9|\+?639)\d{9}$/;
+    // Allow only numbers
+    const phoneRegex = /^[0-9]+$/;
     
     if (value === '') {
         errorElement.classList.add('hidden');
@@ -409,11 +448,14 @@ function validatePhone(input) {
         return true;
     }
     
-    // Remove any spaces, dashes, or other characters for validation
-    const cleanValue = value.replace(/[\s\-\(\)]/g, '');
-    
-    if (!phoneRegex.test(cleanValue)) {
-        errorElement.textContent = 'Please enter a valid Philippine mobile number (09XXXXXXXXX or +639XXXXXXXXX)';
+    if (!phoneRegex.test(value)) {
+        errorElement.textContent = 'Please enter numbers only';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else if (value.length < 10 || value.length > 11) {
+        errorElement.textContent = 'Phone number should be 10-11 digits';
         errorElement.classList.remove('hidden');
         input.classList.remove('border-gray-300');
         input.classList.add('border-red-500');
@@ -491,34 +533,84 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-    <form id="passwordForm" method="POST" action="{{ route('lydo_staff.updatePassword') }}"
+<form id="passwordForm" method="POST" action="{{ route('lydo_staff.updatePassword') }}"
       class="hidden flex-grow bg-white rounded-2xl px-10 py-8 shadow-lg border border-gray-100">
-  @csrf
+    @csrf
     <h1 class="text-base font-semibold text-gray-800 mb-8">Change Password</h1>
     <p class="text-sm text-gray-500 mb-4">Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.</p>
 
-      <div class="mb-6">
-        <label class="block text-base text-gray-600 mb-1">Current Password</label>
-        <input type="password" name="current_password" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-      </div>
-      <div class="mb-6">
-        <label class="block text-base text-gray-600 mb-1">New Password</label>
-        <input type="password" name="new_password" id="new_password" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-      </div>
-      <div class="mb-6">
-        <label class="block text-base text-gray-600 mb-1">Confirm New Password</label>
-        <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
-      </div>
+    @if(session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6" role="alert">
+            <span class="block sm:inline">{{ session('success') }}</span>
+        </div>
+    @endif
 
-      <!-- Buttons -->
-      <div class="flex justify-end gap-4">
-        <button type="reset" class="px-6 py-3 border border-violet-500 rounded-xl font-semibold text-violet-600 hover:bg-violet-50 transition">
-          Cancel
+    @if($errors->any())
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6" role="alert">
+            <ul class="list-disc list-inside">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <!-- Current Password -->
+    <div class="mb-6">
+        <label class="block text-base text-gray-600 mb-1">Current Password</label>
+        <div class="relative">
+            <input type="password" name="current_password" id="current_password" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 pr-10 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center toggle-password" data-target="current_password">
+                <i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+            </button>
+        </div>
+        @error('current_password')
+            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+        @enderror
+    </div>
+    
+    <!-- New Password -->
+    <div class="mb-6">
+        <label class="block text-base text-gray-600 mb-1">New Password</label>
+        <div class="relative">
+            <input type="password" name="new_password" id="new_password" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 pr-10 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validatePassword(this)"/>
+            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center toggle-password" data-target="new_password">
+                <i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+            </button>
+        </div>
+        <div id="passwordError" class="text-red-500 text-sm mt-1 hidden"></div>
+        @error('new_password')
+            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+        @enderror
+    </div>
+    
+    <!-- Confirm New Password -->
+    <div class="mb-6">
+        <label class="block text-base text-gray-600 mb-1">Confirm New Password</label>
+        <div class="relative">
+            <input type="password" name="new_password_confirmation" id="new_password_confirmation" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 pr-10 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validatePasswordConfirmation(this)"/>
+            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center toggle-password" data-target="new_password_confirmation">
+                <i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+            </button>
+        </div>
+        <div id="confirmPasswordError" class="text-red-500 text-sm mt-1 hidden"></div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex justify-end gap-4">
+        <button type="reset" class="px-6 py-3 border border-violet-500 rounded-xl font-semibold text-violet-600 hover:bg-violet-50 transition" onclick="resetPasswordValidation()">
+            Cancel
         </button>
-        <button type="submit" class="px-6 py-3 bg-violet-500 rounded-xl font-semibold text-white hover:bg-violet-600 transition">
-          Update Password
+        <button type="submit" class="px-6 py-3 bg-violet-500 rounded-xl font-semibold text-white hover:bg-violet-600 transition update-password-btn">
+            Update Password
         </button>
-  </div>
+    </div>
+</form>
   <script>
     document.getElementById('passwordForm').addEventListener('submit', function(event) {
       const newPassword = document.getElementById('new_password').value;
@@ -533,8 +625,132 @@ document.addEventListener('DOMContentLoaded', function() {
         event.preventDefault();
       }
     });
+    // Password validation functions
+function validatePassword(input) {
+    const value = input.value;
+    const errorElement = document.getElementById('passwordError');
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    
+    if (value === '') {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+    
+    if (!passwordRegex.test(value)) {
+        errorElement.textContent = 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+}
+
+function validatePasswordConfirmation(input) {
+    const value = input.value;
+    const passwordValue = document.getElementById('new_password').value;
+    const errorElement = document.getElementById('confirmPasswordError');
+    
+    if (value === '') {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+    
+    if (value !== passwordValue) {
+        errorElement.textContent = 'Passwords do not match';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+}
+
+function resetPasswordValidation() {
+    // Hide all password error messages
+    const errorElements = document.querySelectorAll('#passwordError, #confirmPasswordError');
+    errorElements.forEach(element => {
+        element.classList.add('hidden');
+    });
+    
+    // Remove red borders from password fields
+    const passwordInputs = document.querySelectorAll('#current_password, #new_password, #new_password_confirmation');
+    passwordInputs.forEach(input => {
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+    });
+}
+
+// Enhanced SweetAlert for Password Update with validation
+document.querySelector('.update-password-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    // Validate password fields before showing confirmation
+    const passwordValid = validatePassword(document.getElementById('new_password'));
+    const confirmValid = validatePasswordConfirmation(document.getElementById('new_password_confirmation'));
+    
+    // Check current password field
+    const currentPassword = document.getElementById('current_password').value;
+    let currentPasswordValid = true;
+    if (currentPassword === '') {
+        currentPasswordValid = false;
+        Swal.fire({
+            title: 'Validation Error',
+            text: 'Please enter your current password.',
+            icon: 'error',
+            confirmButtonColor: '#7c3aed'
+        });
+        return;
+    }
+    
+    // Check if all validations pass
+    if (!passwordValid || !confirmValid) {
+        Swal.fire({
+            title: 'Validation Error',
+            text: 'Please fix the errors in the form before submitting.',
+            icon: 'error',
+            confirmButtonColor: '#7c3aed'
+        });
+        return;
+    }
+    
+    // If validation passes, show confirmation
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You are about to update your password.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#7c3aed',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, update it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('passwordForm').submit();
+        }
+    });
+});
+
+// Real-time validation on page load for password form
+document.addEventListener('DOMContentLoaded', function() {
+    // Validate password fields if they have values
+    validatePassword(document.getElementById('new_password'));
+    validatePasswordConfirmation(document.getElementById('new_password_confirmation'));
+});
   </script>
-</form>
+
 
 
   </section>
@@ -560,6 +776,17 @@ btnPersonal.addEventListener("click", () => {
 
   resetButtons();
   btnPersonal.classList.add("bg-violet-100", "text-violet-600");
+});
+
+btnPassword.addEventListener("click", () => {
+  passwordForm.classList.remove("hidden");
+  personalForm.classList.add("hidden");
+
+  resetButtons();
+  btnPassword.classList.add("bg-violet-100", "text-violet-600");
+  
+  // Reset password fields when switching to password form
+  resetPasswordValidation();
 });
 
 btnPassword.addEventListener("click", () => {
@@ -610,6 +837,172 @@ document.getElementById("logoutForm").addEventListener("submit", function (e) {
             e.target.submit();
         }
     });
+});
+// Toggle Password Visibility
+function setupPasswordToggles() {
+    const toggleButtons = document.querySelectorAll('.toggle-password');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const passwordInput = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+                this.classList.add('active');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+                this.classList.remove('active');
+            }
+        });
+    });
+}
+
+// Password validation functions
+function validatePassword(input) {
+    const value = input.value;
+    const errorElement = document.getElementById('passwordError');
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    
+    if (value === '') {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+    
+    if (!passwordRegex.test(value)) {
+        errorElement.textContent = 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+}
+
+function validatePasswordConfirmation(input) {
+    const value = input.value;
+    const passwordValue = document.getElementById('new_password').value;
+    const errorElement = document.getElementById('confirmPasswordError');
+    
+    if (value === '') {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+    
+    if (value !== passwordValue) {
+        errorElement.textContent = 'Passwords do not match';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+}
+
+function resetPasswordValidation() {
+    // Hide all password error messages
+    const errorElements = document.querySelectorAll('#passwordError, #confirmPasswordError');
+    errorElements.forEach(element => {
+        element.classList.add('hidden');
+    });
+    
+    // Remove red borders from password fields
+    const passwordInputs = document.querySelectorAll('#current_password, #new_password, #new_password_confirmation');
+    passwordInputs.forEach(input => {
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+    });
+    
+    // Reset password fields to hidden and reset icons
+    const passwordFields = ['current_password', 'new_password', 'new_password_confirmation'];
+    passwordFields.forEach(fieldId => {
+        const input = document.getElementById(fieldId);
+        const toggleButton = document.querySelector(`[data-target="${fieldId}"]`);
+        const icon = toggleButton?.querySelector('i');
+        
+        if (input && toggleButton && icon) {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+            toggleButton.classList.remove('active');
+        }
+    });
+}
+
+// Enhanced SweetAlert for Password Update with validation
+document.querySelector('.update-password-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    // Validate password fields before showing confirmation
+    const passwordValid = validatePassword(document.getElementById('new_password'));
+    const confirmValid = validatePasswordConfirmation(document.getElementById('new_password_confirmation'));
+    
+    // Check current password field
+    const currentPassword = document.getElementById('current_password').value;
+    let currentPasswordValid = true;
+    if (currentPassword === '') {
+        currentPasswordValid = false;
+        Swal.fire({
+            title: 'Validation Error',
+            text: 'Please enter your current password.',
+            icon: 'error',
+            confirmButtonColor: '#7c3aed'
+        });
+        return;
+    }
+    
+    // Check if all validations pass
+    if (!passwordValid || !confirmValid) {
+        Swal.fire({
+            title: 'Validation Error',
+            text: 'Please fix the errors in the form before submitting.',
+            icon: 'error',
+            confirmButtonColor: '#7c3aed'
+        });
+        return;
+    }
+    
+    // If validation passes, show confirmation
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You are about to update your password.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#7c3aed',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, update it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('passwordForm').submit();
+        }
+    });
+});
+
+// Initialize password toggles when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    setupPasswordToggles();
+    
+    // Validate password fields if they have values
+    validatePassword(document.getElementById('new_password'));
+    validatePasswordConfirmation(document.getElementById('new_password_confirmation'));
 });
 </script>
 <script src="{{ asset('js/spinner.js') }}"></script>

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -98,7 +99,8 @@
                 <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
             </div>
             <div class="flex items-center space-x-4">
-                <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Lydo Admin</span>
+                <!-- FIXED: Dynamic name update -->
+                <span class="text-white font-semibold" id="headerUserName">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Lydo Admin</span>
         </header>
         <!-- Main Content -->
       <div class="flex flex-1 overflow-hidden">
@@ -265,7 +267,7 @@
 </script>
 </div>
             </div>
-            <div class="flex-1 overflow-hidden p-4 md:p-2 text-[14px]">
+            <div class="flex-1 overflow-auto p-4 md:p-2 text-[14px] bg-violet-50">
 
   <section class="flex-grow overflow-y-auto">
   <div class="flex flex-col md:flex-row md:space-x-1 max-full-5xl mx-full">
@@ -276,11 +278,11 @@
  <!-- Profile Picture Section -->
 <div class="relative inline-block mx-auto w-32 h-32 mb-4">
   <!-- Profile Picture -->
-  <img 
+  <img
     id="profileImage"
-    src="{{ asset('images/LYDO.png') }}" 
+    src="{{ asset('images/LYDO.png') }}"
     alt="Profile Picture"
-    class="rounded-full object-cover w-full h-full ring-4 ring-orange-100 hover:ring-orange-400 transition"
+    class="rounded-full object-cover w-full h-full ring-4 ring-violet-100 hover:ring-violet-400 transition"
   />
 
   <!-- Hidden file input -->
@@ -288,7 +290,7 @@
 
   <!-- Edit Icon -->
   <button aria-label="Edit Profile Picture" title="Edit Profile Picture"
-    class="absolute bottom-0 right-0 bg-orange-500 p-2 rounded-full border-2 border-white hover:bg-orange-600 transition text-white shadow-md"
+    class="absolute bottom-0 right-0 bg-violet-500 p-2 rounded-full border-2 border-white hover:bg-violet-600 transition text-white shadow-md"
     onclick="document.getElementById('fileInput').click();"
   >
     <i class="fas fa-pen text-sm"></i>
@@ -309,11 +311,15 @@
     const savedImage = localStorage.getItem(storageKey);
     if (savedImage) {
       profileImage.src = savedImage;
-      headerProfileImage.src = savedImage;
+      if (headerProfileImage) {
+        headerProfileImage.src = savedImage;
+      }
     } else {
       // default kung walang naka-save
-      profileImage.src = "{{ asset('images/default-profile.png') }}";
-      headerProfileImage.src = "{{ asset('images/default-profile.png') }}";
+      profileImage.src = "{{ asset('images/LYDO.png') }}";
+      if (headerProfileImage) {
+        headerProfileImage.src = "{{ asset('images/LYDO.png') }}";
+      }
     }
   });
 
@@ -325,7 +331,9 @@
         const reader = new FileReader();
         reader.onload = function(e) {
           profileImage.src = e.target.result;
-          headerProfileImage.src = e.target.result;
+          if (headerProfileImage) {
+            headerProfileImage.src = e.target.result;
+          }
           localStorage.setItem(storageKey, e.target.result); // save per user
         };
         reader.readAsDataURL(file);
@@ -335,7 +343,8 @@
 </script>
 
 
-      <h2 class="font-semibold text-base text-gray-800">
+      <!-- FIXED: Dynamic name update in profile card -->
+      <h2 class="font-semibold text-base text-gray-800" id="profileUserName">
         {{ session('lydopers')->lydopers_fname }} 
         {{ session('lydopers')->lydopers_mname ? session('lydopers')->lydopers_mname . ' ' : '' }}
         {{ session('lydopers')->lydopers_lname }}
@@ -347,93 +356,121 @@
 
 <nav class="flex flex-col gap-2 text-sm font-medium">
   <button id="btnPersonal" type="button"
-    class="flex items-center gap-2 py-2 px-4 rounded-xl bg-orange-100 text-orange-600 transition">
+    class="flex items-center gap-2 py-2 px-4 rounded-xl bg-violet-100 text-violet-600 transition">
     <i class="fas fa-user-circle"></i> Personal Information
   </button>
   <button id="btnDeadlines" type="button"
-    class="flex items-center gap-2 py-2 px-4 rounded-xl hover:bg-orange-50 transition">
+    class="flex items-center gap-2 py-2 px-4 rounded-xl hover:bg-violet-50 transition">
     <i class="fas fa-calendar-alt"></i> Set Deadlines
   </button>
   <button id="btnChangePassword" type="button"
-    class="flex items-center gap-2 py-2 px-4 rounded-xl hover:bg-orange-50 transition">
+    class="flex items-center gap-2 py-2 px-4 rounded-xl hover:bg-violet-50 transition">
     <i class="fas fa-lock"></i> Change Password
   </button>
 </nav>
 
 
     </aside>
-    <form id="personalForm" method="POST" action="{{ route('LydoAdmin.updatePersonalInfo', session('lydopers')->lydopers_id) }}" class="flex-grow bg-white rounded-2xl px-10 py-8 shadow-lg border border-gray-100">
-      @csrf
-      @method('PUT')
-      
-      @if ($errors->any())
+ <form id="personalForm" method="POST" action="{{ route('LydoAdmin.updatePersonalInfo', session('lydopers')->lydopers_id) }}" class="flex-grow bg-white rounded-2xl px-10 py-8 shadow-lg border border-gray-100">
+    @csrf
+    @method('PUT')
+    
+    @if ($errors->any())
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          <ul>
-            @foreach ($errors->all() as $error)
-              <li>{{ $error }}</li>
-            @endforeach
-          </ul>
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
-      @endif
-      
-      @if (session('success'))
+    @endif
+    
+    @if (session('success'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {{ session('success') }}
+            {{ session('success') }}
         </div>
-      @endif
-      
-      <h1 class="text-base font-semibold text-gray-800 mb-8">Update Personal Information</h1>
+    @endif
+    
+    <h1 class="text-base font-semibold text-gray-800 mb-8">Update Personal Information</h1>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- First Name -->
         <div>
-          <label class="block text-base text-gray-600 mb-1">First Name</label>
-          <input type="text" name="lydopers_fname" value="{{ session('lydopers')->lydopers_fname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+            <label class="block text-base text-gray-600 mb-1">First Name</label>
+            <input type="text" name="lydopers_fname" value="{{ session('lydopers')->lydopers_fname }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validateName(this, 'fnameError')"/>
+            <div id="fnameError" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
+
+        <!-- Middle Name -->
         <div>
-          <label class="block text-base text-gray-600 mb-1">Middle Name</label>
-          <input type="text" name="lydopers_mname" value="{{ session('lydopers')->lydopers_mname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+            <label class="block text-base text-gray-600 mb-1">Middle Name</label>
+            <input type="text" name="lydopers_mname" value="{{ session('lydopers')->lydopers_mname }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validateName(this, 'mnameError')"/>
+            <div id="mnameError" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
+
+        <!-- Last Name -->
         <div>
-          <label class="block text-base text-gray-600 mb-1">Last Name</label>
-          <input type="text" name="lydopers_lname" value="{{ session('lydopers')->lydopers_lname }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+            <label class="block text-base text-gray-600 mb-1">Last Name</label>
+            <input type="text" name="lydopers_lname" value="{{ session('lydopers')->lydopers_lname }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validateName(this, 'lnameError')"/>
+            <div id="lnameError" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
+
+        <!-- Suffix -->
         <div>
-          <label class="block text-base text-gray-600 mb-1">Suffix</label>
-          <input type="text" name="lydopers_suffix" value="{{ session('lydopers')->lydopers_suffix }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+            <label class="block text-base text-gray-600 mb-1">Suffix</label>
+            <input type="text" name="lydopers_suffix" value="{{ session('lydopers')->lydopers_suffix }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
         </div>
+
+        <!-- Email -->
         <div class="md:col-span-2">
-          <label class="block text-base text-gray-600 mb-1">Email</label>
-          <input type="email" name="lydopers_email" value="{{ session('lydopers')->lydopers_email }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+            <label class="block text-base text-gray-600 mb-1">Email</label>
+            <input type="email" id="emailInput" name="lydopers_email" value="{{ session('lydopers')->lydopers_email }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validateEmail(this)"/>
+            <div id="emailError" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
+
+        <!-- Address -->
         <div class="md:col-span-2">
-          <label class="block text-base text-gray-600 mb-1">Address</label>
-          <input type="text" name="lydopers_address" value="{{ session('lydopers')->lydopers_address }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+            <label class="block text-base text-gray-600 mb-1">Address</label>
+            <input type="text" name="lydopers_address" value="{{ session('lydopers')->lydopers_address }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
         </div>
+
+        <!-- Phone Number -->
         <div>
-          <label class="block text-base text-gray-600 mb-1">Phone Number</label>
-          <input type="text" name="lydopers_contact_number" value="{{ session('lydopers')->lydopers_contact_number }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+            <label class="block text-base text-gray-600 mb-1">Phone Number</label>
+            <input type="tel" name="lydopers_contact_number" value="{{ session('lydopers')->lydopers_contact_number }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validatePhone(this)"/>
+            <div id="phoneError" class="text-red-500 text-sm mt-1 hidden"></div>
         </div>
+
+        <!-- Date of Birth -->
         <div>
             <label class="block text-base text-gray-600 mb-1">Date of Birth</label>
-            <input
-                type="date"
-                name="lydopers_bdate"
-                value="{{ session('lydopers')->lydopers_bdate }}"
-                class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
-            />
+            <input type="date" name="lydopers_bdate" value="{{ session('lydopers')->lydopers_bdate }}" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
         </div>
-      </div>
+    </div>
 
-      <!-- Buttons -->
-      <div class="flex justify-end gap-4">
-        <button type="reset" class="px-6 py-3 border border-orange-500 rounded-xl font-semibold text-orange-600 hover:bg-orange-50 transition">
-          Discard
+    <!-- Buttons -->
+    <div class="flex justify-end gap-4">
+        <button type="reset" class="px-6 py-3 border border-violet-500 rounded-xl font-semibold text-violet-600 hover:bg-violet-50 transition" onclick="resetValidation()">
+            Discard
         </button>
-        <button type="submit" class="px-6 py-3 bg-orange-500 rounded-xl font-semibold text-white hover:bg-orange-600 transition">
-          Save
+        <button type="submit" class="px-6 py-3 bg-violet-500 rounded-xl font-semibold text-white hover:bg-violet-600 transition update-personal-btn">
+            Save
         </button>
-      </div>
-    </form>
+    </div>
+</form>
 
     <form id="deadlinesForm" method="POST" action="{{ route('LydoAdmin.updateDeadlines') }}"
       class="hidden flex-grow bg-white rounded-2xl px-10 py-8 shadow-lg border border-gray-100">
@@ -447,11 +484,11 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <label class="block text-base text-gray-600 mb-1">Application Start Date</label>
-        <input type="date" name="application_start_date" value="{{ $settings->application_start_date ? $settings->application_start_date->format('Y-m-d') : '' }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+        <input type="date" name="application_start_date" value="{{ $settings->application_start_date ? $settings->application_start_date->format('Y-m-d') : '' }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
       </div>
       <div>
         <label class="block text-base text-gray-600 mb-1">Application Deadline</label>
-        <input type="date" name="application_deadline" value="{{ $settings->application_deadline ? $settings->application_deadline->format('Y-m-d') : '' }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+        <input type="date" name="application_deadline" value="{{ $settings->application_deadline ? $settings->application_deadline->format('Y-m-d') : '' }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
       </div>
     </div>
   </div>
@@ -461,7 +498,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div>
         <label class="block text-base text-gray-600 mb-1">Renewal Semester</label>
-        <select name="renewal_semester" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition">
+        <select name="renewal_semester" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition">
           <option value="">Select Semester</option>
           <option value="1st Semester" {{ $settings->renewal_semester == '1st Semester' ? 'selected' : '' }}>1st Semester</option>
           <option value="2nd Semester" {{ $settings->renewal_semester == '2nd Semester' ? 'selected' : '' }}>2nd Semester</option>
@@ -470,60 +507,105 @@
       </div>
       <div>
         <label class="block text-base text-gray-600 mb-1">Renewal Start Date</label>
-        <input type="date" name="renewal_start_date" value="{{ $settings->renewal_start_date ? $settings->renewal_start_date->format('Y-m-d') : '' }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+        <input type="date" name="renewal_start_date" value="{{ $settings->renewal_start_date ? $settings->renewal_start_date->format('Y-m-d') : '' }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
       </div>
       <div>
         <label class="block text-base text-gray-600 mb-1">Renewal Deadline</label>
-        <input type="date" name="renewal_deadline" value="{{ $settings->renewal_deadline ? $settings->renewal_deadline->format('Y-m-d') : '' }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition"/>
+        <input type="date" name="renewal_deadline" value="{{ $settings->renewal_deadline ? $settings->renewal_deadline->format('Y-m-d') : '' }}" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
       </div>
     </div>
   </div>
 
   <!-- Buttons -->
   <div class="flex justify-end gap-4">
-    <button type="reset" class="px-6 py-3 border border-orange-500 rounded-xl font-semibold text-orange-600 hover:bg-orange-50 transition">
+    <button type="reset" class="px-6 py-3 border border-violet-500 rounded-xl font-semibold text-violet-600 hover:bg-violet-50 transition">
       Reset
     </button>
-    <button type="submit" class="px-6 py-3 bg-orange-500 rounded-xl font-semibold text-white hover:bg-orange-600 transition">
+    <button type="submit" class="px-6 py-3 bg-violet-500 rounded-xl font-semibold text-white hover:bg-violet-600 transition">
       Update Deadlines
     </button>
   </div>
 </form>
 
-    <form id="changePasswordForm" method="POST" action="{{ route('LydoAdmin.updatePassword') }}"
+ <form id="changePasswordForm" method="POST" action="{{ route('LydoAdmin.updatePassword') }}"
       class="hidden flex-grow bg-white rounded-2xl px-10 py-8 shadow-lg border border-gray-100">
-  @csrf
-  @method('PUT')
-<h1 class="text-base font-semibold text-gray-800 mb-8">Change Password</h1>
-<p class="text-sm text-gray-500 mb-6">Update your account password. Make sure to choose a strong password.</p>
+    @csrf
+    @method('PUT')
+    <h1 class="text-base font-semibold text-gray-800 mb-8">Change Password</h1>
+    <p class="text-sm text-gray-500 mb-6">Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.</p>
 
-  <div class="grid grid-cols-1 gap-6 mb-6">
-    <div>
-      <label class="block text-base text-gray-600 mb-1">Current Password</label>
-      <input type="password" name="current_password" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition" required/>
-    </div>
-    <div>
-      <label class="block text-base text-gray-600 mb-1">New Password</label>
-      <input type="password" name="new_password" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition" required/>
-    </div>
-    <div>
-      <label class="block text-base text-gray-600 mb-1">Confirm New Password</label>
-      <input type="password" name="new_password_confirmation" class="w-full bg-gray-50 border rounded-xl py-3 px-4 text-base outline-none focus:ring-2 focus:ring-orange-400 transition" required/>
-    </div>
-  </div>
+    @if(session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6" role="alert">
+            <span class="block sm:inline">{{ session('success') }}</span>
+        </div>
+    @endif
 
-  <!-- Buttons -->
-  <div class="flex justify-end gap-4">
-    <button type="reset" class="px-6 py-3 border border-orange-500 rounded-xl font-semibold text-orange-600 hover:bg-orange-50 transition">
-      Discard
-    </button>
-    <button type="submit" class="px-6 py-3 bg-orange-500 rounded-xl font-semibold text-white hover:bg-orange-600 transition">
-      Change Password
-    </button>
-  </div>
+    @if($errors->any())
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6" role="alert">
+            <ul class="list-disc list-inside">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <!-- Current Password -->
+    <div class="mb-6">
+        <label class="block text-base text-gray-600 mb-1">Current Password</label>
+        <div class="relative">
+            <input type="password" name="current_password" id="current_password" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 pr-10 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"/>
+            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center toggle-password" data-target="current_password">
+                <i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+            </button>
+        </div>
+        @error('current_password')
+            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+        @enderror
+    </div>
+    
+    <!-- New Password -->
+    <div class="mb-6">
+        <label class="block text-base text-gray-600 mb-1">New Password</label>
+        <div class="relative">
+            <input type="password" name="new_password" id="new_password" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 pr-10 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validatePassword(this)"/>
+            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center toggle-password" data-target="new_password">
+                <i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+            </button>
+        </div>
+        <div id="passwordError" class="text-red-500 text-sm mt-1 hidden"></div>
+        @error('new_password')
+            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+        @enderror
+    </div>
+    
+    <!-- Confirm New Password -->
+    <div class="mb-6">
+        <label class="block text-base text-gray-600 mb-1">Confirm New Password</label>
+        <div class="relative">
+            <input type="password" name="new_password_confirmation" id="new_password_confirmation" 
+                   class="w-full bg-gray-50 border rounded-xl py-3 px-4 pr-10 text-base outline-none focus:ring-2 focus:ring-violet-400 transition"
+                   oninput="validatePasswordConfirmation(this)"/>
+            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center toggle-password" data-target="new_password_confirmation">
+                <i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+            </button>
+        </div>
+        <div id="confirmPasswordError" class="text-red-500 text-sm mt-1 hidden"></div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex justify-end gap-4">
+        <button type="reset" class="px-6 py-3 border border-violet-500 rounded-xl font-semibold text-violet-600 hover:bg-violet-50 transition" onclick="resetPasswordValidation()">
+            Cancel
+        </button>
+        <button type="submit" class="px-6 py-3 bg-violet-500 rounded-xl font-semibold text-white hover:bg-violet-600 transition update-password-btn">
+            Update Password
+        </button>
+    </div>
 </form>
-
-
   </section>
 
 </div>
@@ -539,9 +621,9 @@ const deadlinesForm = document.getElementById("deadlinesForm");
 const changePasswordForm = document.getElementById("changePasswordForm");
 
 function resetButtons() {
-  btnPersonal.classList.remove("bg-orange-100", "text-orange-600");
-  btnDeadlines.classList.remove("bg-orange-100", "text-orange-600");
-  btnChangePassword.classList.remove("bg-orange-100", "text-orange-600");
+  btnPersonal.classList.remove("bg-violet-100", "text-violet-600");
+  btnDeadlines.classList.remove("bg-violet-100", "text-violet-600");
+  btnChangePassword.classList.remove("bg-violet-100", "text-violet-600");
 }
 
 btnPersonal.addEventListener("click", () => {
@@ -550,7 +632,7 @@ btnPersonal.addEventListener("click", () => {
   changePasswordForm.classList.add("hidden");
 
   resetButtons();
-  btnPersonal.classList.add("bg-orange-100", "text-orange-600");
+  btnPersonal.classList.add("bg-violet-100", "text-violet-600");
 });
 
 btnDeadlines.addEventListener("click", () => {
@@ -559,7 +641,7 @@ btnDeadlines.addEventListener("click", () => {
   changePasswordForm.classList.add("hidden");
 
   resetButtons();
-  btnDeadlines.classList.add("bg-orange-100", "text-orange-600");
+  btnDeadlines.classList.add("bg-violet-100", "text-violet-600");
 });
 
 btnChangePassword.addEventListener("click", () => {
@@ -568,7 +650,7 @@ btnChangePassword.addEventListener("click", () => {
   deadlinesForm.classList.add("hidden");
 
   resetButtons();
-  btnChangePassword.classList.add("bg-orange-100", "text-orange-600");
+  btnChangePassword.classList.add("bg-violet-100", "text-violet-600");
 });
 </script>
 
@@ -584,19 +666,113 @@ btnChangePassword.addEventListener("click", () => {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
+    // Email duplicate check function
+    function checkEmailDuplicate(email) {
+        return fetch('/lydo_admin/check-email-duplicate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(response => response.json());
+    }
+
+    // Handle email input blur event
+    document.getElementById('emailInput').addEventListener('blur', function() {
+        const email = this.value.trim();
+        const errorDiv = document.getElementById('emailError');
+
+        if (email) {
+            checkEmailDuplicate(email).then(data => {
+                if (data.duplicate) {
+                    errorDiv.textContent = 'This email is already in use.';
+                    errorDiv.classList.remove('hidden');
+                } else {
+                    errorDiv.classList.add('hidden');
+                }
+            }).catch(error => {
+                console.error('Error checking email:', error);
+            });
+        } else {
+            errorDiv.classList.add('hidden');
+        }
+    });
+
+    // Function to update UI with new data
+    function updateUserInterface(updatedData) {
+        // Update header name
+        const headerUserName = document.getElementById('headerUserName');
+        if (headerUserName && updatedData.lydopers_fname && updatedData.lydopers_lname) {
+            headerUserName.textContent = `${updatedData.lydopers_fname} ${updatedData.lydopers_lname} | Lydo Admin`;
+        }
+
+        // Update profile card name
+        const profileUserName = document.getElementById('profileUserName');
+        if (profileUserName && updatedData.lydopers_fname && updatedData.lydopers_lname) {
+            let fullName = updatedData.lydopers_fname;
+            if (updatedData.lydopers_mname) {
+                fullName += ' ' + updatedData.lydopers_mname + ' ';
+            }
+            fullName += updatedData.lydopers_lname;
+            if (updatedData.lydopers_suffix) {
+                fullName += ' ' + updatedData.lydopers_suffix;
+            }
+            profileUserName.textContent = fullName;
+        }
+
+        // Update form fields to reflect the updated data
+        if (updatedData.lydopers_fname) {
+            document.querySelector('input[name="lydopers_fname"]').value = updatedData.lydopers_fname;
+        }
+        if (updatedData.lydopers_mname !== undefined) {
+            document.querySelector('input[name="lydopers_mname"]').value = updatedData.lydopers_mname;
+        }
+        if (updatedData.lydopers_lname) {
+            document.querySelector('input[name="lydopers_lname"]').value = updatedData.lydopers_lname;
+        }
+        if (updatedData.lydopers_suffix !== undefined) {
+            document.querySelector('input[name="lydopers_suffix"]').value = updatedData.lydopers_suffix;
+        }
+        if (updatedData.lydopers_email) {
+            document.querySelector('input[name="lydopers_email"]').value = updatedData.lydopers_email;
+        }
+        if (updatedData.lydopers_address) {
+            document.querySelector('input[name="lydopers_address"]').value = updatedData.lydopers_address;
+        }
+        if (updatedData.lydopers_contact_number) {
+            document.querySelector('input[name="lydopers_contact_number"]').value = updatedData.lydopers_contact_number;
+        }
+        if (updatedData.lydopers_bdate) {
+            document.querySelector('input[name="lydopers_bdate"]').value = updatedData.lydopers_bdate;
+        }
+    }
+
     // Handle personal information form submission with AJAX and SweetAlert
     document.getElementById('personalForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
+        const emailError = document.getElementById('emailError');
+        if (!emailError.classList.contains('hidden')) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please fix the email error before submitting.',
+                timer: 3000
+            });
+            return;
+        }
+
         const form = this;
         const formData = new FormData(form);
         const submitButton = form.querySelector('button[type="submit"]');
         const originalButtonText = submitButton.textContent;
-        
+
         // Show loading state
         submitButton.disabled = true;
         submitButton.textContent = 'Saving...';
-        
+
         fetch(form.action, {
             method: 'POST',
             body: formData,
@@ -608,6 +784,11 @@ btnChangePassword.addEventListener("click", () => {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // Update UI with new data
+                if (data.updated_data) {
+                    updateUserInterface(data.updated_data);
+                }
+
                 // Success notification
                 Swal.fire({
                     icon: 'success',
@@ -616,16 +797,11 @@ btnChangePassword.addEventListener("click", () => {
                     timer: 2000,
                     showConfirmButton: false
                 });
-                
-                // Update session data in the form if needed
-                if (data.updated_data) {
-                    Object.keys(data.updated_data).forEach(key => {
-                        const input = form.querySelector(`[name="${key}"]`);
-                        if (input) {
-                            input.value = data.updated_data[key];
-                        }
-                    });
-                }
+
+                // Force page reload after successful update to ensure session data is fresh
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
             } else {
                 // Error notification
                 Swal.fire({
@@ -635,14 +811,14 @@ btnChangePassword.addEventListener("click", () => {
                     timer: 3000,
                     showConfirmButton: false
                 });
-                
+
                 // Show validation errors if any
                 if (data.errors) {
                     let errorMessages = '';
                     Object.values(data.errors).forEach(error => {
                         errorMessages += error + '<br>';
                     });
-                    
+
                     Swal.fire({
                         icon: 'error',
                         title: 'Validation Error',
@@ -836,6 +1012,293 @@ btnChangePassword.addEventListener("click", () => {
             timer: 3000
         });
     @endif
+    // Validation functions
+function validateName(input, errorId) {
+    const value = input.value.trim();
+    const errorElement = document.getElementById(errorId);
+    const nameRegex = /^[a-zA-Z\s]*$/; // Only letters and spaces
+    
+    if (value === '') {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+    
+    if (!nameRegex.test(value)) {
+        errorElement.textContent = 'Numbers and symbols are not allowed';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+}
+
+function validateEmail(input) {
+    const value = input.value.trim();
+    const errorElement = document.getElementById('emailError');
+    
+    if (value === '') {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+        errorElement.textContent = 'Please enter a valid email address';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+}
+
+function validatePhone(input) {
+    const value = input.value.trim();
+    const errorElement = document.getElementById('phoneError');
+    
+    // Allow only numbers
+    const phoneRegex = /^[0-9]+$/;
+    
+    if (value === '') {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+    
+    if (!phoneRegex.test(value)) {
+        errorElement.textContent = 'Please enter numbers only';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else if (value.length < 10 || value.length > 11) {
+        errorElement.textContent = 'Phone number should be 10-11 digits';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+}
+
+function validatePassword(input) {
+    const value = input.value;
+    const errorElement = document.getElementById('passwordError');
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    
+    if (value === '') {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+    
+    if (!passwordRegex.test(value)) {
+        errorElement.textContent = 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+}
+
+function validatePasswordConfirmation(input) {
+    const value = input.value;
+    const passwordValue = document.getElementById('new_password').value;
+    const errorElement = document.getElementById('confirmPasswordError');
+    
+    if (value === '') {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+    
+    if (value !== passwordValue) {
+        errorElement.textContent = 'Passwords do not match';
+        errorElement.classList.remove('hidden');
+        input.classList.remove('border-gray-300');
+        input.classList.add('border-red-500');
+        return false;
+    } else {
+        errorElement.classList.add('hidden');
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+        return true;
+    }
+}
+
+// Reset validation functions
+function resetValidation() {
+    const errorElements = document.querySelectorAll('[id$="Error"]');
+    errorElements.forEach(element => {
+        element.classList.add('hidden');
+    });
+    
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+    });
+}
+
+function resetPasswordValidation() {
+    const errorElements = document.querySelectorAll('#passwordError, #confirmPasswordError');
+    errorElements.forEach(element => {
+        element.classList.add('hidden');
+    });
+    
+    const passwordInputs = document.querySelectorAll('#current_password, #new_password, #new_password_confirmation');
+    passwordInputs.forEach(input => {
+        input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300');
+    });
+}
+
+// Toggle Password Visibility
+function setupPasswordToggles() {
+    const toggleButtons = document.querySelectorAll('.toggle-password');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const passwordInput = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+                this.classList.add('active');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+                this.classList.remove('active');
+            }
+        });
+    });
+}
+
+// Enhanced SweetAlert for Personal Information Update
+document.querySelector('.update-personal-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    // Validate all fields before showing confirmation
+    const fnameValid = validateName(document.querySelector('[name="lydopers_fname"]'), 'fnameError');
+    const lnameValid = validateName(document.querySelector('[name="lydopers_lname"]'), 'lnameError');
+    const mnameValid = validateName(document.querySelector('[name="lydopers_mname"]'), 'mnameError');
+    const emailValid = validateEmail(document.querySelector('[name="lydopers_email"]'));
+    const phoneValid = validatePhone(document.querySelector('[name="lydopers_contact_number"]'));
+    
+    if (!fnameValid || !lnameValid || !mnameValid || !emailValid || !phoneValid) {
+        Swal.fire({
+            title: 'Validation Error',
+            text: 'Please fix the errors in the form before submitting.',
+            icon: 'error',
+            confirmButtonColor: '#7c3aed'
+        });
+        return;
+    }
+    
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You are about to update your personal information.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#7c3aed',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, update it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('personalForm').submit();
+        }
+    });
+});
+
+// Enhanced SweetAlert for Password Update
+document.querySelector('.update-password-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    const passwordValid = validatePassword(document.getElementById('new_password'));
+    const confirmValid = validatePasswordConfirmation(document.getElementById('new_password_confirmation'));
+    
+    const currentPassword = document.getElementById('current_password').value;
+    let currentPasswordValid = true;
+    if (currentPassword === '') {
+        currentPasswordValid = false;
+        Swal.fire({
+            title: 'Validation Error',
+            text: 'Please enter your current password.',
+            icon: 'error',
+            confirmButtonColor: '#7c3aed'
+        });
+        return;
+    }
+    
+    if (!passwordValid || !confirmValid) {
+        Swal.fire({
+            title: 'Validation Error',
+            text: 'Please fix the errors in the form before submitting.',
+            icon: 'error',
+            confirmButtonColor: '#7c3aed'
+        });
+        return;
+    }
+    
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You are about to update your password.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#7c3aed',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, update it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('changePasswordForm').submit();
+        }
+    });
+});
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    setupPasswordToggles();
+    
+    // Validate existing values
+    validateName(document.querySelector('[name="lydopers_fname"]'), 'fnameError');
+    validateName(document.querySelector('[name="lydopers_mname"]'), 'mnameError');
+    validateName(document.querySelector('[name="lydopers_lname"]'), 'lnameError');
+    validateEmail(document.querySelector('[name="lydopers_email"]'));
+    validatePhone(document.querySelector('[name="lydopers_contact_number"]'));
+    validatePassword(document.getElementById('new_password'));
+    validatePasswordConfirmation(document.getElementById('new_password_confirmation'));
+});
     </script>
 <script src="{{ asset('js/spinner.js') }}"></script>
 

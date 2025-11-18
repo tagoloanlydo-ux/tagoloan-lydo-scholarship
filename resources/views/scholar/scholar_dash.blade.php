@@ -69,6 +69,12 @@
                             </a>
                         </li>
                         <li>
+                            <a href="{{ route('scholar.renewal_history') }}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                                <i class="bx bx-history text-center mx-auto md:mx-0 text-xl"></i>
+                                <span class="ml-4 hidden md:block text-lg">Renewal History</span>
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('scholar.settings') }}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
                                 <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl"></i>
                                 <span class="ml-4 hidden md:block text-lg">Settings</span>

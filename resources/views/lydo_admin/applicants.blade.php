@@ -330,7 +330,7 @@
                     <div class="overflow-x-auto">
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
 <!-- In the table header section -->
-<thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
+<thead class="bg-violet-600 to-teal-600 text-white uppercase text-sm">
     <tr>
         <th class="px-4 py-3 border border-gray-200 text-left">
             <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">

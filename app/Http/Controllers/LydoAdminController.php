@@ -807,33 +807,57 @@ public function disbursement(Request $request)
         ]);
     }
 
-    public function updatePersonalInfo(Request $request, $id)
-    {
-        try {
-            $validator = \Validator::make($request->all(), [
-                'lydopers_fname' => 'required|string|max:50',
-                'lydopers_mname' => 'nullable|string|max:50',
-                'lydopers_lname' => 'required|string|max:50',
-                'lydopers_suffix' => 'nullable|string|max:10',
-                'lydopers_email' => 'required|email|max:100',
-                'lydopers_address' => 'nullable|string|max:255',
-                'lydopers_contact_number' => 'required|regex:/^09\d{9}$/',
+// Add these methods to your LydoAdminController.php
+
+public function updatePersonalInfo(Request $request, $id)
+{
+    try {
+        $validator = \Validator::make($request->all(), [
+            'lydopers_fname' => 'required|string|max:50|regex:/^[a-zA-Z\s]+$/',
+            'lydopers_mname' => 'nullable|string|max:50|regex:/^[a-zA-Z\s]*$/',
+            'lydopers_lname' => 'required|string|max:50|regex:/^[a-zA-Z\s]+$/',
+            'lydopers_suffix' => 'nullable|string|max:10|regex:/^[a-zA-Z\s]*$/',
+            'lydopers_email' => 'required|email|max:100|unique:tbl_lydopers,lydopers_email,' . $id . ',lydopers_id',
+            'lydopers_address' => 'nullable|string|max:255',
+            'lydopers_contact_number' => 'required|numeric|digits_between:10,11',
+            'lydopers_bdate' => 'nullable|date|before:today',
+        ]);
+
+        if ($validator->fails()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            return back()->withErrors($validator)->withInput();
+        }
+
+        DB::table('tbl_lydopers')
+            ->where('lydopers_id', $id)
+            ->update([
+                'lydopers_fname' => $request->lydopers_fname,
+                'lydopers_mname' => $request->lydopers_mname,
+                'lydopers_lname' => $request->lydopers_lname,
+                'lydopers_suffix' => $request->lydopers_suffix,
+                'lydopers_email' => $request->lydopers_email,
+                'lydopers_address' => $request->lydopers_address,
+                'lydopers_contact_number' => $request->lydopers_contact_number,
+                'lydopers_bdate' => $request->lydopers_bdate,
+                'updated_at' => now(),
             ]);
 
-            if ($validator->fails()) {
-                if ($request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Validation failed',
-                        'errors' => $validator->errors()
-                    ], 422);
-                }
-                return back()->withErrors($validator)->withInput();
-            }
+        // Update session data
+        $updatedUser = DB::table('tbl_lydopers')->where('lydopers_id', $id)->first();
+        session(['lydopers' => $updatedUser]);
 
-            DB::table('tbl_lydopers')
-                ->where('lydopers_id', $id)
-                ->update([
+        // Check if request is AJAX
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Personal information updated successfully.',
+                'updated_data' => [
                     'lydopers_fname' => $request->lydopers_fname,
                     'lydopers_mname' => $request->lydopers_mname,
                     'lydopers_lname' => $request->lydopers_lname,
@@ -841,98 +865,83 @@ public function disbursement(Request $request)
                     'lydopers_email' => $request->lydopers_email,
                     'lydopers_address' => $request->lydopers_address,
                     'lydopers_contact_number' => $request->lydopers_contact_number,
-                    'updated_at' => now(),
-                ]);
+                    'lydopers_bdate' => $request->lydopers_bdate,
+                ]
+            ]);
+        }
 
-            // Check if request is AJAX
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Personal information updated successfully.',
-                    'updated_data' => [
-                        'lydopers_fname' => $request->lydopers_fname,
-                        'lydopers_mname' => $request->lydopers_mname,
-                        'lydopers_lname' => $request->lydopers_lname,
-                        'lydopers_suffix' => $request->lydopers_suffix,
-                        'lydopers_email' => $request->lydopers_email,
-                        'lydopers_address' => $request->lydopers_address,
-                        'lydopers_contact_number' => $request->lydopers_contact_number,
-                    ]
-                ]);
-            }
+        return redirect()->route('LydoAdmin.settings')->with('success', 'Personal information updated successfully.');
+    } catch (\Exception $e) {
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while updating personal information.'
+            ], 500);
+        }
+        return back()->with('error', 'An error occurred while updating personal information.');
+    }
+}
 
-            return redirect()->route('LydoAdmin.settings')->with('success', 'Personal information updated successfully.');
-        } catch (\Exception $e) {
+public function updatePassword(Request $request)
+{
+    try {
+        $validator = \Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
+        ]);
+
+        if ($validator->fails()) {
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'An error occurred while updating personal information.'
-                ], 500);
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
             }
-            return back()->with('error', 'An error occurred while updating personal information.');
+            return back()->withErrors($validator)->withInput();
         }
-    }
 
-    public function updatePassword(Request $request)
-    {
-        try {
-            $validator = \Validator::make($request->all(), [
-                'current_password' => 'required|string',
-                'new_password' => 'required|string|min:8|confirmed',
+        $staff = DB::table('tbl_lydopers')
+            ->where('lydopers_id', $request->session()->get('lydopers')->lydopers_id)
+            ->first();
+
+        if (!Hash::check($request->current_password, $staff->lydopers_pass)) {
+            // Check if request is AJAX
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Current password is incorrect.'
+                ]);
+            }
+            return back()->with('error', 'Current password is incorrect.');
+        }
+
+        DB::table('tbl_lydopers')
+            ->where('lydopers_id', $staff->lydopers_id)
+            ->update([
+                'lydopers_pass' => Hash::make($request->new_password),
+                'updated_at' => now(),
             ]);
 
-            if ($validator->fails()) {
-                if ($request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Validation failed',
-                        'errors' => $validator->errors()
-                    ], 422);
-                }
-                return back()->withErrors($validator)->withInput();
-            }
-
-            $staff = DB::table('tbl_lydopers')
-                ->where('lydopers_id', $request->session()->get('lydopers')->lydopers_id)
-                ->first();
-
-            if (!Hash::check($request->current_password, $staff->lydopers_pass)) {
-                // Check if request is AJAX
-                if ($request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Current password is incorrect.'
-                    ]);
-                }
-                return back()->with('error', 'Current password is incorrect.');
-            }
-
-            DB::table('tbl_lydopers')
-                ->where('lydopers_id', $staff->lydopers_id)
-                ->update([
-                    'lydopers_pass' => Hash::make($request->new_password),
-                    'updated_at' => now(),
-                ]);
-
-            // Check if request is AJAX
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Password updated successfully.'
-                ]);
-            }
-
-            return redirect()->route('LydoAdmin.settings')->with('success', 'Password updated successfully.');
-        } catch (\Exception $e) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'An error occurred while updating password.'
-                ], 500);
-            }
-            return back()->with('error', 'An error occurred while updating password.');
+        // Check if request is AJAX
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Password updated successfully.'
+            ]);
         }
+
+        return redirect()->route('LydoAdmin.settings')->with('success', 'Password updated successfully.');
+    } catch (\Exception $e) {
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while updating password.'
+            ], 500);
+        }
+        return back()->with('error', 'An error occurred while updating password.');
     }
+}
 
 public function createDisbursement(Request $request)
 {
@@ -1706,5 +1715,22 @@ public function getIntakeSheet($applicationPersonnelId)
         return response()->json(['success' => false, 'message' => 'Error loading intake sheet.'], 500);
     }
 }
+
+    public function checkEmailDuplicate(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'exclude_id' => 'nullable|integer'
+        ]);
+
+        $exists = DB::table('tbl_lydopers')
+            ->where('lydopers_email', $request->email)
+            ->when($request->exclude_id, function($query) use ($request) {
+                return $query->where('lydopers_id', '!=', $request->exclude_id);
+            })
+            ->exists();
+
+        return response()->json(['duplicate' => $exists]);
+    }
 }
 

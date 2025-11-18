@@ -69,10 +69,7 @@ Route::middleware(['role:lydo_admin'])->group(function () {
     Route::get('/lydo_admin/status', [LydoAdminController::class, 'status'])->name('LydoAdmin.status');
     Route::post('/lydo_admin/update-scholar-status', [LydoAdminController::class, 'updateScholarStatus'])->name('LydoAdmin.updateScholarStatus');
     Route::get('/lydo_admin/settings', [LydoAdminController::class, 'settings'])->name('LydoAdmin.settings');
-    Route::put('/lydo_admin/announcement/{id}', [LydoAdminController::class, 'updateAnnouncement'])->name('LydoAdmin.updateAnnouncement');
-    Route::put('/lydo_admin/update-password', [LydoAdminController::class, 'updatePassword'])->name('LydoAdmin.updatePassword');
-    Route::put('/lydo_admin/update-deadlines', [LydoAdminController::class, 'updateDeadlines'])->name('LydoAdmin.updateDeadlines');
-    Route::put('/lydo_admin/update-personal-info/{id}', [LydoAdminController::class, 'updatePersonalInfo'])->name('LydoAdmin.updatePersonalInfo');
+    Route::put('/lydo_admin/announcement/{id}', [LydoAdminController::class, 'updateAnnouncement'])->name('LydoAdmin.updateAnnouncement');    Route::put('/lydo_admin/update-deadlines', [LydoAdminController::class, 'updateDeadlines'])->name('LydoAdmin.updateDeadlines');
     Route::get('/lydo_admin/applicants', [LydoAdminController::class, 'applicants'])->name('LydoAdmin.applicants');
     Route::get('/lydo_admin/get-all-filtered-applicants', [LydoAdminController::class, 'getAllFilteredApplicants'])->name('LydoAdmin.getAllFilteredApplicants');
     Route::get('/lydo_admin/get-scholars-data', [LydoAdminController::class, 'getScholarsData'])->name('LydoAdmin.getScholarsData');
@@ -97,6 +94,8 @@ Route::middleware(['role:lydo_admin'])->group(function () {
     Route::get('/lydo_admin/applicant-documents/{applicantId}', [LydoAdminController::class, 'getApplicantDocuments']);
     Route::get('/lydo_admin/get-application-personnel/{applicantId}', [LydoAdminController::class, 'getApplicationPersonnelId']);
     Route::get('/lydo_admin/intake-sheet/{applicationPersonnelId}', [LydoAdminController::class, 'getIntakeSheet']);
+    Route::put('/lydo_admin/settings/{id}', [LydoAdminController::class, 'updatePersonalInfo'])->name('LydoAdmin.updatePersonalInfo');
+    Route::put('/lydo_admin/settings/password/update', [LydoAdminController::class, 'updatePassword'])->name('LydoAdmin.updatePassword');
 });
 
 Route::middleware(['role:lydo_staff'])->group(function () {
@@ -133,6 +132,8 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::post('/lydo_staff/mark-document-updated/{renewalId}', [RenewalController::class, 'markDocumentAsUpdated']);
     Route::get('/lydo_staff/pdf/intake-sheet-print/{application_personnel_id}', [LydoStaffController::class, 'generateIntakeSheetPdf'])->name('lydo_staff.intake-sheet.pdf');
     Route::post('/lydo_staff/send-email-for-bad-documents', [RenewalController::class, 'sendEmailForBadDocuments']);
+    Route::put('/lydo_staff/{id}', [LydoStaffController::class, 'update'])->name('lydo_staff.update');
+    Route::post('/lydo_staff/update-password', [LydoStaffController::class, 'updatePassword'])->name('lydo_staff.updatePassword');
 });
 
 // Mayor Staff Routes - Only accessible by mayor_staff role
