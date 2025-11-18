@@ -466,61 +466,81 @@ public function submitRenewal(Request $request)
     $applicant->save();
 
     if ($isUpdate) {
-        // Update existing renewal
+        // Update existing renewal - ONLY when updating a specific renewal record
         $renewal = \App\Models\Renewal::find($request->renewal_id);
         if (!$renewal) {
             return redirect()->back()->withErrors(['error' => 'Renewal record not found.']);
         }
 
         $renewal->renewal_semester = $request->input('renewal_semester');
-$renewal->renewal_acad_year = $request->input('renewal_acad_year');
+        $renewal->renewal_acad_year = $request->input('renewal_acad_year');
         $renewal->date_submitted = now();
         $renewal->renewal_status = 'Pending';
 
-        // SET STATUS FIELDS TO 'New' ONLY WHEN FILES ARE UPDATED (for re-review)
+        // SET STATUS FIELDS TO 'pending' WHEN FILES ARE UPDATED (for re-review)
         if ($request->hasFile('renewal_cert_of_reg')) {
             $renewal->renewal_cert_of_reg = $this->moveFileToRenewals($request->file('renewal_cert_of_reg'));
-            $renewal->cert_of_reg_status = 'New'; // Set to 'New' for re-review
+            $renewal->cert_of_reg_status = 'new'; // Set to 'pending' for re-review
         }
         if ($request->hasFile('renewal_grade_slip')) {
             $renewal->renewal_grade_slip = $this->moveFileToRenewals($request->file('renewal_grade_slip'));
-            $renewal->grade_slip_status = 'New'; // Set to 'New' for re-review
+            $renewal->grade_slip_status = 'new'; // Set to 'pending' for re-review
         }
         if ($request->hasFile('renewal_brgy_indigency')) {
             $renewal->renewal_brgy_indigency = $this->moveFileToRenewals($request->file('renewal_brgy_indigency'));
-            $renewal->brgy_indigency_status = 'New'; // Set to 'New' for re-review
+            $renewal->brgy_indigency_status = 'new'; // Set to 'pending' for re-review
         }
 
         $renewal->save();
         $message = 'Renewal application updated successfully.';
     } else {
-        // Create new renewal record
-        $certOfRegPath = $this->moveFileToRenewals($request->file('renewal_cert_of_reg'));
-        $gradeSlipPath = $this->moveFileToRenewals($request->file('renewal_grade_slip'));
-        $brgyIndigencyPath = $this->moveFileToRenewals($request->file('renewal_brgy_indigency'));
+        // Check if renewal already exists for this academic year and semester combination
+        $existingRenewal = \App\Models\Renewal::where('scholar_id', $scholar->scholar_id)
+            ->where('renewal_acad_year', $request->renewal_acad_year)
+            ->where('renewal_semester', $request->renewal_semester)
+            ->first();
 
-        $renewal = new \App\Models\Renewal();
-        $renewal->scholar_id = $scholar->scholar_id;
-        $renewal->renewal_semester = $request->input('renewal_semester');
-        $renewal->renewal_acad_year = $request->input('renewal_acad_year');
-        $renewal->renewal_cert_of_reg = $certOfRegPath;
-        $renewal->renewal_grade_slip = $gradeSlipPath;
-        $renewal->renewal_brgy_indigency = $brgyIndigencyPath;
-        $renewal->date_submitted = now();
-        $renewal->renewal_status = 'Pending';
-        
-        // SET INITIAL STATUS AS null FOR NEW APPLICATIONS (not yet reviewed)
-        $renewal->cert_of_reg_status = 'pending';
-        $renewal->grade_slip_status = 'pending';
-        $renewal->brgy_indigency_status = 'pending';
-        
-        $renewal->save();
-        $message = 'Renewal application submitted successfully.';
+        if ($existingRenewal) {
+            // If renewal exists but is not approved, update it instead of creating new
+            $existingRenewal->renewal_cert_of_reg = $this->moveFileToRenewals($request->file('renewal_cert_of_reg'));
+            $existingRenewal->renewal_grade_slip = $this->moveFileToRenewals($request->file('renewal_grade_slip'));
+            $existingRenewal->renewal_brgy_indigency = $this->moveFileToRenewals($request->file('renewal_brgy_indigency'));
+            $existingRenewal->date_submitted = now();
+            $existingRenewal->renewal_status = 'Pending';
+            $existingRenewal->cert_of_reg_status = 'pending';
+            $existingRenewal->grade_slip_status = 'pending';
+            $existingRenewal->brgy_indigency_status = 'pending';
+            $existingRenewal->save();
+            
+            $message = 'Renewal application submitted successfully.';
+        } else {
+            // Create new renewal record for new academic year/semester combination
+            $certOfRegPath = $this->moveFileToRenewals($request->file('renewal_cert_of_reg'));
+            $gradeSlipPath = $this->moveFileToRenewals($request->file('renewal_grade_slip'));
+            $brgyIndigencyPath = $this->moveFileToRenewals($request->file('renewal_brgy_indigency'));
+
+            $renewal = new \App\Models\Renewal();
+            $renewal->scholar_id = $scholar->scholar_id;
+            $renewal->renewal_semester = $request->input('renewal_semester');
+            $renewal->renewal_acad_year = $request->input('renewal_acad_year');
+            $renewal->renewal_cert_of_reg = $certOfRegPath;
+            $renewal->renewal_grade_slip = $gradeSlipPath;
+            $renewal->renewal_brgy_indigency = $brgyIndigencyPath;
+            $renewal->date_submitted = now();
+            $renewal->renewal_status = 'Pending';
+            
+            // SET INITIAL STATUS AS 'pending' FOR NEW APPLICATIONS (not yet reviewed)
+            $renewal->cert_of_reg_status = 'pending';
+            $renewal->grade_slip_status = 'pending';
+            $renewal->brgy_indigency_status = 'pending';
+            
+            $renewal->save();
+            $message = 'Renewal application submitted successfully.';
+        }
     }
 
     return redirect()->back()->with('success', $message);
 }
-
 /**
  * Move uploaded files into storage/renewals/
  */
