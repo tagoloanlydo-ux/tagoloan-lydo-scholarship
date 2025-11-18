@@ -362,7 +362,7 @@
                 <div class="modal-header flex items-center justify-between bg-indigo-600 p-4 rounded-t-lg">
                     <!-- Left side: LYDO Logo -->
                     <div class="flex items-center space-x-3">
-                        <img src="{{ asset('images/lydo.png') }}" alt="LYDO Logo" class="h-10 w-auto object-contain">
+                <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg">
                         <h2 class="text-xl font-bold text-white">Family Intake Sheet</h2>
                     </div>
 
