@@ -353,6 +353,9 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">#</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Year Level</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Academic Year</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Semester</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Applications</th>
                                 </tr>
                             </thead>
@@ -363,8 +366,11 @@
                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $count++ }}</td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_brgy }}</td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_year_level }}</td>
+                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->renewal_acad_year }}</td>
+                                          <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->renewal_semester }}</td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <button onclick="openRenewalModal({{ $app->scholar_id }})"
+                                           <button onclick="window.openRenewalModal && openRenewalModal({{ $app->scholar_id }})"
                                                     class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow">
                                                 Review Renewal Docs
                                             </button>
@@ -432,9 +438,11 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">#</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Year Level</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Academic Year</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Semester</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Application</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Action</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -444,6 +452,15 @@
                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $count++ }}</td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_brgy }}</td>   
+                                        <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_year_level }}</td>
+                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->renewal_acad_year }}</td>
+                                          <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->renewal_semester }}</td>
+                                        <td class="px-4 py-2 border border-gray-200 text-center">
+                                        <button onclick="window.openViewRenewalModal && openViewRenewalModal({{ $app->scholar_id }})"
+                                                class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow">
+                                            Review Renewal Docs
+                                        </button>
+                                        </td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">
                                             @if($app->renewal_status === 'Approved')
                                                 <span class="status-badge status-approved">Approved</span>
@@ -452,18 +469,6 @@
                                             @else
                                                 <span class="status-badge status-pending">{{ $app->renewal_status }}</span>
                                             @endif
-                                        </td>
-                                        <td class="px-4 py-2 border border-gray-200 text-center">
-                                            <button onclick="openViewRenewalModal({{ $app->scholar_id }})"
-                                                    class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow">
-                                                Review Renewal Docs
-                                            </button>
-                                        </td>
-                                        <td class="px-4 py-2 border border-gray-200 text-center">
-                                            <button onclick="openEditRenewalModal({{ $app->scholar_id }}, '{{ $app->renewal_status }}')"
-                                                    class="px-3 py-1 text-sm bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow">
-                                                <i class="fas fa-edit mr-1"></i> Edit
-                                            </button>
                                         </td>
                                     </tr>
                                 @empty
@@ -642,15 +647,17 @@
             window.renewals = renewals;
         });
     </script>
-
-    <!-- I-include ang modal.js -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('renewal.js loaded successfully');
+        console.log('openRenewalModal available:', typeof openRenewalModal);
+        console.log('openViewRenewalModal available:', typeof openViewRenewalModal);
+    });
+</script>
         
     <script src="{{ asset('js/renewal.js') }}"></script>
     <script src="{{ asset('js/spinner.js') }}"></script>
     <script src="{{ asset('js/renewal_paginate.js') }}"></script>
-      <script src="{{ asset('js/renewalrefresh.js') }}"></script>
     <script src="{{ asset('js/logout.js') }}"></script>
-    <!-- Add this right before the closing </body> tag, after your other scripts -->
-<script src="{{ asset('js/modalrefresh.js') }}"></script>
 </body>
 </html>

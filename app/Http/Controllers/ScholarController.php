@@ -334,7 +334,6 @@ class ScholarController extends Controller
         $announcements = Announce::where('announce_type', 'Scholars')->orderBy('date_posted', 'desc')->get();
         return view('scholar.scholar_dash', compact('announcements'));
     }
-
 public function showRenewalApp()
 {
     $scholar = session('scholar');
@@ -342,6 +341,7 @@ public function showRenewalApp()
     $approvedRenewalExists = false;
     $settings = \App\Models\Settings::first();
     $badDocuments = [];
+    $canRenewForNextYear = false;
 
     if ($scholar) {
         // Ensure applicant relationship is loaded
@@ -357,6 +357,14 @@ public function showRenewalApp()
         $academicYear = $currentMonth >= 6
             ? $currentYear . '-' . ($currentYear + 1)
             : ($currentYear - 1) . '-' . $currentYear;
+
+        // Get applicant's starting academic year
+        $applicantStartYear = $scholar->applicant->applicant_acad_year;
+        
+        // Check if current academic year is different from applicant's start year
+        // AND we're in the renewal period (August onwards for next academic year)
+        $canRenewForNextYear = ($academicYear !== $applicantStartYear) && 
+                              ($currentMonth >= 8); // August onwards
 
         // Get the renewal semester from settings
         $renewalSemester = $settings->renewal_semester ?? '1st Semester';
@@ -374,17 +382,17 @@ public function showRenewalApp()
             ->where('renewal_status', 'Approved')
             ->exists();
 
-        // Get bad documents status if renewal exists - FIXED FIELD NAMES
+        // Get bad documents status if renewal exists
         if ($renewal) {
             $badDocuments = [
-                'renewal_cert_of_reg' => $renewal->cert_of_reg_status === 'bad', // FIXED
-                'renewal_grade_slip' => $renewal->grade_slip_status === 'bad',   // FIXED  
-                'renewal_brgy_indigency' => $renewal->brgy_indigency_status === 'bad', // FIXED
+                'renewal_cert_of_reg' => $renewal->cert_of_reg_status === 'bad',
+                'renewal_grade_slip' => $renewal->grade_slip_status === 'bad',  
+                'renewal_brgy_indigency' => $renewal->brgy_indigency_status === 'bad',
             ];
         }
     }
 
-    return view('scholar.renewal_app', compact('renewal', 'settings', 'approvedRenewalExists', 'badDocuments'));
+    return view('scholar.renewal_app', compact('renewal', 'settings', 'approvedRenewalExists', 'badDocuments', 'canRenewForNextYear'));
 }
 
 // Add this helper method to determine current semester
@@ -457,16 +465,21 @@ public function submitRenewal(Request $request)
         }
     }
 
-    // Update applicant year level
+    // Update applicant year level - USE THE AUTO-POPULATED VALUE FROM THE FORM
     $applicant = $scholar->applicant;
     if (!$applicant) {
         return redirect()->back()->withErrors(['error' => 'Applicant record not found.']);
     }
-    $applicant->applicant_year_level = $request->input('applicant_year_level');
+
+    // Get the auto-populated year level from the form
+    $newYearLevel = $request->input('applicant_year_level');
+    
+    // Update the applicant's year level in the database
+    $applicant->applicant_year_level = $newYearLevel;
     $applicant->save();
 
     if ($isUpdate) {
-        // Update existing renewal - ONLY when updating a specific renewal record
+        // Update existing renewal
         $renewal = \App\Models\Renewal::find($request->renewal_id);
         if (!$renewal) {
             return redirect()->back()->withErrors(['error' => 'Renewal record not found.']);
@@ -477,66 +490,45 @@ public function submitRenewal(Request $request)
         $renewal->date_submitted = now();
         $renewal->renewal_status = 'Pending';
 
-        // SET STATUS FIELDS TO 'pending' WHEN FILES ARE UPDATED (for re-review)
+        // SET STATUS FIELDS TO 'New' ONLY WHEN FILES ARE UPDATED (for re-review)
         if ($request->hasFile('renewal_cert_of_reg')) {
             $renewal->renewal_cert_of_reg = $this->moveFileToRenewals($request->file('renewal_cert_of_reg'));
-            $renewal->cert_of_reg_status = 'new'; // Set to 'pending' for re-review
+            $renewal->cert_of_reg_status = 'New'; // Set to 'New' for re-review
         }
         if ($request->hasFile('renewal_grade_slip')) {
             $renewal->renewal_grade_slip = $this->moveFileToRenewals($request->file('renewal_grade_slip'));
-            $renewal->grade_slip_status = 'new'; // Set to 'pending' for re-review
+            $renewal->grade_slip_status = 'New'; // Set to 'New' for re-review
         }
         if ($request->hasFile('renewal_brgy_indigency')) {
             $renewal->renewal_brgy_indigency = $this->moveFileToRenewals($request->file('renewal_brgy_indigency'));
-            $renewal->brgy_indigency_status = 'new'; // Set to 'pending' for re-review
+            $renewal->brgy_indigency_status = 'New'; // Set to 'New' for re-review
         }
 
         $renewal->save();
-        $message = 'Renewal application updated successfully.';
+        $message = 'Renewal application updated successfully. Year level updated to: ' . $newYearLevel;
     } else {
-        // Check if renewal already exists for this academic year and semester combination
-        $existingRenewal = \App\Models\Renewal::where('scholar_id', $scholar->scholar_id)
-            ->where('renewal_acad_year', $request->renewal_acad_year)
-            ->where('renewal_semester', $request->renewal_semester)
-            ->first();
+        // Create new renewal record
+        $certOfRegPath = $this->moveFileToRenewals($request->file('renewal_cert_of_reg'));
+        $gradeSlipPath = $this->moveFileToRenewals($request->file('renewal_grade_slip'));
+        $brgyIndigencyPath = $this->moveFileToRenewals($request->file('renewal_brgy_indigency'));
 
-        if ($existingRenewal) {
-            // If renewal exists but is not approved, update it instead of creating new
-            $existingRenewal->renewal_cert_of_reg = $this->moveFileToRenewals($request->file('renewal_cert_of_reg'));
-            $existingRenewal->renewal_grade_slip = $this->moveFileToRenewals($request->file('renewal_grade_slip'));
-            $existingRenewal->renewal_brgy_indigency = $this->moveFileToRenewals($request->file('renewal_brgy_indigency'));
-            $existingRenewal->date_submitted = now();
-            $existingRenewal->renewal_status = 'Pending';
-            $existingRenewal->cert_of_reg_status = 'pending';
-            $existingRenewal->grade_slip_status = 'pending';
-            $existingRenewal->brgy_indigency_status = 'pending';
-            $existingRenewal->save();
-            
-            $message = 'Renewal application submitted successfully.';
-        } else {
-            // Create new renewal record for new academic year/semester combination
-            $certOfRegPath = $this->moveFileToRenewals($request->file('renewal_cert_of_reg'));
-            $gradeSlipPath = $this->moveFileToRenewals($request->file('renewal_grade_slip'));
-            $brgyIndigencyPath = $this->moveFileToRenewals($request->file('renewal_brgy_indigency'));
-
-            $renewal = new \App\Models\Renewal();
-            $renewal->scholar_id = $scholar->scholar_id;
-            $renewal->renewal_semester = $request->input('renewal_semester');
-            $renewal->renewal_acad_year = $request->input('renewal_acad_year');
-            $renewal->renewal_cert_of_reg = $certOfRegPath;
-            $renewal->renewal_grade_slip = $gradeSlipPath;
-            $renewal->renewal_brgy_indigency = $brgyIndigencyPath;
-            $renewal->date_submitted = now();
-            $renewal->renewal_status = 'Pending';
-            
-            // SET INITIAL STATUS AS 'pending' FOR NEW APPLICATIONS (not yet reviewed)
-            $renewal->cert_of_reg_status = 'pending';
-            $renewal->grade_slip_status = 'pending';
-            $renewal->brgy_indigency_status = 'pending';
-            
-            $renewal->save();
-            $message = 'Renewal application submitted successfully.';
-        }
+        $renewal = new \App\Models\Renewal();
+        $renewal->scholar_id = $scholar->scholar_id;
+        $renewal->renewal_semester = $request->input('renewal_semester');
+        $renewal->renewal_acad_year = $request->input('renewal_acad_year');
+        $renewal->renewal_cert_of_reg = $certOfRegPath;
+        $renewal->renewal_grade_slip = $gradeSlipPath;
+        $renewal->renewal_brgy_indigency = $brgyIndigencyPath;
+        $renewal->date_submitted = now();
+        $renewal->renewal_status = 'Pending';
+        
+        // SET INITIAL STATUS AS 'pending' FOR NEW APPLICATIONS (not yet reviewed)
+        $renewal->cert_of_reg_status = 'pending';
+        $renewal->grade_slip_status = 'pending';
+        $renewal->brgy_indigency_status = 'pending';
+        
+        $renewal->save();
+        $message = 'Renewal application submitted successfully. Year level updated to: ' . $newYearLevel;
     }
 
     return redirect()->back()->with('success', $message);
@@ -916,44 +908,5 @@ private function getCurrentAcademicYear()
         ? $currentYear . '-' . ($currentYear + 1)
         : ($currentYear - 1) . '-' . $currentYear;
 }
-public function renewalHistory()
-{
-    $scholar = session('scholar');
-    if (!$scholar) {
-        return redirect()->route('scholar.login')->withErrors(['error' => 'Please login to view renewal history.']);
-    }
 
-    // Get all renewals for this scholar, ordered by most recent first
-    $renewals = \App\Models\Renewal::where('scholar_id', $scholar->scholar_id)
-        ->orderBy('renewal_acad_year', 'desc')
-        ->orderBy('renewal_semester', 'desc')
-        ->orderBy('date_submitted', 'desc')
-        ->paginate(10);
-
-    return view('scholar.renewal_history', compact('renewals'));
-}
-
-/**
- * Get renewal details via AJAX
- */
-public function getRenewalDetails($renewalId)
-{
-    $scholar = session('scholar');
-    if (!$scholar) {
-        return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
-    }
-
-    $renewal = \App\Models\Renewal::where('renewal_id', $renewalId)
-        ->where('scholar_id', $scholar->scholar_id)
-        ->first();
-
-    if (!$renewal) {
-        return response()->json(['success' => false, 'message' => 'Renewal not found'], 404);
-    }
-
-    return response()->json([
-        'success' => true,
-        'renewal' => $renewal
-    ]);
-}
 }

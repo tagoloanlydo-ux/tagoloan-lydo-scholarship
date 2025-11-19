@@ -945,6 +945,32 @@ function markRenewalDocumentAsBad(documentType) {
     });
 }
 
+function showTable() {
+    document.getElementById('tableView').classList.remove('hidden');
+    document.getElementById('listView').classList.add('hidden');
+    document.getElementById('tab-renewal').classList.add('active');
+    document.getElementById('tab-review').classList.remove('active');
+}
+
+function showList() {
+    document.getElementById('tableView').classList.add('hidden');
+    document.getElementById('listView').classList.remove('hidden');
+    document.getElementById('tab-renewal').classList.remove('active');
+    document.getElementById('tab-review').classList.add('active');
+}
+
+function clearFiltersTable() {
+    document.getElementById('nameSearch').value = '';
+    document.getElementById('barangayFilter').value = '';
+    // Add filter logic here
+}
+
+function clearFiltersList() {
+    document.getElementById('listNameSearch').value = '';
+    document.getElementById('listBarangayFilter').value = '';
+    // Add filter logic here
+}
+
 // Add this function if missing
 function handleDocumentStatusChange(documentType, status) {
     console.log(`Document ${documentType} status changed to: ${status}`);
