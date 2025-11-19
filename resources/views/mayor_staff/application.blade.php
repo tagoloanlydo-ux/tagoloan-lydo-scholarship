@@ -2294,8 +2294,5 @@ function rejectApplication() {
     </script>
 <script src="{{ asset('js/app_spinner.js') }}"></script>
 <script src="{{ asset('js/application_paginate.js') }}"></script>
-<!-- Add this with your other script includes -->
-<script src="{{ asset('js/autorefresh.js') }}"></script>
-<script src="{{ asset('js/modalautorefresh.js') }}"></script>
     </body>
     </html>

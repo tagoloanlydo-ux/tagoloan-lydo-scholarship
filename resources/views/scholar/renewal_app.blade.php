@@ -46,12 +46,6 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('scholar.renewal_history') }}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                <i class="bx bx-history text-center mx-auto md:mx-0 text-xl"></i>
-                                <span class="ml-4 hidden md:block text-lg">Renewal History</span>
-                            </a>
-                        </li>
-                        <li>
                             <a href="{{ route('scholar.settings') }}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
                                 <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl"></i>
                                 <span class="ml-4 hidden md:block text-lg">Settings</span>
@@ -80,27 +74,44 @@
                         </div>
 
                     <div class="text-center">
-                        @php
-                            $now = now();
-                            $isWithinRenewalPeriod = true;
-                            $deadlineMessage = '';
+                      @php
+    $now = now();
+    $isWithinRenewalPeriod = true;
+    $deadlineMessage = '';
 
-                            if ($settings && $settings->renewal_deadline && $now->isAfter($settings->renewal_deadline)) {
-                                $isWithinRenewalPeriod = false;
-                                $deadlineMessage = 'Renewal submission deadline has passed.';
-                            } elseif ($settings && $settings->renewal_start_date && $now->isBefore($settings->renewal_start_date)) {
-                                $isWithinRenewalPeriod = false;
-                                $deadlineMessage = 'Renewal submission has not started yet.';
-                            }
+    if ($settings && $settings->renewal_deadline && $now->isAfter($settings->renewal_deadline)) {
+        $isWithinRenewalPeriod = false;
+        $deadlineMessage = 'Renewal submission deadline has passed.';
+    } elseif ($settings && $settings->renewal_start_date && $now->isBefore($settings->renewal_start_date)) {
+        $isWithinRenewalPeriod = false;
+        $deadlineMessage = 'Renewal submission has not started yet.';
+    }
 
-                            // Check if scholar has approved renewal for current academic year
-                            $hasApprovedRenewal = $approvedRenewalExists ?? false;
-                            $canSubmitRenewal = $isWithinRenewalPeriod && !$hasApprovedRenewal;
-                            
-                            // Check if there are bad documents
-                            $hasBadDocuments = count(array_filter($badDocuments ?? [])) > 0;
-                        @endphp
-
+    // Check if scholar has approved renewal for current academic year
+    $hasApprovedRenewal = $approvedRenewalExists ?? false;
+    
+    // UPDATED LOGIC: Can submit renewal only if:
+    // 1. Within renewal period AND
+    // 2. No approved renewal exists AND  
+    // 3. Can renew for next year (current academic year different from start year AND August onwards)
+    $canSubmitRenewal = $isWithinRenewalPeriod && !$hasApprovedRenewal && ($canRenewForNextYear ?? false);
+    
+    // Check if there are bad documents
+    $hasBadDocuments = count(array_filter($badDocuments ?? [])) > 0;
+@endphp
+@if(!$canRenewForNextYear && !$hasApprovedRenewal)
+    <div class="mb-4">
+        <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-lg mb-4">
+            <i class="fa-solid fa-info-circle mr-2"></i>
+            Renewal will be available next academic year.
+            @php
+                $applicantStartYear = session('scholar')->applicant->applicant_acad_year ?? 'N/A';
+            @endphp
+            <br><small>Your starting academic year: {{ $applicantStartYear }}</small>
+           
+        </div>
+    </div>
+@endif
                         @if(!$isWithinRenewalPeriod)
                             <div class="mb-4">
                                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
@@ -202,6 +213,14 @@
                             <li class="flex items-center">
                                 <i class="fa-solid fa-check-circle text-green-500 mr-3"></i>
                                 Barangay Indigency
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa-solid fa-check-circle text-green-500 mr-3"></i>
+                                Current Semester and Academic Year
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa-solid fa-check-circle text-green-500 mr-3"></i>
+                                Updated Year Level
                             </li>
                         </ul>
                     </div>
@@ -368,50 +387,51 @@
     let hasBadDocuments = Object.values(badDocuments).some(status => status);
     const renewalExists = {{ $renewal ? 'true' : 'false' }};
 
-    function openModal() {
-        // Check if scholar has approved renewal for current academic year
-        const hasApprovedRenewal = {{ $hasApprovedRenewal ? 'true' : 'false' }};
-        const canSubmitRenewal = {{ $canSubmitRenewal ? 'true' : 'false' }};
-        
-        if (hasApprovedRenewal) {
-            Swal.fire({
-                title: 'Renewal Already Approved',
-                text: 'You already have an approved renewal application for this academic year.',
-                icon: 'info',
-                confirmButtonColor: '#7c3aed',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-        
-        if (!canSubmitRenewal) {
-            Swal.fire({
-                title: 'Renewal Not Available',
-                text: '{{ $deadlineMessage }}',
-                icon: 'warning',
-                confirmButtonColor: '#7c3aed',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        // Check if renewal exists but no bad documents - disable submission
-        if (renewalExists && !hasBadDocuments) {
-            Swal.fire({
-                title: 'All Documents Good',
-                text: 'All your renewal documents have been approved. No updates needed at this time.',
-                icon: 'success',
-                confirmButtonColor: '#7c3aed',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-        
-        document.getElementById('renewalModal').classList.remove('hidden');
-        setCurrentAcademicYearAndYearLevel();
-        updateSubmitButton();
-        updateDocumentFieldsVisibility();
+function openModal() {
+    // Check if scholar has approved renewal for current academic year
+    const hasApprovedRenewal = {{ $hasApprovedRenewal ? 'true' : 'false' }};
+    const canSubmitRenewal = {{ $canSubmitRenewal ? 'true' : 'false' }};
+    const canRenewForNextYear = {{ $canRenewForNextYear ? 'true' : 'false' }};
+    
+    if (hasApprovedRenewal) {
+        Swal.fire({
+            title: 'Renewal Already Approved',
+            text: 'You already have an approved renewal application for this academic year.',
+            icon: 'info',
+            confirmButtonColor: '#7c3aed',
+            confirmButtonText: 'OK'
+        });
+        return;
     }
+    
+    if (!canRenewForNextYear) {
+        Swal.fire({
+            title: 'Renewal Not Available Yet',
+            text: 'Renewal will be available starting August for the next academic year when your current academic year is different from your starting year.',
+            icon: 'info',
+            confirmButtonColor: '#7c3aed',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    if (!canSubmitRenewal) {
+        Swal.fire({
+            title: 'Renewal Not Available',
+            text: '{{ $deadlineMessage }}',
+            icon: 'warning',
+            confirmButtonColor: '#7c3aed',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    // Rest of the existing openModal function...
+    document.getElementById('renewalModal').classList.remove('hidden');
+    setCurrentAcademicYearAndYearLevel();
+    updateSubmitButton();
+    updateDocumentFieldsVisibility();
+}
 
     function closeModal() {
         document.getElementById('renewalModal').classList.add('hidden');

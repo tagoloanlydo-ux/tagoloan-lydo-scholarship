@@ -210,8 +210,7 @@ function fallbackToLocalStorage(renewalId) {
 }
 
 
-
-// Open renewal modal with document rating functionality
+// Open renewal modal with document rating functionality - SHOW ONLY PENDING RENEWALS
 function openRenewalModal(scholarId) {
     const contentDiv = document.getElementById('applicationContent');
     contentDiv.innerHTML = '';
@@ -223,18 +222,24 @@ function openRenewalModal(scholarId) {
     document.getElementById('actionButtons').style.display = 'none';
 
     if (window.renewals[scholarId]) {
-        selectedRenewalId = window.renewals[scholarId][0].renewal_id; // latest renewal
+        // FILTER: Get only PENDING renewals
+        const pendingRenewals = window.renewals[scholarId].filter(r => r.renewal_status === 'Pending');
+        
+        if (pendingRenewals.length === 0) {
+            contentDiv.innerHTML = `<p class="text-gray-500">No pending renewals found for this scholar.</p>`;
+            document.getElementById('openRenewalModal').classList.remove('hidden');
+            return;
+        }
+
+        selectedRenewalId = pendingRenewals[0].renewal_id; // latest pending renewal
         currentRenewalId = selectedRenewalId;
 
         // Force refresh from database
         refreshDocumentStatuses(selectedRenewalId);
 
-        window.renewals[scholarId].forEach((r, index) => {
-            const statusBadge = r.renewal_status === 'Approved'
-                ? 'bg-green-100 text-green-700'
-                : r.renewal_status === 'Rejected'
-                ? 'bg-red-100 text-red-700'
-                : 'bg-yellow-100 text-yellow-700';
+        // DISPLAY ONLY PENDING RENEWALS
+        pendingRenewals.forEach((r, index) => {
+            const statusBadge = 'bg-yellow-100 text-yellow-700'; // Always yellow for pending
 
             contentDiv.innerHTML += `
                 <div class="border border-gray-200 rounded-xl shadow bg-white p-6 mb-6">
@@ -372,6 +377,7 @@ function checkForNewDocumentStatus() {
         console.log('No NEW document status found');
     }
 }
+
 // Enhanced loadRenewalDocumentStatuses function with NEW status check
 function loadRenewalDocumentStatuses(renewalId) {
     console.log('Loading document statuses for renewal:', renewalId);
@@ -410,7 +416,8 @@ function loadRenewalDocumentStatuses(renewalId) {
                         renewalDocumentStatuses[docType] = normalizedStatus;
                         
                         // If document has a valid status, mark it as rated
-                        if (['good', 'bad', 'new'].includes(normalizedStatus)) {
+                        // EXCLUDE "new" status from being considered as "rated"
+                        if (['good', 'bad'].includes(normalizedStatus)) {
                             ratedRenewalDocuments.add(docType);
                         }
                         
@@ -439,10 +446,7 @@ function loadRenewalDocumentStatuses(renewalId) {
                     }
                 });
                 
-                // Check for NEW status and hide action buttons if found
-                checkForNewDocumentStatus();
-                
-                // Check if all documents are rated
+                // Check if all documents are rated (this will handle NEW status properly)
                 checkAllRenewalDocumentsRated();
                 
                 console.log('Final document statuses:', renewalDocumentStatuses);
@@ -464,7 +468,6 @@ function refreshDocumentStatuses(renewalId) {
     // Reload from database
     loadRenewalDocumentStatuses(renewalId);
 }
-
 function checkAllRenewalDocumentsRated() {
     const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
     
@@ -485,15 +488,20 @@ function checkAllRenewalDocumentsRated() {
     
     console.log(`Status counts - Good: ${goodCount}, Bad: ${badCount}, New: ${newCount}, Unrated: ${unratedCount}`);
     
-    // Show action buttons if at least one document is rated
     const actionButtons = document.getElementById('actionButtons');
-    if (goodCount + badCount > 0) {
+    
+    // HIDE BUTTONS COMPLETELY if there are NEW documents OR no ratings at all
+    if (newCount > 0 || (goodCount === 0 && badCount === 0)) {
+        actionButtons.style.display = 'none';
+        console.log('Hiding buttons - New documents found or no ratings');
+    } else {
+        // SHOW APPROPRIATE BUTTONS based on document statuses
         actionButtons.style.display = 'flex';
         updateRenewalActionButtons(goodCount, badCount, newCount);
-    } else {
-        actionButtons.style.display = 'none';
     }
 }
+
+
 function updateRenewalActionButtons(goodCount, badCount, newCount = 0) {
     console.log(`Good: ${goodCount}, Bad: ${badCount}, New: ${newCount}`);
 
@@ -509,6 +517,9 @@ function updateRenewalActionButtons(goodCount, badCount, newCount = 0) {
     const hasBadDocuments = badCount > 0;
     const hasNewDocuments = newCount > 0;
     
+    // This function should only be called when there are NO NEW documents
+    // and at least one document is rated (good or bad)
+    
     if (allGood) {
         // ALL DOCUMENTS ARE GOOD - Show ONLY APPROVE button
         sendEmailBtn.style.display = 'none';
@@ -521,14 +532,8 @@ function updateRenewalActionButtons(goodCount, badCount, newCount = 0) {
         approveBtn.style.display = 'none';
         rejectBtn.style.display = 'flex';
         console.log('Bad documents found - showing Send Email and Reject buttons');
-    } else if (hasNewDocuments) {
-        // HAS NEW DOCUMENTS - Show both buttons but Approve might be disabled
-        sendEmailBtn.style.display = 'none';
-        approveBtn.style.display = 'flex';
-        rejectBtn.style.display = 'flex';
-        console.log('New documents found - showing both buttons');
     } else {
-        // MIXED or NOT ALL RATED - Show both Approve and Reject buttons
+        // MIXED STATUS (some good, some unrated) - Show both Approve and Reject buttons
         sendEmailBtn.style.display = 'none';
         approveBtn.style.display = 'flex';
         rejectBtn.style.display = 'flex';
@@ -774,6 +779,7 @@ function getCsrfToken() {
     return '';
 }
 
+
 // Fixed markRenewalDocumentAsGood function - success message stays until OK is clicked
 function markRenewalDocumentAsGood(documentType) {
     Swal.fire({
@@ -806,7 +812,7 @@ function markRenewalDocumentAsGood(documentType) {
                 const comment = document.getElementById(`comment_${documentType}`)?.value || '';
                 saveRenewalRatingsToStorage(currentRenewalId, documentType, 'good', comment);
                 
-                // Track that this document has been rated
+                // Track that this document has been rated (remove from new status)
                 ratedRenewalDocuments.add(documentType);
                 renewalDocumentStatuses[documentType] = 'good';
                 
@@ -883,12 +889,25 @@ function markRenewalDocumentAsBad(documentType) {
         if (result.isConfirmed) {
             const comment = result.value;
             
+            // Check if this document was previously marked as good or new
+            const wasPreviouslyGood = documentUpdateTracker[documentType] && 
+                                    documentUpdateTracker[documentType].lastStatus === 'good';
+            const wasNew = renewalDocumentStatuses[documentType] === 'new';
+            
+            // Update tracking
+            if (documentUpdateTracker[documentType]) {
+                documentUpdateTracker[documentType].lastStatus = 'bad';
+                if (wasPreviouslyGood || wasNew) {
+                    documentUpdateTracker[documentType].hasUpdate = true;
+                }
+            }
+            
             // Save status as bad
             saveRenewalDocumentStatus(documentType, 'bad', comment).then(() => {
                 // IMPORTANT: Also save the comment to the database
                 saveRenewalDocumentComment(documentType, comment);
                 
-                // Update tracking
+                // Update tracking (remove from new status)
                 ratedRenewalDocuments.add(documentType);
                 renewalDocumentStatuses[documentType] = 'bad';
                 
@@ -905,7 +924,8 @@ function markRenewalDocumentAsBad(documentType) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Marked as Bad',
-                    text: 'Document marked as bad and comment saved.',
+                    text: wasPreviouslyGood ? 'Document updated and marked as bad!' : 
+                          wasNew ? 'New document marked as bad!' : 'Document marked as bad and comment saved.',
                     confirmButtonText: 'OK',
                     showConfirmButton: true,
                     allowOutsideClick: false,
@@ -924,6 +944,33 @@ function markRenewalDocumentAsBad(documentType) {
         }
     });
 }
+
+function showTable() {
+    document.getElementById('tableView').classList.remove('hidden');
+    document.getElementById('listView').classList.add('hidden');
+    document.getElementById('tab-renewal').classList.add('active');
+    document.getElementById('tab-review').classList.remove('active');
+}
+
+function showList() {
+    document.getElementById('tableView').classList.add('hidden');
+    document.getElementById('listView').classList.remove('hidden');
+    document.getElementById('tab-renewal').classList.remove('active');
+    document.getElementById('tab-review').classList.add('active');
+}
+
+function clearFiltersTable() {
+    document.getElementById('nameSearch').value = '';
+    document.getElementById('barangayFilter').value = '';
+    // Add filter logic here
+}
+
+function clearFiltersList() {
+    document.getElementById('listNameSearch').value = '';
+    document.getElementById('listBarangayFilter').value = '';
+    // Add filter logic here
+}
+
 // Add this function if missing
 function handleDocumentStatusChange(documentType, status) {
     console.log(`Document ${documentType} status changed to: ${status}`);
