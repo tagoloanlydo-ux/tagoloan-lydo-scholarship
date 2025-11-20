@@ -353,10 +353,17 @@
                 <input type="checkbox" name="selected_applicants" value="{{ $applicant->applicant_id }}" class="applicant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
             </td>
             <td class="px-4 border border-gray-200 py-2 text-center">
+            <td class="px-4 border border-gray-200 py-2 text-center">
                 <div class="text-sm font-medium text-gray-900">
-                    {{ $applicant->applicant_lname }}{{ $applicant->applicant_suffix ? ' ' . $applicant->applicant_suffix : '' }}, 
-                    {{ $applicant->applicant_fname }} 
-                    {{ $applicant->applicant_mname ? $applicant->applicant_mname . ' ' : '' }}
+                    {{ ucfirst(strtolower($applicant->applicant_lname)) }}
+                    @if(!empty($applicant->applicant_suffix))
+                        {{ ' ' . ucfirst(strtolower($applicant->applicant_suffix)) }}
+                    @endif
+                    , 
+                    {{ ucfirst(strtolower($applicant->applicant_fname)) }}
+                    @if(!empty($applicant->applicant_mname))
+                        {{ ' ' . strtoupper(substr($applicant->applicant_mname, 0, 1)) . '.' }}
+                    @endif
                 </div>
             </td>
             <td class="px-4 border border-gray-200 py-2 text-center">
@@ -956,7 +963,17 @@ const paginationState = {
 function getFullNameForSorting(row) {
     const nameCell = row.cells[1];
     if (!nameCell) return '';
-    return nameCell.textContent.trim().toLowerCase();
+    
+    // Get the text content and split by comma for "Last Name, First Name" format
+    const nameText = nameCell.textContent.trim().toLowerCase();
+    const nameParts = nameText.split(',');
+    
+    if (nameParts.length >= 2) {
+        // Return "Last Name First Name" for proper alphabetical sorting
+        return (nameParts[0] + nameParts[1]).toLowerCase();
+    }
+    
+    return nameText.toLowerCase();
 }
 
 // Function to sort rows alphabetically by last name

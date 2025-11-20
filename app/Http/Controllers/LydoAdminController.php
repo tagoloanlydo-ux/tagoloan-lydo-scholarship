@@ -693,9 +693,9 @@ public function disbursement(Request $request)
         }
     }
 
- public function applicants(Request $request)
+public function applicants(Request $request)
 {
-      $query = DB::table('tbl_applicant')
+    $query = DB::table('tbl_applicant')
         ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
         ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id')
         ->select(
@@ -706,16 +706,17 @@ public function disbursement(Request $request)
             'tbl_application.brgy_indigency',
             'tbl_application.student_id',
             'tbl_application.date_submitted',
-            'tbl_application_personnel.initial_screening', // Make sure this is selected
+            'tbl_application_personnel.initial_screening',
             'tbl_application_personnel.status'
         );
 
-    // Apply initial screening status filter - default to Approved
+    // Initial screening filter
     $initialScreeningStatus = $request->get('initial_screening', 'Approved');
     if ($initialScreeningStatus && $initialScreeningStatus !== 'all') {
         $query->where('tbl_application_personnel.initial_screening', $initialScreeningStatus);
     }
-    // Apply other filters
+
+    // Other filters
     if ($request->has('search') && !empty($request->search)) {
         $query->where(function($q) use ($request) {
             $q->where('applicant_fname', 'like', '%' . $request->search . '%')
@@ -731,23 +732,27 @@ public function disbursement(Request $request)
         $query->where('applicant_acad_year', $request->academic_year);
     }
 
-    $applicants = $query->get();
+    // Order by last name, first name alphabetically
+    $applicants = $query
+        ->orderBy('applicant_lname', 'asc')
+        ->orderBy('applicant_fname', 'asc')
+        ->orderBy('applicant_mname', 'asc')
+        ->get();
 
-    // Get distinct barangays for filter dropdown
+    // Filter dropdowns
     $barangays = DB::table('tbl_applicant')
         ->select('applicant_brgy')
         ->distinct()
         ->orderBy('applicant_brgy', 'asc')
         ->pluck('applicant_brgy');
 
-    // Get distinct academic years for filter dropdown
     $academicYears = DB::table('tbl_applicant')
         ->select('applicant_acad_year')
         ->distinct()
         ->orderBy('applicant_acad_year', 'desc')
         ->pluck('applicant_acad_year');
 
-    return view('lydo_admin.applicants', compact( 'applicants', 'barangays', 'academicYears', 'initialScreeningStatus'));
+    return view('lydo_admin.applicants', compact('applicants', 'barangays', 'academicYears', 'initialScreeningStatus'));
 }
     public function getAllFilteredApplicants(Request $request)
     {
