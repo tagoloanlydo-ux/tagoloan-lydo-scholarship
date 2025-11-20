@@ -194,7 +194,18 @@
                                 @forelse($tableApplicants as $index => $app)
                                 <tr class="hover:bg-gray-50 border-b">
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
-                                    <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
+                                    <td class="px-4 border border-gray-200 py-2 text-center">
+                                        {{ ucfirst(strtolower($app->applicant_lname)) }},
+                                        {{ ucfirst(strtolower($app->applicant_fname)) }}
+
+                                        @if(!empty($app->applicant_mname))
+                                            {{ strtoupper(substr($app->applicant_mname, 0, 1)) }}.
+                                        @endif
+
+                                        @if(!empty($app->applicant_suffix))
+                                            {{ ucfirst(strtolower($app->applicant_suffix)) }}
+                                        @endif
+                                    </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_brgy }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_course }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_school_name }}</td>
@@ -252,20 +263,40 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Course</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">School</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Intake Sheet</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Remarks</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($listApplicants as $index => $app)
                                 <tr class="hover:bg-gray-50 border-b">
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
-                                    <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
+                                    <td class="px-4 border border-gray-200 py-2 text-center">
+                                        {{ ucfirst(strtolower($app->applicant_lname)) }},
+                                        {{ ucfirst(strtolower($app->applicant_fname)) }}
+
+                                        @if(!empty($app->applicant_mname))
+                                            {{ strtoupper(substr($app->applicant_mname, 0, 1)) }}.
+                                        @endif
+
+                                        @if(!empty($app->applicant_suffix))
+                                            {{ ucfirst(strtolower($app->applicant_suffix)) }}
+                                        @endif
+                                    </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_brgy }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_course }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_school_name }}</td>
-                                    <td class="px-4 border border-gray-200 py-2 text-center">
+                                    <td class="px-4 py-2 border border-gray-200 text-center">
+                                        <button
+                                            type="button"
+                                            title="Review Intake Sheet"
+                                            class="px-3 py-1 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg shadow"
+                                            data-id="{{ $app->application_personnel_id }}"
+                                            onclick="openReviewModal(this)">
+                                            <i class="fas fa-eye mr-1"></i> Review
+                                        </button>
+                                    </td>
+                                                                        <td class="px-4 border border-gray-200 py-2 text-center">
                                         <span class="px-2 py-1 text-sm rounded-lg
                                             @if($app->remarks == 'Poor') bg-yellow-100 text-yellow-800
                                             @elseif($app->remarks == 'Non Poor') bg-green-100 text-green-800
@@ -274,24 +305,6 @@
                                             @endif">
                                             {{ $app->remarks }}
                                         </span>
-                                    </td>
-                                    <td class="px-4 border border-gray-200 py-2 text-center">
-                                        <span class="px-2 py-1 text-sm rounded-lg
-                                            @if($app->initial_screening == 'Reviewed') bg-green-100 text-green-800
-                                            @else bg-gray-100 text-gray-800
-                                            @endif">
-                                            {{ $app->initial_screening }}
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-2 border border-gray-200 text-center">
-                                        <button
-                                            type="button"
-                                            title="Review Intake Sheet"
-                                            class="px-3 py-1 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg shadow"
-                                            data-id="{{ $app->application_personnel_id }}"
-                                            onclick="openReviewModal(this)">
-                                            <i class="fas fa-eye mr-1"></i> Review Intake Sheet
-                                        </button>
                                     </td>
                                 </tr>
                                 @empty

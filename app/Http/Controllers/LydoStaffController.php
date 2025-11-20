@@ -865,63 +865,97 @@ public function disbursement(Request $request)
     $academicYear = $request->input('academic_year');
     $semester = $request->input('semester');
 
-    // Fetch unsigned disbursements with pagination and filtering
-    $unsignedQuery = DB::table("tbl_disburse")
-        ->join("tbl_scholar", "tbl_disburse.scholar_id", "=", "tbl_scholar.scholar_id")
-        ->join("tbl_application", "tbl_scholar.application_id", "=", "tbl_application.application_id")
-        ->join("tbl_applicant", "tbl_application.applicant_id", "=", "tbl_applicant.applicant_id")
-        ->select(
-            "tbl_disburse.*",
-            DB::raw("CONCAT(tbl_applicant.applicant_fname, ' ', COALESCE(tbl_applicant.applicant_mname, ''), ' ', tbl_applicant.applicant_lname, IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')) as full_name"),
-            "tbl_applicant.applicant_brgy"
-        )
-        ->whereNull("tbl_disburse.disburse_signature")
-        ->when($search, function ($query, $search) {
-            $query->where(function ($q) use ($search) {
-                $q->where("tbl_applicant.applicant_fname", "like", "%$search%")
-                  ->orWhere("tbl_applicant.applicant_lname", "like", "%$search%");
-            });
-        })
-        ->when($barangay, function ($query, $barangay) {
-            $query->where("tbl_applicant.applicant_brgy", $barangay);
-        })
-        ->when($academicYear, function ($query, $academicYear) {
-            $query->where("tbl_disburse.disburse_acad_year", $academicYear);
-        })
-        ->when($semester, function ($query, $semester) {
-            $query->where("tbl_disburse.disburse_semester", $semester);
+// Fetch unsigned disbursements with pagination and filtering
+$unsignedQuery = DB::table("tbl_disburse")
+    ->join("tbl_scholar", "tbl_disburse.scholar_id", "=", "tbl_scholar.scholar_id")
+    ->join("tbl_application", "tbl_scholar.application_id", "=", "tbl_application.application_id")
+    ->join("tbl_applicant", "tbl_application.applicant_id", "=", "tbl_applicant.applicant_id")
+    ->select(
+        "tbl_disburse.*",
+            DB::raw("
+                CONCAT(
+                    UPPER(LEFT(tbl_applicant.applicant_lname, 1)), LOWER(SUBSTRING(tbl_applicant.applicant_lname, 2)), ', ',
+                    UPPER(LEFT(tbl_applicant.applicant_fname, 1)), LOWER(SUBSTRING(tbl_applicant.applicant_fname, 2)), ' ',
+                    IFNULL(CONCAT( UPPER(LEFT(tbl_applicant.applicant_mname, 1)), '.' ), ''),
+                    IFNULL(CONCAT(' ', UPPER(LEFT(tbl_applicant.applicant_suffix, 1)), LOWER(SUBSTRING(tbl_applicant.applicant_suffix, 2)) ), '')
+                ) as full_name
+            ")
+,
+        "tbl_applicant.applicant_brgy"
+    )
+    ->whereNull("tbl_disburse.disburse_signature")
+    ->when($search, function ($query, $search) {
+        $query->where(function ($q) use ($search) {
+            $q->where("tbl_applicant.applicant_fname", "like", "%$search%")
+              ->orWhere("tbl_applicant.applicant_lname", "like", "%$search%");
         });
+    })
+    ->when($barangay, function ($query, $barangay) {
+        $query->where("tbl_applicant.applicant_brgy", $barangay);
+    })
+    ->when($academicYear, function ($query, $academicYear) {
+        $query->where("tbl_disburse.disburse_acad_year", $academicYear);
+    })
+    ->when($semester, function ($query, $semester) {
+        $query->where("tbl_disburse.disburse_semester", $semester);
+    });
 
-    $unsignedDisbursements = $unsignedQuery->get();
+// Sort alphabetically by Lastname, Firstname M. Suffix
+$unsignedQuery->orderBy(DB::raw("
+    CONCAT(
+        tbl_applicant.applicant_lname, ', ',
+        tbl_applicant.applicant_fname, ' ',
+        IFNULL(CONCAT(LEFT(tbl_applicant.applicant_mname, 1), '.'), ''),
+        IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')
+    )
+"));
 
-    // Fetch signed disbursements with pagination and filtering
-    $signedQuery = DB::table("tbl_disburse")
-        ->join("tbl_scholar", "tbl_disburse.scholar_id", "=", "tbl_scholar.scholar_id")
-        ->join("tbl_application", "tbl_scholar.application_id", "=", "tbl_application.application_id")
-        ->join("tbl_applicant", "tbl_application.applicant_id", "=", "tbl_applicant.applicant_id")
-        ->select(
-            "tbl_disburse.*",
-            DB::raw("CONCAT(tbl_applicant.applicant_fname, ' ', COALESCE(tbl_applicant.applicant_mname, ''), ' ', tbl_applicant.applicant_lname, IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')) as full_name"),
-            "tbl_applicant.applicant_brgy"
-        )
-        ->whereNotNull("tbl_disburse.disburse_signature")
-        ->when($search, function ($query, $search) {
-            $query->where(function ($q) use ($search) {
-                $q->where("tbl_applicant.applicant_fname", "like", "%$search%")
-                  ->orWhere("tbl_applicant.applicant_lname", "like", "%$search%");
-            });
-        })
-        ->when($barangay, function ($query, $barangay) {
-            $query->where("tbl_applicant.applicant_brgy", $barangay);
-        })
-        ->when($academicYear, function ($query, $academicYear) {
-            $query->where("tbl_disburse.disburse_acad_year", $academicYear);
-        })
-        ->when($semester, function ($query, $semester) {
-            $query->where("tbl_disburse.disburse_semester", $semester);
+$unsignedDisbursements = $unsignedQuery->get();
+
+$signedQuery = DB::table("tbl_disburse")
+    ->join("tbl_scholar", "tbl_disburse.scholar_id", "=", "tbl_scholar.scholar_id")
+    ->join("tbl_application", "tbl_scholar.application_id", "=", "tbl_application.application_id")
+    ->join("tbl_applicant", "tbl_application.applicant_id", "=", "tbl_applicant.applicant_id")
+    ->select(
+        "tbl_disburse.*",
+        DB::raw("
+            CONCAT(
+                UPPER(LEFT(tbl_applicant.applicant_lname, 1)), LOWER(SUBSTRING(tbl_applicant.applicant_lname, 2)), ', ',
+                UPPER(LEFT(tbl_applicant.applicant_fname, 1)), LOWER(SUBSTRING(tbl_applicant.applicant_fname, 2)), ' ',
+                IFNULL(CONCAT( UPPER(LEFT(tbl_applicant.applicant_mname, 1)), '.' ), ''),
+                IFNULL(CONCAT(' ', UPPER(LEFT(tbl_applicant.applicant_suffix, 1)), LOWER(SUBSTRING(tbl_applicant.applicant_suffix, 2)) ), '')
+            ) as full_name
+        "),
+        "tbl_applicant.applicant_brgy"
+    )
+    ->whereNotNull("tbl_disburse.disburse_signature")
+    ->when($search, function ($query, $search) {
+        $query->where(function ($q) use ($search) {
+            $q->where("tbl_applicant.applicant_fname", "like", "%$search%")
+              ->orWhere("tbl_applicant.applicant_lname", "like", "%$search%");
         });
+    })
+    ->when($barangay, function ($query, $barangay) {
+        $query->where("tbl_applicant.applicant_brgy", $barangay);
+    })
+    ->when($academicYear, function ($query, $academicYear) {
+        $query->where("tbl_disburse.disburse_acad_year", $academicYear);
+    })
+    ->when($semester, function ($query, $semester) {
+        $query->where("tbl_disburse.disburse_semester", $semester);
+    });
 
-    $signedDisbursements = $signedQuery->get();
+// Sort alphabetically by Lastname, Firstname M. Suffix
+$signedQuery->orderBy(DB::raw("
+    CONCAT(
+        tbl_applicant.applicant_lname, ', ',
+        tbl_applicant.applicant_fname, ' ',
+        IFNULL(CONCAT(LEFT(tbl_applicant.applicant_mname, 1), '.'), ''),
+        IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')
+    )
+"));
+
+$signedDisbursements = $signedQuery->get();
 
     $barangays = DB::table("tbl_applicant")
         ->select("applicant_brgy")

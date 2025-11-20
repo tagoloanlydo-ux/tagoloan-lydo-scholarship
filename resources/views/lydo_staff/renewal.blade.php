@@ -351,7 +351,7 @@
                             <thead class="bg-violet-600 to-purple-600 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-4 py-3 border border-gray-200 text-center">#</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Name</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Full Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Year Level</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Academic Year</th>
@@ -364,7 +364,7 @@
                                 @forelse($tableApplicants as $app)
                                     <tr class="hover:bg-gray-50 border-b" data-id="{{ $app->scholar_id }}">
                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $count++ }}</td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->full_name }}</td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_brgy }}</td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_year_level }}</td>
                                          <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->renewal_acad_year }}</td>
@@ -436,7 +436,7 @@
                             <thead class="bg-green-600 to-teal-600 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-4 py-3 border border-gray-200 text-center">#</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Name</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Full Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Year Level</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Academic Year</th>
@@ -450,7 +450,7 @@
                                 @forelse($listView as $app)
                                     <tr class="hover:bg-gray-50 border-b">
                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $count++ }}</td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->full_name }}</td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_brgy }}</td>   
                                         <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->applicant_year_level }}</td>
                                          <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->renewal_acad_year }}</td>

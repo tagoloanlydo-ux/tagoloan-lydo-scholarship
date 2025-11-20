@@ -187,107 +187,107 @@
 </style>
 <body class="bg-gray-50">
 
-    <!-- Loading Spinner Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-container">
-            <div class="spinner">
-                <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
-            </div>
-            <div class="text-line">Loading...</div>
-        </div>
-    </div>
-
-    <!-- Header -->
-<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
-        <div class="flex items-center">
-            <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
-                <h1 class="text-2xl font-bold text-white ml-4">Lydo Scholarship</h1>
-        </div>
-
-        <div class="flex items-center space-x-4">
-            <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
-
-            <div class="relative">
-                <!-- 🔔 Bell Icon -->
-                <button id="notifBell" class="relative focus:outline-none">
-                    <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-                    @if($showBadge && $notifications->count() > 0)
-                        <span id="notifCount"
-                            class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                            {{ $notifications->count() }}
-                        </span>
-                    @endif
-                </button>
-
-                <!-- 🔽 Dropdown -->
-                <div id="notifDropdown"
-                    class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                    <div class="p-3 border-b font-semibold text-violet-600">Notifications</div>
-                    <ul class="max-h-60 overflow-y-auto">
-                        @forelse($notifications as $notif)
-                            <li class="px-4 py-2 hover:bg-gray-50 text-base border-b">
-                                {{-- New Application --}}
-                                @if($notif->type === 'application')
-                                    <p class="text-blue-600 font-medium">
-                                        📝 {{ $notif->name }} submitted a new application
-                                    </p>
-                                {{-- New Remark --}}
-                                @elseif($notif->type === 'remark')
-                                    <p class="text-purple-600 font-medium">
-                                        💬 New remark for {{ $notif->name }}:
-                                        <b>{{ $notif->remarks }}</b>
-                                    </p>
-                                @endif
-
-                                {{-- Time ago --}}
-                                <p class="text-xs text-gray-500">
-                                    {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
-                                </p>
-                            </li>
-                        @empty
-                            <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
-                        @endforelse
-                    </ul>
+        <!-- Loading Spinner Overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="loading-container">
+                <div class="spinner">
+                    <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
                 </div>
+                <div class="text-line">Loading...</div>
             </div>
         </div>
-    </header>
 
-    <!-- Sidebar -->
-    <div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
-        <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
-            <ul class="side-menu top space-y-4">
-                <li>
-                    <a href="/mayor_staff/dashboard" class="w-ful flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                        <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
-                        <span class="ml-4 hidden md:block text-lg">Dashboard</span>
-                    </a>
-                </li>
-                <li class="relative">
-                    <button onclick="toggleDropdown('scholarMenu')"
-                        class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-                        <div class="flex items-center">
-                            <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl text-white-700"></i>
-                            <span class="ml-4 hidden md:block text-lg">Applicants</span>
+            <!-- Header -->
+        <header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
+                <div class="flex items-center">
+                    <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
+                        <h1 class="text-2xl font-bold text-white ml-4">Lydo Scholarship</h1>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
+
+                    <div class="relative">
+                        <!-- 🔔 Bell Icon -->
+                        <button id="notifBell" class="relative focus:outline-none">
+                            <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
+                            @if($showBadge && $notifications->count() > 0)
+                                <span id="notifCount"
+                                    class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
+                                    {{ $notifications->count() }}
+                                </span>
+                            @endif
+                        </button>
+
+                        <!-- 🔽 Dropdown -->
+                        <div id="notifDropdown"
+                            class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                            <div class="p-3 border-b font-semibold text-violet-600">Notifications</div>
+                            <ul class="max-h-60 overflow-y-auto">
+                                @forelse($notifications as $notif)
+                                    <li class="px-4 py-2 hover:bg-gray-50 text-base border-b">
+                                        {{-- New Application --}}
+                                        @if($notif->type === 'application')
+                                            <p class="text-blue-600 font-medium">
+                                                📝 {{ $notif->name }} submitted a new application
+                                            </p>
+                                        {{-- New Remark --}}
+                                        @elseif($notif->type === 'remark')
+                                            <p class="text-purple-600 font-medium">
+                                                💬 New remark for {{ $notif->name }}:
+                                                <b>{{ $notif->remarks }}</b>
+                                            </p>
+                                        @endif
+
+                                        {{-- Time ago --}}
+                                        <p class="text-xs text-gray-500">
+                                            {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
+                                        </p>
+                                    </li>
+                                @empty
+                                    <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
+                                @endforelse
+                            </ul>
                         </div>
-                        <i class="bx bx-chevron-down ml-2"></i>
-                    </button>
+                    </div>
+                </div>
+            </header>
 
-                    <!-- Dropdown Menul -->
-                    <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
+            <!-- Sidebar -->
+            <div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
+                <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
+                    <ul class="side-menu top space-y-4">
                         <li>
-                            <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-white bg-violet-600">
-                            <i class="bx bx-search-alt mr-2 text-white-700"></i> Review Applications
+                            <a href="/mayor_staff/dashboard" class="w-ful flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                                <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
+                                <span class="ml-4 hidden md:block text-lg">Dashboard</span>
                             </a>
                         </li>
-                        <li>
-                            <a href="/mayor_staff/status" class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                            <i class="bx bx-check-circle mr-2 text-white-700"></i> Scholarship Approval
-                            </a>
+                        <li class="relative">
+                            <button onclick="toggleDropdown('scholarMenu')"
+                                class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+                                <div class="flex items-center">
+                                    <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl text-white-700"></i>
+                                    <span class="ml-4 hidden md:block text-lg">Applicants</span>
+                                </div>
+                                <i class="bx bx-chevron-down ml-2"></i>
+                            </button>
+
+                            <!-- Dropdown Menul -->
+                            <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
+                                <li>
+                                    <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-white bg-violet-600">
+                                    <i class="bx bx-search-alt mr-2 text-white-700"></i> Review Applications
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/mayor_staff/status" class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                                    <i class="bx bx-check-circle mr-2 text-white-700"></i> Scholarship Approval
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                     </ul>
-                </li>
-            </ul>
                     <ul class="side-menu space-y-1">
                         <li>
                             <a href="/mayor_staff/settings" class="w-full flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
@@ -323,565 +323,576 @@
                             <div id="reviewedTab" class="tab" onclick="showList()">Reviewed Applications</div>
                             </div>
                         </div>
-            <!-- ✅ Table View (Applicants without remarks) -->
-            <div id="tableView">
-<!-- Search and Filter Section for Table View -->
-<div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
-    <div class="flex gap-4 items-end">
-        <!-- Left side container -->
-        <div class="flex gap-4">
-            <!-- Search by Name -->
-            <div>
-                <label for="searchInputTable" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
-                <div class="relative">
-<input type="text" id="searchInputTable" placeholder="Enter applicant name..."
-    class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none">
-<button onclick="clearFiltersTable()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-                </div>
-            </div>
+                    <div id="tableView">
+                        <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+                            <div class="flex gap-4 items-end">
+                                <div class="flex gap-4">
+                                    <div>
+                                        <label for="searchInputTable" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
+                                                        <div class="relative">
+                                                            <input type="text" id="searchInputTable" placeholder="Enter applicant name..."
+                                                                class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none">
+                                                            <button onclick="clearFiltersTable()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                                                        </div>
+                                                    </div>
 
-            <!-- Filter by Barangay -->
-            <div>
-                <label for="barangaySelectTable" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                <select id="barangaySelectTable" onchange="filterRows('table')"
-                    class="w-64 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white appearance-none outline-none"
-                    style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
-                    <option value="">All Barangays</option>
-                    @foreach($barangays as $brgy)
-                        <option value="{{ $brgy }}">{{ $brgy }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-    </div>
-</div>
-                <div class="mb-4">
-                    <h3 class="text-lg font-semibold text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
-                        The list below shows applicants who have submitted applications
-                    </h3>
-                </div>
-            <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
-                <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase text-sm">
-                    <tr>
-                        <th class="px-6 py-4 align-middle text-center">#</th>
-                        <th class="px-6 py-4 align-middle text-center">Name</th>
-                        <th class="px-6 py-4 align-middle text-center">Barangay</th>
-                        <th class="px-6 py-4 align-middle text-center">Gender</th>
-                        <th class="px-6 py-4 align-middle text-center">Birthday</th>
-                        <th class="px-6 py-4 align-middle text-center">Applications</th>
-                        <th class="px-6 py-4 align-middle text-center">Action</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white">
-                    @php $count = 1; @endphp
-                    @forelse($tableApplicants as $index => $app)
-                        <tr class="border-b border-gray-200 hover:bg-blue-50 transition-colors duration-200">
-                            <td class="px-6 py-4 text-center">{{ $count++ }}</td>
-                            <td class="px-6 py-4 text-center font-medium">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
-                            <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
-                            <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
-                            <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
-                            <td class="px-6 py-4 text-center">
-                                <button type="button"
-                                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
-                                    onclick="openApplicationModal({{ $app->application_personnel_id }}, 'pending')">
-                                    Review Applications
-                                </button>
-                            </td>
-
-<td class="px-6 py-4 text-center">
-    <!-- I-remove ang inline form at palitan ng button na may confirmDelete function -->
-    <button type="button" 
-            onclick="confirmDeletePending({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}')" 
-            class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm">
-        <i class="fas fa-trash mr-2"></i>Delete
-    </button>
-</td>
-                        </tr>
-                                        @empty
-                <tr>
-                    <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">No approved or rejected applications found.</td>
-                </tr>
-            @endforelse
-                </tbody>
-            </table>
-            <div class="mt-4">
-            <!-- Pagination for Table View -->
-<div class="pagination-container" id="tablePagination"></div>
-            </div>
-        </div>
-
-            <!-- ✅ List View (Approved and Rejected applications) -->
-    <div id="listView" class="hidden overflow-x-auto">
-<!-- Search and Filter Section for List View -->
-<div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
-    <div class="flex gap-4 items-end">
-        <!-- Left side container -->
-        <div class="flex gap-4">
-            <!-- Search by Name -->
-            <div>
-                <label for="searchInputList" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
-                <div class="relative">
-                 <input type="text" id="searchInputList" placeholder="Enter applicant name..."
-    class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none">
-<button onclick="clearFiltersList()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-                </div>
-            </div>
-
-            <!-- Filter by Barangay -->
-            <div>
-                <label for="barangaySelectList" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
-                <select id="barangaySelectList" onchange="filterRows('list')"
-                    class="w-64 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white appearance-none outline-none"
-                    style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
-                    <option value="">All Barangays</option>
-                    @foreach($barangays as $brgy)
-                        <option value="{{ $brgy }}">{{ $brgy }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-    </div>
-</div>
-            <div class="mb-4">
-                <h3 class="text-lg font-semibold text-gray-700 bg-green-50 p-3 rounded-lg border border-green-200">
-                The list below shows applicants who have approved and rejected screening
-                </h3>
-            </div>
-            <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
-        <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
-            <tr>
-            <th class="px-6 py-4 align-middle text-center">#</th>
-                <th class="px-6 py-4 align-middle text-center">Name</th>
-                <th class="px-6 py-4 align-middle text-center">Barangay</th>
-                <th class="px-6 py-4 align-middle text-center">Gender</th>
-                <th class="px-6 py-4 align-middle text-center">Birthday</th>
-                <th class="px-6 py-4 align-middle text-center">Initial Screening</th>
-                <th class="px-6 py-4 align-middle text-center">Application</th>
-                <th class="px-6 py-4 align-middle text-center">Action</th>
-
-            </tr>
-        </thead>
-                        <tbody class="bg-white">
-            @php $count = 1; @endphp
-            @forelse($listApplicants as $index => $app)
-                <tr class="border-b border-gray-200 hover:bg-green-50 transition-colors duration-200">
-                    <td class="px-6 py-4 text-center">{{ $count++ }}</td>
-                    <td class="px-6 py-4 text-center font-medium">{{ $app->applicant_fname }} {{ $app->applicant_lname }}</td>
-                    <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
-                    <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
-                    <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
-                    <td class="px-6 py-4 text-center">{{ $app->initial_screening }}</td>
-<td class="px-6 py-4 text-center">
-    <div class="relative inline-block">
-        <button type="button"
-            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm relative"
-            onclick="openApplicationModal({{ $app->application_personnel_id }}, 'reviewed')"
-            id="reviewBtn-{{ $app->application_personnel_id }}">
-            Review Requirements
-        </button>
-        <!-- Updated Badge - will be shown/hidden via JavaScript -->
-        <span id="updatedBadge-{{ $app->application_personnel_id }}" 
-              class="badge-updated hidden">Updated</span>
-    </div>
-</td>
-                    <td class="px-6 py-4 text-center">
-                        <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openDeleteModal({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}', true)">
-                            <i class="fas fa-trash mr-2"></i>Delete
-                        </button>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">No approved or rejected applications found.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-                            <div class="mt-4">
-                            <!-- Pagination for List View -->
-<div class="pagination-container" id="listPagination"></div>
-    </div>
-        </div>
-        </div>
-        </div>
-
-        <!-- FIXED: Application Modal with proper z-index -->
-        <div id="applicationModal" class="modal-overlay hidden">
-            <div class="modal-content">
-                <!-- Header -->
-                <div class="flex items-center justify-between px-6 py-4 border-b">
-                    <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                        <i class="fas fa-folder-open text-blue-600"></i>
-                        Application Requirements</h2>
-                    <button onclick="closeApplicationModal()" class="p-2 rounded-full hover:bg-gray-100 transition">
-                        <i class="fas fa-times text-gray-500 text-lg"></i>
-                    </button>
-                </div>
-                <!-- Body -->
-                <div id="applicationContent" class="p-6 space-y-4">
-                    <!-- Dynamic Content via JS -->
-                </div>
-                <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-                </div>
-            </div>
-        </div>
-
-        <!-- FIXED: Delete Confirmation Modal -->
-        <div id="deleteModal" class="modal-overlay hidden">
-            <div class="modal-content max-w-md">
-                <!-- Header -->
-                <div class="flex items-center justify-between px-6 py-4 border-b">
-                    <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                        <i class="fas fa-exclamation-triangle text-red-600"></i>
-                        Confirm Delete
-                    </h2>
-                    <button onclick="closeDeleteModal()"
-                            class="p-2 rounded-full hover:bg-gray-100 transition">
-                        <i class="fas fa-times text-gray-500 text-lg"></i>
-                    </button>
-                </div>
-
-                <!-- Body -->
-                <div id="deleteModalContent" class="p-6 space-y-4">
-                    <p class="text-gray-700">Are you sure you want to delete the application for <strong id="deleteApplicantName"></strong>?</p>
-                    <p class="text-sm text-gray-500">This action cannot be undone.</p>
-                </div>
-
-                <!-- Footer -->
-                <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-                    <button onclick="closeDeleteModal()"
-                            class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-                        Cancel
-                    </button>
-<!-- In your delete modal -->
-<form id="deleteForm" method="POST" style="display: inline;">
-    @csrf
-    @method('DELETE')
-    <button type="submit"
-            class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">
-        <i class="fas fa-trash mr-2"></i> Delete
-    </button>
-</form>
-                </div>
-            </div>
-        </div>
-
-<!-- FIXED: Rejection Modal -->
-<div id="rejectionModal" class="modal-overlay hidden">
-    <div class="modal-content max-w-2xl">
-        <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b">
-            <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                <i class="fas fa-times-circle text-red-600"></i>
-                Reject Initial Screening
-            </h2>
-            <button onclick="closeRejectionModal()"
-                    class="p-2 rounded-full hover:bg-gray-100 transition">
-                <i class="fas fa-times text-gray-500 text-lg"></i>
-            </button>
-        </div>
-
-        <!-- Body -->
-        <div class="p-6 space-y-4">
-            <p class="text-gray-700">Please provide the reason for rejecting this application:</p>
-            <form id="rejectionForm">
-                <div class="mb-4">
-                    <label for="rejectionReason" class="block text-gray-700 font-medium mb-2">Reason for Rejection</label>
-                    <textarea id="rejectionReason" name="reason" rows="4" class="w-full border rounded px-3 py-2" placeholder="Enter the reason for rejection..." required></textarea>
-                </div>
-            </form>
-        </div>
-
-        <!-- Footer -->
-        <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-            <button onclick="closeRejectionModal()"
-                    class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-                Cancel
-            </button>
-            <button id="rejectSubmitBtn" onclick="submitRejection()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
-                <i class="fas fa-times"></i>
-                <span id="rejectSubmitBtnText">Reject Application</span>
-                <div id="rejectSubmitBtnSpinner" class="hidden ml-2">
-                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </div>
-            </button>
-        </div>
-    </div>
-</div>
-
-        <!-- FIXED: Edit Initial Screening Modal -->
-        <div id="editInitialScreeningModal" class="modal-overlay hidden">
-            <div class="modal-content max-w-2xl">
-                <!-- Header -->
-                <div class="flex items-center justify-between px-6 py-4 border-b">
-                    <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                        <i class="fas fa-edit text-blue-600"></i>
-                        Edit Initial Screening
-                    </h2>
-                    <button onclick="closeEditInitialScreeningModal()"
-                            class="p-2 rounded-full hover:bg-gray-100 transition">
-                        <i class="fas fa-times text-gray-500 text-lg"></i>
-                    </button>
-                </div>
-
-                <!-- Body -->
-                <div class="p-6 space-y-4">
-                    <p class="text-gray-700">Update the initial screening status for this application:</p>
-                    <form id="editInitialScreeningForm" method="POST">
-                        @csrf
-                        @method('PATCH')
-                        <input type="hidden" name="application_personnel_id" id="editApplicationPersonnelId" />
-                        <div class="mb-4">
-                            <label for="initialScreeningStatus" class="block text-gray-700 font-medium mb-2">Initial Screening Status</label>
-                            <select id="initialScreeningStatus" name="initial_screening_status" class="w-full border rounded px-3 py-2" required>
-                                <option value="">Select Status</option>
-                                <option value="Approved">Approved</option>
-                                <option value="Rejected">Rejected</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Footer -->
-                <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-                    <button onclick="closeEditInitialScreeningModal()"
-                            class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-                        Cancel
-                    </button>
-                    <button onclick="submitEditInitialScreening()" class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
-                        <i class="fas fa-save mr-2"></i> Update
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- FIXED: Document Viewer Modal -->
-        <div id="documentModal" class="modal-overlay hidden">
-            <div class="modal-content max-w-6xl">
-                <!-- Header -->
-                <div class="flex items-center justify-between px-6 py-4 border-b">
-                    <h2 id="documentModalTitle" class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                        <i class="fas fa-file-alt text-blue-600"></i>
-                        Document Viewer
-                    </h2>
-                    <button onclick="closeDocumentModal()" class="p-2 rounded-full hover:bg-gray-100 transition">
-                        <i class="fas fa-times text-gray-500 text-lg"></i>
-                    </button>
-                </div>
-
-                <!-- Body - Improved with better scrolling -->
-                <div class="document-modal-content p-6">
-                    <div class="document-viewer-container mb-4">
-                        <iframe id="documentViewer" src="" class="document-viewer"></iframe>
-                    </div>
-                    <div id="documentReviewControls" class="mt-4"></div>
-                </div>
-
-                <!-- Footer -->
-                <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
-                    <button onclick="closeDocumentModal()" class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            // Global variables
-            let currentApplicationId = null;
-            let currentSource = null;
-            let ratedDocuments = new Set();
-            let updatedDocuments = new Set();
-            let openedDocuments = new Set();
-            let previousDocumentStatus = {};
-
-            // Tab switching functions
-            function showTable() {
-                document.getElementById('tableView').classList.remove('hidden');
-                document.getElementById('listView').classList.add('hidden');
-                document.getElementById('pendingTab').classList.add('active');
-                document.getElementById('reviewedTab').classList.remove('active');
-                localStorage.setItem('viewMode', 'table');
-            }
-
-            function showList() {
-                document.getElementById('tableView').classList.add('hidden');
-                document.getElementById('listView').classList.remove('hidden');
-                document.getElementById('pendingTab').classList.remove('active');
-                document.getElementById('reviewedTab').classList.add('active');
-                localStorage.setItem('viewMode', 'list');
-            }
-
-            // ✅ Application Modal Functions
-            const applications = @json($applications);
-
-            function openApplicationModal(applicationPersonnelId, source = 'pending') {
-                // Store the current source globally
-                currentSource = source;
-                
-                const contentDiv = document.getElementById('applicationContent');
-                contentDiv.innerHTML = '';
-
-                // Store the current application ID globally for approve/reject functions
-                currentApplicationId = applicationPersonnelId;
-
-                // Find the application by application_personnel_id
-                let foundApp = null;
-                for (let applicantId in applications) {
-                    if (applications[applicantId]) {
-                        foundApp = applications[applicantId].find(app => app.application_personnel_id == applicationPersonnelId);
-                        if (foundApp) break;
-                    }
-                }
-
-                if(foundApp) {
-                    contentDiv.innerHTML += `
-                        <div class="border border-gray-200 rounded-xl shadow-lg bg-white p-6 mb-6">
-                            <!-- Academic Details Row -->
-                            <div class="mb-6">
-                                <h4 class="text-gray-800 font-semibold mb-4 flex items-center">
-                                    <i class="fas fa-graduation-cap text-indigo-600 mr-2"></i>
-                                    Academic Information
-                                </h4>
-                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-school text-blue-600 text-xl mr-3"></i>
-                                        <div>
-                                            <h3 class="text-lg font-semibold text-gray-800">School Name</h3>
-                                            <p class="text-gray-700 font-medium">${foundApp.school_name || 'Not specified'}</p>
+                                                    <!-- Filter by Barangay -->
+                                                    <div>
+                                                        <label for="barangaySelectTable" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
+                                                        <select id="barangaySelectTable" onchange="filterRows('table')"
+                                                            class="w-64 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white appearance-none outline-none"
+                                                            style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
+                                                            <option value="">All Barangays</option>
+                                                            @foreach($barangays as $brgy)
+                                                                <option value="{{ $brgy }}">{{ $brgy }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
+                                        <div class="mb-4">
+                                            <h3 class="text-lg font-semibold text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                                                The list below shows applicants who have submitted applications
+                                            </h3>
+                                        </div>
+                                    <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
+                                        <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase text-sm">
+                                            <tr>
+                                                <th class="px-6 py-4 align-middle text-center">#</th>
+                                                <th class="px-6 py-4 align-middle text-center">Name</th>
+                                                <th class="px-6 py-4 align-middle text-center">Barangay</th>
+                                                <th class="px-6 py-4 align-middle text-center">Gender</th>
+                                                <th class="px-6 py-4 align-middle text-center">Birthday</th>
+                                                <th class="px-6 py-4 align-middle text-center">Applications</th>
+                                                <th class="px-6 py-4 align-middle text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white">
+                                            @php $count = 1; @endphp
+                                            @forelse($tableApplicants as $index => $app)
+                                                <tr class="border-b border-gray-200 hover:bg-blue-50 transition-colors duration-200">
+                                                    <td class="px-6 py-4 text-center">{{ $count++ }}</td>
+                                                    <td class="px-6 py-4 text-center font-medium">
+                                                        {{ ucfirst(strtolower($app->applicant_lname)) }}, 
+                                                        {{ ucfirst(strtolower($app->applicant_fname)) }}
+                                                        @if(!empty($app->applicant_mname))
+                                                            {{ strtoupper(substr($app->applicant_mname, 0, 1)) }}.
+                                                        @endif
+                                                        @if(!empty($app->applicant_suffix))
+                                                            {{ ucfirst(strtolower($app->applicant_suffix)) }}
+                                                        @endif
+                                                    </td>
+                                                    <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
+                                                    <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
+                                                    <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
+                                                    <td class="px-6 py-4 text-center">
+                                                        <button type="button"
+                                                            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
+                                                            onclick="openApplicationModal({{ $app->application_personnel_id }}, 'pending')">
+                                                            Review Applications
+                                                        </button>
+                                                    </td>
+                                                    <td class="px-6 py-4 text-center">
+                                                        <!-- I-remove ang inline form at palitan ng button na may confirmDelete function -->
+                                                        <button type="button" 
+                                                                onclick="confirmDeletePending({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}')" 
+                                                                class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm">
+                                                            <i class="fas fa-trash mr-2"></i>Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                        <tr>
+                                            <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">No approved or rejected applications found.</td>
+                                        </tr>
+                                    @endforelse
+                                        </tbody>
+                                    </table>
+                                    <div class="mt-4">
+                                        <div class="pagination-container" id="tablePagination"></div>
                                     </div>
                                 </div>
-                                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-                                        <div class="flex items-center mb-2">
-                                            <i class="fas fa-calendar-alt text-green-600 mr-2"></i>
-                                            <span class="text-sm font-semibold text-green-800">Academic Year</span>
+
+                                    <!-- ✅ List View (Approved and Rejected applications) -->
+                            <div id="listView" class="hidden overflow-x-auto">
+                            <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+                            <div class="flex gap-4 items-end">
+                                <!-- Left side container -->
+                                <div class="flex gap-4">
+                                    <!-- Search by Name -->
+                                    <div>
+                                        <label for="searchInputList" class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
+                                        <div class="relative">
+                                        <input type="text" id="searchInputList" placeholder="Enter applicant name..."
+                                            class="w-80 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white outline-none">
+                                                            <button onclick="clearFiltersList()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Filter by Barangay -->
+                                                    <div>
+                                                        <label for="barangaySelectList" class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
+                                                        <select id="barangaySelectList" onchange="filterRows('list')"
+                                                            class="w-64 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 bg-white appearance-none outline-none"
+                                                            style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m6 8 4 4 4-4%27/%3e%3c/svg%3e'); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
+                                                            <option value="">All Barangays</option>
+                                                            @foreach($barangays as $brgy)
+                                                                <option value="{{ $brgy }}">{{ $brgy }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <p class="text-gray-700 font-medium">${foundApp.academic_year || 'Not specified'}</p>
+                                        
+                                    <div class="mb-4">
+                                        <h3 class="text-lg font-semibold text-gray-700 bg-green-50 p-3 rounded-lg border border-green-200">
+                                        The list below shows applicants who have approved and rejected screening
+                                        </h3>
                                     </div>
-                                    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-lg border border-blue-200">
-                                        <div class="flex items-center mb-2">
-                                            <i class="fas fa-layer-group text-blue-600 mr-2"></i>
-                                            <span class="text-sm font-semibold text-blue-800">Year Level</span>
+                                    <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
+                                <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
+                                    <tr>
+                                    <th class="px-6 py-4 align-middle text-center">#</th>
+                                        <th class="px-6 py-4 align-middle text-center">Name</th>
+                                        <th class="px-6 py-4 align-middle text-center">Barangay</th>
+                                        <th class="px-6 py-4 align-middle text-center">Gender</th>
+                                        <th class="px-6 py-4 align-middle text-center">Birthday</th>
+                                        <th class="px-6 py-4 align-middle text-center">Initial Screening</th>
+                                        <th class="px-6 py-4 align-middle text-center">Application</th>
+                                        <th class="px-6 py-4 align-middle text-center">Action</th>
+
+                                    </tr>
+                                </thead>
+                                                <tbody class="bg-white">
+                                    @php $count = 1; @endphp
+                                    @forelse($listApplicants as $index => $app)
+                                        <tr class="border-b border-gray-200 hover:bg-green-50 transition-colors duration-200">
+                                            <td class="px-6 py-4 text-center">{{ $count++ }}</td>
+                                            <td class="px-6 py-4 text-center font-medium">
+                                                {{ ucfirst(strtolower($app->applicant_lname)) }}, 
+                                                {{ ucfirst(strtolower($app->applicant_fname)) }}
+                                                @if(!empty($app->applicant_mname))
+                                                    {{ strtoupper(substr($app->applicant_mname, 0, 1)) }}.
+                                                @endif
+                                                @if(!empty($app->applicant_suffix))
+                                                    {{ ucfirst(strtolower($app->applicant_suffix)) }}
+                                                @endif
+                                            </td>
+                                            <td class="px-6 py-4 text-center">{{ $app->applicant_brgy }}</td>
+                                            <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
+                                            <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
+                                            <td class="px-6 py-4 text-center">{{ $app->initial_screening }}</td>
+                                            <td class="px-6 py-4 text-center">
+                                                <div class="relative inline-block">
+                                                    <button type="button"
+                                                        class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm relative"
+                                                        onclick="openApplicationModal({{ $app->application_personnel_id }}, 'reviewed')"
+                                                        id="reviewBtn-{{ $app->application_personnel_id }}">
+                                                        Review Requirements
+                                                    </button>
+                                                    <!-- Updated Badge - will be shown/hidden via JavaScript -->
+                                                    <span id="updatedBadge-{{ $app->application_personnel_id }}" 
+                                                        class="badge-updated hidden">Updated</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 text-center">
+                                                <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm font-medium transition-colors duration-200 shadow-sm" onclick="openDeleteModal({{ $app->application_personnel_id }}, '{{ $app->applicant_fname }} {{ $app->applicant_lname }}', true)">
+                                                    <i class="fas fa-trash mr-2"></i>Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="8" class="px-6 py-8 text-center text-gray-500 bg-gray-50">No approved or rejected applications found.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                                                    <div class="mt-4">
+                                                    <!-- Pagination for List View -->
+                                            <div class="pagination-container" id="listPagination"></div>
                                         </div>
-                                        <p class="text-gray-700 font-medium">${foundApp.year_level || 'Not specified'}</p>
-                                    </div>
-                                    <div class="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
-                                        <div class="flex items-center mb-2">
-                                            <i class="fas fa-book text-purple-600 mr-2"></i>
-                                            <span class="text-sm font-semibold text-purple-800">Course</span>
-                                        </div>
-                                        <p class="text-gray-700 font-medium">${foundApp.course || 'Not specified'}</p>
-                                    </div>
+                                            </div>
+                                            </div>
+                                            </div>
+
+                                            <!-- FIXED: Application Modal with proper z-index -->
+                                            <div id="applicationModal" class="modal-overlay hidden">
+                                                <div class="modal-content">
+                                                    <!-- Header -->
+                                                    <div class="flex items-center justify-between px-6 py-4 border-b">
+                                                        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                                                            <i class="fas fa-folder-open text-blue-600"></i>
+                                                            Application Requirements</h2>
+                                                        <button onclick="closeApplicationModal()" class="p-2 rounded-full hover:bg-gray-100 transition">
+                                                            <i class="fas fa-times text-gray-500 text-lg"></i>
+                                                        </button>
+                                                    </div>
+                                                    <!-- Body -->
+                                                    <div id="applicationContent" class="p-6 space-y-4">
+                                                        <!-- Dynamic Content via JS -->
+                                                    </div>
+                                                    <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- FIXED: Delete Confirmation Modal -->
+                                            <div id="deleteModal" class="modal-overlay hidden">
+                                                <div class="modal-content max-w-md">
+                                                    <!-- Header -->
+                                                    <div class="flex items-center justify-between px-6 py-4 border-b">
+                                                        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                                                            <i class="fas fa-exclamation-triangle text-red-600"></i>
+                                                            Confirm Delete
+                                                        </h2>
+                                                        <button onclick="closeDeleteModal()"
+                                                                class="p-2 rounded-full hover:bg-gray-100 transition">
+                                                            <i class="fas fa-times text-gray-500 text-lg"></i>
+                                                        </button>
+                                                    </div>
+
+                                                    <!-- Body -->
+                                                    <div id="deleteModalContent" class="p-6 space-y-4">
+                                                        <p class="text-gray-700">Are you sure you want to delete the application for <strong id="deleteApplicantName"></strong>?</p>
+                                                        <p class="text-sm text-gray-500">This action cannot be undone.</p>
+                                                    </div>
+
+                                                    <!-- Footer -->
+                                                    <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+                                                        <button onclick="closeDeleteModal()"
+                                                                class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                                                            Cancel
+                                                        </button>
+                                    <!-- In your delete modal -->
+                                    <form id="deleteForm" method="POST" style="display: inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">
+                                            <i class="fas fa-trash mr-2"></i> Delete
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
-
-                            <hr class="my-6 border-gray-300">
-
-                            <!-- Documents Section -->
-                            <h4 class="text-gray-800 font-semibold mb-4 flex items-center">
-                                <i class="fas fa-folder-open text-gray-600 mr-2"></i>
-                                Submitted Documents
-                            </h4>
-                                                <p class="text-sm text-gray-600 mb-6 bg-white p-3 rounded-lg border-l-4 border-indigo-400">
-                                    <i class="fas fa-info-circle text-indigo-500 mr-2"></i>
-                                    Click one of the documents to view and review
-                                </p>
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4" id="documentsContainer">
-                <!-- Documents will be dynamically generated here -->
-            </div>
-
                         </div>
-                    `;
-                    
-                    // Generate document items with status badges
-                    generateDocumentItems(foundApp);
+
+                        <div id="rejectionModal" class="modal-overlay hidden">
+                            <div class="modal-content max-w-2xl">
+                                <!-- Header -->
+                                <div class="flex items-center justify-between px-6 py-4 border-b">
+                                    <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                                        <i class="fas fa-times-circle text-red-600"></i>
+                                        Reject Initial Screening
+                                    </h2>
+                                    <button onclick="closeRejectionModal()"
+                                            class="p-2 rounded-full hover:bg-gray-100 transition">
+                                        <i class="fas fa-times text-gray-500 text-lg"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Body -->
+                                <div class="p-6 space-y-4">
+                                    <p class="text-gray-700">Please provide the reason for rejecting this application:</p>
+                                    <form id="rejectionForm">
+                                        <div class="mb-4">
+                                            <label for="rejectionReason" class="block text-gray-700 font-medium mb-2">Reason for Rejection</label>
+                                            <textarea id="rejectionReason" name="reason" rows="4" class="w-full border rounded px-3 py-2" placeholder="Enter the reason for rejection..." required></textarea>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Footer -->
+                                <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+                                    <button onclick="closeRejectionModal()"
+                                            class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                                        Cancel
+                                    </button>
+                                    <button id="rejectSubmitBtn" onclick="submitRejection()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
+                                        <i class="fas fa-times"></i>
+                                        <span id="rejectSubmitBtnText">Reject Application</span>
+                                        <div id="rejectSubmitBtnSpinner" class="hidden ml-2">
+                                            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FIXED: Edit Initial Screening Modal -->
+                        <div id="editInitialScreeningModal" class="modal-overlay hidden">
+                            <div class="modal-content max-w-2xl">
+                                <!-- Header -->
+                                <div class="flex items-center justify-between px-6 py-4 border-b">
+                                    <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                                        <i class="fas fa-edit text-blue-600"></i>
+                                        Edit Initial Screening
+                                    </h2>
+                                    <button onclick="closeEditInitialScreeningModal()"
+                                            class="p-2 rounded-full hover:bg-gray-100 transition">
+                                        <i class="fas fa-times text-gray-500 text-lg"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Body -->
+                                <div class="p-6 space-y-4">
+                                    <p class="text-gray-700">Update the initial screening status for this application:</p>
+                                    <form id="editInitialScreeningForm" method="POST">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="application_personnel_id" id="editApplicationPersonnelId" />
+                                        <div class="mb-4">
+                                            <label for="initialScreeningStatus" class="block text-gray-700 font-medium mb-2">Initial Screening Status</label>
+                                            <select id="initialScreeningStatus" name="initial_screening_status" class="w-full border rounded px-3 py-2" required>
+                                                <option value="">Select Status</option>
+                                                <option value="Approved">Approved</option>
+                                                <option value="Rejected">Rejected</option>
+                                            </select>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Footer -->
+                                <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+                                    <button onclick="closeEditInitialScreeningModal()"
+                                            class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                                        Cancel
+                                    </button>
+                                    <button onclick="submitEditInitialScreening()" class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
+                                        <i class="fas fa-save mr-2"></i> Update
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FIXED: Document Viewer Modal -->
+                        <div id="documentModal" class="modal-overlay hidden">
+                            <div class="modal-content max-w-6xl">
+                                <!-- Header -->
+                                <div class="flex items-center justify-between px-6 py-4 border-b">
+                                    <h2 id="documentModalTitle" class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                                        <i class="fas fa-file-alt text-blue-600"></i>
+                                        Document Viewer
+                                    </h2>
+                                    <button onclick="closeDocumentModal()" class="p-2 rounded-full hover:bg-gray-100 transition">
+                                        <i class="fas fa-times text-gray-500 text-lg"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Body - Improved with better scrolling -->
+                                <div class="document-modal-content p-6">
+                                    <div class="document-viewer-container mb-4">
+                                        <iframe id="documentViewer" src="" class="document-viewer"></iframe>
+                                    </div>
+                                    <div id="documentReviewControls" class="mt-4"></div>
+                                </div>
+
+                                <!-- Footer -->
+                                <div class="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+                                    <button onclick="closeDocumentModal()" class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                            // Global variables
+                            let currentApplicationId = null;
+                            let currentSource = null;
+                            let ratedDocuments = new Set();
+                            let updatedDocuments = new Set();
+                            let openedDocuments = new Set();
+                            let previousDocumentStatus = {};
+
+                            // Tab switching functions
+                            function showTable() {
+                                document.getElementById('tableView').classList.remove('hidden');
+                                document.getElementById('listView').classList.add('hidden');
+                                document.getElementById('pendingTab').classList.add('active');
+                                document.getElementById('reviewedTab').classList.remove('active');
+                                localStorage.setItem('viewMode', 'table');
+                            }
+
+                            function showList() {
+                                document.getElementById('tableView').classList.add('hidden');
+                                document.getElementById('listView').classList.remove('hidden');
+                                document.getElementById('pendingTab').classList.remove('active');
+                                document.getElementById('reviewedTab').classList.add('active');
+                                localStorage.setItem('viewMode', 'list');
+                            }
+
+                            // ✅ Application Modal Functions
+                            const applications = @json($applications);
+
+                            function openApplicationModal(applicationPersonnelId, source = 'pending') {
+                                // Store the current source globally
+                                currentSource = source;
+                                
+                                const contentDiv = document.getElementById('applicationContent');
+                                contentDiv.innerHTML = '';
+
+                                // Store the current application ID globally for approve/reject functions
+                                currentApplicationId = applicationPersonnelId;
+
+                                // Find the application by application_personnel_id
+                                let foundApp = null;
+                                for (let applicantId in applications) {
+                                    if (applications[applicantId]) {
+                                        foundApp = applications[applicantId].find(app => app.application_personnel_id == applicationPersonnelId);
+                                        if (foundApp) break;
+                                    }
+                                }
+
+                                if(foundApp) {
+                                    contentDiv.innerHTML += `
+                                        <div class="border border-gray-200 rounded-xl shadow-lg bg-white p-6 mb-6">
+                                            <!-- Academic Details Row -->
+                                            <div class="mb-6">
+                                                <h4 class="text-gray-800 font-semibold mb-4 flex items-center">
+                                                    <i class="fas fa-graduation-cap text-indigo-600 mr-2"></i>
+                                                    Academic Information
+                                                </h4>
+                                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                                                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                                                    <div class="flex items-center">
+                                                        <i class="fas fa-school text-blue-600 text-xl mr-3"></i>
+                                                        <div>
+                                                            <h3 class="text-lg font-semibold text-gray-800">School Name</h3>
+                                                            <p class="text-gray-700 font-medium">${foundApp.school_name || 'Not specified'}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                                                        <div class="flex items-center mb-2">
+                                                            <i class="fas fa-calendar-alt text-green-600 mr-2"></i>
+                                                            <span class="text-sm font-semibold text-green-800">Academic Year</span>
+                                                        </div>
+                                                        <p class="text-gray-700 font-medium">${foundApp.academic_year || 'Not specified'}</p>
+                                                    </div>
+                                                    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-lg border border-blue-200">
+                                                        <div class="flex items-center mb-2">
+                                                            <i class="fas fa-layer-group text-blue-600 mr-2"></i>
+                                                            <span class="text-sm font-semibold text-blue-800">Year Level</span>
+                                                        </div>
+                                                        <p class="text-gray-700 font-medium">${foundApp.year_level || 'Not specified'}</p>
+                                                    </div>
+                                                    <div class="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
+                                                        <div class="flex items-center mb-2">
+                                                            <i class="fas fa-book text-purple-600 mr-2"></i>
+                                                            <span class="text-sm font-semibold text-purple-800">Course</span>
+                                                        </div>
+                                                        <p class="text-gray-700 font-medium">${foundApp.course || 'Not specified'}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <hr class="my-6 border-gray-300">
+
+                                            <!-- Documents Section -->
+                                            <h4 class="text-gray-800 font-semibold mb-4 flex items-center">
+                                                <i class="fas fa-folder-open text-gray-600 mr-2"></i>
+                                                Submitted Documents
+                                            </h4>
+                                                                <p class="text-sm text-gray-600 mb-6 bg-white p-3 rounded-lg border-l-4 border-indigo-400">
+                                                    <i class="fas fa-info-circle text-indigo-500 mr-2"></i>
+                                                    Click one of the documents to view and review
+                                                </p>
+                            <div class="grid grid-cols-1 md:grid-cols-5 gap-4" id="documentsContainer">
+                                <!-- Documents will be dynamically generated here -->
+                            </div>
+
+                                        </div>
+                                    `;
+                                    
+                                    // Generate document items with status badges
+                                    generateDocumentItems(foundApp);
+                                } else {
+                                    contentDiv.innerHTML = `<p class="text-gray-500">No applications found for this scholar.</p>`;
+                                }
+
+                                // Initially hide action buttons for pending applications
+                                const footerDiv = document.querySelector('.flex.justify-end.gap-3.px-6.py-4.border-t.bg-gray-50.rounded-b-2xl');
+                                if (source === 'pending') {
+                                    footerDiv.innerHTML = `
+                                    <div id="actionButtons" class="flex flex-row items-center gap-3 hidden">
+
+                                <!-- APPROVE BUTTON -->
+                                <button id="approveBtn" onclick="approveApplication()"
+                                    class="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2">
+                                    <i class="fas fa-check"></i>
+                                    <span id="approveBtnText">Approved for Interview</span>
+                                    <div id="approveBtnSpinner" class="hidden ml-2">
+                                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2
+                                                5.291A7.962 7.962 0 014 12H0c0
+                                                3.042 1.135 5.824 3 7.938l3-2.647z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                </button>
+
+                                <!-- REJECT BUTTON -->
+                                <button id="rejectBtn" onclick="rejectApplication()"
+                                    class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
+                                    <i class="fas fa-times"></i>
+                                    <span id="rejectBtnText">Reject for Interview</span>
+                                    <div id="rejectBtnSpinner" class="hidden ml-2">
+                                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0
+                                                5.373 0 12h4zm2 5.291A7.962 7.962 0
+                                                014 12H0c0 3.042 1.135 5.824 3
+                                                7.938l3-2.647z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                </button>
+
+                                <!-- SEND EMAIL BUTTON -->
+                                <button id="sendEmailBtn" onclick="sendDocumentEmail()"
+                                    class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-2">
+                                    <i class="fas fa-envelope"></i>
+                                    <span id="sendEmailBtnText">Send Email</span>
+                                    <div id="sendEmailBtnSpinner" class="hidden ml-2">
+                                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                </button>
+                            </div>
+
+                                        <div id="reviewMessage" class="text-gray-600 text-sm">
+                                            <i class="fas fa-info-circle mr-2"></i>Please review all 5 documents before making a decision.
+                                        </div>
+                                    `;
                 } else {
-                    contentDiv.innerHTML = `<p class="text-gray-500">No applications found for this scholar.</p>`;
-                }
-
-                // Initially hide action buttons for pending applications
-                const footerDiv = document.querySelector('.flex.justify-end.gap-3.px-6.py-4.border-t.bg-gray-50.rounded-b-2xl');
-                if (source === 'pending') {
                     footerDiv.innerHTML = `
-                    <div id="actionButtons" class="flex flex-row items-center gap-3 hidden">
-
-                <!-- APPROVE BUTTON -->
-                <button id="approveBtn" onclick="approveApplication()"
-                    class="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2">
-                    <i class="fas fa-check"></i>
-                    <span id="approveBtnText">Approved for Interview</span>
-                    <div id="approveBtnSpinner" class="hidden ml-2">
-                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2
-                                5.291A7.962 7.962 0 014 12H0c0
-                                3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                    </div>
-                </button>
-
-                <!-- REJECT BUTTON -->
-                <button id="rejectBtn" onclick="rejectApplication()"
-                    class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
-                    <i class="fas fa-times"></i>
-                    <span id="rejectBtnText">Reject for Interview</span>
-                    <div id="rejectBtnSpinner" class="hidden ml-2">
-                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0
-                                5.373 0 12h4zm2 5.291A7.962 7.962 0
-                                014 12H0c0 3.042 1.135 5.824 3
-                                7.938l3-2.647z">
-                            </path>
-                        </svg>
-                    </div>
-                </button>
-
-                <!-- SEND EMAIL BUTTON -->
-                <button id="sendEmailBtn" onclick="sendDocumentEmail()"
-                    class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-2">
-                    <i class="fas fa-envelope"></i>
-                    <span id="sendEmailBtnText">Send Email</span>
-                    <div id="sendEmailBtnSpinner" class="hidden ml-2">
-                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                    </div>
-                </button>
-            </div>
-
-                        <div id="reviewMessage" class="text-gray-600 text-sm">
-                            <i class="fas fa-info-circle mr-2"></i>Please review all 5 documents before making a decision.
+                        <div class="modal-footer">
+                            <button id="sendEmailBtn" onclick="sendDocumentEmail()" class="btn btn-primary">
+                                <i class="fas fa-envelope"></i>
+                                <span id="sendEmailBtnText">Send Email</span>
+                                <div id="sendEmailBtnSpinner" class="hidden ml-2">
+                                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
+                            </button>
                         </div>
                     `;
-} else {
-    footerDiv.innerHTML = `
-        <div class="modal-footer">
-            <button id="sendEmailBtn" onclick="sendDocumentEmail()" class="btn btn-primary">
-                <i class="fas fa-envelope"></i>
-                <span id="sendEmailBtnText">Send Email</span>
-                <div id="sendEmailBtnSpinner" class="hidden ml-2">
-                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </div>
-            </button>
-        </div>
-    `;
-}
+                }
                 document.getElementById('applicationModal').classList.remove('hidden');
 
                 // Load existing comments and statuses
