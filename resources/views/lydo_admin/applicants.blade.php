@@ -16,6 +16,100 @@
         input::placeholder, select::placeholder {
             color: black !important;
         }
+        /* Center the pagination container */
+.pagination-container {
+    display: flex;
+    justify-content: center; /* Center the content */
+    align-items: center;
+    margin: 1.5rem auto 0 auto; /* Center horizontally */
+    padding: 1rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    max-width: fit-content; /* Only take as much width as needed */
+}
+
+/* For mobile responsiveness */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+.pagination-info {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: white;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 1rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.pagination-page-input {
+    width: 3.5rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    text-align: center;
+}
+
+.pagination-page-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .pagination-buttons {
+        order: -1;
+    }
+}
          .loading-overlay {
     position: fixed;
     top: 0;
@@ -248,69 +342,69 @@
                         </button>
                     </form>
 
-<script>
-    document.getElementById('logoutForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        Swal.fire({
-            title: 'Are you sure you want to logout?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, logout',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                e.target.submit();
-            }
-        });
-    });
-</script>
-</div>
+                <script>
+                    document.getElementById('logoutForm').addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        Swal.fire({
+                            title: 'Are you sure you want to logout?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Yes, logout',
+                            cancelButtonText: 'Cancel'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                e.target.submit();
+                            }
+                        });
+                    });
+                </script>
+                </div>
             </div>
             <div class="flex-1 overflow-y-auto p-4 md:p-5 text-[16px]">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-3xl font-bold text-black-800">List of Applicants</h2>
                 </div>
 
-<!-- Filter Section -->
-<div class="bg-white p-4 rounded-lg shadow-sm mb-6">
-    <div class="flex flex-col md:flex-row gap-4" id="filterForm">
-        <div class="flex-1">
-            <input type="text" id="searchInput" placeholder="Search by name..." 
-                   class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-        </div>
-        <div class="flex-1">
-            <select id="barangaySelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                <option value="">All Barangays</option>
-                @foreach($barangays as $barangay)
-                    <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
-                        {{ $barangay }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-        <div class="flex-1">
-            <select id="academicYearSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                <option value="">All Academic Years</option>
-                @foreach($academicYears as $year)
-                    <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
-                        {{ $year }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-<div class="flex-1">
-    <select id="initialScreeningSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-        <option value="all" {{ $initialScreeningStatus == 'all' ? 'selected' : '' }}>All Status</option>
-                <option value="Pending" {{ $initialScreeningStatus == 'Pending' ? 'selected' : '' }}>Pending For Initial Screening</option>
-        <option value="Approved" {{ $initialScreeningStatus == 'Approved' ? 'selected' : '' }}>Approved From Mayor Staff</option>
-        <option value="Rejected" {{ $initialScreeningStatus == 'Rejected' ? 'selected' : '' }}>Rejected From Mayor Staff</option>
-        <option value="Reviewed" {{ $initialScreeningStatus == 'Reviewed' ? 'selected' : '' }}>Reviewed From Lydo Staff</option>
-    </select>
-</div>
-    </div>
-</div>
+            <!-- Filter Section -->
+            <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+                <div class="flex flex-col md:flex-row gap-4" id="filterForm">
+                    <div class="flex-1">
+                        <input type="text" id="searchInput" placeholder="Search by name..." 
+                            class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                    </div>
+                    <div class="flex-1">
+                        <select id="barangaySelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                            <option value="">All Barangays</option>
+                            @foreach($barangays as $barangay)
+                                <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
+                                    {{ $barangay }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <select id="academicYearSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                            <option value="">All Academic Years</option>
+                            @foreach($academicYears as $year)
+                                <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
+                                    {{ $year }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+            <div class="flex-1">
+                <select id="initialScreeningSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                    <option value="all" {{ $initialScreeningStatus == 'all' ? 'selected' : '' }}>All Status</option>
+                            <option value="Pending" {{ $initialScreeningStatus == 'Pending' ? 'selected' : '' }}>Pending For Initial Screening</option>
+                    <option value="Approved" {{ $initialScreeningStatus == 'Approved' ? 'selected' : '' }}>Approved From Mayor Staff</option>
+                    <option value="Rejected" {{ $initialScreeningStatus == 'Rejected' ? 'selected' : '' }}>Rejected From Mayor Staff</option>
+                    <option value="Reviewed" {{ $initialScreeningStatus == 'Reviewed' ? 'selected' : '' }}>Reviewed From Lydo Staff</option>
+                </select>
+            </div>
+            </div>
+            </div>
 
                 <!-- Applicants Table -->
                 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -329,108 +423,125 @@
                     
                     <div class="overflow-x-auto">
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg  border border-gray-200">
-<!-- In the table header section -->
-<thead class="bg-violet-600 to-teal-600 text-white uppercase text-sm">
-    <tr>
-        <th class="px-4 py-3 border border-gray-200 text-left">
-            <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-        </th>
-        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Full Name</th>
-        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Barangay</th>
-        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Email</th>
-        <th class="px-4 py-3 border border-gray-200 align-middle text-center">School</th>
-        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Academic Year</th>
-        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Initial Screening</th>
-        <!-- NEW COLUMN: Application History -->
-        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Application History</th>
-    </tr>
-</thead>
+                            <!-- In the table header section -->
+                            <thead class="bg-violet-600 to-teal-600 text-white uppercase text-sm">
+                                <tr>
+                                    <th class="px-4 py-3 border border-gray-200 text-left">
+                                        <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    </th>
+                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Full Name</th>
+                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Barangay</th>
+                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Email</th>
+                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">School</th>
+                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Academic Year</th>
+                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Application History</th>
+                                    <th class="px-4 py-3 border border-gray-200 align-middle text-center">Initial Screening</th>
+                                </tr>
+                            </thead>
 
-<tbody>
-    @forelse($applicants as $applicant)
-        <tr class="hover:bg-gray-50 border-b">
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <input type="checkbox" name="selected_applicants" value="{{ $applicant->applicant_id }}" class="applicant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm font-medium text-gray-900">
-                    {{ ucfirst(strtolower($applicant->applicant_lname)) }}
-                    @if(!empty($applicant->applicant_suffix))
-                        {{ ' ' . ucfirst(strtolower($applicant->applicant_suffix)) }}
-                    @endif
-                    , 
-                    {{ ucfirst(strtolower($applicant->applicant_fname)) }}
-                    @if(!empty($applicant->applicant_mname))
-                        {{ ' ' . strtoupper(substr($applicant->applicant_mname, 0, 1)) . '.' }}
-                    @endif
-                </div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">{{ $applicant->applicant_brgy }}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">{{ $applicant->applicant_email }}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">{{ $applicant->applicant_school_name }}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">{{ $applicant->applicant_acad_year }}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <span class="px-2 py-1 rounded-full text-xs font-semibold 
-                    @if($applicant->initial_screening === 'Approved') bg-green-100 text-green-800
-                    @elseif($applicant->initial_screening === 'Rejected') bg-red-100 text-red-800
-                    @elseif($applicant->initial_screening === 'Reviewed') bg-blue-100 text-blue-800
-                    @else bg-yellow-100 text-yellow-800 @endif">
-                    {{ $applicant->initial_screening ?? 'Pending' }}
-                </span>
-            </td>
-            <!-- NEW COLUMN: Application History -->
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="flex gap-2 justify-center">
-                    @if(in_array($applicant->initial_screening, ['Approved', 'Rejected']))
-                        <!-- Show only documents for Approved/Rejected -->
-                        <button type="button" 
-                                onclick="viewApplicantDocuments('{{ $applicant->applicant_id }}', '{{ addslashes($applicant->applicant_fname) }} {{ addslashes($applicant->applicant_lname) }}', '{{ $applicant->initial_screening }}')"
-                                class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow">
-                            <i class="fas fa-file-alt mr-1"></i> View Documents
-                        </button>
-                    @elseif($applicant->initial_screening === 'Reviewed')
-                        <!-- Show intake sheet and documents for Reviewed -->
-                        <button type="button" 
-                                onclick="viewApplicantIntakeSheet('{{ $applicant->applicant_id }}', '{{ addslashes($applicant->applicant_fname) }} {{ addslashes($applicant->applicant_lname) }}', '{{ $applicant->initial_screening }}')"
-                                class="px-3 py-1 text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-lg shadow">
-                            <i class="fas fa-clipboard-list mr-1"></i> View Application
-                        </button>
-                    @else
-                        <!-- Pending or other status -->
-                        <span class="text-sm text-gray-500">No actions available</span>
-                    @endif
-                </div>
-            </td>
-        </tr>
-    @empty
-        <tr>
-            <td colspan="9" class="px-4 py-2 text-center text-sm text-gray-500">
-                No applicants found.
-            </td>
-        </tr>
-    @endforelse
-</tbody>               </table>
+                            <tbody>
+                                @forelse($applicants as $applicant)
+                                    <tr class="hover:bg-gray-50 border-b">
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <input type="checkbox" name="selected_applicants" value="{{ $applicant->applicant_id }}" class="applicant-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                        </td>
+                                    
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ ucfirst(strtolower($applicant->applicant_lname)) }}
+                                                @if(!empty($applicant->applicant_suffix))
+                                                    {{ ' ' . ucfirst(strtolower($applicant->applicant_suffix)) }}
+                                                @endif
+                                                , 
+                                                {{ ucfirst(strtolower($applicant->applicant_fname)) }}
+                                                @if(!empty($applicant->applicant_mname))
+                                                    {{ ' ' . strtoupper(substr($applicant->applicant_mname, 0, 1)) . '.' }}
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_brgy }}</div>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_email }}</div>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_school_name }}</div>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="text-sm text-gray-900">{{ $applicant->applicant_acad_year }}</div>
+                                        </td>
+                                        <!-- NEW COLUMN: Application History -->
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <div class="flex gap-2 justify-center">
+                                                @if(in_array($applicant->initial_screening, ['Approved', 'Rejected']))
+                                                    <!-- Show only documents for Approved/Rejected -->
+                                                    <button type="button" 
+                                                            onclick="viewApplicantDocuments('{{ $applicant->applicant_id }}', '{{ addslashes($applicant->applicant_fname) }} {{ addslashes($applicant->applicant_lname) }}', '{{ $applicant->initial_screening }}')"
+                                                            class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow">
+                                                        <i class="fas fa-file-alt mr-1"></i> View Documents
+                                                    </button>
+                                                @elseif($applicant->initial_screening === 'Reviewed')
+                                                    <!-- Show intake sheet and documents for Reviewed -->
+                                                    <button type="button" 
+                                                            onclick="viewApplicantIntakeSheet('{{ $applicant->applicant_id }}', '{{ addslashes($applicant->applicant_fname) }} {{ addslashes($applicant->applicant_lname) }}', '{{ $applicant->initial_screening }}')"
+                                                            class="px-3 py-1 text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-lg shadow">
+                                                        <i class="fas fa-clipboard-list mr-1"></i> View Application
+                                                    </button>
+                                                @else
+                                                    <!-- Pending or other status -->
+                                                    <span class="text-sm text-gray-500">No actions available</span>
+                                                @endif
+                                            </div>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                                                @if($applicant->initial_screening === 'Approved') bg-green-100 text-green-800
+                                                @elseif($applicant->initial_screening === 'Rejected') bg-red-100 text-red-800
+                                                @elseif($applicant->initial_screening === 'Reviewed') bg-blue-100 text-blue-800
+                                                @else bg-yellow-100 text-yellow-800 @endif">
+                                                {{ $applicant->initial_screening ?? 'Pending' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="9" class="px-4 py-2 text-center text-sm text-gray-500">
+                                            No applicants found.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>              
+                         </table>
                     </div>
-
-                 
-                    <!-- Pagination -->
-<!-- Pagination -->
-<div class="px-6 py-4 bg-white border-t border-gray-200">
-    <div class="pagination-container" id="paginationContainer"></div>
-</div>
+              <div class="px-6 py-4 bg-white border-t border-gray-200">
+            <div class="flex justify-center">
+                <div class="pagination-container">
+                    <div class="pagination-info" id="paginationInfo">
+                        Showing page 1 of 10
+                    </div>
+                    <div class="pagination-buttons">
+                        <button class="pagination-btn" id="prevPage" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <div class="pagination-page-info">
+                            Page 
+                            <input type="number" class="pagination-page-input" id="currentPage" value="1" min="1">
+                            of <span id="totalPages">1</span>
+                        </div>
+                        <button class="pagination-btn" id="nextPage">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
-
-
             </div>
+        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         </div>
+     </div>
 
             <!-- Email Modal -->
             <div id="emailModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -482,150 +593,150 @@
                     </div>
                 </div>
             </div>
-<!-- Application History Modal -->
-<div id="applicationHistoryModal" class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 transition-opacity duration-300">
-    <div class="relative top-4 mx-auto p-6 w-11/12 max-w-6xl max-h-[95vh] overflow-hidden bg-white rounded-2xl shadow-2xl transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
-        <!-- Modern Header -->
-        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
-            <div class="flex items-center space-x-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="w-8 h-8 rounded-lg">
-                </div>
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800" id="modalTitle">Application Details</h2>
-                    <p class="text-sm text-gray-500">Comprehensive application information</p>
+            <!-- Application History Modal -->
+            <div id="applicationHistoryModal" class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 transition-opacity duration-300">
+                <div class="relative top-4 mx-auto p-6 w-11/12 max-w-6xl max-h-[95vh] overflow-hidden bg-white rounded-2xl shadow-2xl transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+                    <!-- Modern Header -->
+                    <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                                <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="w-8 h-8 rounded-lg">
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800" id="modalTitle">Application Details</h2>
+                                <p class="text-sm text-gray-500">Comprehensive application information</p>
+                            </div>
+                        </div>
+                        <button onclick="closeApplicationModal()" class="w-10 h-10 bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 rounded-full flex items-center justify-center transition-colors duration-200 shadow-sm">
+                            <i class="fas fa-times text-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Modal Body with Scroll -->
+                    <div class="overflow-y-auto max-h-[calc(95vh-140px)] px-2">
+                        <!-- Basic applicant info -->
+                        <div class="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100">
+                            <div class="flex items-center mb-6">
+                                <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4 shadow-lg">
+                                    <i class="fas fa-user-graduate text-white text-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-gray-800">Applicant Information</h3>
+                                    <p class="text-sm text-gray-600">Basic details of the scholarship applicant</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="applicantBasicInfo">
+                                <!-- Basic info will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Intake Sheet Information (for Reviewed status) -->
+                        <div id="intakeSheetInfo" class="hidden space-y-8">
+                            <!-- Head of Family Section -->
+                            <div class="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-100">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-home text-white"></i>
+                                    </div>
+                                    <h3 class="text-xl font-semibold text-gray-800">Head of Family</h3>
+                                </div>
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" id="headOfFamilyInfo">
+                                    <!-- Head of family info will be populated here -->
+                                </div>
+                            </div>
+
+                            <!-- Household Information Section -->
+                            <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-xl border border-amber-100">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-house-user text-white"></i>
+                                    </div>
+                                    <h3 class="text-xl font-semibold text-gray-800">Household Information</h3>
+                                </div>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="householdInfo">
+                                    <!-- Household info will be populated here -->
+                                </div>
+                            </div>
+
+                            <!-- Family Members Section -->
+                            <div class="bg-gradient-to-r from-rose-50 to-pink-50 p-6 rounded-xl border border-rose-100">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-10 h-10 bg-rose-500 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-users text-white"></i>
+                                    </div>
+                                    <h3 class="text-xl font-semibold text-gray-800">Family Members</h3>
+                                </div>
+                                <div class="overflow-x-auto shadow-sm rounded-lg border border-gray-200">
+                                    <table class="w-full border-collapse bg-white">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Name</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Relation</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Birthdate</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Age</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Sex</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Civil Status</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Education</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Occupation</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Income</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Remarks</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="familyMembersTable" class="divide-y divide-gray-200">
+                                            <!-- Family members will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Service Records Section -->
+                            <div class="bg-gradient-to-r from-cyan-50 to-blue-50 p-6 rounded-xl border border-cyan-100">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-clipboard-list text-white"></i>
+                                    </div>
+                                    <h3 class="text-xl font-semibold text-gray-800">Social Service Records</h3>
+                                </div>
+                                <div class="overflow-x-auto shadow-sm rounded-lg border border-gray-200">
+                                    <table class="w-full border-collapse bg-white">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Date</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Problem/Need</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Action/Assistance</th>
+                                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Remarks</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="serviceRecordsTable" class="divide-y divide-gray-200">
+                                            <!-- Service records will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Documents Section -->
+                        <div class="bg-gradient-to-r from-purple-50 to-violet-50 p-6 rounded-xl border border-purple-100">
+                            <div class="flex items-center mb-4">
+                                <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-file-alt text-white"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800">Supporting Documents</h3>
+                            </div>
+                            <div id="documentsContainer" class="space-y-4">
+                                <!-- Documents will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="flex justify-end mt-6 pt-4 border-t border-gray-100">
+                        <button onclick="closeApplicationModal()" class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm font-medium">
+                            <i class="fas fa-times mr-2"></i>Close
+                        </button>
+                    </div>
                 </div>
             </div>
-            <button onclick="closeApplicationModal()" class="w-10 h-10 bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 rounded-full flex items-center justify-center transition-colors duration-200 shadow-sm">
-                <i class="fas fa-times text-lg"></i>
-            </button>
-        </div>
-
-        <!-- Modal Body with Scroll -->
-        <div class="overflow-y-auto max-h-[calc(95vh-140px)] px-2">
-            <!-- Basic applicant info -->
-            <div class="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100">
-                <div class="flex items-center mb-6">
-                    <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4 shadow-lg">
-                        <i class="fas fa-user-graduate text-white text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-2xl font-bold text-gray-800">Applicant Information</h3>
-                        <p class="text-sm text-gray-600">Basic details of the scholarship applicant</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="applicantBasicInfo">
-                    <!-- Basic info will be populated here -->
-                </div>
-            </div>
-
-            <!-- Intake Sheet Information (for Reviewed status) -->
-            <div id="intakeSheetInfo" class="hidden space-y-8">
-                <!-- Head of Family Section -->
-                <div class="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-100">
-                    <div class="flex items-center mb-4">
-                        <div class="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-home text-white"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800">Head of Family</h3>
-                    </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" id="headOfFamilyInfo">
-                        <!-- Head of family info will be populated here -->
-                    </div>
-                </div>
-
-                <!-- Household Information Section -->
-                <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-xl border border-amber-100">
-                    <div class="flex items-center mb-4">
-                        <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-house-user text-white"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800">Household Information</h3>
-                    </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="householdInfo">
-                        <!-- Household info will be populated here -->
-                    </div>
-                </div>
-
-                <!-- Family Members Section -->
-                <div class="bg-gradient-to-r from-rose-50 to-pink-50 p-6 rounded-xl border border-rose-100">
-                    <div class="flex items-center mb-4">
-                        <div class="w-10 h-10 bg-rose-500 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-users text-white"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800">Family Members</h3>
-                    </div>
-                    <div class="overflow-x-auto shadow-sm rounded-lg border border-gray-200">
-                        <table class="w-full border-collapse bg-white">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Name</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Relation</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Birthdate</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Age</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Sex</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Civil Status</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Education</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Occupation</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Income</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Remarks</th>
-                                </tr>
-                            </thead>
-                            <tbody id="familyMembersTable" class="divide-y divide-gray-200">
-                                <!-- Family members will be populated here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Service Records Section -->
-                <div class="bg-gradient-to-r from-cyan-50 to-blue-50 p-6 rounded-xl border border-cyan-100">
-                    <div class="flex items-center mb-4">
-                        <div class="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-clipboard-list text-white"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800">Social Service Records</h3>
-                    </div>
-                    <div class="overflow-x-auto shadow-sm rounded-lg border border-gray-200">
-                        <table class="w-full border-collapse bg-white">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Date</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Problem/Need</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Action/Assistance</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Remarks</th>
-                                </tr>
-                            </thead>
-                            <tbody id="serviceRecordsTable" class="divide-y divide-gray-200">
-                                <!-- Service records will be populated here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Documents Section -->
-            <div class="bg-gradient-to-r from-purple-50 to-violet-50 p-6 rounded-xl border border-purple-100">
-                <div class="flex items-center mb-4">
-                    <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-file-alt text-white"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-800">Supporting Documents</h3>
-                </div>
-                <div id="documentsContainer" class="space-y-4">
-                    <!-- Documents will be populated here -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="flex justify-end mt-6 pt-4 border-t border-gray-100">
-            <button onclick="closeApplicationModal()" class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm font-medium">
-                <i class="fas fa-times mr-2"></i>Close
-            </button>
-        </div>
-    </div>
-</div>
             <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize pagination and filtering
