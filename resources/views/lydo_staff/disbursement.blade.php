@@ -354,12 +354,8 @@
                     </form>
                 </div>
             </div>
-            <div class="flex-1 main-content-area p-4 md:p-5 text-[16px]">
+            <div class="flex-1 main-content-area p-4 md:p-2 text-[16px]">
                 <div class="p-4 bg-gray-50 min-h-screen rounded-lg shadow">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-3xl font-bold text-gray-800">Disbursement Records</h2>
-                    </div>
-
                     <!-- Disbursement Tabs -->
                     <div class="bg-white p-6 rounded-lg shadow-md">
                         <h2 class="text-2xl font-semibold mb-4 text-gray-800">Disbursement Records</h2>
@@ -423,12 +419,12 @@
                                         <table class="w-full table-fixed border-collapse text-[17px]">
                                             <thead class="bg-violet-600 text-white uppercase text-sm sticky top-0 z-10">
                                                 <tr>
-                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Full Name</th>
-                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Barangay</th>
-                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Semester</th>
-                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Academic Year</th>
-                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Amount</th>
-                                                   <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Action</th>
+                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-center">Full Name</th>
+                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-center">Barangay</th>
+                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-center">Semester</th>
+                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-canter">Academic Year</th>
+                                                    <th class="w-1/6 px-4 py-3 border border-gray-200 text-canter">Amount</th>
+                                                   <th class="w-1/6 px-4 py-3 border border-gray-200 text-center">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>

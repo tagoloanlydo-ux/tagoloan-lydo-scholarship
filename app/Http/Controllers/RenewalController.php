@@ -273,145 +273,163 @@ class RenewalController extends Controller
     $currentYear = date("Y");
 
     // ✅ Pending renewals (current year only) - NEWEST FIRST
-    $tableApplicants = DB::table("tbl_renewal as r")
-        ->join("tbl_scholar as s", "r.scholar_id", "=", "s.scholar_id")
-        ->join(
-            "tbl_application as ap",
-            "s.application_id",
-            "=",
-            "ap.application_id",
+ // Pending renewals
+$tableApplicants = DB::table("tbl_renewal as r")
+    ->join("tbl_scholar as s", "r.scholar_id", "=", "s.scholar_id")
+    ->join("tbl_application as ap", "s.application_id", "=", "ap.application_id")
+    ->join("tbl_applicant as a", "ap.applicant_id", "=", "a.applicant_id")
+    ->select(
+        "r.renewal_id",
+        "a.applicant_id",
+        "a.applicant_fname",
+        "a.applicant_lname",
+        "a.applicant_mname",
+        "a.applicant_suffix",
+        "a.applicant_brgy",
+        "a.applicant_year_level",
+        "a.applicant_email",
+        "a.applicant_school_name",
+        "r.renewal_status",
+        "r.renewal_semester",
+        "r.renewal_cert_of_reg",
+        "r.renewal_grade_slip",
+        "r.renewal_brgy_indigency",
+        "r.renewal_acad_year",
+        "ap.application_id",
+        "s.scholar_id",
+        "r.created_at",
+        DB::raw("
+            CONCAT(
+                UPPER(LEFT(a.applicant_lname, 1)), LOWER(SUBSTRING(a.applicant_lname, 2)), ', ',
+                UPPER(LEFT(a.applicant_fname, 1)), LOWER(SUBSTRING(a.applicant_fname, 2)), ' ',
+                IFNULL(CONCAT(UPPER(LEFT(a.applicant_mname, 1)), '.'), ''),
+                IFNULL(CONCAT(' ', UPPER(LEFT(a.applicant_suffix, 1)), LOWER(SUBSTRING(a.applicant_suffix, 2))), '')
+            ) as full_name
+        ")
+    )
+    ->where("r.renewal_status", "Pending")
+    ->where("r.renewal_acad_year", $currentAcadYear)
+    ->when($request->search, function ($query, $search) {
+        $query->where(function ($q) use ($search) {
+            $q->where("a.applicant_fname", "like", "%$search%")
+              ->orWhere("a.applicant_lname", "like", "%$search%");
+        });
+    })
+    ->when($request->barangay, function ($query, $barangay) {
+        $query->where("a.applicant_brgy", $barangay);
+    })
+    ->orderBy(DB::raw("
+        CONCAT(
+            UPPER(LEFT(a.applicant_lname, 1)), LOWER(SUBSTRING(a.applicant_lname, 2)), ', ',
+            UPPER(LEFT(a.applicant_fname, 1)), LOWER(SUBSTRING(a.applicant_fname, 2))
         )
-        ->join(
-            "tbl_applicant as a",
-            "ap.applicant_id",
-            "=",
-            "a.applicant_id",
-        )
-        ->select(
-            "r.renewal_id",
-            "a.applicant_id",
-            "a.applicant_fname",
-            "a.applicant_lname",
-            "a.applicant_brgy",
-            "a.applicant_year_level",
-            "a.applicant_email",
-            "a.applicant_school_name",
-            "r.renewal_status",
-            "r.renewal_semester",
-            "r.renewal_cert_of_reg",
-            "r.renewal_grade_slip",
-            "r.renewal_brgy_indigency",
-            "r.renewal_acad_year",
-            "ap.application_id",
-            "s.scholar_id",
-            "r.created_at" // Add created_at for ordering
-        )
-        ->where("r.renewal_status", "Pending")
-        ->where("r.renewal_acad_year", $currentAcadYear)
-        ->when($request->search, function ($query, $search) {
-            $query->where(function ($q) use ($search) {
-                $q->where(
-                    "a.applicant_fname",
-                    "like",
-                    "%$search%",
-                )->orWhere("a.applicant_lname", "like", "%$search%");
-            });
-        })
-        ->when($request->barangay, function ($query, $barangay) {
-            $query->where("a.applicant_brgy", $barangay);
-        })
-        ->orderBy("r.created_at", "desc") // NEWEST RENEWALS FIRST
-        ->paginate();
+    "))
+    ->get();
 
-    $renewals = DB::table("tbl_renewal")
-        ->select(
-            "renewal_id",
-            "scholar_id",
-            "renewal_cert_of_reg",
-            "renewal_grade_slip",
-            "renewal_brgy_indigency",
-            "renewal_semester",
-            "renewal_acad_year",
-            "date_submitted",
-            "renewal_status",
-        )
-        ->get()
-        ->groupBy("scholar_id");
 
-    // para dropdown filter ng barangay
-    $barangays = DB::table("tbl_applicant")
-        ->select("applicant_brgy")
-        ->distinct()
-        ->pluck("applicant_brgy");
+// Grouped renewals by scholar
+$renewals = DB::table("tbl_renewal")
+    ->select(
+        "renewal_id",
+        "scholar_id",
+        "renewal_cert_of_reg",
+        "renewal_grade_slip",
+        "renewal_brgy_indigency",
+        "renewal_semester",
+        "renewal_acad_year",
+        "date_submitted",
+        "renewal_status"
+    )
+    ->get()
+    ->groupBy("scholar_id");
 
-    $notifications = DB::table("tbl_application_personnel")
-        ->join(
-            "tbl_application",
-            "tbl_application_personnel.application_id",
-            "=",
-            "tbl_application.application_id",
-        )
-        ->join(
-            "tbl_applicant",
-            "tbl_application.applicant_id",
-            "=",
-            "tbl_applicant.applicant_id",
-        )
-        ->select(
-            "tbl_application_personnel.*",
-            DB::raw("CONCAT(
+// Barangay dropdown
+$barangays = DB::table("tbl_applicant")
+    ->select("applicant_brgy")
+    ->distinct()
+    ->pluck("applicant_brgy");
+
+// Notifications (limit 5)
+$notifications = DB::table("tbl_application_personnel")
+    ->join(
+        "tbl_application",
+        "tbl_application_personnel.application_id",
+        "=",
+        "tbl_application.application_id"
+    )
+    ->join(
+        "tbl_applicant",
+        "tbl_application.applicant_id",
+        "=",
+        "tbl_applicant.applicant_id"
+    )
+    ->select(
+        "tbl_application_personnel.*",
+        DB::raw("CONCAT(
             tbl_applicant.applicant_fname, ' ',
             COALESCE(tbl_applicant.applicant_mname, ''), ' ',
             tbl_applicant.applicant_lname,
             IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')
-        ) as name"),
-        )
-        ->where(function ($q) {
-            $q->where(
-                "tbl_application_personnel.initial_screening",
-                "Approved",
-            )->orWhere("tbl_application_personnel.status", "Renewed");
-        })
-        ->orderBy("tbl_application_personnel.created_at", "desc")
-        ->limit(5)
-        ->get();
+        ) as name")
+    )
+    ->where(function ($q) {
+        $q->where("tbl_application_personnel.initial_screening", "Approved")
+          ->orWhere("tbl_application_personnel.status", "Renewed");
+    })
+    ->orderBy("tbl_application_personnel.created_at", "desc")
+    ->limit(5)
+    ->get();
 
-    $listView = DB::table("tbl_renewal as r")
-        ->join("tbl_scholar as s", "r.scholar_id", "=", "s.scholar_id")
-        ->join("tbl_application as ap", "s.application_id", "=", "ap.application_id")
-        ->join("tbl_applicant as a", "ap.applicant_id", "=", "a.applicant_id")
-        ->select(
-            "s.scholar_id",
-            "r.renewal_id",
-            "a.applicant_id",
-            "a.applicant_fname",
-            "a.applicant_mname",
-            "a.applicant_lname",
-            "a.applicant_suffix",
-            "a.applicant_brgy",
-            "a.applicant_school_name",
-            "a.applicant_course",
-            "a.applicant_year_level",
-            "r.renewal_status",
-             "r.renewal_semester",
-            "r.renewal_acad_year",
-            "ap.application_id",
-            "r.created_at" // Add created_at for ordering
+
+// Approved / Rejected renewals
+$listView = DB::table("tbl_renewal as r")
+    ->join("tbl_scholar as s", "r.scholar_id", "=", "s.scholar_id")
+    ->join("tbl_application as ap", "s.application_id", "=", "ap.application_id")
+    ->join("tbl_applicant as a", "ap.applicant_id", "=", "a.applicant_id")
+    ->select(
+        "s.scholar_id",
+        "r.renewal_id",
+        "a.applicant_id",
+        "a.applicant_fname",
+        "a.applicant_mname",
+        "a.applicant_lname",
+        "a.applicant_suffix",
+        "a.applicant_brgy",
+        "a.applicant_school_name",
+        "a.applicant_course",
+        "a.applicant_year_level",
+        "r.renewal_status",
+        "r.renewal_semester",
+        "r.renewal_acad_year",
+        "ap.application_id",
+        "r.created_at",
+        DB::raw("
+            CONCAT(
+                UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)), ', ',
+                UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)), ' ',
+                IFNULL(CONCAT(UPPER(LEFT(a.applicant_mname,1)), '.'), ''),
+                IFNULL(CONCAT(' ', UPPER(LEFT(a.applicant_suffix,1)), LOWER(SUBSTRING(a.applicant_suffix,2))), '')
+            ) as full_name
+        ")
+    )
+    ->whereIn("r.renewal_status", ["Approved", "Rejected"])
+    ->where("r.renewal_acad_year", $currentAcadYear)
+    ->when($request->search, function ($query, $search) {
+        $query->where(function ($q) use ($search) {
+            $q->where("a.applicant_fname", "like", "%$search%")
+              ->orWhere("a.applicant_lname", "like", "%$search%");
+        });
+    })
+    ->when($request->barangay, function ($query, $barangay) {
+        $query->where("a.applicant_brgy", $barangay);
+    })
+    ->orderBy(DB::raw("
+        CONCAT(
+            UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)), ', ',
+            UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2))
         )
-        ->whereIn("r.renewal_status", ["Approved", "Rejected"])
-        ->where("r.renewal_acad_year", $currentAcadYear)
-        ->when($request->search, function ($query, $search) {
-            $query->where(function ($q) use ($search) {
-                $q->where("a.applicant_fname", "like", "%$search%")
-                  ->orWhere("a.applicant_lname", "like", "%$search%");
-            });
-        })
-        ->when($request->barangay, function ($query, $barangay) {
-            $query->where("a.applicant_brgy", $barangay);
-        })
-        ->orderBy("r.created_at", "desc") // NEWEST RENEWALS FIRST
-        ->paginate()
-        ->appends($request->all());
+    "))
+    ->get();
 
     return view(
         "lydo_staff.renewal",

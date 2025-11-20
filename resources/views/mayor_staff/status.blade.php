@@ -208,8 +208,8 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">Full Name</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">School Name</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Application</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Remarks</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Actions</th>
                                 </tr>
                             </thead>
 
@@ -218,11 +218,31 @@
                                 <tr class="hover:bg-gray-50 border-b" data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}" data-barangay="{{ $app->barangay }}" data-remarks="{{ $app->remarks }}">
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
-                                        {{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}
+                                        {{ ucfirst(strtolower($app->lname)) }}, 
+                                        {{ ucfirst(strtolower($app->fname)) }}
+                                        
+                                        @if(!empty($app->mname))
+                                            {{ strtoupper(substr($app->mname, 0, 1)) }}.
+                                        @endif
+
+                                        @if(!empty($app->suffix))
+                                            {{ ucfirst(strtolower($app->suffix)) }}
+                                        @endif
                                     </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->barangay }}</td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         {{ $app->school ?? 'N/A' }}
+                                    </td>
+                                    <td class="px-4 py-2 border border-gray-200 text-center">
+                                        <div class="flex gap-2 justify-center">
+                                            <button
+                                                title="View Intake Sheet"
+                                                class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow view-intake-btn"
+                                                data-id="{{ $app->application_personnel_id }}"
+                                                data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}">
+                                                <i class="fas fa-eye mr-1"></i> Review
+                                            </button>
+                                        </div>
                                     </td>
                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                         <span class="px-2 py-1 text-sm rounded-lg
@@ -232,17 +252,6 @@
                                             @endif">
                                             {{ $app->remarks }}
                                         </span>
-                                    </td>
-                                    <td class="px-4 py-2 border border-gray-200 text-center">
-                                        <div class="flex gap-2 justify-center">
-                                            <button
-                                                title="View Intake Sheet"
-                                                class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow view-intake-btn"
-                                                data-id="{{ $app->application_personnel_id }}"
-                                                data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}">
-                                                <i class="fas fa-eye mr-1"></i> Review Application
-                                            </button>
-                                        </div>
                                     </td>
                                 </tr>
                                 @empty
@@ -311,20 +320,21 @@
                             <tr class="hover:bg-gray-50 border-b" data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}" data-barangay="{{ $app->barangay }}" data-status="{{ $app->status }}">
                                 <td class="px-4 border border-gray-200 py-2 text-center">{{ $index + 1 }}</td>
                                 <td class="px-4 border border-gray-200 py-2 text-center">
-                                    {{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}
+                                    {{ ucfirst(strtolower($app->lname)) }}, 
+                                    {{ ucfirst(strtolower($app->fname)) }}
+                                    
+                                    @if(!empty($app->mname))
+                                        {{ strtoupper(substr($app->mname, 0, 1)) }}.
+                                    @endif
+
+                                    @if(!empty($app->suffix))
+                                        {{ ucfirst(strtolower($app->suffix)) }}
+                                    @endif
                                 </td>
+
                                 <td class="px-4 border border-gray-200 py-2 text-center">{{ $app->barangay }}</td>
                                 <td class="px-4 border border-gray-200 py-2 text-center">
                                     {{ $app->school ?? 'N/A' }}
-                                </td>
-                                <td class="px-4 border border-gray-200 py-2 text-center">
-                                    <span class="px-2 py-1 text-sm rounded-lg
-                                        @if($app->status == 'Approved') bg-green-100 text-green-800
-                                        @elseif($app->status == 'Rejected') bg-red-100 text-red-800
-                                        @else bg-gray-100 text-gray-800
-                                        @endif">
-                                        {{ $app->status }}
-                                    </span>
                                 </td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
                                     <div class="flex gap-2 justify-center">
@@ -334,9 +344,18 @@
                                             data-id="{{ $app->application_personnel_id }}"
                                             data-name="{{ $app->fname }} {{ $app->mname }} {{ $app->lname }} {{ $app->suffix }}"
                                             data-status="{{ $app->status }}">
-                                            <i class="fas fa-eye mr-1"></i> View Details
+                                            <i class="fas fa-eye mr-1"></i> View
                                         </button>
                                     </div>
+                                </td>
+                                <td class="px-4 border border-gray-200 py-2 text-center">
+                                    <span class="px-2 py-1 text-sm rounded-lg
+                                        @if($app->status == 'Approved') bg-green-100 text-green-800
+                                        @elseif($app->status == 'Rejected') bg-red-100 text-red-800
+                                        @else bg-gray-100 text-gray-800
+                                        @endif">
+                                        {{ $app->status }}
+                                    </span>
                                 </td>
                             </tr>
                             @empty
