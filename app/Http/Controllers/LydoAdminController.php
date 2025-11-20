@@ -176,22 +176,25 @@ private function getScholarStatisticsPerYear()
 
     return $stats;
 }
+
 public function lydo()
 {
-    // Change from get() to paginate()
     $inactiveStaff = DB::table('tbl_lydopers')
         ->where('lydopers_role', 'lydo_staff')
         ->where('lydopers_status', 'inactive')
-        ->paginate(15); // Add pagination
+        ->orderBy('lydopers_lname') // Alphabetical by last name
+        ->paginate(15);
 
-    // Change from get() to paginate()
     $activeStaff = DB::table('tbl_lydopers')
         ->where('lydopers_role', 'lydo_staff')
         ->where('lydopers_status', 'active')
-        ->paginate(15); // Add pagination
+        ->orderBy('lydopers_lname') // Alphabetical by last name
+        ->paginate(15);
 
     return view('lydo_admin.lydo', compact('inactiveStaff', 'activeStaff'));
 }
+
+
 
    
     public function toggleStatus($id)
@@ -212,21 +215,47 @@ public function lydo()
         return redirect()->back()->with('success', 'Status updated successfully!');
     }
 
-    public function mayor()
-    {
+public function mayor()
+{
+    // Inactive Mayor Staff
+    $inactiveStaff = DB::table('tbl_lydopers')
+        ->select(
+            '*',
+            DB::raw("CONCAT(
+                UPPER(LEFT(lydopers_lname,1)), LOWER(SUBSTRING(lydopers_lname,2)),
+                ', ',
+                UPPER(LEFT(lydopers_fname,1)), LOWER(SUBSTRING(lydopers_fname,2)),
+                IF(lydopers_mname IS NOT NULL AND lydopers_mname != '', CONCAT(' ', UPPER(LEFT(lydopers_mname,1)), '.'), ''),
+                IF(lydopers_suffix IS NOT NULL AND lydopers_suffix != '', CONCAT(' ', lydopers_suffix), '')
+            ) as full_name")
+        )
+        ->where('lydopers_role', 'mayor_staff')
+        ->where('lydopers_status', 'inactive')
+        ->orderBy('lydopers_lname', 'asc')
+        ->orderBy('lydopers_fname', 'asc')
+        ->paginate(15, ['*'], 'inactive_page');
 
-        $inactiveStaff = DB::table('tbl_lydopers')
-            ->where('lydopers_role', 'mayor_staff')
-            ->where('lydopers_status', 'inactive')
-            ->paginate(15, ['*'], 'inactive_page');
+    // Active Mayor Staff
+    $activeStaff = DB::table('tbl_lydopers')
+        ->select(
+            '*',
+            DB::raw("CONCAT(
+                UPPER(LEFT(lydopers_lname,1)), LOWER(SUBSTRING(lydopers_lname,2)),
+                ', ',
+                UPPER(LEFT(lydopers_fname,1)), LOWER(SUBSTRING(lydopers_fname,2)),
+                IF(lydopers_mname IS NOT NULL AND lydopers_mname != '', CONCAT(' ', UPPER(LEFT(lydopers_mname,1)), '.'), ''),
+                IF(lydopers_suffix IS NOT NULL AND lydopers_suffix != '', CONCAT(' ', lydopers_suffix), '')
+            ) as full_name")
+        )
+        ->where('lydopers_role', 'mayor_staff')
+        ->where('lydopers_status', 'active')
+        ->orderBy('lydopers_lname', 'asc')
+        ->orderBy('lydopers_fname', 'asc')
+        ->paginate(15, ['*'], 'active_page');
 
-        $activeStaff = DB::table('tbl_lydopers')
-            ->where('lydopers_role', 'mayor_staff')
-            ->where('lydopers_status', 'active')
-            ->paginate(15, ['*'], 'active_page');
+    return view('lydo_admin.mayor', compact('inactiveStaff', 'activeStaff'));
+}
 
-        return view('lydo_admin.mayor', compact( 'inactiveStaff', 'activeStaff'));
-    }
 
 
     public function sendEmail(Request $request)
@@ -294,10 +323,8 @@ public function lydo()
         }
     }
 
-
 public function status()
 {
-
     // Fetch active scholars without renewal applications
     $scholarsWithoutRenewal = DB::table('tbl_scholar as s')
         ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
@@ -316,10 +343,19 @@ public function status()
             'a.applicant_course',
             'a.applicant_year_level',
             'a.applicant_brgy',
-            DB::raw("CONCAT(a.applicant_fname, ' ', a.applicant_lname) as full_name")
+            DB::raw("CONCAT(
+                UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)), 
+                ', ', 
+                UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
+                IF(a.applicant_mname IS NOT NULL AND a.applicant_mname != '', CONCAT(' ', UPPER(LEFT(a.applicant_mname, 1)), '.'), ''),
+                IF(a.applicant_suffix IS NOT NULL AND a.applicant_suffix != '', CONCAT(' ', a.applicant_suffix), '')
+            ) as full_name")
         )
         ->where('s.scholar_status', 'active')
         ->whereNull('r.renewal_id')
+        // ✅ Alphabetical
+        ->orderBy('a.applicant_lname', 'asc')
+        ->orderBy('a.applicant_fname', 'asc')
         ->paginate(15);
 
     // Fetch graduating scholars (4th Year and 5th Year)
@@ -339,10 +375,19 @@ public function status()
             'a.applicant_course',
             'a.applicant_year_level',
             'a.applicant_brgy',
-            DB::raw("CONCAT(a.applicant_fname, ' ', a.applicant_lname) as full_name")
+            DB::raw("CONCAT(
+                UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)), 
+                ', ', 
+                UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
+                IF(a.applicant_mname IS NOT NULL AND a.applicant_mname != '', CONCAT(' ', UPPER(LEFT(a.applicant_mname, 1)), '.'), ''),
+                IF(a.applicant_suffix IS NOT NULL AND a.applicant_suffix != '', CONCAT(' ', a.applicant_suffix), '')
+            ) as full_name")
         )
         ->where('s.scholar_status', 'active')
         ->whereIn('a.applicant_year_level', ['4th Year', '5th Year'])
+        // ✅ Alphabetical
+        ->orderBy('a.applicant_lname', 'asc')
+        ->orderBy('a.applicant_fname', 'asc')
         ->paginate(15);
 
     // Get distinct barangays for filter dropdown
@@ -389,12 +434,10 @@ public function markAsGraduated(Request $request)
 
         return redirect()->back()->with('success', 'Scholar status updated successfully!');
     }
-
 public function disbursement(Request $request)
 {
     // Check if this is an AJAX request for filtering
     if ($request->ajax()) {
-        // Get disbursement records with applicant information
         $query = DB::table('tbl_disburse as d')
             ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
             ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
@@ -405,15 +448,23 @@ public function disbursement(Request $request)
                 'd.disburse_amount',
                 'd.disburse_date',
                 'a.applicant_brgy',
-                DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+                DB::raw("
+                    CONCAT(
+                        UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)),
+                        ', ',
+                        UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
+                        ' ',
+                        IF(a.applicant_mname IS NOT NULL AND a.applicant_mname != '', CONCAT(UPPER(LEFT(a.applicant_mname,1)), '.'), ''),
+                        ' ',
+                        IF(a.applicant_suffix IS NOT NULL, a.applicant_suffix, '')
+                    ) as full_name
+                ")
             );
 
-        // Filter for unsigned disbursements if type is not specified
         if ($request->input('type') !== 'signed') {
             $query->whereNull('d.disburse_signature');
         }
 
-        // Apply search filter
         if ($request->has('search') && !empty($request->search)) {
             $query->where(function($q) use ($request) {
                 $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
@@ -422,24 +473,24 @@ public function disbursement(Request $request)
             });
         }
 
-        // Apply barangay filter
         if ($request->has('barangay') && !empty($request->barangay)) {
             $query->where('a.applicant_brgy', $request->barangay);
         }
 
-        // Apply academic year filter
         if ($request->has('academic_year') && !empty($request->academic_year)) {
             $query->where('d.disburse_acad_year', $request->academic_year);
         }
 
-        // Apply semester filter
         if ($request->has('semester') && !empty($request->semester)) {
             $query->where('d.disburse_semester', $request->semester);
         }
 
+        // ✅ Sort alphabetically by last name
+        $query->orderBy('a.applicant_lname', 'asc')
+              ->orderBy('a.applicant_fname', 'asc');
+
         $disbursements = $query->get();
 
-        // Format the data for JSON response
         $formattedDisbursements = $disbursements->map(function ($disburse) {
             return [
                 'full_name' => $disburse->full_name,
@@ -454,7 +505,7 @@ public function disbursement(Request $request)
         return response()->json($formattedDisbursements);
     }
 
-    // Get scholars with academic year filtering
+    // Scholars query
     $scholarsQuery = DB::table('tbl_scholar as s')
         ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
         ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
@@ -465,19 +516,32 @@ public function disbursement(Request $request)
             'a.applicant_lname',
             'a.applicant_suffix',
             'a.applicant_brgy',
-            'a.applicant_acad_year', // Add this
-            DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+            'a.applicant_acad_year',
+            DB::raw("
+                CONCAT(
+                    UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)),
+                    ', ',
+                    UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
+                    ' ',
+                    IF(a.applicant_mname IS NOT NULL AND a.applicant_mname != '', CONCAT(UPPER(LEFT(a.applicant_mname,1)), '.'), ''),
+                    ' ',
+                    IF(a.applicant_suffix IS NOT NULL, a.applicant_suffix, '')
+                ) as full_name
+            ")
         )
         ->where('s.scholar_status', 'active');
 
-    // Apply academic year filter for scholars
     if ($request->has('scholar_academic_year') && !empty($request->scholar_academic_year)) {
         $scholarsQuery->where('a.applicant_acad_year', $request->scholar_academic_year);
     }
 
+    // ✅ Alphabetical
+    $scholarsQuery->orderBy('a.applicant_lname', 'asc')
+                  ->orderBy('a.applicant_fname', 'asc');
+
     $scholars = $scholarsQuery->get();
 
-    // Get UNSIGNED disbursement records (where disburse_signature is NULL)
+    // Unsigned disbursements
     $unsignedQuery = DB::table('tbl_disburse as d')
         ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
         ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
@@ -494,11 +558,20 @@ public function disbursement(Request $request)
             'a.applicant_lname',
             'a.applicant_suffix',
             'a.applicant_brgy',
-            DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+            DB::raw("
+                CONCAT(
+                    UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)),
+                    ', ',
+                    UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
+                    ' ',
+                    IF(a.applicant_mname IS NOT NULL AND a.applicant_mname != '', CONCAT(UPPER(LEFT(a.applicant_mname,1)), '.'), ''),
+                    ' ',
+                    IF(a.applicant_suffix IS NOT NULL, a.applicant_suffix, '')
+                ) as full_name
+            ")
         )
-        ->whereNull('d.disburse_signature'); // Only unsigned disbursements
+        ->whereNull('d.disburse_signature');
 
-    // Apply search filter for unsigned
     if ($request->has('search') && !empty($request->search)) {
         $unsignedQuery->where(function($q) use ($request) {
             $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
@@ -507,45 +580,30 @@ public function disbursement(Request $request)
         });
     }
 
-    // Apply barangay filter for unsigned
     if ($request->has('barangay') && !empty($request->barangay)) {
         $unsignedQuery->where('a.applicant_brgy', $request->barangay);
     }
 
-    // Apply academic year filter for unsigned
     if ($request->has('academic_year') && !empty($request->academic_year)) {
         $unsignedQuery->where('d.disburse_acad_year', $request->academic_year);
     }
 
-    // Apply semester filter for unsigned
     if ($request->has('semester') && !empty($request->semester)) {
         $unsignedQuery->where('d.disburse_semester', $request->semester);
     }
 
+    // ✅ Alphabetical
+    $unsignedQuery->orderBy('a.applicant_lname', 'asc')
+                  ->orderBy('a.applicant_fname', 'asc');
+
     $disbursements = $unsignedQuery->get();
 
-    // Get distinct barangays for filter dropdown
-    $barangays = DB::table('tbl_applicant')
-        ->select('applicant_brgy')
-        ->distinct()
-        ->orderBy('applicant_brgy', 'asc')
-        ->pluck('applicant_brgy');
+    // Dropdowns
+    $barangays = DB::table('tbl_applicant')->select('applicant_brgy')->distinct()->orderBy('applicant_brgy', 'asc')->pluck('applicant_brgy');
+    $academicYears = DB::table('tbl_disburse')->select('disburse_acad_year')->distinct()->orderBy('disburse_acad_year', 'desc')->pluck('disburse_acad_year');
+    $semesters = DB::table('tbl_disburse')->select('disburse_semester')->distinct()->orderBy('disburse_semester', 'asc')->pluck('disburse_semester');
 
-    // Get distinct academic years for filter dropdown
-    $academicYears = DB::table('tbl_disburse')
-        ->select('disburse_acad_year')
-        ->distinct()
-        ->orderBy('disburse_acad_year', 'desc')
-        ->pluck('disburse_acad_year');
-
-    // Get distinct semesters for filter dropdown
-    $semesters = DB::table('tbl_disburse')
-        ->select('disburse_semester')
-        ->distinct()
-        ->orderBy('disburse_semester', 'asc')
-        ->pluck('disburse_semester');
-
-    // Get SIGNED disbursements (where disburse_signature is NOT NULL)
+    // Signed disbursements
     $signedQuery = DB::table('tbl_disburse as d')
         ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
         ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
@@ -562,11 +620,20 @@ public function disbursement(Request $request)
             'a.applicant_lname',
             'a.applicant_suffix',
             'a.applicant_brgy',
-            DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+            DB::raw("
+                CONCAT(
+                    UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)),
+                    ', ',
+                    UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
+                    ' ',
+                    IF(a.applicant_mname IS NOT NULL AND a.applicant_mname != '', CONCAT(UPPER(LEFT(a.applicant_mname,1)), '.'), ''),
+                    ' ',
+                    IF(a.applicant_suffix IS NOT NULL, a.applicant_suffix, '')
+                ) as full_name
+            ")
         )
-        ->whereNotNull('d.disburse_signature'); // Only signed disbursements
+        ->whereNotNull('d.disburse_signature');
 
-    // Apply search filter for signed
     if ($request->has('search') && !empty($request->search)) {
         $signedQuery->where(function($q) use ($request) {
             $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
@@ -575,24 +642,24 @@ public function disbursement(Request $request)
         });
     }
 
-    // Apply barangay filter for signed
     if ($request->has('barangay') && !empty($request->barangay)) {
         $signedQuery->where('a.applicant_brgy', $request->barangay);
     }
 
-    // Apply academic year filter for signed
     if ($request->has('academic_year') && !empty($request->academic_year)) {
         $signedQuery->where('d.disburse_acad_year', $request->academic_year);
     }
 
-    // Apply semester filter for signed
     if ($request->has('semester') && !empty($request->semester)) {
         $signedQuery->where('d.disburse_semester', $request->semester);
     }
 
+    // ✅ Alphabetical
+    $signedQuery->orderBy('a.applicant_lname', 'asc')
+                ->orderBy('a.applicant_fname', 'asc');
+
     $signedDisbursements = $signedQuery->paginate(15);
 
-    // Get distinct academic years for scholar filter dropdown
     $scholarAcademicYears = DB::table('tbl_applicant')
         ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
         ->join('tbl_scholar', 'tbl_application.application_id', '=', 'tbl_scholar.application_id')
@@ -609,9 +676,10 @@ public function disbursement(Request $request)
         'semesters', 
         'scholars', 
         'signedDisbursements',
-        'scholarAcademicYears' // Add this
+        'scholarAcademicYears'
     ));
 }
+
     public function settings()
     {
         $settings = Settings::first() ?? new Settings();
@@ -693,9 +761,9 @@ public function disbursement(Request $request)
         }
     }
 
- public function applicants(Request $request)
+public function applicants(Request $request)
 {
-      $query = DB::table('tbl_applicant')
+    $query = DB::table('tbl_applicant')
         ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
         ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id')
         ->select(
@@ -706,16 +774,17 @@ public function disbursement(Request $request)
             'tbl_application.brgy_indigency',
             'tbl_application.student_id',
             'tbl_application.date_submitted',
-            'tbl_application_personnel.initial_screening', // Make sure this is selected
+            'tbl_application_personnel.initial_screening',
             'tbl_application_personnel.status'
         );
 
-    // Apply initial screening status filter - default to Approved
+    // Initial screening filter
     $initialScreeningStatus = $request->get('initial_screening', 'Approved');
     if ($initialScreeningStatus && $initialScreeningStatus !== 'all') {
         $query->where('tbl_application_personnel.initial_screening', $initialScreeningStatus);
     }
-    // Apply other filters
+
+    // Other filters
     if ($request->has('search') && !empty($request->search)) {
         $query->where(function($q) use ($request) {
             $q->where('applicant_fname', 'like', '%' . $request->search . '%')
@@ -731,23 +800,27 @@ public function disbursement(Request $request)
         $query->where('applicant_acad_year', $request->academic_year);
     }
 
-    $applicants = $query->get();
+    // Order by last name, first name alphabetically
+    $applicants = $query
+        ->orderBy('applicant_lname', 'asc')
+        ->orderBy('applicant_fname', 'asc')
+        ->orderBy('applicant_mname', 'asc')
+        ->get();
 
-    // Get distinct barangays for filter dropdown
+    // Filter dropdowns
     $barangays = DB::table('tbl_applicant')
         ->select('applicant_brgy')
         ->distinct()
         ->orderBy('applicant_brgy', 'asc')
         ->pluck('applicant_brgy');
 
-    // Get distinct academic years for filter dropdown
     $academicYears = DB::table('tbl_applicant')
         ->select('applicant_acad_year')
         ->distinct()
         ->orderBy('applicant_acad_year', 'desc')
         ->pluck('applicant_acad_year');
 
-    return view('lydo_admin.applicants', compact( 'applicants', 'barangays', 'academicYears', 'initialScreeningStatus'));
+    return view('lydo_admin.applicants', compact('applicants', 'barangays', 'academicYears', 'initialScreeningStatus'));
 }
     public function getAllFilteredApplicants(Request $request)
     {
@@ -1732,5 +1805,23 @@ public function getIntakeSheet($applicationPersonnelId)
 
         return response()->json(['duplicate' => $exists]);
     }
+public function deleteStaff($id)
+{
+    try {
+        $staff = DB::table('tbl_lydopers')->where('lydopers_id', $id)->first();
+        
+        if (!$staff) {
+            return response()->json(['success' => false, 'message' => 'Staff member not found.'], 404);
+        }
+
+        DB::table('tbl_lydopers')->where('lydopers_id', $id)->delete();
+
+        return response()->json(['success' => true, 'message' => 'Staff member deleted successfully.']);
+        
+    } catch (\Exception $e) {
+        \Log::error('Error deleting staff: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Failed to delete staff member.'], 500);
+    }
+}
 }
 

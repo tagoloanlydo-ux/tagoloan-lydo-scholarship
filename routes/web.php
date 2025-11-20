@@ -96,6 +96,7 @@ Route::middleware(['role:lydo_admin'])->group(function () {
     Route::get('/lydo_admin/intake-sheet/{applicationPersonnelId}', [LydoAdminController::class, 'getIntakeSheet']);
     Route::put('/lydo_admin/settings/{id}', [LydoAdminController::class, 'updatePersonalInfo'])->name('LydoAdmin.updatePersonalInfo');
     Route::put('/lydo_admin/settings/password/update', [LydoAdminController::class, 'updatePassword'])->name('LydoAdmin.updatePassword');
+    Route::delete('/lydo_admin/lydo/delete/{id}', [LydoAdminController::class, 'deleteStaff'])->name('lydo_admin.delete_staff');
 });
 
 Route::middleware(['role:lydo_staff'])->group(function () {
@@ -199,9 +200,15 @@ Route::middleware(['scholar.auth'])->group(function () {
     Route::get('/scholar/settings', [ScholarController::class, 'showSettings'])->name('scholar.settings');
     Route::post('/scholar/settings/update', [ScholarController::class, 'updateSettings'])->name('scholar.settings.update');
     Route::post('/scholar/logout', [ScholarController::class, 'logout'])->name('scholar.logout');
-    Route::get('/scholar/renewal-history', [ScholarController::class, 'renewalHistory'])->name('scholar.renewal_history');
-    Route::get('/scholar/renewal/{renewalId}/details', [ScholarController::class, 'getRenewalDetails']);
-   });
+// Add these routes to your web.php file
+
+// Renewal History Routes
+Route::get('/scholar/renewal-history', [ScholarController::class, 'renewalHistory'])
+    ->name('scholar.renewal_history');
+
+Route::get('/scholar/renewal/{renewalId}/details', [ScholarController::class, 'getRenewalDetails'])
+    ->name('scholar.renewal_details');
+});
 
 use App\Http\Controllers\SmsController;
 Route::get('/test-sms', [SmsController::class, 'testSend'])->name('test.sms');

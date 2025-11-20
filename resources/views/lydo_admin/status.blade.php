@@ -28,7 +28,100 @@
     z-index: 9999;
     animation: fadeIn 1s ease forwards;
 }
+/* Center the pagination container */
+.pagination-container {
+    display: flex;
+    justify-content: center; /* Center the content */
+    align-items: center;
+    margin: 1.5rem auto 0 auto; /* Center horizontally */
+    padding: 1rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    max-width: fit-content; /* Only take as much width as needed */
+}
 
+/* For mobile responsiveness */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+.pagination-info {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: white;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 1rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.pagination-page-input {
+    width: 3.5rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    text-align: center;
+}
+
+.pagination-page-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .pagination-buttons {
+        order: -1;
+    }
+}
 .spinner {
     width: 120px;
     height: 120px;
@@ -414,7 +507,7 @@
                                             <th class="px-3 py-2 border border-gray-200 text-center"> <!-- Reduced padding -->
                                                 <input type="checkbox" id="selectAll" class="rounded border-gray-300">
                                             </th>
-                                            <th class="px-3 py-2 border align-middle border-gray-200 text-center">Name</th>
+                                            <th class="px-3 py-2 border align-middle border-gray-200 text-center">Full Name</th>
                                             <th class="px-3 py-2 border border-gray-200 align-middle text-center">Barangay</th>
                                             <th class="px-3 py-2 border border-gray-200 align-middle text-center">Email</th>
                                             <th class="px-3 py-2 border border-gray-200 align-middle text-center">School</th>
@@ -429,9 +522,6 @@
                                             </td>
                                             <td class="px-3 border border-gray-200 py-1 text-center"> <!-- Reduced padding -->
                                                 {{ $scholar->full_name }}
-                                                @if($scholar->applicant_suffix)
-                                                    {{ $scholar->applicant_suffix }}
-                                                @endif
                                             </td>
                                             <td class="px-3 border border-gray-200 py-1 text-center barangay-cell">{{ $scholar->applicant_brgy }}</td>
                                             <td class="px-3 border border-gray-200 py-1 text-center">{{ $scholar->applicant_email }}</td>
@@ -443,9 +533,27 @@
                                 </table>
                             </div>
 
-                            <!-- Pagination -->
-                            <div class="px-4 py-3 bg-white border-t border-gray-200 mt-3"> <!-- Reduced padding and margin -->
-                                <div class="pagination-container" id="paginationContainer"></div>
+                            <div class="px-4 py-3 bg-white border-t border-gray-200 mt-3">
+                                <div class="flex justify-center">
+                                    <div class="pagination-container">
+                                        <div class="pagination-info" id="paginationInfo">
+                                            Showing page 1 of 10
+                                        </div>
+                                        <div class="pagination-buttons">
+                                            <button class="pagination-btn" id="prevPage" disabled>
+                                                <i class="fas fa-chevron-left"></i>
+                                            </button>
+                                            <div class="pagination-page-info">
+                                                Page 
+                                                <input type="number" class="pagination-page-input" id="currentPage" value="1" min="1">
+                                                of <span id="totalPages">1</span>
+                                            </div>
+                                            <button class="pagination-btn" id="nextPage">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                         @else
@@ -521,10 +629,29 @@
                                 </table>
                             </div>
 
-                            <!-- Pagination for Graduating Scholars -->
-                            <div class="px-4 py-3 bg-white border-t border-gray-200 mt-3"> <!-- Reduced padding and margin -->
-                                <div class="pagination-container" id="graduatingPaginationContainer"></div>
+
+                        <div class="px-4 py-3 bg-white border-t border-gray-200 mt-3">
+                            <div class="flex justify-center">
+                                <div class="pagination-container">
+                                    <div class="pagination-info" id="graduatingPaginationInfo">
+                                        Showing page 1 of 10
+                                    </div>
+                                    <div class="pagination-buttons">
+                                        <button class="pagination-btn" id="graduatingPrevPage" disabled>
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <div class="pagination-page-info">
+                                            Page 
+                                            <input type="number" class="pagination-page-input" id="graduatingCurrentPage" value="1" min="1">
+                                            of <span id="graduatingTotalPages">1</span>
+                                        </div>
+                                        <button class="pagination-btn" id="graduatingNextPage">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
                         </form>
                         @else
                         <div class="text-center py-6 text-gray-500"> <!-- Reduced padding -->

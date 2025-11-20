@@ -908,5 +908,48 @@ private function getCurrentAcademicYear()
         ? $currentYear . '-' . ($currentYear + 1)
         : ($currentYear - 1) . '-' . $currentYear;
 }
+// Add this method to your ScholarController class
 
+/**
+ * Display renewal history for the scholar
+ */
+public function renewalHistory()
+{
+    $scholar = session('scholar');
+    if (!$scholar) {
+        return redirect()->route('scholar.login')->withErrors(['error' => 'Please login to view renewal history.']);
+    }
+
+    // Load renewals for the current scholar with pagination
+    $renewals = \App\Models\Renewal::where('scholar_id', $scholar->scholar_id)
+        ->orderBy('date_submitted', 'desc')
+        ->paginate(10);
+
+    return view('scholar.renewal_history', compact('renewals'));
+}
+
+/**
+ * Get renewal details via AJAX
+ */
+public function getRenewalDetails($renewalId)
+{
+    $scholar = session('scholar');
+    if (!$scholar) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+    }
+
+    // Get renewal details and ensure it belongs to the current scholar
+    $renewal = \App\Models\Renewal::where('renewal_id', $renewalId)
+        ->where('scholar_id', $scholar->scholar_id)
+        ->first();
+
+    if (!$renewal) {
+        return response()->json(['success' => false, 'message' => 'Renewal not found'], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'renewal' => $renewal
+    ]);
+}
 }

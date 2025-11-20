@@ -12,7 +12,7 @@ use App\Http\Controllers\API\AdminController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\ReportController;
 use App\Http\Controllers\API\DisbursementController;
-use App\Http\Controllers\API\RenewalController;
+use App\Http\Controllers\API\ScholarRenewalController;
 use App\Http\Controllers\API\AnnouncementController;
 use App\Http\Controllers\API\ApplicationPersonnelController;
 use App\Http\Controllers\MayorStaffController;
@@ -30,6 +30,7 @@ Route::prefix('staging')->group(function () {
 
     // Public routes (no authentication required)
     Route::post('/applicants', [ApplicantController::class, 'store']);
+    Route::get('/applicants', [ApplicantController::class, 'indexPublic']);
 
     // Protected routes with Sanctum
     Route::middleware('auth:sanctum')->group(function () {
@@ -45,11 +46,11 @@ Route::prefix('staging')->group(function () {
             Route::get('/profile', [AuthController::class, 'profile']);
             Route::put('/profile', [AuthController::class, 'updateProfile']);
             Route::get('/announcements', [AnnouncementController::class, 'getScholarAnnouncements']);
-            Route::get('/renewal_app', [RenewalController::class, 'getScholarRenewals']);
-            Route::get('/renewals', [RenewalController::class, 'getScholarRenewals']);
-            Route::post('/submit_renewal', [RenewalController::class, 'submitScholarRenewal']);
-            Route::get('/renewal-history', [RenewalController::class, 'getRenewalHistory']);
-            Route::get('/renewal/{renewalId}/details', [RenewalController::class, 'getRenewalDetails']);
+            Route::get('/renewal_app', [ScholarRenewalController::class, 'getScholarRenewals']);
+            Route::get('/renewals', [ScholarRenewalController::class, 'getScholarRenewals']);
+            Route::post('/submit_renewal', [ScholarRenewalController::class, 'submitScholarRenewal']);
+            Route::get('/renewal-history', [ScholarRenewalController::class, 'getRenewalHistory']);
+            Route::get('/renewal/{renewalId}/details', [ScholarRenewalController::class, 'getRenewalDetails']);
         });
 
      
@@ -57,7 +58,7 @@ Route::prefix('staging')->group(function () {
         Route::apiResource('/applicants', ApplicantController::class)->except(['store']);
         Route::apiResource('/applications', ApplicationController::class);
         Route::apiResource('/scholars', ScholarController::class);
-        Route::apiResource('/renewals', RenewalController::class);
+        Route::apiResource('/renewals', ScholarRenewalController::class);
         Route::apiResource('/disbursements', DisbursementController::class);
         Route::apiResource('/announcements', AnnouncementController::class);
         Route::apiResource('/reports', ReportController::class);
