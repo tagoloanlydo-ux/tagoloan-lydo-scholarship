@@ -1,5 +1,5 @@
 // Pagination state for renewal page
-const paginationState = {
+const renewalPaginationState = {
     table: {
         currentPage: 1,
         rowsPerPage: 15,
@@ -16,7 +16,7 @@ const paginationState = {
 
 // Initialize pagination when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    initializePagination();
+    initializeRenewalPagination();
     
     // Update the existing event listeners to use debounce
     const nameSearch = document.getElementById('nameSearch');
@@ -25,38 +25,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const listBarangayFilter = document.getElementById('listBarangayFilter');
     
     if (nameSearch) {
-        nameSearch.addEventListener('input', debounce(filterTable, 300));
+        nameSearch.addEventListener('input', debounceRenewal(filterRenewalTable, 300));
     }
     if (barangayFilter) {
-        barangayFilter.addEventListener('change', filterTable);
+        barangayFilter.addEventListener('change', filterRenewalTable);
     }
     if (listNameSearch) {
-        listNameSearch.addEventListener('input', debounce(filterList, 300));
+        listNameSearch.addEventListener('input', debounceRenewal(filterRenewalList, 300));
     }
     if (listBarangayFilter) {
-        listBarangayFilter.addEventListener('change', filterList);
+        listBarangayFilter.addEventListener('change', filterRenewalList);
     }
 });
 
-// Initialize pagination
-function initializePagination() {
+// Initialize pagination for renewal
+function initializeRenewalPagination() {
     // Get ALL table rows (not just visible ones) from Table View
     const tableRows = Array.from(document.querySelectorAll('#tableView tbody tr'));
-    paginationState.table.allRows = tableRows.filter(row => !row.querySelector('td[colspan]'));
-    paginationState.table.filteredRows = [...paginationState.table.allRows];
+    renewalPaginationState.table.allRows = tableRows.filter(row => !row.querySelector('td[colspan]'));
+    renewalPaginationState.table.filteredRows = [...renewalPaginationState.table.allRows];
     
     // Get ALL list rows from List View
     const listRows = Array.from(document.querySelectorAll('#listView tbody tr'));
-    paginationState.list.allRows = listRows.filter(row => !row.querySelector('td[colspan]'));
-    paginationState.list.filteredRows = [...paginationState.list.allRows];
+    renewalPaginationState.list.allRows = listRows.filter(row => !row.querySelector('td[colspan]'));
+    renewalPaginationState.list.filteredRows = [...renewalPaginationState.list.allRows];
     
-    updatePagination('table');
-    updatePagination('list');
+    updateRenewalPagination('table');
+    updateRenewalPagination('list');
 }
 
-// Update pagination display
-function updatePagination(viewType) {
-    const state = paginationState[viewType];
+// Update pagination display for renewal
+function updateRenewalPagination(viewType) {
+    const state = renewalPaginationState[viewType];
     const containerId = viewType === 'table' ? 'tablePagination' : 'listPagination';
     const container = document.getElementById(containerId);
     
@@ -88,40 +88,40 @@ function updatePagination(viewType) {
             Showing ${startItem} to ${endItem} of ${state.filteredRows.length} entries
         </div>
         <div class="pagination-buttons">
-            <button class="pagination-btn" onclick="changePage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
+            <button class="pagination-btn" onclick="changeRenewalPage('${viewType}', 1)" ${state.currentPage === 1 ? 'disabled' : ''}>
                 <i class="fas fa-angle-double-left"></i>
             </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
+            <button class="pagination-btn" onclick="changeRenewalPage('${viewType}', ${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>
                 <i class="fas fa-angle-left"></i>
             </button>
             <div class="pagination-page-info">
-                Page <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToPage('${viewType}', this.value)"> of ${totalPages}
+                Page <input type="number" class="pagination-page-input" value="${state.currentPage}" min="1" max="${totalPages}" onchange="goToRenewalPage('${viewType}', this.value)"> of ${totalPages}
             </div>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+            <button class="pagination-btn" onclick="changeRenewalPage('${viewType}', ${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>
                 <i class="fas fa-angle-right"></i>
             </button>
-            <button class="pagination-btn" onclick="changePage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
+            <button class="pagination-btn" onclick="changeRenewalPage('${viewType}', ${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>
                 <i class="fas fa-angle-double-right"></i>
             </button>
         </div>
     `;
 }
 
-// Change page
-function changePage(viewType, page) {
-    const state = paginationState[viewType];
+// Change page for renewal
+function changeRenewalPage(viewType, page) {
+    const state = renewalPaginationState[viewType];
     const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
     
     if (page < 1) page = 1;
     if (page > totalPages) page = totalPages;
     
     state.currentPage = page;
-    updatePagination(viewType);
+    updateRenewalPagination(viewType);
 }
 
-// Go to specific page
-function goToPage(viewType, page) {
-    const state = paginationState[viewType];
+// Go to specific page for renewal
+function goToRenewalPage(viewType, page) {
+    const state = renewalPaginationState[viewType];
     const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
     
     page = parseInt(page);
@@ -129,62 +129,62 @@ function goToPage(viewType, page) {
     if (page > totalPages) page = totalPages;
     
     state.currentPage = page;
-    updatePagination(viewType);
+    updateRenewalPagination(viewType);
 }
 
-// Filter Table View
-function filterTable() {
-    const nameSearchValue = document.getElementById('nameSearch').value.toLowerCase().trim();
-    const barangayFilterValue = document.getElementById('barangayFilter').value.toLowerCase().trim();
+// Filter Table View for renewal
+function filterRenewalTable() {
+    const searchValue = document.getElementById('nameSearch').value.toLowerCase().trim();
+    const barangayValue = document.getElementById('barangayFilter').value.toLowerCase().trim();
 
-    const filteredRows = paginationState.table.allRows.filter(row => {
-        const nameCell = row.cells[1];
-        const barangayCell = row.cells[2];
+    const filteredRows = renewalPaginationState.table.allRows.filter(row => {
+        const nameCell = row.cells[1]; // Name column
+        const barangayCell = row.cells[2]; // Barangay column
 
         if (!nameCell || !barangayCell) return false;
 
         const name = nameCell.textContent.toLowerCase();
         const barangay = barangayCell.textContent.toLowerCase();
 
-        const matchesName = name.includes(nameSearchValue);
-        const matchesBarangay = barangayFilterValue === '' || barangay.includes(barangayFilterValue);
+        const matchesName = name.includes(searchValue);
+        const matchesBarangay = barangayValue === '' || barangay.includes(barangayValue);
 
         return matchesName && matchesBarangay;
     });
 
     // Update filtered rows and reset to page 1
-    paginationState.table.filteredRows = filteredRows;
-    paginationState.table.currentPage = 1;
-    updatePagination('table');
+    renewalPaginationState.table.filteredRows = filteredRows;
+    renewalPaginationState.table.currentPage = 1;
+    updateRenewalPagination('table');
 }
 
-// Filter List View
-function filterList() {
-    const nameSearchValue = document.getElementById('listNameSearch').value.toLowerCase().trim();
-    const barangayFilterValue = document.getElementById('listBarangayFilter').value.toLowerCase().trim();
+// Filter List View for renewal
+function filterRenewalList() {
+    const searchValue = document.getElementById('listNameSearch').value.toLowerCase().trim();
+    const barangayValue = document.getElementById('listBarangayFilter').value.toLowerCase().trim();
 
-    const filteredRows = paginationState.list.allRows.filter(row => {
-        const nameCell = row.cells[1];
-        const barangayCell = row.cells[2];
+    const filteredRows = renewalPaginationState.list.allRows.filter(row => {
+        const nameCell = row.cells[1]; // Name column
+        const barangayCell = row.cells[2]; // Barangay column
 
         if (!nameCell || !barangayCell) return false;
 
         const name = nameCell.textContent.toLowerCase();
         const barangay = barangayCell.textContent.toLowerCase();
 
-        const matchesName = name.includes(nameSearchValue);
-        const matchesBarangay = barangayFilterValue === '' || barangay.includes(barangayFilterValue);
+        const matchesName = name.includes(searchValue);
+        const matchesBarangay = barangayValue === '' || barangay.includes(barangayValue);
 
         return matchesName && matchesBarangay;
     });
 
     // Update filtered rows and reset to page 1
-    paginationState.list.filteredRows = filteredRows;
-    paginationState.list.currentPage = 1;
-    updatePagination('list');
+    renewalPaginationState.list.filteredRows = filteredRows;
+    renewalPaginationState.list.currentPage = 1;
+    updateRenewalPagination('list');
 }
 
-// Update the existing showTable and showList functions
+// Update the existing showTable and showList functions for renewal
 function showTable() {
     document.getElementById('tableView').classList.remove('hidden');
     document.getElementById('listView').classList.add('hidden');
@@ -192,8 +192,8 @@ function showTable() {
     document.getElementById('tab-review').classList.remove('active');
     
     // Reset to first page
-    paginationState.table.currentPage = 1;
-    updatePagination('table');
+    renewalPaginationState.table.currentPage = 1;
+    updateRenewalPagination('table');
 }
 
 function showList() {
@@ -203,26 +203,26 @@ function showList() {
     document.getElementById('tab-review').classList.add('active');
     
     // Reset to first page
-    paginationState.list.currentPage = 1;
-    updatePagination('list');
+    renewalPaginationState.list.currentPage = 1;
+    updateRenewalPagination('list');
 }
 
 // Clear filters for Table View
-function clearFiltersTable() {
+function clearRenewalFiltersTable() {
     document.getElementById('nameSearch').value = '';
     document.getElementById('barangayFilter').value = '';
-    filterTable();
+    filterRenewalTable();
 }
 
 // Clear filters for List View
-function clearFiltersList() {
+function clearRenewalFiltersList() {
     document.getElementById('listNameSearch').value = '';
     document.getElementById('listBarangayFilter').value = '';
-    filterList();
+    filterRenewalList();
 }
 
-// Debounce function for search
-function debounce(func, wait) {
+// Debounce function for search in renewal
+function debounceRenewal(func, wait) {
     let timeout;
     return function executedFunction(...args) {
         const later = () => {
@@ -232,4 +232,34 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+// Add event listeners for clear buttons (you need to add these buttons in your HTML)
+document.addEventListener('DOMContentLoaded', function() {
+    // Add clear buttons if they don't exist in your HTML
+    addClearButtons();
+});
+
+function addClearButtons() {
+    // Add clear button for table view search
+    const nameSearch = document.getElementById('nameSearch');
+    if (nameSearch && !nameSearch.parentNode.querySelector('.clear-search')) {
+        const clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.className = 'clear-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600';
+        clearBtn.innerHTML = '✕';
+        clearBtn.onclick = clearRenewalFiltersTable;
+        nameSearch.parentNode.appendChild(clearBtn);
+    }
+
+    // Add clear button for list view search
+    const listNameSearch = document.getElementById('listNameSearch');
+    if (listNameSearch && !listNameSearch.parentNode.querySelector('.clear-search')) {
+        const clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.className = 'clear-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600';
+        clearBtn.innerHTML = '✕';
+        clearBtn.onclick = clearRenewalFiltersList;
+        listNameSearch.parentNode.appendChild(clearBtn);
+    }
 }

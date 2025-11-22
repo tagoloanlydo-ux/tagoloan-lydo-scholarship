@@ -97,6 +97,7 @@ Route::middleware(['role:lydo_admin'])->group(function () {
     Route::put('/lydo_admin/settings/{id}', [LydoAdminController::class, 'updatePersonalInfo'])->name('LydoAdmin.updatePersonalInfo');
     Route::put('/lydo_admin/settings/password/update', [LydoAdminController::class, 'updatePassword'])->name('LydoAdmin.updatePassword');
     Route::delete('/lydo_admin/lydo/delete/{id}', [LydoAdminController::class, 'deleteStaff'])->name('lydo_admin.delete_staff');
+    
 });
 
 Route::middleware(['role:lydo_staff'])->group(function () {
@@ -106,7 +107,7 @@ Route::middleware(['role:lydo_staff'])->group(function () {
     Route::post('/lydo_staff/update-intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'updateIntakeSheet'])->name('updateIntakeSheet');
     Route::get('/lydo_staff/renewal', [RenewalController::class, 'renewal'])->name('LydoStaff.renewal');
     Route::post('/lydo_staff/renewal/update/{scholarId}', [RenewalController::class, 'updateStatus']);
-    Route::get('/renewals/{id}/requirements', [RenewalController::class, 'getRequirements']);
+Route::get('/lydo_staff/renewal/{id}/requirements', [RenewalController::class, 'getRequirements']);
     Route::post('/lydo_staff/update-renewal-status/{renewalId}', [RenewalController::class, 'updateRenewalStatus'])->name('renewal.updateStatus');
     Route::get('/reviewed-applicants/pdf', [RenewalController::class, 'reviewedApplicantsPdf'])->name('LydoStaff.reviewedApplicantsPdf');
     Route::get('/lydo_staff/disbursement', [LydoStaffController::class, 'disbursement'])->name('LydoStaff.disbursement');
@@ -200,14 +201,8 @@ Route::middleware(['scholar.auth'])->group(function () {
     Route::get('/scholar/settings', [ScholarController::class, 'showSettings'])->name('scholar.settings');
     Route::post('/scholar/settings/update', [ScholarController::class, 'updateSettings'])->name('scholar.settings.update');
     Route::post('/scholar/logout', [ScholarController::class, 'logout'])->name('scholar.logout');
-// Add these routes to your web.php file
-
-// Renewal History Routes
-Route::get('/scholar/renewal-history', [ScholarController::class, 'renewalHistory'])
-    ->name('scholar.renewal_history');
-
-Route::get('/scholar/renewal/{renewalId}/details', [ScholarController::class, 'getRenewalDetails'])
-    ->name('scholar.renewal_details');
+    Route::get('/scholar/renewal-history', [ScholarController::class, 'renewalHistory']) ->name('scholar.renewal_history');
+    Route::get('/scholar/renewal/{renewalId}/details', [ScholarController::class, 'getRenewalDetails'])->name('scholar.renewal_details');
 });
 
 use App\Http\Controllers\SmsController;

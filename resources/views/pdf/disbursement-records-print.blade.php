@@ -16,6 +16,7 @@
         body {
             background: #f4f6f9;
             padding: 30px;
+            counter-reset: page;
         }
 
         .container {
@@ -25,6 +26,67 @@
             margin: auto;
             padding: 25px;
             border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Page numbering for print */
+        @page {
+            margin: 1cm;
+            size: A4;
+            
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 10px;
+                color: #666;
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            }
+        }
+
+        /* Force page breaks for print */
+        .page-break {
+            page-break-after: always;
+            break-after: page;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0;
+                margin: 0;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            /* Ensure proper page breaks */
+            table {
+                page-break-inside: auto;
+            }
+            
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            
+            thead {
+                display: table-header-group;
+            }
+            
+            tfoot {
+                display: table-footer-group;
+            }
+            
+            /* Hide non-essential elements in print */
+            .no-print {
+                display: none;
+            }
         }
 
         /* HEADER TABLE (no outline) */
@@ -42,7 +104,7 @@
 
         .logo img {
             width: 95px;
-            height: 100 px;
+            height: 100px;
             object-fit: contain;
         }
 
@@ -81,7 +143,7 @@
         }
 
         .data-table th {
-            background: #324b7a;
+            background: gray;
             color: white;
             padding: 8px;
             text-transform: uppercase;
@@ -119,12 +181,34 @@
             color: #d97706;
             font-weight: 600;
         }
+        
+        /* Print button styling */
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #3f6ad8;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .print-button:hover {
+            background: #2d55b5;
+        }
     </style>
 </head>
 
 <body>
-    <div class="container">
+    <!-- Print Button -->
+    <button class="print-button" onclick="window.print()">Print Report</button>
 
+    <div class="container">
         <!-- HEADER (NO OUTLINE) -->
         <table class="header-table">
             <tr>
@@ -165,35 +249,49 @@
                 $nameParts = explode(',', $item->full_name);
                 return trim($nameParts[0]); // Return last name for sorting
             });
+            
+            // Calculate how many rows per page (adjust based on your content)
+            $rowsPerPage = 20;
+            $totalPages = ceil($sortedDisbursements->count() / $rowsPerPage);
         @endphp
         
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Barangay</th>
-                    <th>Semester</th>
-                    <th>Academic Year</th>
-                    <th class="text-center">Amount</th>
-                    <th class="text-center">Signature</th>
-                </tr>
-            </thead>
+        @for($page = 0; $page < $totalPages; $page++)
+            @php
+                $currentPageDisbursements = $sortedDisbursements->slice($page * $rowsPerPage, $rowsPerPage);
+            @endphp
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Barangay</th>
+                        <th>Semester</th>
+                        <th>Academic Year</th>
+                        <th class="text-center">Amount</th>
+                        <th class="text-center">Signature</th>
+                    </tr>
+                </thead>
 
-            <tbody>
-                @foreach($sortedDisbursements as $index => $disburse)
-                <tr>
-                    <td class="text-center">{{ $loop->iteration }}</td>
-                    <td class="text-center">{{ $disburse->full_name }}</td>
-                    <td class="text-center">{{ $disburse->applicant_brgy }}</td>
-                    <td class="text-center">{{ $disburse->disburse_semester }}</td>
-                    <td class="text-center">{{ $disburse->disburse_acad_year }}</td>
-                    <td class="text-center">{{ number_format($disburse->disburse_amount, 0) }}</td>
-                    <td class="text-center status-pending"></td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+                <tbody>
+                    @foreach($currentPageDisbursements as $index => $disburse)
+                    <tr>
+                        <td class="text-center">{{ ($page * $rowsPerPage) + $loop->iteration }}</td>
+                        <td class="text-center">{{ $disburse->full_name }}</td>
+                        <td class="text-center">{{ $disburse->applicant_brgy }}</td>
+                        <td class="text-center">{{ $disburse->disburse_semester }}</td>
+                        <td class="text-center">{{ $disburse->disburse_acad_year }}</td>
+                        <td class="text-center">Php {{ number_format($disburse->disburse_amount, 0) }}</td>
+                        <td class="text-center status-pending"></td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            
+            @if($page < $totalPages - 1)
+                <div class="page-break"></div>
+            @endif
+        @endfor
 
         @else
         <div class="text-center" style="padding: 40px;">
@@ -208,5 +306,6 @@
         </div>
 
     </div>
+    
 </body>
 </html>

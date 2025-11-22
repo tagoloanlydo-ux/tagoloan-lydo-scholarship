@@ -209,7 +209,6 @@ function fallbackToLocalStorage(renewalId) {
     checkAllRenewalDocumentsRated();
 }
 
-
 // Open renewal modal with document rating functionality - SHOW ONLY PENDING RENEWALS
 function openRenewalModal(scholarId) {
     const contentDiv = document.getElementById('applicationContent');
@@ -237,18 +236,17 @@ function openRenewalModal(scholarId) {
         // Force refresh from database
         refreshDocumentStatuses(selectedRenewalId);
 
-        // DISPLAY ONLY PENDING RENEWALS
+        // DISPLAY ONLY PENDING RENEWALS - EACH WITH ITS OWN ACADEMIC YEAR AND SEMESTER
         pendingRenewals.forEach((r, index) => {
             const statusBadge = 'bg-yellow-100 text-yellow-700'; // Always yellow for pending
 
             contentDiv.innerHTML += `
                 <div class="border border-gray-200 rounded-xl shadow bg-white p-6 mb-6">
                     
-                    <!-- Top Info -->
+                    <!-- Top Info - CLEARLY SHOW ACADEMIC YEAR AND SEMESTER -->
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
                         <div class="space-y-1 text-gray-700 text-sm">
-                            <p><strong>Semester:</strong> ${r.renewal_semester}</p>
-                            <p><strong>Academic Year:</strong> ${r.renewal_acad_year}</p>
+                            <p class="font-semibold text-lg text-blue-600">${r.renewal_acad_year} - ${r.renewal_semester}</p>
                             <p><strong>Date Submitted:</strong> ${r.date_submitted}</p>
                         </div>
                         <span class="mt-3 md:mt-0 px-4 py-1 text-sm font-semibold rounded-full ${statusBadge}">
@@ -302,7 +300,6 @@ function openRenewalModal(scholarId) {
 
     document.getElementById('openRenewalModal').classList.remove('hidden');
 }
-
 // Enhanced update document badge based on status
 function updateRenewalDocumentBadge(documentType, status) {
     const badge = document.getElementById(`badge-${documentType}`);
@@ -470,34 +467,35 @@ function refreshDocumentStatuses(renewalId) {
 }
 function checkAllRenewalDocumentsRated() {
     const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
-    
+
     // Count documents by status
     let goodCount = 0;
     let badCount = 0;
     let newCount = 0;
     let unratedCount = 0;
-    
+
     documentTypes.forEach(docType => {
         const status = renewalDocumentStatuses[docType] ? renewalDocumentStatuses[docType].toString().toLowerCase() : '';
-        
+
         if (status === 'good') goodCount++;
         else if (status === 'bad') badCount++;
         else if (status === 'new') newCount++;
         else unratedCount++;
     });
-    
+
     console.log(`Status counts - Good: ${goodCount}, Bad: ${badCount}, New: ${newCount}, Unrated: ${unratedCount}`);
-    
+
     const actionButtons = document.getElementById('actionButtons');
-    
-    // HIDE BUTTONS COMPLETELY if there are NEW documents OR no ratings at all
-    if (newCount > 0 || (goodCount === 0 && badCount === 0)) {
-        actionButtons.style.display = 'none';
-        console.log('Hiding buttons - New documents found or no ratings');
-    } else {
-        // SHOW APPROPRIATE BUTTONS based on document statuses
+
+    // SHOW BUTTONS if there are bad documents (even with new/unrated documents) OR if all documents are rated
+    if (badCount > 0 || (newCount === 0 && goodCount + badCount === 3)) {
         actionButtons.style.display = 'flex';
         updateRenewalActionButtons(goodCount, badCount, newCount);
+        console.log('Showing buttons - Bad documents found or all documents rated');
+    } else {
+        // HIDE BUTTONS if no bad documents and not all documents are rated
+        actionButtons.style.display = 'none';
+        console.log('Hiding buttons - No bad documents and not all rated');
     }
 }
 
@@ -1460,68 +1458,168 @@ function saveEditRenewalStatus() {
     });
 }
 
-// View renewal modal functions
-function openViewRenewalModal(scholarId) {
+function openViewRenewalModal(renewalId, renewalStatus) {
     const contentDiv = document.getElementById('viewRenewalContent');
     contentDiv.innerHTML = '';
 
-    if (window.renewals[scholarId]) {
-        window.renewals[scholarId].forEach((r, index) => {
-            const statusBadge = r.renewal_status === 'Approved'
-                ? 'bg-green-100 text-green-700'
-                : r.renewal_status === 'Rejected'
-                ? 'bg-red-100 text-red-700'
-                : 'bg-yellow-100 text-yellow-700';
+    // Find the specific renewal by renewal_id
+    let foundRenewal = null;
+    
+    // Search through all scholars to find the specific renewal
+    Object.keys(window.renewals).forEach(scholarId => {
+        const scholarRenewals = window.renewals[scholarId];
+        const renewal = scholarRenewals.find(r => r.renewal_id == renewalId);
+        if (renewal) {
+            foundRenewal = renewal;
+        }
+    });
 
-            contentDiv.innerHTML += `
-                <div class="border border-gray-200 rounded-xl shadow bg-white p-6 mb-6">
+    if (foundRenewal) {
+        const r = foundRenewal;
+        const statusBadge = r.renewal_status === 'Approved'
+            ? 'bg-green-100 text-green-700'
+            : r.renewal_status === 'Rejected'
+            ? 'bg-red-100 text-red-700'
+            : 'bg-yellow-100 text-yellow-700';
+
+        // Get document statuses from the database
+        getRenewalDocumentStatusesForView(renewalId).then(statuses => {
+            // Build the content HTML with document status badges
+            let contentHTML = `
+                <div class="border border-gray-200 rounded-xl shadow bg-white p-6">
+                    <!-- Top Info - SHOW ONLY THIS SPECIFIC ACADEMIC YEAR AND SEMESTER -->
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
                         <div class="space-y-1 text-gray-700 text-sm">
-                            <p><strong>Semester:</strong> ${r.renewal_semester}</p>
-                            <p><strong>Academic Year:</strong> ${r.renewal_acad_year}</p>
+                            <p class="font-semibold text-lg text-blue-600">${r.renewal_acad_year} - ${r.renewal_semester}</p>
                             <p><strong>Date Submitted:</strong> ${r.date_submitted}</p>
+                            <p><strong>Status:</strong> ${r.renewal_status}</p>
                         </div>
                         <span class="mt-3 md:mt-0 px-4 py-1 text-sm font-semibold rounded-full ${statusBadge}">
                             ${r.renewal_status}
                         </span>
-                    </div>
+                    </div>`;
 
+            // Add rejection reason section if status is Rejected
+            if (r.renewal_status === 'Rejected' && r.rejection_reason) {
+                contentHTML += `
+                    <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <h5 class="font-semibold text-red-800 flex items-center gap-2 mb-2">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Reason for Rejection
+                        </h5>
+                        <p class="text-red-700 text-sm">${r.rejection_reason}</p>
+                    </div>`;
+            }
+
+            contentHTML += `
                     <hr class="my-4">
 
                     <h4 class="text-gray-800 font-semibold mb-3">Submitted Documents</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <button onclick="openRenewalDocumentViewer('/storage/${r.renewal_cert_of_reg}', 'Certificate of Registration', 'cert_of_reg', ${r.renewal_id})"
-                                   class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-blue-50 transition w-full">
-                                <i class="fas fa-file-alt text-violet-600 text-2xl mb-2"></i>
+                        <div class="document-item-wrapper">
+                            <button onclick="openRenewalDocumentViewer('/storage/${r.renewal_cert_of_reg}', 'Certificate of Registration - ${r.renewal_acad_year} ${r.renewal_semester}', 'cert_of_reg', ${r.renewal_id})"
+                                   class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-blue-50 transition w-full relative">
+                                <i class="fas fa-file-alt text-violet-600 text-2xl mb-2" id="view-icon-cert_of_reg"></i>
                                 <span class="text-sm font-medium text-gray-700 text-center">Certificate of Reg.</span>
+                                <div class="document-status-badge hidden absolute -top-2 -right-2" id="view-badge-cert_of_reg"></div>
                             </button>
                         </div>
-                        <div>
-                            <button onclick="openRenewalDocumentViewer('/storage/${r.renewal_grade_slip}', 'Grade Slip', 'grade_slip', ${r.renewal_id})"
-                                   class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-green-50 transition w-full">
-                                <i class="fas fa-file-alt text-violet-600 text-2xl mb-2"></i>
+                        <div class="document-item-wrapper">
+                            <button onclick="openRenewalDocumentViewer('/storage/${r.renewal_grade_slip}', 'Grade Slip - ${r.renewal_acad_year} ${r.renewal_semester}', 'grade_slip', ${r.renewal_id})"
+                                   class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-green-50 transition w-full relative">
+                                <i class="fas fa-file-alt text-violet-600 text-2xl mb-2" id="view-icon-grade_slip"></i>
                                 <span class="text-sm font-medium text-gray-700 text-center">Grade Slip</span>
+                                <div class="document-status-badge hidden absolute -top-2 -right-2" id="view-badge-grade_slip"></div>
                             </button>
                         </div>
-                        <div>
-                            <button onclick="openRenewalDocumentViewer('/storage/${r.renewal_brgy_indigency}', 'Barangay Indigency', 'brgy_indigency', ${r.renewal_id})"
-                                   class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-purple-50 transition w-full">
-                                <i class="fas fa-file-alt text-violet-600 text-2xl mb-2"></i>
+                        <div class="document-item-wrapper">
+                            <button onclick="openRenewalDocumentViewer('/storage/${r.renewal_brgy_indigency}', 'Barangay Indigency - ${r.renewal_acad_year} ${r.renewal_semester}', 'brgy_indigency', ${r.renewal_id})"
+                                   class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-purple-50 transition w-full relative">
+                                <i class="fas fa-file-alt text-violet-600 text-2xl mb-2" id="view-icon-brgy_indigency"></i>
                                 <span class="text-sm font-medium text-gray-700 text-center">Barangay Indigency</span>
+                                <div class="document-status-badge hidden absolute -top-2 -right-2" id="view-badge-brgy_indigency"></div>
                             </button>
                         </div>
                     </div>
-                </div>
-            `;
+                </div>`;
+
+            contentDiv.innerHTML = contentHTML;
+
+            // Update the badges with the retrieved statuses
+            updateViewRenewalDocumentBadges(statuses);
+        }).catch(error => {
+            console.error('Error loading document statuses:', error);
+            // Fallback without status badges
+            contentDiv.innerHTML = `<p class="text-gray-500">Error loading document statuses.</p>`;
         });
     } else {
-        contentDiv.innerHTML = `<p class="text-gray-500">No renewal requirements found for this scholar.</p>`;
+        contentDiv.innerHTML = `<p class="text-gray-500">Renewal details not found.</p>`;
     }
 
     document.getElementById('viewRenewalModal').classList.remove('hidden');
 }
 
+// Function to get document statuses for view modal
+function getRenewalDocumentStatusesForView(renewalId) {
+    return new Promise((resolve, reject) => {
+        fetch(`/lydo_staff/get-renewal-document-statuses/${renewalId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resolve(data.statuses);
+                } else {
+                    reject(new Error(data.message || 'Failed to load document statuses'));
+                }
+            })
+            .catch(error => reject(error));
+    });
+}
+
+// Function to update document badges in view modal
+function updateViewRenewalDocumentBadges(statuses) {
+    const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
+    
+    documentTypes.forEach(docType => {
+        const badge = document.getElementById(`view-badge-${docType}`);
+        const icon = document.getElementById(`view-icon-${docType}`);
+        
+        if (!badge || !icon) return;
+
+        // Get status from the database response
+        const dbStatus = statuses[`${docType}_status`];
+        const normalized = dbStatus ? dbStatus.toString().toLowerCase() : '';
+
+        // Reset all styles first
+        badge.classList.remove('badge-new', 'badge-good', 'badge-bad', 'badge-updated', 'hidden');
+        icon.classList.remove('text-red-600', 'text-green-600', 'text-gray-500', 'text-purple-600', 'text-orange-500');
+        
+        // Apply new status based on database value
+        if (normalized === 'good') {
+            badge.classList.add('badge-good');
+            badge.textContent = '✓';
+            icon.classList.add('text-green-600');
+            badge.classList.remove('hidden');
+        } else if (normalized === 'bad') {
+            badge.classList.add('badge-bad');
+            badge.textContent = '✗';
+            icon.classList.add('text-red-600');
+            badge.classList.remove('hidden');
+        } else if (normalized === 'new' || normalized === 'updated') {
+            badge.classList.add('badge-updated');
+            badge.textContent = 'Updated';
+            badge.style.width = 'auto';
+            badge.style.padding = '2px 6px';
+            badge.style.borderRadius = '8px';
+            badge.style.fontSize = '0.7rem';
+            icon.classList.add('text-orange-500');
+            badge.classList.remove('hidden');
+        } else {
+            // No status, hide the badge
+            badge.classList.add('hidden');
+            icon.classList.add('text-purple-600');
+        }
+    });
+}
 function closeViewRenewalModal() {
     document.getElementById('viewRenewalModal').classList.add('hidden');
 }

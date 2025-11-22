@@ -1281,7 +1281,24 @@ public function generateDisbursementPdf(Request $request)
                 'd.disburse_date',
                 'd.disburse_signature',
                 'a.applicant_brgy',
-                DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+                DB::raw("
+                    CONCAT(
+                        UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)),
+                        ', ',
+                        UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
+                        ' ',
+                        CASE 
+                            WHEN a.applicant_mname IS NOT NULL AND a.applicant_mname != '' 
+                                THEN CONCAT(UPPER(LEFT(a.applicant_mname,1)), '. ')
+                            ELSE ''
+                        END,
+                        COALESCE(
+                            CONCAT(
+                                UPPER(LEFT(a.applicant_suffix,1)), LOWER(SUBSTRING(a.applicant_suffix,2))
+                            ), ''
+                        )
+                    ) AS full_name
+                ")
             );
 
         // Determine if we want signed or unsigned disbursements
@@ -1364,7 +1381,24 @@ public function generateDisbursementRecordsPdf(Request $request)
                 'd.disburse_amount',
                 'd.disburse_date',
                 'a.applicant_brgy',
-                DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+                DB::raw("
+                    CONCAT(
+                        UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)),
+                        ', ',
+                        UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
+                        ' ',
+                        CASE 
+                            WHEN a.applicant_mname IS NOT NULL AND a.applicant_mname != '' 
+                                THEN CONCAT(UPPER(LEFT(a.applicant_mname,1)), '. ')
+                            ELSE ''
+                        END,
+                        COALESCE(
+                            CONCAT(
+                                UPPER(LEFT(a.applicant_suffix,1)), LOWER(SUBSTRING(a.applicant_suffix,2))
+                            ), ''
+                        )
+                    ) AS full_name
+                ")
             )
             ->whereNull('d.disburse_signature'); // Only unsigned disbursements
 
@@ -1451,9 +1485,9 @@ public function generateApplicantsPdf(Request $request)
 {
     try {
         // Set time limit for PDF generation
-        set_time_limit(120); // 2 minutes
+        set_time_limit(120);
         
-        // Get applicants with filtering - same query as applicants method
+        // Get applicants with filtering
         $query = DB::table('tbl_applicant')
             ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
             ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id')
@@ -1464,16 +1498,18 @@ public function generateApplicantsPdf(Request $request)
             );
 
         // Apply initial screening status filter
-        $initialScreeningStatus = $request->get('initial_screening', 'Approved');
+        $initialScreeningStatus = $request->get('initial_screening', 'all');
         if ($initialScreeningStatus && $initialScreeningStatus !== 'all') {
             $query->where('tbl_application_personnel.initial_screening', $initialScreeningStatus);
         }
 
         // Apply other filters
         if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('applicant_fname', 'like', '%' . $request->search . '%')
-                  ->orWhere('applicant_lname', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('applicant_fname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('applicant_lname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('applicant_mname', 'like', '%' . $searchTerm . '%');
             });
         }
 
@@ -1485,7 +1521,12 @@ public function generateApplicantsPdf(Request $request)
             $query->where('applicant_acad_year', $request->academic_year);
         }
 
-        $applicants = $query->get();
+        // Order alphabetically by last name, first name, middle name
+        $applicants = $query
+            ->orderBy('applicant_lname', 'asc')
+            ->orderBy('applicant_fname', 'asc')
+            ->orderBy('applicant_mname', 'asc')
+            ->get();
 
         // Get filter info for page title
         $filters = [];
@@ -1498,18 +1539,24 @@ public function generateApplicantsPdf(Request $request)
         if ($request->academic_year) {
             $filters[] = 'Academic Year: ' . $request->academic_year;
         }
-        if ($request->initial_screening) {
+        if ($request->initial_screening && $request->initial_screening !== 'all') {
             $filters[] = 'Initial Screening: ' . $request->initial_screening;
         }
 
-        $pdf = Pdf::loadView('pdf.applicants-print', compact('applicants', 'filters'))
-            ->setPaper('a4', 'portrait'); // Changed to portrait
+        $filename = 'applicants-list-' . date('Y-m-d-H-i-s') . '.pdf';
 
-        return $pdf->stream('applicants-list-' . date('Y-m-d') . '.pdf');
+        $pdf = Pdf::loadView('pdf.applicants-print', compact('applicants', 'filters'))
+            ->setPaper('a4', 'portrait')
+            ->setOption('enable-javascript', true)
+            ->setOption('javascript-delay', 1000)
+            ->setOption('enable-smart-shrinking', true)
+            ->setOption('no-stop-slow-scripts', true);
+
+        return $pdf->stream($filename);
         
     } catch (\Exception $e) {
         \Log::error('PDF Generation Error: ' . $e->getMessage());
-        return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
+        return back()->with('error', 'Failed to generate PDF: ' . $e->getMessage());
     }
 }
 
@@ -1823,5 +1870,6 @@ public function deleteStaff($id)
         return response()->json(['success' => false, 'message' => 'Failed to delete staff member.'], 500);
     }
 }
+
 }
 

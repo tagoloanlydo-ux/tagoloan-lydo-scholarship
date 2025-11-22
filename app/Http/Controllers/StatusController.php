@@ -184,6 +184,14 @@ public function getIntakeSheet($applicationPersonnelId)
             ($appRow->applicant_suffix ? ', ' . $appRow->applicant_suffix : '')
         );
 
+        $documentStatuses = [
+            'application_letter' => $this->evaluateDocumentStatus($appRow->application_letter),
+            'cert_reg' => $this->evaluateDocumentStatus($appRow->cert_of_reg),
+            'grade_slip' => $this->evaluateDocumentStatus($appRow->grade_slip),
+            'brgy_indigency' => $this->evaluateDocumentStatus($appRow->brgy_indigency),
+            'student_id' => $this->evaluateDocumentStatus($appRow->student_id),
+        ];
+
         // Check if intake sheet exists
         $intakeSheet = FamilyIntakeSheet::where('application_personnel_id', $applicationPersonnelId)->first();
 
@@ -346,6 +354,29 @@ public function getIntakeSheet($applicationPersonnelId)
             'error' => $e->getMessage()
         ], 500);
     }
+}
+
+/**
+ * Evaluate document status based on your criteria
+ */
+private function evaluateDocumentStatus($documentPath)
+{
+    if (!$documentPath) {
+        return 'Missing';
+    }
+    
+    // Add your evaluation logic here
+    // This is a placeholder - replace with your actual evaluation criteria
+    $fileExists = Storage::exists($documentPath);
+    
+    if (!$fileExists) {
+        return 'Bad';
+    }
+    
+    // You can add more sophisticated checks here
+    // For example: file size, format, content validation, etc.
+    
+    return 'Good';
 }
 /**
  * Helper method to parse JSON fields with comprehensive error handling

@@ -527,8 +527,8 @@ function setupDocumentButtons(data) {
         student_id: data.doc_student_id || null
     };
 
-    // Define document order (same as mayor staff)
-    const documentOrder = ['application_letter', 'cert_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
+    // Get document statuses from the data
+    const documentStatuses = data.document_statuses || {};
 
     // Get the documents container
     const documentsContainer = document.getElementById('modal-documents-container');
@@ -540,57 +540,68 @@ function setupDocumentButtons(data) {
     // Clear existing content
     documentsContainer.innerHTML = '';
 
-    // Collect available documents
-    const availableDocuments = documentOrder.filter(docType => {
+    // Define document order
+    const documentOrder = ['application_letter', 'cert_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
+
+    // Collect available documents with statuses
+    const availableDocuments = documentOrder.map(docType => {
         const hasDoc = currentDocumentUrls[docType] && currentDocumentUrls[docType] !== 'null';
-        console.log(`Document ${docType}:`, { 
-            url: currentDocumentUrls[docType], 
-            available: hasDoc 
-        });
-        return hasDoc;
+        const status = documentStatuses[docType] || (hasDoc ? 'Good' : 'Missing');
+        
+        return {
+            type: docType,
+            url: currentDocumentUrls[docType],
+            title: documentTitles[docType],
+            status: status,
+            available: hasDoc
+        };
     });
 
-    console.log('Available documents:', availableDocuments);
+    console.log('Available documents with statuses:', availableDocuments);
 
     if (availableDocuments.length === 0) {
         documentsContainer.innerHTML = '<p class="text-center text-gray-500 py-8">No documents available for viewing.</p>';
         return;
     }
 
-    // Create document sections in rows (same layout as mayor staff)
-    availableDocuments.forEach((docType, index) => {
-        const docUrl = currentDocumentUrls[docType];
-        const title = documentTitles[docType];
-
-        console.log(`Creating document section for ${docType}:`, docUrl);
+    // Create document status cards
+    availableDocuments.forEach((doc, index) => {
+        const statusColor = doc.status === 'Good' ? 'green' : 
+                           doc.status === 'Bad' ? 'red' : 'gray';
+        
+        const statusIcon = doc.status === 'Good' ? 'fa-check-circle' : 
+                          doc.status === 'Bad' ? 'fa-times-circle' : 'fa-question-circle';
 
         const documentDiv = document.createElement('div');
-        documentDiv.className = 'document-section mb-6 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden';
+        documentDiv.className = 'document-status-card mb-4 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden';
 
         documentDiv.innerHTML = `
-            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                <h4 class="text-lg font-semibold text-gray-800">${title}</h4>
+            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                <h4 class="text-lg font-semibold text-gray-800">${doc.title}</h4>
+                <span class="status-badge status-${statusColor} px-3 py-1 rounded-full text-sm font-medium">
+                    <i class="fas ${statusIcon} mr-1"></i>${doc.status}
+                </span>
             </div>
             <div class="p-4">
-                <div class="border border-gray-300 rounded-lg overflow-hidden">
-                    <iframe
-                        src="${docUrl}"
-                        width="100%"
-                        height="500"
-                        style="border: none;"
-                        title="${title}"
-                        onload="console.log('Document ${docType} loaded successfully')"
-                        onerror="console.error('Failed to load document ${docType}')">
-                        <p class="p-4 text-center text-gray-500">Your browser does not support iframes.
-                            <a href="${docUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 underline">Click here to view the document</a>
+                <div class="flex justify-between items-center">
+                    <div class="document-info">
+                        <p class="text-sm text-gray-600 mb-2">
+                            <strong>Status:</strong> 
+                            <span class="text-${statusColor}-600 font-medium">${doc.status}</span>
                         </p>
-                    </iframe>
-                </div>
-                <div class="mt-2 flex justify-between items-center">
-                    <span class="text-sm text-gray-500">Document ${index + 1} of ${availableDocuments.length}</span>
-                    <a href="${docUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm font-medium">
-                        <i class="fas fa-external-link-alt mr-1"></i> Open in new tab
-                    </a>
+                        ${doc.available ? 
+                            `<a href="${doc.url}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm font-medium">
+                                <i class="fas fa-external-link-alt mr-1"></i> View Document
+                            </a>` : 
+                            '<p class="text-red-500 text-sm">Document not available</p>'
+                        }
+                    </div>
+                    ${doc.available ? `
+                    <button type="button" onclick="viewDocument('${doc.type}')" 
+                            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-eye mr-2"></i>Preview
+                    </button>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -598,7 +609,63 @@ function setupDocumentButtons(data) {
         documentsContainer.appendChild(documentDiv);
     });
 
-    console.log('Document setup completed');
+    console.log('Document status setup completed');
+}
+
+// Function to view individual document in modal
+function viewDocument(docType) {
+    const docUrl = currentDocumentUrls[docType];
+    const title = documentTitles[docType];
+    
+    if (!docUrl) {
+        Swal.fire('Error', 'Document not available for viewing.', 'error');
+        return;
+    }
+
+    // Create a modal for document preview
+    const modalHtml = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl w-11/12 h-5/6 max-w-6xl">
+                <div class="flex justify-between items-center bg-indigo-600 text-white p-4 rounded-t-lg">
+                    <h3 class="text-lg font-semibold">${title}</h3>
+                    <button onclick="closeDocumentModal()" class="text-white hover:text-gray-300">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-4 h-full">
+                    <iframe src="${docUrl}" width="100%" height="100%" style="border: none;"></iframe>
+                </div>
+                <div class="flex justify-between items-center bg-gray-100 p-4 rounded-b-lg">
+                    <a href="${docUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 font-medium">
+                        <i class="fas fa-external-link-alt mr-1"></i> Open in new tab
+                    </a>
+                    <button onclick="closeDocumentModal()" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('documentPreviewModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Create and append new modal
+    const modalDiv = document.createElement('div');
+    modalDiv.id = 'documentPreviewModal';
+    modalDiv.innerHTML = modalHtml;
+    document.body.appendChild(modalDiv);
+}
+
+// Function to close document modal
+function closeDocumentModal() {
+    const modal = document.getElementById('documentPreviewModal');
+    if (modal) {
+        modal.remove();
+    }
 }
 
 // Function to format date
