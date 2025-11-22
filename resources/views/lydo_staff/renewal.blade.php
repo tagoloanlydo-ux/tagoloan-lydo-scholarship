@@ -3,20 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- ADD CSRF META -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Scholarship Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="{{ asset('css/renewal.css') }}" />
-    <style>
-        :root {
-            --primary-color: #7c3aed;
-            --primary-dark: #6d28d9;
-            --primary-light: #a78bfa;
-            --text-secondary: #64748b;
-        }
-.loading-overlay {
+
+    <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <style>
+ .loading-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -85,220 +89,95 @@
     }
 }
 
-        /* Layout structure */
-        body {
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        .dashboard-grid {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        /* Fixed header */
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            flex-shrink: 0;
-        }
-        
-        /* Main content area */
-        .main-content {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-        
-        /* Fixed sidebar */
-        .sidebar {
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-        
-        /* Scrollable content area */
-        .content-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-        }
-        
-        /* Fixed tab buttons */
-        .tab-container {
-            position: sticky;
-            top: 0;
-            background: white;
-            z-index: 30;
-            padding: 1rem 0;
-            margin-bottom: 1rem;
-        }
+/* Document status badges */
+.document-status-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border: 2px solid white;
+}
 
-        .tab {
-            cursor: pointer;
-            padding: 14px 28px;
-            border-radius: 16px;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            background: linear-gradient(145deg, #ffffff, #f8fafc);
-            color: var(--text-secondary);
-            border: 2px solid transparent;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 14px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            position: relative;
-            overflow: hidden;
-        }
+.badge-new {
+    background-color: #8b5cf6;
+    color: white;
+    width: 24px;
+}
 
-        .tab::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transition: left 0.5s;
-        }
+.badge-good {
+    background-color: #10b981;
+    color: white;
+}
 
-        .tab:hover::before {
-            left: 100%;
-        }
+.badge-bad {
+    background-color: #ef4444;
+    color: white;
+}
 
-        .tab.active {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-            border-color: var(--primary-color);
-            box-shadow: 0 4px 20px rgba(30, 64, 175, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px) scale(1.02);
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
+.badge-updated {
+    background-color: #f59e0b;
+    color: white;
+}
 
-        .tab.tab-green.active {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border-color: #10b981;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px) scale(1.02);
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
+.document-item-wrapper {
+    position: relative;
+}
 
-        .tab:hover:not(.active) {
-            background: linear-gradient(145deg, #f1f5f9, #e2e8f0);
-            border-color: var(--primary-light);
-            color: var(--primary-color);
-            transform: translateY(-1px) scale(1.01);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-        }
+/* Responsive document viewer */
+@media (max-width: 768px) {
+    #documentViewerModal .bg-white {
+        margin: 1rem;
+        max-height: calc(100vh - 2rem);
+    }
+    
+    #documentViewer {
+        min-height: 300px;
+    }
+    
+    .document-status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
 
-        .tab.tab-green:hover:not(.active) {
-            background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-            border-color: #10b981;
-            color: #065f46;
-            transform: translateY(-1px) scale(1.01);
-            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-        }
-
-        .tab:active {
-            transform: translateY(0) scale(0.98);
-            transition: all 0.1s ease;
-        }
-
-        /* Document Status Badges */
-        .document-item-wrapper {
-            position: relative;
-        }
-
-        .document-status-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            color: white;
-        }
-
-        .badge-good {
-            background-color: #10b981;
-        }
-
-        .badge-bad {
-            background-color: #ef4444;
-        }
-
-        .badge-new {
-            background-color: #8b5cf6;
-            font-size: 8px;
-            padding: 2px;
-        }
-
-        .badge-updated {
-            background-color: #f59e0b;
-            font-size: 8px;
-            padding: 2px;
-        }
-
-        /* Status badges for list view */
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-approved {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-
-        .status-rejected {
-            background-color: #fee2e2;
-            color: #dc2626;
-        }
-
-        .status-pending {
-            background-color: #fef3c7;
-            color: #d97706;
-        }
-
-        /* Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.3s ease-out;
-        }
+@media (max-width: 480px) {
+    #documentViewerModal .bg-white {
+        margin: 0.5rem;
+        max-height: calc(100vh - 1rem);
+        border-radius: 1rem;
+    }
+    
+    #documentViewer {
+        min-height: 250px;
+    }
+    
+    #documentReviewControls .flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    #documentReviewControls button {
+        width: 100%;
+    }
+}
+   
     </style>
-    <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
 </head>
-<body class="bg-gray-50">
 <div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner">                
-        <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+    <div class="spinner">
+                            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
     </div>
 </div>
+<body class="bg-gray-50">
     <div class="dashboard-grid">
-        <header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
+<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
             <div class="flex items-center">
                 <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
                 <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
@@ -343,8 +222,8 @@
             </div>
         </header>
         
-        <div class="main-content">
-            <div class="sidebar w-20 md:w-80 bg-white shadow-md flex flex-col transition-all duration-300">
+        <div class="flex flex-1 overflow-hidden"> 
+            <div class="w-20 md:w-80 bg-white shadow-md flex flex-col transition-all duration-300">
                 <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
                     <ul class="side-menu top space-y-4">
                         <li>
@@ -408,22 +287,19 @@
                 </div>
             </div>
             
-            <div class="content-area">
-                <div class="p-4 bg-gray-50 min-h-full rounded-lg shadow">
+            <div class="flex-1 overflow-hidden p-4 md:p-2 text-[16px] content-scrollable">
+                <div class="p-4 bg-gray-50 min-h-screen rounded-lg shadow">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-3xl font-bold text-gray-800">Scholar Renewal Review</h2>
                     </div>
 
-                    <!-- Fixed Tab Container -->
-                    <div class="tab-container">
-                        <div class="flex flex-col md:flex-row items-center gap-4">
-                            <div class="flex gap-2">
-                                <div onclick="showTable()" class="tab active" id="tab-renewal">
-                                    <i class="fas fa-table mr-1"></i> Process Renewals
-                                </div>
-                                <div onclick="showList()" class="tab" id="tab-review">
-                                    <i class="fas fa-list mr-1"></i> View Status
-                                </div>
+                    <div class="flex flex-col md:flex-row items-center mb-6 gap-4">
+                        <div class="flex gap-2">
+                            <div onclick="showTable()" class="tab active" id="tab-renewal">
+                                <i class="fas fa-table mr-1"></i> Process Renewals
+                            </div>
+                            <div onclick="showList()" class="tab" id="tab-review">
+                                <i class="fas fa-list mr-1"></i> View Status
                             </div>
                         </div>
                     </div>
@@ -791,7 +667,6 @@
     <script src="{{ asset('js/spinner.js') }}"></script>
     <script src="{{ asset('js/logout.js') }}"></script>
     <script src="{{ asset('js/renewal_paginate.js') }}"></script>
-    <script src="{{ asset('js/spinner.js') }}"></script>
 
 </body>
 
