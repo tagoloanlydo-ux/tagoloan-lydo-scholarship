@@ -375,9 +375,7 @@
                                                 style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
                                                 onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
                                                 onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-                                            <button onclick="clearFiltersTable()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                                <i class="fas fa-times"></i>
-                                            </button>
+                                        
                                         </div>
                                     </div>
 
@@ -444,6 +442,10 @@
                                 @endforelse
                             </tbody>
                         </table>
+                           <div class="mt-4">
+                           <div class="pagination-container" id="tablePagination"></div>
+
+                        </div>
                     </div>
 
                     <!-- List View (Processed Renewals) -->
@@ -466,9 +468,9 @@
                                                 style="padding: 0.75rem 2.5rem; width: 20rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; transition: all 0.2s; background-color: white;"
                                                 onfocus="this.style.borderColor='#7c3aed'; this.style.boxShadow='0 0 0 3px rgba(124, 58, 237, 0.2)'; this.style.outline='none'"
                                                 onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-                                            <button onclick="clearFiltersList()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                                <i class="fas fa-times"></i>
-                                            </button>
+                                       
+                                       
+                                       
                                         </div>
                                     </div>
 
@@ -546,7 +548,7 @@
                             </tbody>
                         </table>
                         <div class="mt-4">
-                            {{ $listView->links() }}
+                        <div class="pagination-container" id="listPagination"></div>
                         </div>
                     </div>
                 </div>
@@ -712,10 +714,10 @@
             window.renewals = renewals;
         });
     </script>
-
-    <!-- I-include ang modal.js -->
-        
-        <script src="{{ asset('js/renewal.js') }}"></script>
-        <script src="{{ asset('js/logout.js') }}"></script>
+    <script src="{{ asset('js/renewal.js') }}"></script>
+    <script src="{{ asset('js/spinner.js') }}"></script>
+    <script src="{{ asset('js/logout.js') }}"></script>
+    <script src="{{ asset('js/renewal_paginate.js') }}"></script>
 </body>
+
 </html>

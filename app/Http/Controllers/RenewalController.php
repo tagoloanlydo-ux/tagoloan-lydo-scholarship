@@ -414,6 +414,7 @@ $listView = DB::table("tbl_renewal as r")
         return view(
             "lydo_staff.renewal",
             compact(
+                
                 "pendingScreening",
                 "pendingRenewals",
                 "currentAcadYear",
