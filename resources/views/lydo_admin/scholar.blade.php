@@ -87,7 +87,7 @@
     display: flex;
     justify-content: center; /* Center the content */
     align-items: center;
-    margin: 1.5rem auto 0 auto; /* Center horizontally */
+    margin: 0 auto; /* Remove top margin, center horizontally */
     padding: 1rem;
     background-color: white;
     border-radius: 0.5rem;
@@ -426,8 +426,7 @@
                                 @endforelse
                             </tbody>
                         </table>
-                    </div>
-                    <div class="px-6 py-4 bg-white border-t border-gray-200">
+                    <div class="px-3 py-2 bg-white border-t border-gray-200">
     <div class="flex justify-center">
         <div class="pagination-container">
             <div class="pagination-info" id="paginationInfo">

@@ -4,189 +4,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signed Disbursements Report</title>
-    <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <style>
+        /* DOMpdf compatible styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        /* Set page to landscape */
-        @page {
-            size: landscape;
-            margin: 0.5in;
         }
 
         body {
-            background: #ffffff;
+            font-family: "DejaVu Sans", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
             padding: 20px;
-            width: 100%;
-            height: 100%;
+            background: #ffffff;
         }
 
         .container {
             width: 100%;
-            max-width: none;
-            background: #fff;
             margin: 0 auto;
-            padding: 0 20px; /* Added equal padding left and right */
+            background: #ffffff;
         }
 
-        /* HEADER TABLE (3-column layout) */
+        /* HEADER TABLE */
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .header-table td {
             text-align: center;
-            padding: 10px;
+            padding: 5px;
             vertical-align: middle;
         }
 
         .logo img {
-            width: 85px;
-            height: 85px;
-            object-fit: contain;
+            width: 80px;
+            height: 80px;
         }
 
         .name-section div {
+            font-size: 12px;
+            line-height: 1.2;
+        }
+
+        .name-section strong {
             font-size: 13px;
-            line-height: 1.3;
-            margin-bottom: 2px;
-        }
-
-        .name-section .republic {
             font-weight: bold;
-            font-size: 14px;
-        }
-
-        .name-section .province {
-            font-size: 13px;
-        }
-
-        .name-section .municipality {
-            font-size: 13px;
-        }
-
-        .name-section .office {
-            font-size: 14px;
-            font-weight: bold;
-            color: #2c5aa0;
-        }
-
-        .name-section .system {
-            font-size: 14px;
-            font-weight: bold;
-            color: #2c5aa0;
-            margin-bottom: 8px;
         }
 
         .report-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #2c3e50;
             text-transform: uppercase;
-            letter-spacing: 1px;
             margin-top: 5px;
         }
 
         /* FILTERS BOX */
         .filters-info {
-            background: #f8f9fa;
-            padding: 12px 15px;
-            margin: 15px 0;
-            border-radius: 5px;
-            border-left: 4px solid #2c5aa0;
-            font-size: 12px;
+            background: #eef3ff;
+            padding: 8px;
+            margin-top: 8px;
+            border-left: 4px solid #3f6ad8;
+            font-size: 11px;
         }
 
         .filters-info h3 {
-            margin-bottom: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #2c5aa0;
-        }
-
-        .filters-info p {
             margin-bottom: 3px;
+            font-size: 12px;
+            font-weight: bold;
         }
 
-        /* TABLE CONTAINER FOR BALANCED MARGINS */
-        .table-container {
-            width: 100%;
-            margin: 20px 0;
-        }
-
-        /* DATA TABLE - Optimized for landscape */
+        /* DATA TABLE */
         .data-table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 15px;
             font-size: 11px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border: 1px solid #b8c3d6;
-            table-layout: fixed;
-            margin: 0 auto; /* Center the table */
+            border: 1px solid #000000;
         }
 
         .data-table th {
-            background: #2c5aa0;
+            background: #666666;
             color: white;
-            padding: 10px 8px; /* Balanced padding */
+            padding: 6px;
             text-transform: uppercase;
             font-size: 10px;
-            font-weight: 600;
-            border: 1px solid #1e3d6d;
-            word-wrap: break-word;
+            border: 1px solid #000000;
+            font-weight: bold;
         }
 
         .data-table td {
-            padding: 10px 8px; /* Balanced padding */
-            border: 1px solid #e0e0e0;
-            text-align: center;
-            word-wrap: break-word;
-        }
-
-        .data-table td:first-child {
-            text-align: center;
-            width: 5%;
-        }
-
-        .data-table td:nth-child(2) {
-            text-align: left;
-            width: 18%;
-            padding-left: 12px; /* Slightly more padding for text alignment */
-        }
-
-        .data-table td:nth-child(3) {
-            width: 12%;
-        }
-
-        .data-table td:nth-child(4) {
-            width: 12%;
-        }
-
-        .data-table td:nth-child(5) {
-            width: 12%;
-        }
-
-        .data-table td:nth-child(6) {
-            width: 12%;
-        }
-
-        .data-table td:nth-child(7) {
-            width: 14%;
-        }
-
-        .data-table td:nth-child(8) {
-            width: 15%;
+            padding: 6px;
+            border: 1px solid #000000;
         }
 
         .data-table tr:nth-child(even) {
-            background: #f8f9fa;
+            background: #f7f9fc;
         }
 
         .text-center {
@@ -197,76 +112,43 @@
             text-align: left;
         }
 
-        /* NO DATA STYLING */
-        .no-data {
-            text-align: center;
-            padding: 60px 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin: 30px 0; /* Equal margins */
-            border: 1px solid #dee2e6;
-        }
-
-        .no-data h3 {
-            color: #6c757d;
-            font-size: 18px;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .no-data p {
-            color: #868e96;
-            font-size: 14px;
-        }
-
-        .no-data-icon {
-            font-size: 48px;
-            color: #dee2e6;
-            margin-bottom: 15px;
-        }
-
-        /* FOOTER */
         .footer {
-            margin: 40px 0 0 0; /* Equal margins */
+            margin-top: 25px;
             text-align: center;
-            font-size: 11px;
-            color: #6c757d;
-            border-top: 1px solid #dee2e6;
-            padding-top: 15px;
+            font-size: 10px;
+            color: #666666;
+            border-top: 1px solid #cccccc;
+            padding-top: 8px;
         }
 
         /* SIGNATURE STYLING */
         .signature-img {
-            max-width: 70px;
-            max-height: 30px;
-            border: 1px solid #e0e0e0;
-            border-radius: 3px;
+            max-width: 60px;
+            max-height: 25px;
+            border: 1px solid #cccccc;
         }
 
         /* AMOUNT STYLING */
         .amount {
-            font-weight: 600;
-            color: #28a745;
+            font-weight: bold;
+            color: #000000;
         }
 
         /* DATE STYLING */
         .date {
-            font-size: 10px;
-            color: #666;
+            font-size: 9px;
+            color: #666666;
         }
 
-        /* Landscape-specific optimizations */
-        @media print {
-            body {
-                padding: 0;
-            }
-            .container {
-                width: 100%;
-                padding: 0 15px; /* Equal padding for print */
-            }
-            .data-table {
-                font-size: 10px;
-            }
+        /* Page break avoidance */
+        .avoid-break {
+            page-break-inside: avoid;
+        }
+
+        /* Force landscape in DOMpdf */
+        @page {
+            size: landscape;
+            margin: 10mm;
         }
     </style>
 </head>
@@ -274,27 +156,24 @@
 <body>
     <div class="container">
 
-        <!-- HEADER TABLE (3-column layout) -->
+        <!-- HEADER -->
         <table class="header-table">
             <tr>
-                <!-- Left Logo -->
-                <td class="logo" width="100">
-                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture2.png'))) }}">
+                <td class="logo" style="width: 100px;">
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture2.png'))) }}" style="width: 80px; height: 80px;">
                 </td>
 
-                <!-- Center Text -->
                 <td class="name-section">
-                    <div class="republic">Republic of the Philippines</div>
-                    <div class="province">PROVINCE OF MISAMIS ORIENTAL</div>
-                    <div class="municipality">MUNICIPALITY OF TAGOLOAN</div>
-                    <div class="office">LOCAL YOUTH DEVELOPMENT OFFICE</div>
-                    <div class="system">SCHOLARSHIP MANAGEMENT SYSTEM</div>
+                    <div><strong>Republic of the Philippines</strong></div>
+                    <div>PROVINCE OF MISAMIS ORIENTAL</div>
+                    <div>MUNICIPALITY OF TAGOLOAN</div>
+                    <div><strong>LOCAL YOUTH DEVELOPMENT OFFICE</strong></div>
+                    <div><strong>SCHOLARSHIP MANAGEMENT SYSTEM</strong></div>
                     <div class="report-title">SIGNED DISBURSEMENTS REPORT</div>
 
-                    <!-- Filters inside the center column -->
                     @if(!empty($filters))
-                    <div class="filters-info" style="margin-top: 10px;">
-                        <h3>📊 Applied Filters</h3>
+                    <div class="filters-info">
+                        <h3>Applied Filters:</h3>
                         @if(isset($filters['search']))
                             <p><strong>Search:</strong> "{{ $filters['search'] }}"</p>
                         @endif
@@ -311,65 +190,60 @@
                     @endif
                 </td>
 
-                <!-- Right Logo -->
-                <td class="logo" width="100">
-                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture3.png'))) }}">
+                <td class="logo" style="width: 100px;">
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture3.png'))) }}" style="width: 80px; height: 80px;">
                 </td>
             </tr>
         </table>
 
-        <!-- CONTENT -->
+        <!-- TABLE -->
         @if($signedDisbursements->count() > 0)
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Scholar Name</th>
-                        <th>Barangay</th>
-                        <th>Semester</th>
-                        <th>Academic Year</th>
-                        <th>Amount</th>
-                        <th>Date</th>
-                        <th>Signature</th>
-                    </tr>
-                </thead>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 25%;">Scholar Name</th>
+                    <th style="width: 15%;">Barangay</th>
+                    <th style="width: 10%;">Semester</th>
+                    <th style="width: 15%;">Academic Year</th>
+                    <th style="width: 10%;" class="text-center">Amount</th>
+                    <th style="width: 10%;" class="text-center">Date</th>
+                    <th style="width: 10%;" class="text-center">Signature</th>
+                </tr>
+            </thead>
 
-                <tbody>
-                    @foreach($signedDisbursements as $disburse)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td class="text-left">{{ $disburse->full_name }}</td>
-                        <td>{{ $disburse->applicant_brgy }}</td>
-                        <td>{{ $disburse->disburse_semester }}</td>
-                        <td>{{ $disburse->disburse_acad_year }}</td>
-                        <td class="amount">PHP {{ number_format($disburse->disburse_amount, 2) }}</td>
-                        <td class="date">{{ \Carbon\Carbon::parse($disburse->disburse_date)->format('F d, Y') }}</td>
-                        <td>
-                            @if($disburse->disburse_signature)
-                                <img src="{{ $disburse->disburse_signature }}" class="signature-img" alt="Signature">
-                            @else
-                                <span style="color: #28a745; font-weight: bold; font-size: 10px;">✓ SIGNED</span>
-                            @endif
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+            <tbody>
+                @foreach($signedDisbursements as $disburse)
+                <tr class="avoid-break">
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td class="text-left">{{ $disburse->full_name }}</td>
+                    <td class="text-center">{{ $disburse->applicant_brgy }}</td>
+                    <td class="text-center">{{ $disburse->disburse_semester }}</td>
+                    <td class="text-center">{{ $disburse->disburse_acad_year }}</td>
+                    <td class="text-center amount">Php {{ number_format($disburse->disburse_amount, 2) }}</td>
+                    <td class="text-center date">{{ \Carbon\Carbon::parse($disburse->disburse_date)->format('F d, Y') }}</td>
+                    <td class="text-center">
+                        @if($disburse->disburse_signature)
+                            <img src="{{ $disburse->disburse_signature }}" class="signature-img" alt="Signature" style="max-width: 60px; max-height: 25px;">
+                        @else
+                            <span style="color: #000000; font-weight: bold; font-size: 9px;">✓ SIGNED</span>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
 
         @else
-        <div class="no-data">
-            <div class="no-data-icon">📄</div>
-            <h3>No Signed Disbursements Found</h3>
-            <p>There are no signed disbursement records matching your current filter criteria.</p>
+        <div class="text-center" style="padding: 30px;">
+            <h3 style="color: #555555; font-size: 14px;">No Signed Disbursements Found</h3>
+            <p style="color: #777777; font-size: 12px;">No signed disbursements match the current filter criteria.</p>
         </div>
         @endif
 
-        <!-- FOOTER -->
         <div class="footer">
-            Report generated by LYDO Scholarship Management System • 
-            {{ \Carbon\Carbon::now()->format('F d, Y \\a\\t h:i A') }}
+            Report generated by LYDO Scholarship Management System <br>
+            {{ \Carbon\Carbon::now()->format('F d, Y — h:i A') }}
         </div>
 
     </div>

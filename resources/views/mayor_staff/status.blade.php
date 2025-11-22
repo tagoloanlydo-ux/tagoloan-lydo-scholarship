@@ -309,8 +309,8 @@
                                 <th class="px-4 py-3 border border-gray-200 text-center">Full Name</th>
                                 <th class="px-4 py-3 border border-gray-200 text-center">Barangay</th>
                                 <th class="px-4 py-3 border border-gray-200 text-center">School Name</th>
-                                <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
-                                <th class="px-4 py-3 border border-gray-200 text-center">Actions</th> <!-- NEW COLUMN -->
+                                <th class="px-4 py-3 border border-gray-200 text-center">Application</th>
+                                <th class="px-4 py-3 border border-gray-200 text-center">Scholar Status</th> <!-- NEW COLUMN -->
                             </tr>
                         </thead>
 
@@ -524,16 +524,16 @@
                         </div>
                     </div>
 
-                    <!-- Documents Section -->
-            <div class="bg-white rounded-lg shadow-lg mb-6">
+  <!-- Documents Status Section -->
+<div class="bg-white rounded-lg shadow-lg mb-6">
     <div class="bg-purple-600 text-white px-6 py-4 rounded-t-lg">
         <h3 class="text-lg font-semibold">
-            <i class="fas fa-file-alt mr-2"></i>Supporting Documents
+            <i class="fas fa-file-alt mr-2"></i>Document Status Review
         </h3>
     </div>
     <div class="p-6">
         <div id="modal-documents-container">
-            <!-- Documents will be dynamically inserted here -->
+            <!-- Document status cards will be dynamically inserted here -->
         </div>
     </div>
 </div>

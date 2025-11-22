@@ -17,349 +17,297 @@
             color: black !important;
         }
         /* Center the pagination container */
-.pagination-container {
-    display: flex;
-    justify-content: center; /* Center the content */
-    align-items: center;
-    margin: 1.5rem auto 0 auto; /* Center horizontally */
-    padding: 1rem;
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    max-width: fit-content; /* Only take as much width as needed */
-}
+        .pagination-container {
+            display: flex;
+            justify-content: center; /* Center the content */
+            align-items: center;
+            margin: 0 auto; /* Remove top margin, center horizontally */
+            padding: 1rem;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            max-width: fit-content; /* Only take as much width as needed */
+        }
 
-/* For mobile responsiveness */
-@media (max-width: 768px) {
-    .pagination-container {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-        width: 100%;
-        max-width: 100%;
-    }
-}
+        /* For mobile responsiveness */
+        @media (max-width: 768px) {
+            .pagination-container {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+                width: 100%;
+                max-width: 100%;
+            }
+        }
 
-.pagination-info {
-    color: #6b7280;
-    font-size: 0.875rem;
-}
+        .pagination-info {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
 
-.pagination-buttons {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
+        .pagination-buttons {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-.pagination-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    background-color: white;
-    color: #6b7280;
-    cursor: pointer;
-    transition: all 0.2s;
-}
+        .pagination-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            background-color: white;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-.pagination-btn:hover:not(:disabled) {
-    background-color: #f9fafb;
-    border-color: #9ca3af;
-}
+        .pagination-btn:hover:not(:disabled) {
+            background-color: #f9fafb;
+            border-color: #9ca3af;
+        }
 
-.pagination-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
-.pagination-page-info {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0 1rem;
-    color: #6b7280;
-    font-size: 0.875rem;
-}
+        .pagination-page-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 1rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
 
-.pagination-page-input {
-    width: 3.5rem;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.25rem;
-    text-align: center;
-}
+        .pagination-page-input {
+            width: 3.5rem;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            text-align: center;
+        }
 
-.pagination-page-input:focus {
-    outline: none;
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
-}
+        .pagination-page-input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+        }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .pagination-container {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
-    
-    .pagination-buttons {
-        order: -1;
-    }
-}
-         .loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    animation: fadeIn 1s ease forwards;
-}
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .pagination-container {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .pagination-buttons {
+                order: -1;
+            }
+        }
+                .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeIn 1s ease forwards;
+        }
 
-.spinner {
-    width: 120px;
-    height: 120px;
-    animation: spin 2s linear infinite;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-}
+        .spinner {
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
 
-.spinner img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-}
+        .spinner img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
 
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
-.fade-out {
-    animation: fadeOut 1s ease forwards;
-}
+        .fade-out {
+            animation: fadeOut 1s ease forwards;
+        }
 
-@keyframes fadeOut {
-    to {
-        opacity: 0;
-        visibility: hidden;
-    }
-}
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
 
-/* Responsive spinner size */
-@media (max-width: 768px) {
-    .spinner {
-        width: 80px;
-        height: 80px;
-    }
-}
+        /* Responsive spinner size */
+        @media (max-width: 768px) {
+            .spinner {
+                width: 80px;
+                height: 80px;
+            }
+        }
 
-@media (max-width: 480px) {
-    .spinner {
-        width: 60px;
-        height: 60px;
-    }
-}
-   
-    </style>
+        @media (max-width: 480px) {
+            .spinner {
+                width: 60px;
+                height: 60px;
+            }
+        }
+       </style>
 </head>
 
 <body class="bg-gray-50 h-screen flex flex-col">
    <div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner">
-                            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+        <div class="spinner">
+            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+        </div>
     </div>
-</div>
-
     <!-- Header -->
-<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
+    <header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
             <div class="flex items-center">
                 <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
                 <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
             </div>
-            <div class="flex items-center space-x-4">
-                <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Lydo Admin</span>        
-        </header>
+         <div class="flex items-center space-x-4">
+            <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Lydo Admin</span>        
+    </header>
         <!-- Main Content -->
       <div class="flex flex-1 overflow-hidden">
             <!-- Sidebar -->
             <div class="w-16 md:w-72 bg-white shadow-md flex flex-col transition-all duration-300">
                 <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
                     <ul class="side-menu top space-y-4">
-        <li>
-          <a href="/lydo_admin/dashboard" class="idebar-item flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
-            <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Dashboard</span>
-          </a>
-        </li>
-<!-- Staff Dropdown -->
-<li class="relative">
-    <button onclick="toggleDropdown('staffMenu')"
-        class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-        <div class="flex items-center">
-            <i class="bx bxs-user-detail text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Staff</span>
-        </div>
-<i class="bx bx-chevron-down ml-2"></i>
-</button>
+                    <li>
+                    <a href="/lydo_admin/dashboard" class="idebar-item flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
+                        <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
+                        <span class="ml-4 hidden md:block text-lg">Dashboard</span>
+                    </a>
+                    </li>
+                    <!-- Staff Dropdown -->
+                    <li class="relative">
+                        <button onclick="toggleDropdown('staffMenu')"
+                            class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+                            <div class="flex items-center">
+                                <i class="bx bxs-user-detail text-center mx-auto md:mx-0 text-xl"></i>
+                                <span class="ml-4 hidden md:block text-lg">Staff</span>
+                            </div>
+                            <i class="bx bx-chevron-down ml-2"></i>
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <ul id="staffMenu" class="ml-10 mt-2 space-y-2 hidden">
+                                <li>
+                                    <a href="/lydo_admin/lydo" 
+                                    class="flex items-center p-2 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
+                                    <i class="bx bx-user mr-2"></i> LYDO Staff
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/lydo_admin/mayor" 
+                                    class="flex items-center p-2 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
+                                    <i class="bx bx-building-house mr-2"></i> Mayor Staff
+                                    </a>
+                                </li>
+                            </ul>
+                            <script>
+                                function toggleDropdown(id) {
+                                    const menu = document.getElementById(id);
+                                    menu.classList.toggle("hidden");
+                                }
+                            </script>
 
-<!-- Dropdown Menu -->
-<ul id="staffMenu" class="ml-10 mt-2 space-y-2 hidden">
-    <li>
-        <a href="/lydo_admin/lydo" 
-           class="flex items-center p-2 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
-           <i class="bx bx-user mr-2"></i> LYDO Staff
-        </a>
-    </li>
-    <li>
-        <a href="/lydo_admin/mayor" 
-           class="flex items-center p-2 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
-           <i class="bx bx-building-house mr-2"></i> Mayor Staff
-        </a>
-    </li>
-</ul>
+                            <li class="text-blue-600 bg-blue-50">
+                                <a href="/lydo_admin/applicants" 
+                                class=" flex items-center justify-between p-3 rounded-lg text-white-700 bg-violet-600 text-white">
+                                    <div class="flex items-center">
+                                        <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
+                                        <span class="ml-4 hidden md:block text-lg">Applicants</span>
+                                    </div>
+                                </a>
+                            </li>
 
+                            <!-- Scholar Dropdown -->
+                            <li class="relative">
+                                <button onclick="toggleDropdown('scholarMenu')"
+                                    class="w-full flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+                                    <div class="flex items-center">
+                                        <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
+                                        <span class="ml-4 hidden md:block text-lg">Scholar</span>
+                                    </div>
+                                    <i class="bx bx-chevron-down ml-2"></i>
+                                </button>
 
-<script>
-    function toggleDropdown(id) {
-        const menu = document.getElementById(id);
-        menu.classList.toggle("hidden");
-    }
-</script>
+                                <!-- Dropdown Menu -->
+                            <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
+                                <li>
+                                    <a href="/lydo_admin/scholar" 
+                                    class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
+                                    <i class="bx bx-list-ul mr-2"></i> List of Scholars
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/lydo_admin/status" 
+                                    class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
+                                    <i class="bx bx-check-circle mr-2"></i> Status
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/lydo_admin/disbursement" 
+                                    class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
+                                    <i class="bx bx-wallet mr-2"></i> Disbursement
+                                    </a>
+                                </li>
+                            </ul>
+                         </li>
+                        <li>
+                            <a href="/lydo_admin/announcement"
+                            class=" flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
+                                <div class="flex items-center">
+                                    <i class="bx bxs-megaphone text-center mx-auto md:mx-0 text-xl"></i>
+                                    <span class="ml-4 hidden md:block text-lg">Announcement</span>
+                                </div>
+                            </a>
+                        </li>
+                            </ul>
 
-<li class="text-blue-600 bg-blue-50">
-    <a href="/lydo_admin/applicants" 
-     class=" flex items-center justify-between p-3 rounded-lg text-white-700 bg-violet-600 text-white">
-         <div class="flex items-center">
-            <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Applicants</span>
-        </div>
-    </a>
-</li>
-
-<!-- Scholar Dropdown -->
-<li class="relative">
-    <button onclick="toggleDropdown('scholarMenu')"
-        class="w-full flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-        <div class="flex items-center">
-            <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Scholar</span>
-        </div>
-        <i class="bx bx-chevron-down ml-2"></i>
-    </button>
-
-    <!-- Dropdown Menu -->
-<ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
-    <li>
-        <a href="/lydo_admin/scholar" 
-           class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
-           <i class="bx bx-list-ul mr-2"></i> List of Scholars
-        </a>
-    </li>
-    <li>
-        <a href="/lydo_admin/status" 
-           class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
-           <i class="bx bx-check-circle mr-2"></i> Status
-        </a>
-    </li>
-    <li>
-        <a href="/lydo_admin/disbursement" 
-           class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
-           <i class="bx bx-wallet mr-2"></i> Disbursement
-        </a>
-    </li>
-</ul>
-
-</li>
-
-<script>
-    // Toggle dropdown and save state
-    function toggleDropdown(id) {
-        const menu = document.getElementById(id);
-        const isHidden = menu.classList.contains("hidden");
-
-        if (isHidden) {
-            menu.classList.remove("hidden");
-            localStorage.setItem(id, "open");
-        } else {
-            menu.classList.add("hidden");
-            localStorage.setItem(id, "closed");
-        }
-    }
-
-    // Restore dropdown state on page load
-    window.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll("ul[id]").forEach(menu => {
-            const state = localStorage.getItem(menu.id);
-            if (state === "open") {
-                menu.classList.remove("hidden");
-            }
-        });
-    });
-</script>
-
-<li>
-    <a href="/lydo_admin/announcement"
-       class=" flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
-        <div class="flex items-center">
-            <i class="bx bxs-megaphone text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Announcement</span>
-        </div>
-    </a>
-</li>
-      </ul>
-
-      <ul class="side-menu space-y-1">
-        <li>
-          <a href="/lydo_admin/settings" class=" flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
-            <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-base">Settings</span>
-          </a>
-        </li>
-      </ul>
+                            <ul class="side-menu space-y-1">
+                                <li>
+                                <a href="/lydo_admin/settings" class=" flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
+                                    <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl"></i>
+                                    <span class="ml-4 hidden md:block text-base">Settings</span>
+                                </a>
+                                </li>
+                            </ul>
                 </nav>
      <div class="p-2 md:p-4 border-t">
-<form method="POST" action="{{ route('logout') }}" id="logoutForm"> @csrf <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
+                    <form method="POST" action="{{ route('logout') }}" id="logoutForm"> @csrf <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
                             <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
                             <span class="hidden md:block text-red-600">Logout</span>
                         </button>
                     </form>
-
-                <script>
-                    document.getElementById('logoutForm').addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        Swal.fire({
-                            title: 'Are you sure you want to logout?',
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#d33',
-                            cancelButtonColor: '#3085d6',
-                            confirmButtonText: 'Yes, logout',
-                            cancelButtonText: 'Cancel'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                e.target.submit();
-                            }
-                        });
-                    });
-                </script>
                 </div>
             </div>
             <div class="flex-1 overflow-y-auto p-4 md:p-5 text-[16px]">
@@ -367,44 +315,50 @@
                     <h2 class="text-3xl font-bold text-black-800">List of Applicants</h2>
                 </div>
 
-            <!-- Filter Section -->
-            <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
-                <div class="flex flex-col md:flex-row gap-4" id="filterForm">
-                    <div class="flex-1">
-                        <input type="text" id="searchInput" placeholder="Search by name..." 
-                            class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                <!-- Filter Section -->
+                <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+                    <div class="flex flex-col md:flex-row gap-4" id="filterForm">
+                        <div class="flex-1">
+                            <input type="text" id="searchInput" placeholder="Search by name..." 
+                                class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                        </div>
+                        <div class="flex-1">
+                            <select id="barangaySelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                <option value="">All Barangays</option>
+                                @foreach($barangays as $barangay)
+                                    <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
+                                        {{ $barangay }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="flex-1">
+                            <select id="academicYearSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                <option value="">All Academic Years</option>
+                                @foreach($academicYears as $year)
+                                    <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
+                                        {{ $year }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="flex-1">
+                            <select id="initialScreeningSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                <option value="all" {{ $initialScreeningStatus == 'all' ? 'selected' : '' }}>All Status</option>
+                                <option value="Pending" {{ $initialScreeningStatus == 'Pending' ? 'selected' : '' }}>Pending For Initial Screening</option>
+                                <option value="Approved" {{ $initialScreeningStatus == 'Approved' ? 'selected' : '' }}>Approved From Mayor Staff</option>
+                                <option value="Rejected" {{ $initialScreeningStatus == 'Rejected' ? 'selected' : '' }}>Rejected From Mayor Staff</option>
+                                <option value="Reviewed" {{ $initialScreeningStatus == 'Reviewed' ? 'selected' : '' }}>Reviewed From Lydo Staff</option>
+                            </select>
+                        </div>
+                        <div class="flex-1">
+                            <button id="printPdfBtn" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+                                <i class="fas fa-file-pdf"></i>
+                                Print PDF
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex-1">
-                        <select id="barangaySelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                            <option value="">All Barangays</option>
-                            @foreach($barangays as $barangay)
-                                <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
-                                    {{ $barangay }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="flex-1">
-                        <select id="academicYearSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                            <option value="">All Academic Years</option>
-                            @foreach($academicYears as $year)
-                                <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
-                                    {{ $year }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-            <div class="flex-1">
-                <select id="initialScreeningSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                    <option value="all" {{ $initialScreeningStatus == 'all' ? 'selected' : '' }}>All Status</option>
-                            <option value="Pending" {{ $initialScreeningStatus == 'Pending' ? 'selected' : '' }}>Pending For Initial Screening</option>
-                    <option value="Approved" {{ $initialScreeningStatus == 'Approved' ? 'selected' : '' }}>Approved From Mayor Staff</option>
-                    <option value="Rejected" {{ $initialScreeningStatus == 'Rejected' ? 'selected' : '' }}>Rejected From Mayor Staff</option>
-                    <option value="Reviewed" {{ $initialScreeningStatus == 'Reviewed' ? 'selected' : '' }}>Reviewed From Lydo Staff</option>
-                </select>
-            </div>
-            </div>
-            </div>
+                </div>
 
                 <!-- Applicants Table -->
                 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -535,13 +489,9 @@
                     </div>
                 </div>
             </div>
-        </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-         </div>
+        </div>           
      </div>
+    </div>
 
             <!-- Email Modal -->
             <div id="emailModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -738,18 +688,17 @@
                 </div>
             </div>
             <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize pagination and filtering
-    initializeApplicantData();
-    initializeApplicantPagination();
-    initializeApplicantFiltering();
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Initialize pagination and filtering
+                    initializeApplicantData();
+                    initializeApplicantPagination();
+                    initializeApplicantFiltering();
 
-    // Rest of your existing JavaScript code for checkboxes, buttons, etc.
-    const selectAll = document.getElementById('selectAll');
-    const checkboxes = document.querySelectorAll('.applicant-checkbox');
-    const copyNamesBtn = document.getElementById('copyNamesBtn');
-    const emailSelectedBtn = document.getElementById('emailSelectedBtn');
-
+                    // Rest of your existing JavaScript code for checkboxes, buttons, etc.
+                    const selectAll = document.getElementById('selectAll');
+                    const checkboxes = document.querySelectorAll('.applicant-checkbox');
+                    const copyNamesBtn = document.getElementById('copyNamesBtn');
+                    const emailSelectedBtn = document.getElementById('emailSelectedBtn');
 
                     // Email modal elements
                     const emailModal = document.getElementById('emailModal');
@@ -818,57 +767,57 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                     // Copy Names button functionality
-  copyNamesBtn.addEventListener('click', function() {
-    const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
+                    copyNamesBtn.addEventListener('click', function() {
+                        const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
 
-    if (selectedCheckboxes.length === 0) {
-        Swal.fire({
-            title: 'No Selection!',
-            text: 'Please select at least one applicant to copy names.',
-            icon: 'warning',
-            confirmButtonText: 'OK'
-        });
-        return;
-    }
+                        if (selectedCheckboxes.length === 0) {
+                            Swal.fire({
+                                title: 'No Selection!',
+                                text: 'Please select at least one applicant to copy names.',
+                                icon: 'warning',
+                                confirmButtonText: 'OK'
+                            });
+                            return;
+                        }
 
-    // Group selected applicants by barangay
-    const barangayGroups = {};
-    selectedCheckboxes.forEach(checkbox => {
-        const row = checkbox.closest('tr');
-        const name = row.querySelector('td:nth-child(2)').textContent.trim();
-        const barangay = row.querySelector('td:nth-child(3)').textContent.trim();
-        if (!barangayGroups[barangay]) {
-            barangayGroups[barangay] = [];
-        }
-        barangayGroups[barangay].push(name);
-    });
+                        // Group selected applicants by barangay
+                        const barangayGroups = {};
+                        selectedCheckboxes.forEach(checkbox => {
+                            const row = checkbox.closest('tr');
+                            const name = row.querySelector('td:nth-child(2)').textContent.trim();
+                            const barangay = row.querySelector('td:nth-child(3)').textContent.trim();
+                            if (!barangayGroups[barangay]) {
+                                barangayGroups[barangay] = [];
+                            }
+                            barangayGroups[barangay].push(name);
+                        });
 
-    // Build the output string
-    let output = '';
-    Object.keys(barangayGroups).forEach(barangay => {
-        output += `${barangay}\n`;
-        barangayGroups[barangay].forEach((name, idx) => {
-            output += `${idx + 1}. ${name}\n`;
-        });
-        output += '\n';
-    });
+                        // Build the output string
+                        let output = '';
+                        Object.keys(barangayGroups).forEach(barangay => {
+                            output += `${barangay}\n`;
+                            barangayGroups[barangay].forEach((name, idx) => {
+                                output += `${idx + 1}. ${name}\n`;
+                            });
+                            output += '\n';
+                        });
 
-    navigator.clipboard.writeText(output.trim()).then(() => {
-        Swal.fire({
-            title: 'Success!',
-            text: 'Selected applicant names grouped by barangay copied to clipboard!',
-            icon: 'success',
-            confirmButtonText: 'OK'
-        });
-    }).catch(err => {
-        Swal.fire({
-            title: 'Error!',
-            text: 'Failed to copy names: ' + err,
-            icon: 'error',
-            confirmButtonText: 'OK'
-        });
-    });
-});
+                        navigator.clipboard.writeText(output.trim()).then(() => {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Selected applicant names grouped by barangay copied to clipboard!',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            });
+                        }).catch(err => {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Failed to copy names: ' + err,
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        });
+                    });
 
                     // Email Selected button functionality
                     emailSelectedBtn.addEventListener('click', function() {
@@ -1658,6 +1607,87 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+// PDF Print functionality - Fixed version
+document.addEventListener('DOMContentLoaded', function() {
+    const printPdfBtn = document.getElementById('printPdfBtn');
+    
+    if (printPdfBtn) {
+        printPdfBtn.addEventListener('click', function() {
+            // Get current filter values
+            const searchTerm = document.getElementById('searchInput')?.value || '';
+            const barangay = document.getElementById('barangaySelect')?.value || '';
+            const academicYear = document.getElementById('academicYearSelect')?.value || '';
+            const initialScreening = document.getElementById('initialScreeningSelect')?.value || 'all';
+
+            // Build query parameters
+            const params = new URLSearchParams();
+            
+            if (searchTerm) params.append('search', searchTerm);
+            if (barangay) params.append('barangay', barangay);
+            if (academicYear) params.append('academic_year', academicYear);
+            if (initialScreening && initialScreening !== 'all') {
+                params.append('initial_screening', initialScreening);
+            }
+
+            // Show loading
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'flex';
+            }
+
+            // Generate PDF - Use the correct route name
+            const url = `/lydo_admin/generate-applicants-pdf?${params.toString()}`;
+            
+            console.log('Generating PDF with URL:', url); // Debug log
+
+            // Create a temporary link to trigger download
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.style.display = 'none';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Hide loading after a short delay
+            setTimeout(() => {
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'none';
+                }
+            }, 2000);
+            
+        });
+    } else {
+        console.error('Print PDF button not found');
+    }
+});
+</script>
+
+<script>
+    // Toggle dropdown and save state
+    function toggleDropdown(id) {
+        const menu = document.getElementById(id);
+        const isHidden = menu.classList.contains("hidden");
+
+        if (isHidden) {
+            menu.classList.remove("hidden");
+            localStorage.setItem(id, "open");
+        } else {
+            menu.classList.add("hidden");
+            localStorage.setItem(id, "closed");
+        }
+    }
+
+    // Restore dropdown state on page load
+    window.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll("ul[id]").forEach(menu => {
+            const state = localStorage.getItem(menu.id);
+            if (state === "open") {
+                menu.classList.remove("hidden");
+            }
+        });
+    });
 </script>
 <script src="{{ asset('js/spinner.js') }}"></script>
 

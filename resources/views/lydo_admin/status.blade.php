@@ -174,70 +174,99 @@
         height: 60px;
     }
 }
-   /* Add this to your existing CSS in status.blade.php */
-/* Pagination Styles */
-.pagination {
+/* Center the pagination container */
+.pagination-container {
     display: flex;
-    justify-content: center;
+    justify-content: center; /* Center the content */
     align-items: center;
-    gap: 8px;
-    margin: 20px 0;
-    padding: 0;
-    list-style: none;
-}
-
-.pagination-item {
-    display: inline-block;
-}
-
-.pagination-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 40px;
-    height: 40px;
-    padding: 8px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
+    margin: 0 auto; /* Remove top margin, center horizontally */
+    padding: 1rem;
     background-color: white;
-    color: #374151;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.2s ease;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    max-width: fit-content; /* Only take as much width as needed */
 }
 
-.pagination-link:hover {
-    background-color: #f9fafb;
-    border-color: #274b8aff;
-}
-
-.pagination-link.active {
-    background-color: #7c3aed;
-    border-color: #7c3aed;
-    color: white;
-}
-
-.pagination-link.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: #f3f4f6;
-}
-
-.pagination-link.disabled:hover {
-    background-color: #f3f4f6;
-    border-color: #d1d5db;
-}
-
-/* Pagination arrows */
-.pagination-arrow {
-    font-weight: bold;
+/* For mobile responsiveness */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        width: 100%;
+        max-width: 100%;
+    }
 }
 
 .pagination-info {
-    text-align: center;
-    margin: 10px 0;
     color: #6b7280;
-    font-size: 14px;
+    font-size: 0.875rem;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: white;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 1rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.pagination-page-input {
+    width: 3.5rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    text-align: center;
+}
+
+.pagination-page-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .pagination-buttons {
+        order: -1;
+    }
 }
 </style>
 <body class="bg-gray-50">
@@ -533,7 +562,7 @@
                                 </table>
                             </div>
 
-                            <div class="px-4 py-3 bg-white border-t border-gray-200 mt-3">
+                            <div class="px-4 py-3 bg-white border-t border-gray-200 ">
                                 <div class="flex justify-center">
                                     <div class="pagination-container">
                                         <div class="pagination-info" id="paginationInfo">
@@ -630,7 +659,7 @@
                             </div>
 
 
-                        <div class="px-4 py-3 bg-white border-t border-gray-200 mt-3">
+                        <div class="px-4 py-3 bg-white border-t border-gray-200">
                             <div class="flex justify-center">
                                 <div class="pagination-container">
                                     <div class="pagination-info" id="graduatingPaginationInfo">

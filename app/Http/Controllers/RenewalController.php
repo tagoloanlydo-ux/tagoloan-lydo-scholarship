@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\EmailService;
 use App\Events\ApplicantUpdated;
 use App\Events\RenewalUpdated;
-use Illuminate\Support\Facades\Log;
-
 
 
 class RenewalController extends Controller
@@ -235,153 +233,148 @@ class RenewalController extends Controller
 
         return response()->json(["success" => true]);
     }
- public function renewal(Request $request)
-{
-    $currentAcadYear = DB::table("tbl_applicant")
-        ->select("applicant_acad_year")
-        ->orderBy("applicant_acad_year", "desc")
-        ->value("applicant_acad_year");
 
-    $pendingScreening = DB::table("tbl_application_personnel")
-        ->join(
-            "tbl_application",
-            "tbl_application_personnel.application_id",
-            "=",
-            "tbl_application.application_id",
-        )
-        ->join(
-            "tbl_applicant",
-            "tbl_application.applicant_id",
-            "=",
-            "tbl_applicant.applicant_id",
-        )
-        ->leftJoin(
-            "family_intake_sheets", 
-            "tbl_application_personnel.application_personnel_id", 
-            "=", 
-            "family_intake_sheets.application_personnel_id"
-        )
-        ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
-        ->where("tbl_application_personnel.remarks", "Waiting")
-        ->whereNotNull("family_intake_sheets.application_personnel_id")
-        ->count();
+    public function renewal(Request $request)
+    {
+        $currentAcadYear = DB::table("tbl_applicant")
+            ->select("applicant_acad_year")
+            ->orderBy("applicant_acad_year", "desc")
+            ->value("applicant_acad_year");
 
-    $pendingRenewals = DB::table("tbl_renewal")
-        ->where("renewal_status", "Pending")
-        ->count();
-
-    $currentYear = date("Y");
-
-    // ✅ Pending renewals (current year only) - NEWEST FIRST
- // Pending renewals
-$tableApplicants = DB::table("tbl_renewal as r")
-    ->join("tbl_scholar as s", "r.scholar_id", "=", "s.scholar_id")
-    ->join("tbl_application as ap", "s.application_id", "=", "ap.application_id")
-    ->join("tbl_applicant as a", "ap.applicant_id", "=", "a.applicant_id")
-    ->select(
-        "r.renewal_id",
-        "a.applicant_id",
-        "a.applicant_fname",
-        "a.applicant_lname",
-        "a.applicant_mname",
-        "a.applicant_suffix",
-        "a.applicant_brgy",
-        "a.applicant_year_level",
-        "a.applicant_email",
-        "a.applicant_school_name",
-        "r.renewal_status",
-        "r.renewal_semester",
-        "r.renewal_cert_of_reg",
-        "r.renewal_grade_slip",
-        "r.renewal_brgy_indigency",
-        "r.renewal_acad_year",
-        "ap.application_id",
-        "s.scholar_id",
-        "r.created_at",
-        DB::raw("
-            CONCAT(
-                UPPER(LEFT(a.applicant_lname, 1)), LOWER(SUBSTRING(a.applicant_lname, 2)), ', ',
-                UPPER(LEFT(a.applicant_fname, 1)), LOWER(SUBSTRING(a.applicant_fname, 2)), ' ',
-                IFNULL(CONCAT(UPPER(LEFT(a.applicant_mname, 1)), '.'), ''),
-                IFNULL(CONCAT(' ', UPPER(LEFT(a.applicant_suffix, 1)), LOWER(SUBSTRING(a.applicant_suffix, 2))), '')
-            ) as full_name
-        ")
-    )
-    ->where("r.renewal_status", "Pending")
-    ->where("r.renewal_acad_year", $currentAcadYear)
-    ->when($request->search, function ($query, $search) {
-        $query->where(function ($q) use ($search) {
-            $q->where("a.applicant_fname", "like", "%$search%")
-              ->orWhere("a.applicant_lname", "like", "%$search%");
-        });
-    })
-    ->when($request->barangay, function ($query, $barangay) {
-        $query->where("a.applicant_brgy", $barangay);
-    })
-    ->orderBy(DB::raw("
-        CONCAT(
-            UPPER(LEFT(a.applicant_lname, 1)), LOWER(SUBSTRING(a.applicant_lname, 2)), ', ',
-            UPPER(LEFT(a.applicant_fname, 1)), LOWER(SUBSTRING(a.applicant_fname, 2))
-        )
-    "))
-    ->get();
-
-
-// Grouped renewals by scholar
-$renewals = DB::table("tbl_renewal")
-    ->select(
-        "renewal_id",
-        "scholar_id",
-        "renewal_cert_of_reg",
-        "renewal_grade_slip",
-        "renewal_brgy_indigency",
-        "renewal_semester",
-        "renewal_acad_year",
-        "date_submitted",
-        "renewal_status"
-    )
-    ->get()
-    ->groupBy("scholar_id");
-
-// Barangay dropdown
-$barangays = DB::table("tbl_applicant")
-    ->select("applicant_brgy")
-    ->distinct()
-    ->pluck("applicant_brgy");
-
-// Notifications (limit 5)
-$notifications = DB::table("tbl_application_personnel")
+$pendingScreening = DB::table("tbl_application_personnel")
     ->join(
         "tbl_application",
         "tbl_application_personnel.application_id",
         "=",
-        "tbl_application.application_id"
+        "tbl_application.application_id",
     )
     ->join(
         "tbl_applicant",
         "tbl_application.applicant_id",
         "=",
-        "tbl_applicant.applicant_id"
+        "tbl_applicant.applicant_id",
     )
-    ->select(
-        "tbl_application_personnel.*",
-        DB::raw("CONCAT(
+    ->leftJoin(
+        "family_intake_sheets", 
+        "tbl_application_personnel.application_personnel_id", 
+        "=", 
+        "family_intake_sheets.application_personnel_id"
+    )
+    ->where("tbl_applicant.applicant_acad_year", $currentAcadYear)
+    ->where("tbl_application_personnel.remarks", "Waiting")
+    ->whereNotNull("family_intake_sheets.application_personnel_id")
+    ->count();
+
+        $pendingRenewals = DB::table("tbl_renewal")
+            ->where("renewal_status", "Pending")
+            ->count();
+
+        $currentYear = date("Y");
+
+        // ✅ Pending renewals (current year only)
+        $tableApplicants = DB::table("tbl_renewal as r")
+            ->join("tbl_scholar as s", "r.scholar_id", "=", "s.scholar_id")
+            ->join(
+                "tbl_application as ap",
+                "s.application_id",
+                "=",
+                "ap.application_id",
+            )
+            ->join(
+                "tbl_applicant as a",
+                "ap.applicant_id",
+                "=",
+                "a.applicant_id",
+            )
+            ->select(
+                "r.renewal_id",
+                "a.applicant_id",
+                "a.applicant_fname",
+                "a.applicant_lname",
+                "a.applicant_mname",
+                 "a.applicant_suffix",
+                "a.applicant_brgy",
+                "a.applicant_email",
+                "a.applicant_school_name",
+                "a.applicant_year_level",
+                "r.renewal_status",
+                "r.renewal_cert_of_reg",
+                "r.renewal_grade_slip",
+                "r.renewal_brgy_indigency",
+                "r.renewal_acad_year",
+                "r.renewal_semester",
+                "ap.application_id",
+                "s.scholar_id",
+            )
+            ->where("r.renewal_status", "Pending")
+            ->where("r.renewal_acad_year", $currentAcadYear)
+            ->when($request->search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where(
+                        "a.applicant_fname",
+                        "like",
+                        "%$search%",
+                    )->orWhere("a.applicant_lname", "like", "%$search%");
+                });
+            })
+            ->when($request->barangay, function ($query, $barangay) {
+                $query->where("a.applicant_brgy", $barangay);
+            })
+            ->paginate();
+
+        $renewals = DB::table("tbl_renewal")
+            ->select(
+                "renewal_id",
+                "scholar_id",
+                "renewal_cert_of_reg",
+                "renewal_grade_slip",
+                "renewal_brgy_indigency",
+                "renewal_semester",
+                "renewal_acad_year",
+                "date_submitted",
+                "renewal_status",
+            )
+            ->get()
+            ->groupBy("scholar_id");
+
+        // para dropdown filter ng barangay
+        $barangays = DB::table("tbl_applicant")
+            ->select("applicant_brgy")
+            ->distinct()
+            ->pluck("applicant_brgy");
+
+        $notifications = DB::table("tbl_application_personnel")
+            ->join(
+                "tbl_application",
+                "tbl_application_personnel.application_id",
+                "=",
+                "tbl_application.application_id",
+            )
+            ->join(
+                "tbl_applicant",
+                "tbl_application.applicant_id",
+                "=",
+                "tbl_applicant.applicant_id",
+            )
+            ->select(
+                "tbl_application_personnel.*",
+                DB::raw("CONCAT(
             tbl_applicant.applicant_fname, ' ',
             COALESCE(tbl_applicant.applicant_mname, ''), ' ',
             tbl_applicant.applicant_lname,
             IFNULL(CONCAT(' ', tbl_applicant.applicant_suffix), '')
-        ) as name")
-    )
-    ->where(function ($q) {
-        $q->where("tbl_application_personnel.initial_screening", "Approved")
-          ->orWhere("tbl_application_personnel.status", "Renewed");
-    })
-    ->orderBy("tbl_application_personnel.created_at", "desc")
-    ->limit(5)
-    ->get();
+        ) as name"),
+            )
+            ->where(function ($q) {
+                $q->where(
+                    "tbl_application_personnel.initial_screening",
+                    "Approved",
+                )->orWhere("tbl_application_personnel.status", "Renewed");
+            })
+            ->orderBy("tbl_application_personnel.created_at", "desc")
+            ->limit(5)
+            ->get();
 
-
-// Approved / Rejected renewals
 $listView = DB::table("tbl_renewal as r")
     ->join("tbl_scholar as s", "r.scholar_id", "=", "s.scholar_id")
     ->join("tbl_application as ap", "s.application_id", "=", "ap.application_id")
@@ -395,22 +388,14 @@ $listView = DB::table("tbl_renewal as r")
         "a.applicant_lname",
         "a.applicant_suffix",
         "a.applicant_brgy",
+        "a.applicant_year_level",
         "a.applicant_school_name",
         "a.applicant_course",
-        "a.applicant_year_level",
+        "r.rejection_reason",
         "r.renewal_status",
         "r.renewal_semester",
         "r.renewal_acad_year",
-        "ap.application_id",
-        "r.created_at",
-        DB::raw("
-            CONCAT(
-                UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)), ', ',
-                UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)), ' ',
-                IFNULL(CONCAT(UPPER(LEFT(a.applicant_mname,1)), '.'), ''),
-                IFNULL(CONCAT(' ', UPPER(LEFT(a.applicant_suffix,1)), LOWER(SUBSTRING(a.applicant_suffix,2))), '')
-            ) as full_name
-        ")
+        "ap.application_id"
     )
     ->whereIn("r.renewal_status", ["Approved", "Rejected"])
     ->where("r.renewal_acad_year", $currentAcadYear)
@@ -423,28 +408,23 @@ $listView = DB::table("tbl_renewal as r")
     ->when($request->barangay, function ($query, $barangay) {
         $query->where("a.applicant_brgy", $barangay);
     })
-    ->orderBy(DB::raw("
-        CONCAT(
-            UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)), ', ',
-            UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2))
-        )
-    "))
-    ->get();
+    ->paginate() // ✅ use paginate instead of get
+    ->appends($request->all());
 
-    return view(
-        "lydo_staff.renewal",
-        compact(
-            "pendingScreening",
-            "pendingRenewals",
-            "currentAcadYear",
-            "tableApplicants",
-            "barangays",
-            "renewals",
-            "notifications",
-            "listView",
-        ),
-    );
-}
+        return view(
+            "lydo_staff.renewal",
+            compact(
+                "pendingScreening",
+                "pendingRenewals",
+                "currentAcadYear",
+                "tableApplicants",
+                "barangays",
+                "renewals",
+                "notifications",
+                "listView",
+            ),
+        );
+    }
    public function getApplicantDetails($applicant_id)
     {
         $applicant = DB::table('tbl_applicant')
@@ -466,21 +446,8 @@ public function saveRenewalDocumentStatus(Request $request)
             'status' => 'required|in:good,bad'
         ]);
 
-        // Map document types to actual column names (using correct column names)
-        $statusColumnMapping = [
-            'cert_of_reg' => 'cert_of_reg_status',
-            'grade_slip' => 'grade_slip_status', 
-            'brgy_indigency' => 'brgy_indigency_status'
-        ];
-
-        $statusColumnName = $statusColumnMapping[$request->document_type] ?? null;
-        
-        if (!$statusColumnName) {
-            return response()->json(['success' => false, 'message' => 'Invalid document type'], 400);
-        }
-
         $updateData = [
-            $statusColumnName => $request->status,
+            $request->document_type . '_status' => $request->status,
             'updated_at' => now()
         ];
 
@@ -498,81 +465,58 @@ public function saveRenewalDocumentStatus(Request $request)
 public function saveRenewalDocumentComment(Request $request)
 {
     try {
-        \Log::info('=== START saveRenewalDocumentComment ===');
-        \Log::info('Save document comment request:', $request->all());
-        
         $request->validate([
             'renewal_id' => 'required|exists:tbl_renewal,renewal_id',
             'document_type' => 'required|in:cert_of_reg,grade_slip,brgy_indigency',
             'comment' => 'nullable|string|max:1000'
         ]);
 
-        \Log::info('Validation passed');
-
-        // Map document types to actual column names
-        $columnMapping = [
-            'cert_of_reg' => 'cert_of_reg_comment',
-            'grade_slip' => 'grade_slip_comment', 
-            'brgy_indigency' => 'brgy_indigency_comment'
-        ];
-
-        $columnName = $columnMapping[$request->document_type] ?? null;
-        
-        if (!$columnName) {
-            \Log::error('Invalid document type provided: ' . $request->document_type);
-            return response()->json(['success' => false, 'message' => 'Invalid document type'], 400);
-        }
-
-        \Log::info("Using column name: {$columnName} for document type: {$request->document_type}");
-
         $updateData = [
-            $columnName => $request->comment,
+            $request->document_type . '_comment' => $request->comment,
             'updated_at' => now()
         ];
 
-        \Log::info('Attempting to update with data:', $updateData);
-        \Log::info('Renewal ID: ' . $request->renewal_id);
-
-        // First, check if the renewal exists and get current data
-        $currentData = DB::table('tbl_renewal')
-            ->where('renewal_id', $request->renewal_id)
-            ->first();
-            
-        if (!$currentData) {
-            \Log::error('Renewal not found with ID: ' . $request->renewal_id);
-            return response()->json(['success' => false, 'message' => 'Renewal not found'], 404);
-        }
-
-        \Log::info('Current renewal data:', (array)$currentData);
-
-        $result = DB::table('tbl_renewal')
+        DB::table('tbl_renewal')
             ->where('renewal_id', $request->renewal_id)
             ->update($updateData);
 
-        \Log::info('Update result - affected rows:', ['affected_rows' => $result]);
-
-        // Verify the update
-        $updatedData = DB::table('tbl_renewal')
-            ->where('renewal_id', $request->renewal_id)
-            ->first();
-            
-        \Log::info('After update - new comment value:', [
-            'column' => $columnName,
-            'value' => $updatedData->$columnName
-        ]);
-
-        return response()->json([
-            'success' => true, 
-            'affected_rows' => $result,
-            'new_value' => $updatedData->$columnName
-        ]);
-        
+        return response()->json(['success' => true]);
     } catch (\Exception $e) {
         \Log::error('Save renewal document comment error: '.$e->getMessage());
-        \Log::error('Stack trace: '.$e->getTraceAsString());
         return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
     }
 }
+
+public function getRenewalDocumentStatuses($renewalId)
+{
+    try {
+        $renewal = DB::table('tbl_renewal')
+            ->where('renewal_id', $renewalId)
+            ->first();
+
+        if (!$renewal) {
+            return response()->json(['success' => false, 'message' => 'Renewal not found'], 404);
+        }
+
+        $statuses = [
+            'cert_of_reg_status' => $renewal->cert_of_reg_status,
+            'grade_slip_status' => $renewal->grade_slip_status,
+            'brgy_indigency_status' => $renewal->brgy_indigency_status,
+            'cert_of_reg_comment' => $renewal->cert_of_reg_comment,
+            'grade_slip_comment' => $renewal->grade_slip_comment,
+            'brgy_indigency_comment' => $renewal->brgy_indigency_comment,
+        ];
+
+        return response()->json([
+            'success' => true,
+            'statuses' => $statuses
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Get renewal document statuses error: '.$e->getMessage());
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
+}
+// Add to RenewalController.php
 
 public function getDocumentComments($renewalId)
 {
@@ -580,9 +524,9 @@ public function getDocumentComments($renewalId)
         $renewal = DB::table('tbl_renewal')
             ->where('renewal_id', $renewalId)
             ->select(
-                'cert_of_reg_comment', // Changed from renewal_cert_of_reg_comment
-                'grade_slip_comment',  // Changed from renewal_grade_slip_comment
-                'brgy_indigency_comment', // Changed from renewal_brgy_indigency_comment
+                'cert_of_reg_comment',
+                'grade_slip_comment',
+                'brgy_indigency_comment',
                 'cert_of_reg_status',
                 'grade_slip_status',
                 'brgy_indigency_status'
@@ -608,44 +552,6 @@ public function getDocumentComments($renewalId)
         ]);
     } catch (\Exception $e) {
         \Log::error('Get document comments error: '.$e->getMessage());
-        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
-    }
-}
-
-public function getRenewalDocumentStatuses($renewalId)
-{
-    try {
-        $renewal = DB::table('tbl_renewal')
-            ->where('renewal_id', $renewalId)
-            ->select(
-                'cert_of_reg_status',
-                'grade_slip_status',
-                'brgy_indigency_status',
-                'cert_of_reg_comment',
-                'grade_slip_comment',
-                'brgy_indigency_comment'
-            )
-            ->first();
-
-        if (!$renewal) {
-            return response()->json(['success' => false, 'message' => 'Renewal not found'], 404);
-        }
-
-        $statuses = [
-            'cert_of_reg_status' => $renewal->cert_of_reg_status,
-            'grade_slip_status' => $renewal->grade_slip_status,
-            'brgy_indigency_status' => $renewal->brgy_indigency_status,
-            'cert_of_reg_comment' => $renewal->cert_of_reg_comment,
-            'grade_slip_comment' => $renewal->grade_slip_comment,
-            'brgy_indigency_comment' => $renewal->brgy_indigency_comment,
-        ];
-
-        return response()->json([
-            'success' => true,
-            'statuses' => $statuses
-        ]);
-    } catch (\Exception $e) {
-        \Log::error('Get renewal document statuses error: '.$e->getMessage());
         return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
     }
 }
@@ -734,82 +640,100 @@ private function getDocumentTypeName($documentType)
 
     return $names[$documentType] ?? 'Document';
 }
+
 public function sendEmailForBadDocuments(Request $request)
 {
     try {
-        $request->validate([
-            'renewal_id' => 'required|exists:tbl_renewal,renewal_id',
-            'bad_documents' => 'required|array'
-        ]);
+        // Get current academic year
+        $currentAcadYear = DB::table("tbl_applicant")
+            ->select("applicant_acad_year")
+            ->orderBy("applicant_acad_year", "desc")
+            ->value("applicant_acad_year");
 
-        // Get renewal and applicant info
-        $renewalInfo = DB::table('tbl_renewal as r')
+        // Find all renewals with bad documents for current academic year
+        $badDocuments = DB::table('tbl_renewal as r')
             ->join('tbl_scholar as s', 'r.scholar_id', '=', 's.scholar_id')
             ->join('tbl_application as ap', 's.application_id', '=', 'ap.application_id')
             ->join('tbl_applicant as a', 'ap.applicant_id', '=', 'a.applicant_id')
-            ->where('r.renewal_id', $request->renewal_id)
+            ->where('r.renewal_acad_year', $currentAcadYear)
+            ->where(function ($query) {
+                $query->where('r.cert_of_reg_status', 'bad')
+                      ->orWhere('r.grade_slip_status', 'bad')
+                      ->orWhere('r.brgy_indigency_status', 'bad');
+            })
             ->select(
+                'r.renewal_id',
                 'a.applicant_email',
-                'a.applicant_fname', 
+                'a.applicant_fname',
                 'a.applicant_lname',
+                'r.cert_of_reg_status',
+                'r.grade_slip_status',
+                'r.brgy_indigency_status',
                 'r.cert_of_reg_comment',
                 'r.grade_slip_comment',
                 'r.brgy_indigency_comment'
             )
-            ->first();
+            ->get();
 
-        if (!$renewalInfo) {
-            return response()->json(['success' => false, 'message' => 'Renewal not found'], 404);
-        }
+        $emailService = new EmailService();
+        $sentCount = 0;
+        $errors = [];
 
-        // Prepare bad documents with reasons
-        $badDocumentsWithReasons = [];
-        $documentMapping = [
-            'cert_of_reg' => [
-                'name' => 'Certificate of Registration',
-                'comment_field' => 'cert_of_reg_comment'
-            ],
-            'grade_slip' => [
-                'name' => 'Grade Slip', 
-                'comment_field' => 'grade_slip_comment'
-            ],
-            'brgy_indigency' => [
-                'name' => 'Barangay Indigency',
-                'comment_field' => 'brgy_indigency_comment'
-            ]
-        ];
+        foreach ($badDocuments as $renewal) {
+            try {
+                // Determine which documents are bad and collect their info
+                $badDocs = [];
+                if ($renewal->cert_of_reg_status === 'bad') {
+                    $badDocs[] = [
+                        'type' => 'Certificate of Registration',
+                        'comment' => $renewal->cert_of_reg_comment
+                    ];
+                }
+                if ($renewal->grade_slip_status === 'bad') {
+                    $badDocs[] = [
+                        'type' => 'Grade Slip',
+                        'comment' => $renewal->grade_slip_comment
+                    ];
+                }
+                if ($renewal->brgy_indigency_status === 'bad') {
+                    $badDocs[] = [
+                        'type' => 'Barangay Indigency',
+                        'comment' => $renewal->brgy_indigency_comment
+                    ];
+                }
 
-        foreach ($request->bad_documents as $docType) {
-            if (isset($documentMapping[$docType])) {
-                $commentField = $documentMapping[$docType]['comment_field'];
-                $badDocumentsWithReasons[] = [
-                    'name' => $documentMapping[$docType]['name'],
-                    'reason' => $renewalInfo->$commentField ?? 'Document requires correction. Please review and re-upload.'
-                ];
+                // Send email for each bad document
+                foreach ($badDocs as $doc) {
+                    $emailService->sendDocumentUpdateRequest(
+                        $renewal->applicant_email,
+                        [
+                            'applicant_fname' => $renewal->applicant_fname,
+                            'applicant_lname' => $renewal->applicant_lname,
+                            'document_type' => $doc['type'],
+                            'comment' => $doc['comment'] ?? 'Document requires update'
+                        ]
+                    );
+                }
+
+                $sentCount++;
+            } catch (\Exception $e) {
+                $errors[] = "Failed to send email to {$renewal->applicant_email}: " . $e->getMessage();
             }
         }
 
-        // Send email
-        $emailService = new EmailService();
-        $emailSent = $emailService->sendDocumentCorrectionEmail(
-            $renewalInfo->applicant_email,
-            [
-                'applicant_fname' => $renewalInfo->applicant_fname,
-                'applicant_lname' => $renewalInfo->applicant_lname,
-                'bad_documents' => $badDocumentsWithReasons
-            ]
-        );
-
-        if ($emailSent) {
-            return response()->json(['success' => true, 'message' => 'Correction request email sent successfully']);
-        } else {
-            return response()->json(['success' => false, 'message' => 'Failed to send email'], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => "Emails sent successfully to {$sentCount} scholars",
+            'sent_count' => $sentCount,
+            'errors' => $errors
+        ]);
 
     } catch (\Exception $e) {
-        \Log::error('Send email for bad documents error: '.$e->getMessage());
-        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        \Log::error('Send email for bad documents error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to send emails: ' . $e->getMessage()
+        ], 500);
     }
 }
-
 }
