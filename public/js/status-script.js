@@ -36,8 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeModalEvents();
     initializePagination();
     initializeFiltering();
-    initializeNotificationDropdown();
-    initializeSidebarDropdown();
     
     // Hide loading spinner when page is fully loaded, with minimum display time
     const loadingOverlay = document.getElementById('loadingOverlay');
@@ -579,16 +577,7 @@ function setupDocumentButtons(data) {
         return;
     }
 
-    // --- NEW: determine preview size (use A4-like height when there are exactly 5 documents) ---
-    const availableCount = availableDocuments.filter(d => d.available).length;
-    // A4 at ~96 DPI => 8.27 x 11.69 in => ~794 x 1123 px. We'll use height ~1123px.
-    const A4_HEIGHT_PX = 1123;
-    const defaultPreviewHeight = 420;
-    const previewHeight = (availableCount === 5) ? A4_HEIGHT_PX : defaultPreviewHeight;
-    const previewMinHeight = (availableCount === 5) ? A4_HEIGHT_PX : 320;
-    // -------------------------------------------------------------------------
-
-    // Create document status cards with inline preview (iframe) so they are opened immediately inside modal
+    // Create document status cards
     availableDocuments.forEach((doc, index) => {
         const statusColor = doc.status === 'Good' ? 'green' : 
                            doc.status === 'Bad' ? 'red' : 'gray';
@@ -597,9 +586,8 @@ function setupDocumentButtons(data) {
                           doc.status === 'Bad' ? 'fa-times-circle' : 'fa-question-circle';
 
         const documentDiv = document.createElement('div');
-        documentDiv.className = 'document-status-card mb-6 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden';
+        documentDiv.className = 'document-status-card mb-4 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden';
 
-        // Build inner HTML: header + info + inline iframe preview (if available)
         documentDiv.innerHTML = `
             <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
                 <h4 class="text-lg font-semibold text-gray-800">${doc.title}</h4>
@@ -608,87 +596,134 @@ function setupDocumentButtons(data) {
                 </span>
             </div>
             <div class="p-4">
-                <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
-                    <div class="document-info flex-1">
+                <div class="flex justify-between items-center">
+                    <div class="document-info">
                         <p class="text-sm text-gray-600 mb-2">
                             <strong>Status:</strong> 
                             <span class="text-${statusColor}-600 font-medium">${doc.status}</span>
                         </p>
                         ${doc.available ? 
-                            `<a href="${doc.url}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm font-medium inline-block mb-2">
-                                <i class="fas fa-external-link-alt mr-1"></i> Open in new tab
+                            `<a href="${doc.url}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm font-medium">
+                                <i class="fas fa-external-link-alt mr-1"></i> View Document
                             </a>` : 
                             '<p class="text-red-500 text-sm">Document not available</p>'
                         }
                     </div>
+                    ${doc.available ? `
+                    <button type="button" onclick="viewDocument('${doc.type}')" 
+                            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-eye mr-2"></i>Preview
+                    </button>
+                    ` : ''}
                 </div>
-
-                ${doc.available ? `
-                    <div class="document-preview mt-4 border border-gray-200 rounded overflow-hidden" style="min-height:${previewMinHeight}px;">
-                        <iframe src="${doc.url}" width="100%" height="${previewHeight}" style="border:0;" loading="lazy"></iframe>
-                    </div>
-                ` : ''}
             </div>
         `;
 
         documentsContainer.appendChild(documentDiv);
     });
 
-    console.log('Document status setup completed with inline previews');
+    console.log('Document status setup completed');
 }
 
 // Function to automatically open all documents
 function openAllDocuments() {
-    // No-op: documents are now rendered inline inside the modal by setupDocumentButtons()
-    console.log('openAllDocuments() skipped because inline previews are used');
+    console.log('Opening all documents automatically...');
+    
+    // Define the document types in order
+    const documentTypes = ['application_letter', 'cert_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
+    
+    let currentIndex = 0;
+    
+    // Function to open next document
+    function openNextDocument() {
+        if (currentIndex >= documentTypes.length) {
+            console.log('All documents opened');
+            return;
+        }
+        
+        const docType = documentTypes[currentIndex];
+        const docUrl = currentDocumentUrls[docType];
+        const title = documentTitles[docType];
+        
+        console.log(`Opening document ${currentIndex + 1}: ${docType}`, docUrl);
+        
+        if (docUrl && docUrl !== 'null') {
+            // Create a tab for this document (inside modal)
+            createDocumentTab(docType, title, docUrl, currentIndex);
+            currentIndex++;
+            
+            // Open next document after a short delay (300ms)
+            setTimeout(openNextDocument, 300);
+        } else {
+            console.log(`Document ${docType} not available, skipping...`);
+            currentIndex++;
+            setTimeout(openNextDocument, 150);
+        }
+    }
+    
+    // Start opening documents
+    openNextDocument();
 }
 
-// Function to create document tabs
+// Function to create document tabs (inside the modal)
 function createDocumentTab(docType, title, docUrl, index) {
-    // Create tab container if it doesn't exist
-    let tabsContainer = document.getElementById('documentTabsContainer');
+    // Prefer modal-scoped container
+    const modal = document.getElementById('intakeSheetModal');
+    let tabsContainer = modal ? modal.querySelector('#modalDocumentTabsContainer') : null;
+
+    // If not found, create inside modal (preferably inside modal-documents-container)
     if (!tabsContainer) {
+        const attachTo = modal ? (modal.querySelector('#modal-documents-container') || modal) : document.body;
         tabsContainer = document.createElement('div');
-        tabsContainer.id = 'documentTabsContainer';
-        tabsContainer.className = 'fixed bottom-4 left-4 bg-white rounded-lg shadow-lg p-4 z-50 max-w-md';
+        tabsContainer.id = 'modalDocumentTabsContainer';
+        tabsContainer.className = 'modal-documents-preview mt-4 p-3 bg-white rounded-lg border border-gray-200';
         tabsContainer.innerHTML = `
             <div class="flex justify-between items-center mb-2">
                 <h4 class="font-semibold text-gray-800">Documents Preview</h4>
-                <button onclick="closeAllDocumentTabs()" class="text-gray-500 hover:text-gray-700">
+                <button type="button" id="modalDocumentTabsCloseBtn" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div id="documentTabs" class="flex flex-wrap gap-2 mb-3"></div>
-            <div id="documentTabContent" class="border border-gray-200 rounded-lg" style="width: 400px; height: 500px;"></div>
+            <div id="modalDocumentTabs" class="flex flex-wrap gap-2 mb-3"></div>
+            <div id="modalDocumentTabContent" class="border border-gray-200 rounded-lg" style="width:100%; height:500px;"></div>
         `;
-        document.body.appendChild(tabsContainer);
+        attachTo.appendChild(tabsContainer);
+
+        // close button
+        const closeBtn = tabsContainer.querySelector('#modalDocumentTabsCloseBtn');
+        if (closeBtn) closeBtn.addEventListener('click', closeAllDocumentTabs);
     }
-    
+
     // Create tab button
-    const tabs = document.getElementById('documentTabs');
+    const tabs = tabsContainer.querySelector('#modalDocumentTabs');
     const tabButton = document.createElement('button');
     tabButton.className = `px-3 py-1 text-sm rounded-lg ${index === 0 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`;
     tabButton.textContent = `${index + 1}. ${title.split(' ')[0]}`;
     tabButton.title = title;
+    tabButton.setAttribute('data-doctype', docType);
     tabButton.onclick = () => showDocumentInTab(docType, title, docUrl);
-    
+
     tabs.appendChild(tabButton);
-    
+
     // If this is the first document, show it immediately
-    if (index === 0) {
+    if (tabs.querySelectorAll('button').length === 1) {
         showDocumentInTab(docType, title, docUrl);
     }
 }
 
-// Function to show document in tab content
+// Function to show document in modal tab content
 function showDocumentInTab(docType, title, docUrl) {
-    const tabContent = document.getElementById('documentTabContent');
-    
+    const tabContent = document.getElementById('modalDocumentTabContent');
+    const tabs = document.querySelectorAll('#modalDocumentTabs button');
+
     // Update active tab
-    document.querySelectorAll('#documentTabs button').forEach((btn, index) => {
-        btn.className = `px-3 py-1 text-sm rounded-lg ${btn.textContent.includes(title.split(' ')[0]) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`;
+    tabs.forEach((btn) => {
+        const isActive = btn.getAttribute('data-doctype') === docType;
+        btn.className = `px-3 py-1 text-sm rounded-lg ${isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`;
     });
-    
+
+    if (!tabContent) return;
+
     tabContent.innerHTML = `
         <div class="flex flex-col h-full">
             <div class="bg-gray-100 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
@@ -697,7 +732,7 @@ function showDocumentInTab(docType, title, docUrl) {
                     <a href="${docUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm">
                         <i class="fas fa-external-link-alt"></i>
                     </a>
-                    <button onclick="closeDocumentTab('${docType}')" class="text-gray-500 hover:text-gray-700 text-sm">
+                    <button type="button" class="text-gray-500 hover:text-gray-700 text-sm" onclick="closeDocumentTab('${docType}')">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -709,38 +744,41 @@ function showDocumentInTab(docType, title, docUrl) {
     `;
 }
 
-// Function to close a specific document tab
-function DocumentTab(docType) {
-    const tabButton = Array.from(document.querySelectorAll('#documentTabs button')).find(btn => 
-        btn.title === documentTitles[docType]
-    );
+// Function to close a specific document tab (modal-scoped)
+function closeDocumentTab(docType) {
+    const tabs = document.querySelectorAll('#modalDocumentTabs button');
+    const tabButton = Array.from(tabs).find(btn => btn.getAttribute('data-doctype') === docType);
     
     if (tabButton) {
         tabButton.remove();
     }
     
     // If no tabs left, close the container
-    if (document.querySelectorAll('#documentTabs button').length === 0) {
+    const remaining = document.querySelectorAll('#modalDocumentTabs button').length;
+    if (remaining === 0) {
         closeAllDocumentTabs();
     } else {
         // Show the first remaining tab
-        const firstTab = document.querySelector('#documentTabs button:first-child');
+        const firstTab = document.querySelector('#modalDocumentTabs button:first-child');
         if (firstTab) {
-            const docType = Object.keys(documentTitles).find(key => 
-                firstTab.title === documentTitles[key]
-            );
-            if (docType) {
-                showDocumentInTab(docType, documentTitles[docType], currentDocumentUrls[docType]);
-            }
+            const dt = firstTab.getAttribute('data-doctype');
+            const title = firstTab.title;
+            const url = currentDocumentUrls[dt];
+            showDocumentInTab(dt, title, url);
         }
     }
 }
 
-// Function to close all document tabs
+// Function to close all document tabs (tries modal container first, then fallback)
 function closeAllDocumentTabs() {
-    const tabsContainer = document.getElementById('documentTabsContainer');
-    if (tabsContainer) {
-        tabsContainer.remove();
+    const modalTabs = document.getElementById('modalDocumentTabsContainer');
+    if (modalTabs) {
+        modalTabs.remove();
+    }
+    // backward-compat: remove global container if exists
+    const globalTabs = document.getElementById('documentTabsContainer');
+    if (globalTabs) {
+        globalTabs.remove();
     }
 }
 
@@ -1064,11 +1102,24 @@ function populateApplicationDetailsModal(data, name, status) {
         serviceRecordsTbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">No service records found</td></tr>';
     }
 
-    // Hide action buttons for Approved/Rejected details modal
+    // Update action buttons based on status
     const approveBtn = document.getElementById('approveBtn');
     const rejectBtn = document.getElementById('rejectBtn');
-    if (approveBtn) approveBtn.style.display = 'none';
-    if (rejectBtn) rejectBtn.style.display = 'none';
+    
+    if (status === 'Approved') {
+        approveBtn.style.display = 'none';
+        rejectBtn.style.display = 'inline-block';
+        rejectBtn.innerHTML = '<i class="fas fa-times mr-2"></i> Change to Rejected';
+    } else if (status === 'Rejected') {
+        approveBtn.style.display = 'inline-block';
+        approveBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Change to Approved';
+        rejectBtn.style.display = 'none';
+    } else {
+        approveBtn.style.display = 'inline-block';
+        rejectBtn.style.display = 'inline-block';
+        approveBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Approve';
+        rejectBtn.innerHTML = '<i class="fas fa-times mr-2"></i> Reject';
+    }
 
     // Populate signatures and other data
     document.getElementById('modal-worker-fullname').textContent = data.worker_name || '-';
@@ -1379,78 +1430,4 @@ function confirmLogout() {
             document.getElementById('logoutForm').submit();
         }
     });
-}
-
-// Notification dropdown
-function initializeNotificationDropdown() {
-    const notifBell = document.getElementById('notifBell');
-    const notifDropdown = document.getElementById('notifDropdown');
-
-    if (notifBell && notifDropdown) {
-        notifBell.addEventListener('click', function(e) {
-            e.stopPropagation();
-            notifDropdown.classList.toggle('hidden');
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function() {
-            notifDropdown.classList.add('hidden');
-        });
-
-        // Prevent dropdown from closing when clicking inside it
-        notifDropdown.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-    }
-}
-
-// Sidebar dropdown functions
-function toggleDropdown(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    const btn = document.querySelector(`button[onclick="toggleDropdown('${id}')"]`);
-    const chevron = btn ? btn.querySelector('i.bx') : null;
-
-    // Toggle visibility first
-    el.classList.toggle('hidden');
-
-    // Set chevron rotation based on the new state (open = not hidden)
-    if (chevron) {
-        const isOpen = !el.classList.contains('hidden');
-        chevron.classList.toggle('rotate-180', isOpen);
-    }
-
-    // Persist state in localStorage so it stays open across pages
-    try {
-        localStorage.setItem(`sidebarDropdown_${id}`, (!el.classList.contains('hidden')) ? 'open' : 'closed');
-    } catch (e) {
-        console.warn('Could not persist dropdown state:', e);
-    }
-}
-
-function initializeSidebarDropdown() {
-    // Restore saved dropdown states on page load
-    try {
-        Object.keys(localStorage).forEach(key => {
-            if (!key.startsWith('sidebarDropdown_')) return;
-            const id = key.replace('sidebarDropdown_', '');
-            const state = localStorage.getItem(key);
-            const el = document.getElementById(id);
-            if (!el) return;
-
-            const btn = document.querySelector(`button[onclick="toggleDropdown('${id}')"]`);
-            const chevron = btn ? btn.querySelector('i.bx') : null;
-
-            if (state === 'open') {
-                el.classList.remove('hidden');
-                if (chevron) chevron.classList.add('rotate-180');
-            } else {
-                el.classList.add('hidden');
-                if (chevron) chevron.classList.remove('rotate-180');
-            }
-        });
-    } catch (e) {
-        console.warn('initializeSidebarDropdown error:', e);
-    }
 }
