@@ -314,16 +314,46 @@
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-3xl font-bold text-black-800">List of Applicants</h2>
                 </div>
-
+                        <!-- Status Legend -->
+                            <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-200">
+                                <h4 class="text-sm font-semibold text-blue-800 mb-2">Application Status Guide:</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
+                                    <div class="flex items-center">
+                                        <span class="w-3 h-3 bg-yellow-400 rounded-full mr-2"></span>
+                                        <span class="text-gray-700"><strong>Pending:</strong> Waiting for Mayor Staff screening</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="w-3 h-3 bg-green-400 rounded-full mr-2"></span>
+                                        <span class="text-gray-700"><strong>Approved by Mayor:</strong> Ready for LYDO review</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="w-3 h-3 bg-blue-400 rounded-full mr-2"></span>
+                                        <span class="text-gray-700"><strong>Reviewed by LYDO:</strong> Final review completed</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="w-3 h-3 bg-red-400 rounded-full mr-2"></span>
+                                        <span class="text-gray-700"><strong>Rejected:</strong> Application not approved</span>
+                                    </div>
+                                </div>
+                            </div>
                 <!-- Filter Section -->
-                <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
-                    <div class="flex flex-col md:flex-row gap-4" id="filterForm">
-                        <div class="flex-1">
-                            <input type="text" id="searchInput" placeholder="Search by name..." 
-                                class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                    <form id="filterForm" method="GET" action="{{ url()->current() }}" 
+                          class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+                        <!-- Search -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Search by Name</label>
+                            <input type="text" id="searchInput" name="search" value="{{ request('search') }}" 
+                                   placeholder="Enter name..."
+                                   class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
                         </div>
-                        <div class="flex-1">
-                            <select id="barangaySelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+
+                        <!-- Barangay -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Barangay</label>
+                            <select id="barangaySelect" name="barangay" 
+                                    class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
                                 <option value="">All Barangays</option>
                                 @foreach($barangays as $barangay)
                                     <option value="{{ $barangay }}" {{ request('barangay') == $barangay ? 'selected' : '' }}>
@@ -332,8 +362,12 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="flex-1">
-                            <select id="academicYearSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+
+                        <!-- Academic Year -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Academic Year</label>
+                            <select id="academicYearSelect" name="academic_year" 
+                                    class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
                                 <option value="">All Academic Years</option>
                                 @foreach($academicYears as $year)
                                     <option value="{{ $year }}" {{ request('academic_year') == $year ? 'selected' : '' }}>
@@ -342,36 +376,45 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="flex-1">
-                            <select id="initialScreeningSelect" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                                <option value="all" {{ $initialScreeningStatus == 'all' ? 'selected' : '' }}>All Status</option>
+
+                        <!-- Initial Screening Status -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Status</label>
+                            <select id="initialScreeningSelect" name="initial_screening" 
+                                    class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                <option value="all" {{ $initialScreeningStatus == 'all' ? 'selected' : '' }}>All Applicants</option>
                                 <option value="Pending" {{ $initialScreeningStatus == 'Pending' ? 'selected' : '' }}>Pending For Initial Screening</option>
-                                <option value="Approved" {{ $initialScreeningStatus == 'Approved' ? 'selected' : '' }}>Approved From Mayor Staff</option>
-                                <option value="Rejected" {{ $initialScreeningStatus == 'Rejected' ? 'selected' : '' }}>Rejected From Mayor Staff</option>
-                                <option value="Reviewed" {{ $initialScreeningStatus == 'Reviewed' ? 'selected' : '' }}>Reviewed From Lydo Staff</option>
+                                <option value="for_lydo_review" {{ $initialScreeningStatus == 'for_lydo_review' ? 'selected' : '' }}>Ready for LYDO Review (Approved by Mayor)</option>
+                                <option value="Reviewed" {{ $initialScreeningStatus == 'Reviewed' ? 'selected' : '' }}>Reviewed by LYDO Staff</option>
+                                <option value="Rejected" {{ $initialScreeningStatus == 'Rejected' ? 'selected' : '' }}>Rejected Applications</option>
                             </select>
                         </div>
-                        <div class="flex-1">
-                            <button id="printPdfBtn" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
-                                <i class="fas fa-file-pdf"></i>
-                                Print PDF
+
+                        <!-- Print Button -->
+                        <div class="flex items-end">
+                            <button type="button" id="printPdfBtn" 
+                                    class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 shadow-sm font-medium">
+                                <i class="fas fa-file-pdf"></i> Print PDF
                             </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
 
                 <!-- Applicants Table -->
                 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
                     <div class="p-4 border-b border-gray-200 flex justify-between items-center">
                         <h3 class="text-lg font-semibold text-gray-800">Applicants List</h3>
-                        <div class="flex space-x-2">
-                            <button id="copyNamesBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
-                                Copy Names
-                            </button>
-                            <button id="emailSelectedBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
-                                Email
-                            </button>
-                        </div>
+                    <div class="flex space-x-2">
+                        <button id="copyNamesBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
+                            Copy Names
+                        </button>
+                        <button id="emailSelectedBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
+                            Email
+                        </button>
+                        <button id="smsSelectedBtn" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
+                            SMS
+                        </button>
+                    </div>
                     </div>
                     </div>
                     
@@ -448,13 +491,17 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                     <td class="px-4 border border-gray-200 py-2 text-center">
                                             <span class="px-2 py-1 rounded-full text-xs font-semibold 
                                                 @if($applicant->initial_screening === 'Approved') bg-green-100 text-green-800
                                                 @elseif($applicant->initial_screening === 'Rejected') bg-red-100 text-red-800
                                                 @elseif($applicant->initial_screening === 'Reviewed') bg-blue-100 text-blue-800
                                                 @else bg-yellow-100 text-yellow-800 @endif">
-                                                {{ $applicant->initial_screening ?? 'Pending' }}
+                                                @if($applicant->initial_screening === 'Approved')
+                                                    Approved by Mayor
+                                                @else
+                                                    {{ $applicant->initial_screening ?? 'Pending' }}
+                                                @endif
                                             </span>
                                         </td>
                                     </tr>
@@ -687,983 +734,146 @@
                     </div>
                 </div>
             </div>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Initialize pagination and filtering
-                    initializeApplicantData();
-                    initializeApplicantPagination();
-                    initializeApplicantFiltering();
+        </div>
+  <!-- SMS Modal -->
+<div id="smsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Send SMS to Selected Applicants</h3>
+                <button id="closeSmsModal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
 
-                    // Rest of your existing JavaScript code for checkboxes, buttons, etc.
-                    const selectAll = document.getElementById('selectAll');
-                    const checkboxes = document.querySelectorAll('.applicant-checkbox');
-                    const copyNamesBtn = document.getElementById('copyNamesBtn');
-                    const emailSelectedBtn = document.getElementById('emailSelectedBtn');
+            <form id="smsForm">
+                <!-- SMS Type Selection -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">SMS Type</label>
+                    <div class="flex space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="smsType" value="plain" checked 
+                                   class="sms-type-radio text-blue-600 focus:ring-blue-500">
+                            <span class="ml-2 text-sm text-gray-700">Plain Text</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="smsType" value="schedule"
+                                   class="sms-type-radio text-blue-600 focus:ring-blue-500">
+                            <span class="ml-2 text-sm text-gray-700">Schedule</span>
+                        </label>
+                    </div>
+                </div>
 
-                    // Email modal elements
-                    const emailModal = document.getElementById('emailModal');
-                    const closeEmailModal = document.getElementById('closeEmailModal');
-                    const cancelEmailBtn = document.getElementById('cancelEmailBtn');
-                    const emailForm = document.getElementById('emailForm');
-                    const emailSubject = document.getElementById('emailSubject');
-                    const emailMessage = document.getElementById('emailMessage');
-                    const recipientsPreview = document.getElementById('recipientsPreview');
-                    const sendEmailBtn = document.getElementById('sendEmailBtn');
-                    const sendEmailText = document.getElementById('sendEmailText');
-                    const sendEmailLoading = document.getElementById('sendEmailLoading');
+                <!-- SMS Message -->
+                <div id="smsMessageContainer" class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">SMS Message</label>
+                    <textarea id="smsMessage" name="message" rows="4"  maxlength="160"
+                              class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Enter your SMS message (max 160 characters)..."></textarea>
+                    <div class="text-sm text-gray-500 mt-1">
+                        <span id="smsCharCount">0</span>/160 characters
+                    </div>
+                </div>
 
-                    // Select all checkbox functionality
-                    selectAll.addEventListener('change', function() {
-                        checkboxes.forEach(checkbox => {
-                            checkbox.checked = this.checked;
-                        });
-                        updateButtons();
-                        updateRecipientsPreview();
-                    });
+                <!-- Schedule Fields (Hidden by Default) -->
+                <div id="scheduleFields" class="hidden mb-4 space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">What (Event/Activity)</label>
+                        <input type="text" id="scheduleWhat" name="schedule_what"
+                               class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="e.g., Scholarship Orientation, Interview">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Where (Location)</label>
+                        <input type="text" id="scheduleWhere" name="schedule_where"
+                               class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="e.g., LYDO Office, City Hall">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                            <input type="date" id="scheduleDate" name="schedule_date"
+                                   class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                            <input type="time" id="scheduleTime" name="schedule_time"
+                                   class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                </div>
 
-                    // Update button states
-                    function updateButtons() {
-                        const selectedCount = document.querySelectorAll('.applicant-checkbox:checked').length;
-                        const hasSelection = selectedCount > 0;
+                <!-- Recipients Preview -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Recipients Preview</label>
+                    <div id="smsRecipientsPreview" class="p-3 bg-gray-50 border border-gray-200 rounded-md max-h-32 overflow-y-auto text-sm text-gray-600">
+                        No recipients selected
+                    </div>
+                </div>
 
-                        copyNamesBtn.disabled = !hasSelection;
-                        emailSelectedBtn.disabled = !hasSelection;
-                        copyNamesBtn.classList.toggle('hidden', !hasSelection);
-                        emailSelectedBtn.classList.toggle('hidden', !hasSelection);
-                    }
-
-                    // Individual checkbox change
-                    checkboxes.forEach(checkbox => {
-                        checkbox.addEventListener('change', function() {
-                            updateButtons();
-                            updateRecipientsPreview();
-
-                            // Update selectAll checkbox state
-                            const allChecked = [...checkboxes].every(cb => cb.checked);
-                            const someChecked = [...checkboxes].some(cb => cb.checked);
-
-                            selectAll.checked = allChecked;
-                            selectAll.indeterminate = someChecked && !allChecked;
-                        });
-                    });
-
-                    // Update recipients preview
-                    function updateRecipientsPreview() {
-                        const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
-
-                        if (selectedCheckboxes.length === 0) {
-                            recipientsPreview.innerHTML = 'No recipients selected';
-                            return;
-                        }
-
-                        const recipients = Array.from(selectedCheckboxes).map(checkbox => {
-                            const row = checkbox.closest('tr');
-                            const name = row.querySelector('td:nth-child(2)').textContent.trim();
-                            const email = row.querySelector('td:nth-child(4)').textContent.trim();
-                            return `${name} (${email})`;
-                        });
-
-                        recipientsPreview.innerHTML = recipients.join('<br>');
-                    }
-
-                    // Copy Names button functionality
-                    copyNamesBtn.addEventListener('click', function() {
-                        const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
-
-                        if (selectedCheckboxes.length === 0) {
-                            Swal.fire({
-                                title: 'No Selection!',
-                                text: 'Please select at least one applicant to copy names.',
-                                icon: 'warning',
-                                confirmButtonText: 'OK'
-                            });
-                            return;
-                        }
-
-                        // Group selected applicants by barangay
-                        const barangayGroups = {};
-                        selectedCheckboxes.forEach(checkbox => {
-                            const row = checkbox.closest('tr');
-                            const name = row.querySelector('td:nth-child(2)').textContent.trim();
-                            const barangay = row.querySelector('td:nth-child(3)').textContent.trim();
-                            if (!barangayGroups[barangay]) {
-                                barangayGroups[barangay] = [];
-                            }
-                            barangayGroups[barangay].push(name);
-                        });
-
-                        // Build the output string
-                        let output = '';
-                        Object.keys(barangayGroups).forEach(barangay => {
-                            output += `${barangay}\n`;
-                            barangayGroups[barangay].forEach((name, idx) => {
-                                output += `${idx + 1}. ${name}\n`;
-                            });
-                            output += '\n';
-                        });
-
-                        navigator.clipboard.writeText(output.trim()).then(() => {
-                            Swal.fire({
-                                title: 'Success!',
-                                text: 'Selected applicant names grouped by barangay copied to clipboard!',
-                                icon: 'success',
-                                confirmButtonText: 'OK'
-                            });
-                        }).catch(err => {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: 'Failed to copy names: ' + err,
-                                icon: 'error',
-                                confirmButtonText: 'OK'
-                            });
-                        });
-                    });
-
-                    // Email Selected button functionality
-                    emailSelectedBtn.addEventListener('click', function() {
-                        const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
-
-                        if (selectedCheckboxes.length === 0) {
-                            Swal.fire({
-                                title: 'No Selection!',
-                                text: 'Please select at least one applicant to send email.',
-                                icon: 'warning',
-                                confirmButtonText: 'OK'
-                            });
-                            return;
-                        }
-
-                        updateRecipientsPreview();
-                        emailModal.classList.remove('hidden');
-                        emailSubject.focus();
-                    });
-
-                    // Close email modal
-                    function closeEmailModalHandler() {
-                        emailModal.classList.add('hidden');
-                        emailForm.reset();
-                        sendEmailText.classList.remove('hidden');
-                        sendEmailLoading.classList.add('hidden');
-                        sendEmailBtn.disabled = false;
-                    }
-
-                    closeEmailModal.addEventListener('click', closeEmailModalHandler);
-                    cancelEmailBtn.addEventListener('click', closeEmailModalHandler);
-
-                    // Close modal when clicking outside
-                    emailModal.addEventListener('click', function(e) {
-                        if (e.target === emailModal) {
-                            closeEmailModalHandler();
-                        }
-                    });
-
-                    // Send email form submission
-                    emailForm.addEventListener('submit', function(e) {
-                        e.preventDefault();
-
-                        const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
-                        const subject = emailSubject.value.trim();
-                        const message = emailMessage.value.trim();
-
-                        if (!subject || !message) {
-                            Swal.fire({
-                                title: 'Missing Information!',
-                                text: 'Please fill in both subject and message fields.',
-                                icon: 'warning',
-                                confirmButtonText: 'OK'
-                            });
-                            return;
-                        }
-
-                        if (selectedCheckboxes.length === 0) {
-                            Swal.fire({
-                                title: 'No Recipients!',
-                                text: 'No applicants selected to send email to.',
-                                icon: 'warning',
-                                confirmButtonText: 'OK'
-                            });
-                            return;
-                        }
-
-                        // Collect recipient data
-                        const recipients = Array.from(selectedCheckboxes).map(checkbox => {
-                            const row = checkbox.closest('tr');
-                            return {
-                                id: checkbox.value,
-                                name: row.querySelector('td:nth-child(2)').textContent.trim(),
-                                email: row.querySelector('td:nth-child(4)').textContent.trim()
-                            };
-                        });
-
-                        // Show loading state
-                        sendEmailText.classList.add('hidden');
-                        sendEmailLoading.classList.remove('hidden');
-                        sendEmailBtn.disabled = true;
-
-                        // Send email via AJAX
-                        fetch('/lydo_admin/send-email-to-applicants', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                            },
-                            body: JSON.stringify({
-                                recipients: recipients,
-                                subject: subject,
-                                message: message
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'Success!',
-                                    text: `Email sent successfully to ${recipients.length} applicant(s)!`,
-                                    icon: 'success',
-                                    confirmButtonText: 'OK'
-                                });
-                                closeEmailModalHandler();
-                            } else {
-                                throw new Error(data.message || 'Failed to send email');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Email sending error:', error);
-                            Swal.fire({
-                                title: 'Error!',
-                                text: 'Failed to send email: ' + error.message,
-                                icon: 'error',
-                                confirmButtonText: 'OK'
-                            });
-                        })
-                        .finally(() => {
-                            // Reset loading state
-                            sendEmailText.classList.remove('hidden');
-                            sendEmailLoading.classList.add('hidden');
-                            sendEmailBtn.disabled = false;
-                        });
-                    });
-
-                    // Auto-submit form when filters change
-                    const searchInput = document.getElementById('searchInput');
-                    const barangaySelect = document.getElementById('barangaySelect');
-                    const academicYearSelect = document.getElementById('academicYearSelect');
-                    const filterForm = document.getElementById('filterForm');
-
-                    // Function to submit form with debounce for search input
-                    let searchTimeout;
-                    function submitForm() {
-                        filterForm.submit();
-                    }
-
-                    function debounceSubmit() {
-                        clearTimeout(searchTimeout);
-                        searchTimeout = setTimeout(submitForm, 500); // 500ms delay
-                    }
-
-                    // Event listeners for filter changes - filters apply automatically
-                    searchInput.addEventListener('input', debounceSubmit);
-                    barangaySelect.addEventListener('change', submitForm);
-                    academicYearSelect.addEventListener('change', submitForm);
-
-                    // Initialize button states
-                    updateButtons();
-                });
-
-                // Toggle dropdown and save state
-                function toggleDropdown(id) {
-                    const menu = document.getElementById(id);
-                    const isHidden = menu.classList.contains("hidden");
-
-                    if (isHidden) {
-                        menu.classList.remove("hidden");
-                        localStorage.setItem(id, "open");
-                    } else {
-                        menu.classList.add("hidden");
-                        localStorage.setItem(id, "closed");
-                    }
-                }
-
-                // Restore dropdown state on page load
-                window.addEventListener("DOMContentLoaded", () => {
-                    document.querySelectorAll("ul[id]").forEach(menu => {
-                        const state = localStorage.getItem(menu.id);
-                        if (state === "open") {
-                            menu.classList.remove("hidden");
-                        }
-                    });
-                });
-            </script>
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelSmsBtn"
+                            class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" id="sendSmsBtn"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        <span id="sendSmsText">Send SMS</span>
+                        <span id="sendSmsLoading" class="hidden">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>Sending...
+                        </span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-    
+</div>
 <!-- ⚡ JS -->
+
 <script>
-    document.getElementById("notifBell").addEventListener("click", function () {
-        let dropdown = document.getElementById("notifDropdown");
-        dropdown.classList.toggle("hidden");
-
-        // remove badge when opened
-        let notifCount = document.getElementById("notifCount");
-        if (notifCount) {
-            notifCount.remove();
-        }
+    // Ensure the logo spinner only shows while the page / async work is loading.
+    // The overlay is visible by default (so user sees it during initial page load)
+    // and we hide it once the window 'load' event fires. Use helper functions
+    // to show/hide during AJAX/fetch operations.
+    window.addEventListener('load', function () {
+        const overlay = document.getElementById('loadingOverlay');
+        if (!overlay) return;
+        overlay.classList.add('fade-out'); // uses existing CSS
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            overlay.classList.remove('fade-out');
+        }, 300);
     });
+
+    // Show overlay (use before fetch/ajax)
+    function showLoadingOverlay() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (!overlay) return;
+        overlay.style.display = 'flex';
+        overlay.classList.remove('fade-out');
+    }
+
+    // Hide overlay (use in .finally() of fetch/ajax)
+    function hideLoadingOverlay() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (!overlay) return;
+        overlay.classList.add('fade-out');
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            overlay.classList.remove('fade-out');
+        }, 300);
+    }
+
+    // Optional: example replacement pattern for existing fetch calls
+    // Instead of: document.getElementById('loadingOverlay').style.display = 'flex';
+    // Use: showLoadingOverlay();
+    // And instead of: document.getElementById('loadingOverlay').style.display = 'none';
+    // Use: hideLoadingOverlay();
 </script>
-<script>
-// Global pagination state
-const paginationState = {
-    currentPage: 1,
-    rowsPerPage: 15,
-    allRows: [],
-    filteredRows: []
-};
-
-// Function to get full name for sorting
-function getFullNameForSorting(row) {
-    const nameCell = row.cells[1];
-    if (!nameCell) return '';
-    
-    // Get the text content and split by comma for "Last Name, First Name" format
-    const nameText = nameCell.textContent.trim().toLowerCase();
-    const nameParts = nameText.split(',');
-    
-    if (nameParts.length >= 2) {
-        // Return "Last Name First Name" for proper alphabetical sorting
-        return (nameParts[0] + nameParts[1]).toLowerCase();
-    }
-    
-    return nameText.toLowerCase();
-}
-
-// Function to sort rows alphabetically by last name
-function sortRowsAlphabetically(rows) {
-    return rows.sort((a, b) => {
-        const nameA = getFullNameForSorting(a);
-        const nameB = getFullNameForSorting(b);
-        return nameA.localeCompare(nameB);
-    });
-}
-
-// Initialize data from the table
-function initializeApplicantData() {
-    const tableRows = Array.from(document.querySelectorAll('table tbody tr'));
-    paginationState.allRows = tableRows.filter(row => !row.querySelector('td[colspan]'));
-    
-    // Sort rows alphabetically by last name
-    paginationState.allRows = sortRowsAlphabetically(paginationState.allRows);
-    paginationState.filteredRows = [...paginationState.allRows];
-}
-
-// Initialize pagination
-function initializeApplicantPagination() {
-    updateApplicantPagination();
-}
-
-// Update pagination display
-function updateApplicantPagination() {
-    const state = paginationState;
-    const container = document.getElementById('paginationContainer');
-    
-    if (!container) return;
-    
-    // Hide all rows first
-    state.allRows.forEach(row => {
-        row.style.display = 'none';
-    });
-    
-    // Calculate pagination for filtered rows
-    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
-    const endIndex = startIndex + state.rowsPerPage;
-    const pageRows = state.filteredRows.slice(startIndex, endIndex);
-    
-    // Show only rows for current page
-    pageRows.forEach(row => {
-        row.style.display = '';
-    });
-    
-    // Update pagination controls
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    const startItem = state.filteredRows.length === 0 ? 0 : Math.min((state.currentPage - 1) * state.rowsPerPage + 1, state.filteredRows.length);
-    const endItem = Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
-    
-    container.innerHTML = `
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="text-sm text-gray-600">
-                Showing <span class="font-semibold">${startItem}-${endItem}</span> of <span class="font-semibold">${state.filteredRows.length}</span> applicants
-            </div>
-            
-            <div class="flex items-center space-x-1">
-                <!-- First Page -->
-                <button onclick="changeApplicantPage(1)" 
-                    class="px-3 py-2 text-sm font-medium rounded-l-md border border-gray-300 ${
-                        state.currentPage === 1 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }"
-                    ${state.currentPage === 1 ? 'disabled' : ''}>
-                    <i class="fas fa-angle-double-left"></i>
-                </button>
-                
-                <!-- Previous Page -->
-                <button onclick="changeApplicantPage(${state.currentPage - 1})" 
-                    class="px-3 py-2 text-sm font-medium border border-gray-300 ${
-                        state.currentPage === 1 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }"
-                    ${state.currentPage === 1 ? 'disabled' : ''}>
-                    <i class="fas fa-angle-left"></i>
-                </button>
-                
-                <!-- Page Info -->
-                <div class="flex items-center px-4 py-2 text-sm text-gray-700 border border-gray-300 bg-white">
-                    Page 
-                    <input type="number" 
-                           class="mx-2 w-12 text-center border border-gray-300 rounded px-1 py-1 text-sm" 
-                           value="${state.currentPage}" 
-                           min="1" 
-                           max="${totalPages}" 
-                           onchange="goToApplicantPage(this.value)">
-                    of ${totalPages}
-                </div>
-                
-                <!-- Next Page -->
-                <button onclick="changeApplicantPage(${state.currentPage + 1})" 
-                    class="px-3 py-2 text-sm font-medium border border-gray-300 ${
-                        state.currentPage === totalPages 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }"
-                    ${state.currentPage === totalPages ? 'disabled' : ''}>
-                    <i class="fas fa-angle-right"></i>
-                </button>
-                
-                <!-- Last Page -->
-                <button onclick="changeApplicantPage(${totalPages})" 
-                    class="px-3 py-2 text-sm font-medium rounded-r-md border border-gray-300 ${
-                        state.currentPage === totalPages 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }"
-                    ${state.currentPage === totalPages ? 'disabled' : ''}>
-                    <i class="fas fa-angle-double-right"></i>
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-// Change page
-function changeApplicantPage(page) {
-    const state = paginationState;
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updateApplicantPagination();
-}
-
-// Go to specific page
-function goToApplicantPage(page) {
-    const state = paginationState;
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    page = parseInt(page);
-    if (isNaN(page) || page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updateApplicantPagination();
-}
-
-// Initialize filtering functionality
-function initializeApplicantFiltering() {
-    const searchInput = document.getElementById('searchInput');
-    const barangaySelect = document.getElementById('barangaySelect');
-    const academicYearSelect = document.getElementById('academicYearSelect');
-
-    function filterApplicantTable() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedBarangay = barangaySelect.value;
-        const selectedAcademicYear = academicYearSelect.value;
-
-        const filteredRows = paginationState.allRows.filter(row => {
-            const nameCell = row.cells[1];
-            const barangayCell = row.cells[2];
-            const academicYearCell = row.cells[5];
-
-            if (!nameCell || !barangayCell || !academicYearCell) return false;
-
-            const name = nameCell.textContent.toLowerCase();
-            const barangay = barangayCell.textContent.trim();
-            const academicYear = academicYearCell.textContent.trim();
-
-            const nameMatch = name.includes(searchTerm);
-            const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
-            const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
-
-            return nameMatch && barangayMatch && academicYearMatch;
-        });
-
-        // Sort filtered results alphabetically
-        const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
-
-        // Update filtered rows and reset to page 1
-        paginationState.filteredRows = sortedFilteredRows;
-        paginationState.currentPage = 1;
-        updateApplicantPagination();
-        
-        // Reset select all checkbox
-        document.getElementById('selectAll').checked = false;
-        document.getElementById('selectAll').indeterminate = false;
-    }
-
-    // Add event listeners with debouncing
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(filterApplicantTable, 300));
-    }
-    if (barangaySelect) {
-        barangaySelect.addEventListener('change', filterApplicantTable);
-    }
-    if (academicYearSelect) {
-        academicYearSelect.addEventListener('change', filterApplicantTable);
-    }
-}
-
-// Debounce function for search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-
-// Initialize everything when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApplicantData();
-    initializeApplicantPagination();
-    initializeApplicantFiltering();
-});
-
-// Add this to your JavaScript
-const initialScreeningSelect = document.getElementById('initialScreeningSelect');
-if (initialScreeningSelect) {
-    initialScreeningSelect.addEventListener('change', function() {
-        // This will trigger a page reload with the new filter
-        window.location.href = updateUrlParameter(window.location.href, 'initial_screening', this.value);
-    });
-}
-
-// Helper function to update URL parameters
-function updateUrlParameter(url, param, value) {
-    const urlObj = new URL(url);
-    urlObj.searchParams.set(param, value);
-    return urlObj.toString();
-}
-</script>
-<script>
-// Application History Functions
-function viewApplicantDocuments(applicantId, applicantName, status) {
-    console.log('Viewing documents for:', { applicantId, applicantName, status });
-    
-    // Show loading
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    
-    fetch(`/lydo_admin/applicant-documents/${applicantId}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Documents API Response:', data);
-            
-            if (data.success) {
-                showApplicationModal(data.documents, null, applicantName, status, 'documents');
-            } else {
-                throw new Error(data.message || 'Failed to load documents');
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching documents:', error);
-            Swal.fire('Error', 'Failed to load applicant documents.', 'error');
-        })
-        .finally(() => {
-            // Hide loading
-            document.getElementById('loadingOverlay').style.display = 'none';
-        });
-}
-
-function viewApplicantIntakeSheet(applicantId, applicantName, status) {
-    console.log('Viewing intake sheet for:', { applicantId, applicantName, status });
-    
-    // Show loading
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    
-    // First, get the application_personnel_id for this applicant
-    fetch(`/lydo_admin/get-application-personnel/${applicantId}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success && data.application_personnel_id) {
-                // Now fetch the intake sheet
-                return fetch(`/lydo_admin/intake-sheet/${data.application_personnel_id}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(intakeData => {
-                        if (intakeData.success && intakeData.intakeSheet) {
-                            showApplicationModal(intakeData.intakeSheet.documents || intakeData.intakeSheet, intakeData.intakeSheet, applicantName, status, 'intake');
-                        } else {
-                            throw new Error(intakeData.message || 'Failed to load intake sheet');
-                        }
-                    });
-            } else {
-                throw new Error('No application personnel record found');
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching intake sheet:', error);
-            Swal.fire('Error', 'Failed to load applicant intake sheet.', 'error');
-        })
-        .finally(() => {
-            // Hide loading
-            document.getElementById('loadingOverlay').style.display = 'none';
-        });
-}
-
-function showApplicationModal(documentsData, intakeSheetData, applicantName, status, type) {
-    const modal = document.getElementById('applicationHistoryModal');
-    const modalContent = document.getElementById('modalContent');
-    const modalTitle = document.getElementById('modalTitle');
-    const applicantBasicInfo = document.getElementById('applicantBasicInfo');
-    const intakeSheetInfo = document.getElementById('intakeSheetInfo');
-    const documentsContainer = document.getElementById('documentsContainer');
-
-    // Set modal title
-    modalTitle.textContent = `Application Details - ${applicantName}`;
-
-    // Populate basic applicant info
-    let basicInfoHtml = `
-        <p><strong>Name:</strong> ${applicantName}</p>
-        <p><strong>Status:</strong> <span class="px-2 py-1 rounded text-sm ${getStatusColor(status)}">${status}</span></p>
-    `;
-
-    if (intakeSheetData) {
-        basicInfoHtml += `
-            <p><strong>Gender:</strong> ${intakeSheetData.applicant_gender || '-'}</p>
-            <p><strong>Remarks:</strong> ${intakeSheetData.remarks || '-'}</p>
-            <p><strong>Barangay:</strong> ${intakeSheetData.head_barangay || '-'}</p>
-        `;
-    }
-
-    applicantBasicInfo.innerHTML = basicInfoHtml;
-
-    // Show/hide intake sheet info based on type
-    if (type === 'intake' && intakeSheetData) {
-        intakeSheetInfo.classList.remove('hidden');
-        populateIntakeSheetInfo(intakeSheetData);
-    } else {
-        intakeSheetInfo.classList.add('hidden');
-    }
-
-    // Populate documents
-    populateDocuments(documentsData || intakeSheetData);
-
-    // Show modal with animation
-    modal.classList.remove('hidden');
-    setTimeout(() => {
-        modalContent.classList.remove('scale-95', 'opacity-0');
-        modalContent.classList.add('scale-100', 'opacity-100');
-    }, 10);
-}
-
-function populateIntakeSheetInfo(intakeSheetData) {
-    // Populate Head of Family Information
-    const headOfFamilyInfo = document.getElementById('headOfFamilyInfo');
-    headOfFamilyInfo.innerHTML = `
-        <div>
-            <p><strong>Name:</strong> ${intakeSheetData.applicant_name || '-'}</p>
-            <p><strong>Sex:</strong> ${intakeSheetData.applicant_gender || '-'}</p>
-            <p><strong>Remarks:</strong> ${intakeSheetData.remarks || '-'}</p>
-            <p><strong>Date of Birth:</strong> ${intakeSheetData.head_dob || '-'}</p>
-            <p><strong>Place of Birth:</strong> ${intakeSheetData.head_pob || '-'}</p>
-        </div>
-        <div>
-            <p><strong>Address:</strong> ${intakeSheetData.head_address || '-'}</p>
-            <p><strong>Zone:</strong> ${intakeSheetData.head_zone || '-'}</p>
-            <p><strong>Barangay:</strong> ${intakeSheetData.head_barangay || '-'}</p>
-            <p><strong>Religion:</strong> ${intakeSheetData.head_religion || '-'}</p>
-        </div>
-        <div>
-            <p><strong>Serial No.:</strong> ${intakeSheetData.serial_number || '-'}</p>
-            <p><strong>4Ps:</strong> ${intakeSheetData.head_4ps || '-'}</p>
-            <p><strong>IP No.:</strong> ${intakeSheetData.head_ipno || '-'}</p>
-            <p><strong>Education:</strong> ${intakeSheetData.head_educ || '-'}</p>
-            <p><strong>Occupation:</strong> ${intakeSheetData.head_occ || '-'}</p>
-        </div>
-    `;
-    
-    // Populate Household Information
-    const householdInfo = document.getElementById('householdInfo');
-    householdInfo.innerHTML = `
-        <div>
-            <p><strong>Total Family Income:</strong> ${formatCurrency(intakeSheetData.house_total_income)}</p>
-            <p><strong>Total Family Net Income:</strong> ${formatCurrency(intakeSheetData.house_net_income)}</p>
-            <p><strong>Other Source of Income:</strong> ${formatCurrency(intakeSheetData.other_income)}</p>
-        </div>
-        <div>
-            <p><strong>House (Owned/Rented):</strong> ${intakeSheetData.house_house || '-'}</p>
-            <p><strong>Lot (Owned/Rented):</strong> ${intakeSheetData.house_lot || '-'}</p>
-            <p><strong>Electricity Source:</strong> ${intakeSheetData.house_electric || '-'}</p>
-            <p><strong>Water:</strong> ${intakeSheetData.house_water || '-'}</p>
-        </div>
-    `;
-    
-    // Populate Family Members Table
-    const familyMembersTable = document.getElementById('familyMembersTable');
-    if (intakeSheetData.family_members && intakeSheetData.family_members.length > 0) {
-        let familyMembersHtml = '';
-        intakeSheetData.family_members.forEach(member => {
-            familyMembersHtml += `
-                <tr>
-                    <td>${member.NAME || member.name || '-'}</td>
-                    <td>${member.RELATION || member.relationship || '-'}</td>
-                    <td>${member.BIRTHDATE || member.birthdate || '-'}</td>
-                    <td>${member.AGE || member.age || '-'}</td>
-                    <td>${member.SEX || member.sex || '-'}</td>
-                    <td>${member['CIVIL STATUS'] || member.civil_status || '-'}</td>
-                    <td>${member['EDUCATIONAL ATTAINMENT'] || member.education || '-'}</td>
-                    <td>${member.OCCUPATION || member.occupation || '-'}</td>
-                    <td>${formatCurrency(member.INCOME || member.income)}</td>
-                    <td>${member.REMARKS || member.remarks || '-'}</td>
-                </tr>
-            `;
-        });
-        familyMembersTable.innerHTML = familyMembersHtml;
-    } else {
-        familyMembersTable.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500">No family members found</td></tr>';
-    }
-    
-    // Populate Service Records Table
-    const serviceRecordsTable = document.getElementById('serviceRecordsTable');
-    if (intakeSheetData.social_service_records && intakeSheetData.social_service_records.length > 0) {
-        let serviceRecordsHtml = '';
-        intakeSheetData.social_service_records.forEach(record => {
-            serviceRecordsHtml += `
-                <tr>
-                    <td>${record.DATE || record.date || '-'}</td>
-                    <td>${record['PROBLEM/NEED'] || record.problem || '-'}</td>
-                    <td>${record['ACTION/ASSISTANCE GIVEN'] || record.action || '-'}</td>
-                    <td>${record.REMARKS || record.remarks || '-'}</td>
-                </tr>
-            `;
-        });
-        serviceRecordsTable.innerHTML = serviceRecordsHtml;
-    } else {
-        serviceRecordsTable.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No service records found</td></tr>';
-    }
-}
-
-function populateDocuments(data) {
-    const documentsContainer = document.getElementById('documentsContainer');
-    const documentTitles = {
-        'doc_application_letter': 'Application Letter',
-        'doc_cert_reg': 'Certificate of Registration',
-        'doc_grade_slip': 'Grade Slip',
-        'doc_brgy_indigency': 'Barangay Indigency',
-        'doc_student_id': 'Student ID'
-    };
-
-    let documentsHtml = '';
-    let availableDocuments = 0;
-
-    Object.keys(documentTitles).forEach(docType => {
-        const docUrl = data[docType];
-        if (docUrl && docUrl !== 'null') {
-            availableDocuments++;
-            documentsHtml += `
-                <div class="document-section mb-6 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                        <h4 class="text-lg font-semibold text-gray-800">${documentTitles[docType]}</h4>
-                    </div>
-                    <div class="p-4">
-                        <div class="border border-gray-300 rounded-lg overflow-hidden">
-                            <iframe
-                                src="${docUrl}"
-                                width="100%"
-                                height="500"
-                                style="border: none;"
-                                title="${documentTitles[docType]}"
-                                onerror="this.closest('.document-section').innerHTML='<div class=\\'p-4 text-center text-red-500\\'>Failed to load document</div>'">
-                                <p class="p-4 text-center text-gray-500">Your browser does not support iframes.
-                                    <a href="${docUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 underline">Click here to view the document</a>
-                                </p>
-                            </iframe>
-                        </div>
-                        <div class="mt-2 flex justify-between items-center">
-                            <span class="text-sm text-gray-500">Document ${availableDocuments}</span>
-                            <a href="${docUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm font-medium">
-                                <i class="fas fa-external-link-alt mr-1"></i> Open in new tab
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-    });
-
-    if (availableDocuments === 0) {
-        documentsHtml = '<p class="text-center text-gray-500 py-8">No documents available for viewing.</p>';
-    }
-
-    documentsContainer.innerHTML = documentsHtml;
-}
-
-function closeApplicationModal() {
-    const modal = document.getElementById('applicationHistoryModal');
-    const modalContent = document.getElementById('modalContent');
-
-    // Add closing animation
-    modalContent.classList.remove('scale-100', 'opacity-100');
-    modalContent.classList.add('scale-95', 'opacity-0');
-
-    // Hide modal after animation
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 300);
-}
-
-// Helper functions
-function getStatusColor(status) {
-    switch(status) {
-        case 'Approved': return 'bg-green-100 text-green-800';
-        case 'Rejected': return 'bg-red-100 text-red-800';
-        case 'Reviewed': return 'bg-blue-100 text-blue-800';
-        default: return 'bg-gray-100 text-gray-800';
-    }
-}
-
-function formatCurrency(amount) {
-    if (!amount || isNaN(amount)) return '-';
-    return '₱' + parseFloat(amount).toLocaleString('en-PH', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-}
-
-// Add CSS for intake sections
-const style = document.createElement('style');
-style.textContent = `
-    .intake-section {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-    }
-    .intake-section-title {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #e5e7eb;
-    }
-    .intake-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .intake-table th,
-    .intake-table td {
-        border: 1px solid #e5e7eb;
-        padding: 0.75rem;
-        text-align: left;
-    }
-    .intake-table th {
-        background-color: #f9fafb;
-        font-weight: 600;
-        color: #374151;
-    }
-    .document-section {
-        margin-bottom: 1.5rem;
-    }
-`;
-document.head.appendChild(style);
-// PDF Print functionality - Fixed version
-document.addEventListener('DOMContentLoaded', function() {
-    const printPdfBtn = document.getElementById('printPdfBtn');
-    
-    if (printPdfBtn) {
-        printPdfBtn.addEventListener('click', function() {
-            // Get current filter values
-            const searchTerm = document.getElementById('searchInput')?.value || '';
-            const barangay = document.getElementById('barangaySelect')?.value || '';
-            const academicYear = document.getElementById('academicYearSelect')?.value || '';
-            const initialScreening = document.getElementById('initialScreeningSelect')?.value || 'all';
-
-            // Build query parameters
-            const params = new URLSearchParams();
-            
-            if (searchTerm) params.append('search', searchTerm);
-            if (barangay) params.append('barangay', barangay);
-            if (academicYear) params.append('academic_year', academicYear);
-            if (initialScreening && initialScreening !== 'all') {
-                params.append('initial_screening', initialScreening);
-            }
-
-            // Show loading
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'flex';
-            }
-
-            // Generate PDF - Use the correct route name
-            const url = `/lydo_admin/generate-applicants-pdf?${params.toString()}`;
-            
-            console.log('Generating PDF with URL:', url); // Debug log
-
-            // Create a temporary link to trigger download
-            const link = document.createElement('a');
-            link.href = url;
-            link.target = '_blank';
-            link.style.display = 'none';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            // Hide loading after a short delay
-            setTimeout(() => {
-                if (loadingOverlay) {
-                    loadingOverlay.style.display = 'none';
-                }
-            }, 2000);
-            
-        });
-    } else {
-        console.error('Print PDF button not found');
-    }
-});
-</script>
-
 <script>
     // Toggle dropdown and save state
     function toggleDropdown(id) {
@@ -1688,8 +898,393 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    // SMS modal elements
+const smsModal = document.getElementById('smsModal');
+const closeSmsModal = document.getElementById('closeSmsModal');
+const cancelSmsBtn = document.getElementById('cancelSmsBtn');
+const smsForm = document.getElementById('smsForm');
+const smsMessage = document.getElementById('smsMessage');
+const smsRecipientsPreview = document.getElementById('smsRecipientsPreview');
+const sendSmsBtn = document.getElementById('sendSmsBtn');
+const sendSmsText = document.getElementById('sendSmsText');
+const sendSmsLoading = document.getElementById('sendSmsLoading');
+const smsCharCount = document.getElementById('smsCharCount');
+const smsSelectedBtn = document.getElementById('smsSelectedBtn');
+
+// SMS character count
+smsMessage.addEventListener('input', function() {
+    const length = this.value.length;
+    smsCharCount.textContent = length;
+    
+    if (length > 160) {
+        smsCharCount.classList.add('text-red-600');
+        sendSmsBtn.disabled = true;
+    } else {
+        smsCharCount.classList.remove('text-red-600');
+        sendSmsBtn.disabled = length === 0;
+    }
+});
+
+// SMS Selected button functionality
+smsSelectedBtn.addEventListener('click', function() {
+    const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
+
+    if (selectedCheckboxes.length === 0) {
+        Swal.fire({
+            title: 'No Selection!',
+            text: 'Please select at least one applicant to send SMS.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    updateSmsRecipientsPreview();
+    smsModal.classList.remove('hidden');
+    smsMessage.focus();
+});
+
+// Update SMS recipients preview
+function updateSmsRecipientsPreview() {
+    const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
+
+    if (selectedCheckboxes.length === 0) {
+        smsRecipientsPreview.innerHTML = 'No recipients selected';
+        return;
+    }
+
+    const recipients = Array.from(selectedCheckboxes).map(checkbox => {
+        const row = checkbox.closest('tr');
+        const name = row.querySelector('td:nth-child(2)').textContent.trim();
+        const contact = row.querySelector('td:nth-child(4)').textContent.trim();
+        return `${name} (${contact})`;
+    });
+
+    smsRecipientsPreview.innerHTML = recipients.join('<br>');
+}
+
+// Close SMS modal
+function closeSmsModalHandler() {
+    smsModal.classList.add('hidden');
+    smsForm.reset();
+    smsCharCount.textContent = '0';
+    sendSmsText.classList.remove('hidden');
+    sendSmsLoading.classList.add('hidden');
+    sendSmsBtn.disabled = false;
+}
+
+closeSmsModal.addEventListener('click', closeSmsModalHandler);
+cancelSmsBtn.addEventListener('click', closeSmsModalHandler);
+
+// Close modal when clicking outside
+smsModal.addEventListener('click', function(e) {
+    if (e.target === smsModal) {
+        closeSmsModalHandler();
+    }
+});
+
+// Send SMS form submission
+smsForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const selectedCheckboxes = document.querySelectorAll('.applicant-checkbox:checked');
+    const message = smsMessage.value.trim();
+
+    if (!message) {
+        Swal.fire({
+            title: 'Missing Message!',
+            text: 'Please enter an SMS message.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    if (message.length > 160) {
+        Swal.fire({
+            title: 'Message Too Long!',
+            text: 'SMS message cannot exceed 160 characters.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    if (selectedCheckboxes.length === 0) {
+        Swal.fire({
+            title: 'No Recipients!',
+            text: 'No applicants selected to send SMS to.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    // Collect recipient emails (we'll use these to identify scholars)
+    const selectedEmails = Array.from(selectedCheckboxes).map(checkbox => {
+        const row = checkbox.closest('tr');
+        return row.querySelector('td:nth-child(4)').textContent.trim();
+    }).join(',');
+
+    // Show loading state
+    sendSmsText.classList.add('hidden');
+    sendSmsLoading.classList.remove('hidden');
+    sendSmsBtn.disabled = true;
+
+    // Send SMS via AJAX
+    fetch('/lydo_admin/send-sms-to-scholars', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({
+            selected_emails: selectedEmails,
+            message: message
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+            
+            // Show detailed results if available
+            if (data.details && data.details.length > 0) {
+                const details = data.details.join('\n');
+                Swal.fire({
+                    title: 'SMS Sending Details',
+                    text: details,
+                    icon: 'info',
+                    confirmButtonText: 'OK',
+                    width: '600px'
+                });
+            }
+            
+            closeSmsModalHandler();
+        } else {
+            throw new Error(data.message || 'Failed to send SMS');
+        }
+    })
+    .catch(error => {
+        console.error('SMS sending error:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: 'Failed to send SMS: ' + error.message,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    })
+    .finally(() => {
+        // Reset loading state
+        sendSmsText.classList.remove('hidden');
+        sendSmsLoading.classList.add('hidden');
+        sendSmsBtn.disabled = false;
+    });
+});
+
+// Update the updateButtons function to include SMS button
+function updateButtons() {
+    const selectedCount = document.querySelectorAll('.applicant-checkbox:checked').length;
+    const hasSelection = selectedCount > 0;
+
+    copyNamesBtn.disabled = !hasSelection;
+    emailSelectedBtn.disabled = !hasSelection;
+    smsSelectedBtn.disabled = !hasSelection;
+    
+    copyNamesBtn.classList.toggle('hidden', !hasSelection);
+    emailSelectedBtn.classList.toggle('hidden', !hasSelection);
+    smsSelectedBtn.classList.toggle('hidden', !hasSelection);
+}
 </script>
-<script src="{{ asset('js/spinner.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const copyNamesBtn = document.getElementById('copyNamesBtn');
+    const emailSelectedBtn = document.getElementById('emailSelectedBtn');
+    const smsSelectedBtn = document.getElementById('smsSelectedBtn');
+    const selectAll = document.getElementById('selectAll');
+    const tbody = document.querySelector('table tbody');
+
+    // return only checkboxes from visible rows
+    function getVisibleCheckboxes() {
+        return Array.from(document.querySelectorAll('.applicant-checkbox'))
+            .filter(ch => {
+                const tr = ch.closest('tr');
+                // row may be hidden via display:none or removed
+                return tr && tr.offsetParent !== null;
+            });
+    }
+
+    // update buttons visibility & disabled state
+    function refreshButtons() {
+        const visible = getVisibleCheckboxes();
+        const checked = visible.filter(c => c.checked).length;
+        const hasSelection = checked > 0;
+
+        [copyNamesBtn, emailSelectedBtn, smsSelectedBtn].forEach(btn => {
+            if (!btn) return;
+            btn.classList.toggle('hidden', !hasSelection);
+            btn.disabled = !hasSelection;
+        });
+
+        // keep selectAll in sync with visible checkboxes
+        if (selectAll) {
+            selectAll.checked = visible.length > 0 && visible.every(c => c.checked);
+            selectAll.indeterminate = visible.some(c => c.checked) && !selectAll.checked;
+        }
+    }
+
+    // attach change listener to each applicant checkbox
+    function attachCheckboxListeners() {
+        document.querySelectorAll('.applicant-checkbox').forEach(ch => {
+            // avoid duplicate listeners by marking
+            if (ch._listenerAttached) return;
+            ch.addEventListener('change', () => {
+                refreshButtons();
+            });
+            ch._listenerAttached = true;
+        });
+    }
+
+    // selectAll behavior: toggle only visible checkboxes
+    if (selectAll) {
+        selectAll.addEventListener('change', () => {
+            const visible = getVisibleCheckboxes();
+            visible.forEach(ch => { ch.checked = selectAll.checked; });
+            refreshButtons();
+        });
+    }
+
+    // observe tbody for row visibility / DOM changes (filtering hides rows via style)
+    if (tbody) {
+        const mo = new MutationObserver(() => {
+            attachCheckboxListeners();
+            refreshButtons();
+        });
+        mo.observe(tbody, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+    }
+
+    // initial setup
+    attachCheckboxListeners();
+    refreshButtons();
+
+    // expose global helper if other scripts call updateButtons()
+    window.updateButtons = refreshButtons;
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const filterForm = document.getElementById('filterForm');
+    const searchInput = document.getElementById('searchInput');
+    const barangaySelect = document.getElementById('barangaySelect');
+    const academicYearSelect = document.getElementById('academicYearSelect');
+    const initialScreeningSelect = document.getElementById('initialScreeningSelect');
+    const table = document.querySelector('table tbody');
+    const tableHeadCols = document.querySelectorAll('table thead th').length || 8;
+
+    // prevent full form submit / refresh
+    if (filterForm) filterForm.addEventListener('submit', e => e.preventDefault());
+
+    // helper to normalize text
+    const norm = s => (s||'').toString().trim().toLowerCase();
+
+    // Update URL query params without reloading
+    function updateUrlParams() {
+        const params = new URLSearchParams(window.location.search);
+        if (searchInput) {
+            if (searchInput.value) params.set('search', searchInput.value);
+            else params.delete('search');
+        }
+        if (barangaySelect) {
+            if (barangaySelect.value) params.set('barangay', barangaySelect.value);
+            else params.delete('barangay');
+        }
+        if (academicYearSelect) {
+            if (academicYearSelect.value) params.set('academic_year', academicYearSelect.value);
+            else params.delete('academic_year');
+        }
+        if (initialScreeningSelect) {
+            if (initialScreeningSelect.value && initialScreeningSelect.value !== 'all') params.set('initial_screening', initialScreeningSelect.value);
+            else params.delete('initial_screening');
+        }
+        const newUrl = `${location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+        history.replaceState(null, '', newUrl);
+    }
+
+    // Create / remove "no results" row
+    let noResultsRow = null;
+    function showNoResults(show) {
+        if (show) {
+            if (!noResultsRow) {
+                noResultsRow = document.createElement('tr');
+                noResultsRow.innerHTML = `<td colspan="${tableHeadCols}" class="px-4 py-2 text-center text-sm text-gray-500">No applicants found.</td>`;
+                table.appendChild(noResultsRow);
+            }
+        } else {
+            if (noResultsRow && noResultsRow.parentNode) noResultsRow.parentNode.removeChild(noResultsRow);
+            noResultsRow = null;
+        }
+    }
+
+    // Core client-side filtering
+    function applyFilters() {
+        if (!table) return;
+        const q = norm(searchInput && searchInput.value);
+        const barangay = norm(barangaySelect && barangaySelect.value);
+        const acad = norm(academicYearSelect && academicYearSelect.value);
+        const screening = (initialScreeningSelect && initialScreeningSelect.value) ? initialScreeningSelect.value.toLowerCase() : '';
+
+        let visible = 0;
+        const rows = Array.from(table.querySelectorAll('tr')).filter(r => !r.isSameNode(noResultsRow));
+        rows.forEach(row => {
+            // cells: 2=name, 3=barangay, 4=email, 5=school, 6=acad year, last=screening badge
+            const nameCell = row.querySelector('td:nth-child(2)')?.textContent || '';
+            const barangayCell = row.querySelector('td:nth-child(3)')?.textContent || '';
+            const acadCell = row.querySelector('td:nth-child(6)')?.textContent || '';
+            const screeningCell = row.querySelector('td:last-child')?.textContent || '';
+
+            const matchesSearch = q === '' || [nameCell, barangayCell, row.textContent].join(' ').toLowerCase().includes(q);
+            const matchesBarangay = barangay === '' || norm(barangayCell).includes(barangay);
+            const matchesAcad = acad === '' || norm(acadCell).includes(acad);
+            const matchesScreening = (!screening || screening === 'all') || norm(screeningCell).includes(screening);
+
+            if (matchesSearch && matchesBarangay && matchesAcad && matchesScreening) {
+                row.style.display = '';
+                visible++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        showNoResults(visible === 0);
+        updateUrlParams();
+    }
+
+    // Debounce helper
+    function debounce(fn, wait = 250) {
+        let t;
+        return function(...args) {
+            clearTimeout(t);
+            t = setTimeout(() => fn.apply(this, args), wait);
+        };
+    }
+
+    // Attach listeners
+    if (searchInput) searchInput.addEventListener('input', debounce(applyFilters, 250));
+    if (barangaySelect) barangaySelect.addEventListener('change', applyFilters);
+    if (academicYearSelect) academicYearSelect.addEventListener('change', applyFilters);
+    if (initialScreeningSelect) initialScreeningSelect.addEventListener('change', applyFilters);
+
+    // Apply initial filter using existing query params (keeps server-rendered selection)
+    applyFilters();
+});
+</script>
+
+
 
 </body>
 

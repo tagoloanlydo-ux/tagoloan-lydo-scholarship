@@ -16,10 +16,11 @@ use App\Http\Controllers\API\ScholarRenewalController;
 use App\Http\Controllers\API\AnnouncementController;
 use App\Http\Controllers\API\ApplicationPersonnelController;
 use App\Http\Controllers\MayorStaffController;
+use App\Http\Controllers\RenewalController;
 
 // Wrap all routes in staging prefix to match Flutter app expectations
 Route::prefix('staging')->group(function () {
-    // Public auth routes
+    // ✅ PUBLIC routes - NO middleware group
     Route::prefix('auth')->group(function () {
         Route::post('/login', [AuthController::class, 'login']);
         Route::post('/register', [AuthController::class, 'register']);
@@ -32,8 +33,13 @@ Route::prefix('staging')->group(function () {
     Route::post('/applicants', [ApplicantController::class, 'store']);
     Route::get('/applicants', [ApplicantController::class, 'indexPublic']);
 
-    // Protected routes with Sanctum
-    Route::middleware('auth:sanctum')->group(function () {
+    // ✅ PUBLIC renewal route - NO authentication
+    Route::prefix('scholar')->group(function () {
+        Route::post('/submit_renewal', [RenewalController::class, 'submitScholarRenewal']);
+    });
+
+    // ✅ PROTECTED routes - WITH authentication
+    Route::middleware('api')->group(function () {
         // Auth routes
         Route::prefix('auth')->group(function () {
             Route::get('/profile', [AuthController::class, 'profile']);
@@ -48,13 +54,11 @@ Route::prefix('staging')->group(function () {
             Route::get('/announcements', [AnnouncementController::class, 'getScholarAnnouncements']);
             Route::get('/renewal_app', [ScholarRenewalController::class, 'getScholarRenewals']);
             Route::get('/renewals', [ScholarRenewalController::class, 'getScholarRenewals']);
-            Route::post('/submit_renewal', [ScholarRenewalController::class, 'submitScholarRenewal']);
             Route::get('/renewal-history', [ScholarRenewalController::class, 'getRenewalHistory']);
             Route::get('/renewal/{renewalId}/details', [ScholarRenewalController::class, 'getRenewalDetails']);
         });
 
-     
-        // API Resources (excluding applicants store which is now public)
+        // API Resources
         Route::apiResource('/applicants', ApplicantController::class)->except(['store']);
         Route::apiResource('/applications', ApplicationController::class);
         Route::apiResource('/scholars', ScholarController::class);
@@ -70,29 +74,26 @@ Route::prefix('staging')->group(function () {
         Route::get('/settings', [AdminController::class, 'getSettings']);
     });
 
-    // Add this route for debugging
-Route::get('/staging/debug/applicants', function () {
-    $allApplicants = DB::table('tbl_applicant')->get();
-    $allApplications = DB::table('tbl_application')->get();
-    $allApplicationPersonnel = DB::table('tbl_application_personnel')->get();
-    $mayorStaff = DB::table('tbl_lydopers')->where('lydopers_role', 'mayor_staff')->get();
+    // Debug route (public)
+    Route::get('/debug/applicants', function () {
+        $allApplicants = DB::table('tbl_applicant')->get();
+        $allApplications = DB::table('tbl_application')->get();
+        $allApplicationPersonnel = DB::table('tbl_application_personnel')->get();
+        $mayorStaff = DB::table('tbl_lydopers')->where('lydopers_role', 'mayor_staff')->get();
 
-    return response()->json([
-        'applicants_count' => $allApplicants->count(),
-        'applications_count' => $allApplications->count(),
-        'application_personnel_count' => $allApplicationPersonnel->count(),
-        'mayor_staff_count' => $mayorStaff->count(),
-        'mayor_staff' => $mayorStaff,
-        'recent_applications' => DB::table('tbl_application as app')
-            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-            ->leftJoin('tbl_application_personnel as ap', 'app.application_id', '=', 'ap.application_id')
-            ->select('a.*', 'app.*', 'ap.*')
-            ->orderBy('app.application_id', 'desc')
-            ->limit(10)
-            ->get()
-    ]);
-});
-
-
-
+        return response()->json([
+            'applicants_count' => $allApplicants->count(),
+            'applications_count' => $allApplications->count(),
+            'application_personnel_count' => $allApplicationPersonnel->count(),
+            'mayor_staff_count' => $mayorStaff->count(),
+            'mayor_staff' => $mayorStaff,
+            'recent_applications' => DB::table('tbl_application as app')
+                ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+                ->leftJoin('tbl_application_personnel as ap', 'app.application_id', '=', 'ap.application_id')
+                ->select('a.*', 'app.*', 'ap.*')
+                ->orderBy('app.application_id', 'desc')
+                ->limit(10)
+                ->get()
+        ]);
+    });
 });

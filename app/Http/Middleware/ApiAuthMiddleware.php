@@ -13,6 +13,20 @@ class ApiAuthMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // ✅ EXCLUDE PUBLIC ROUTES FROM AUTH
+        $publicRoutes = [
+            'api/staging/auth/*',
+            'api/staging/applicants',
+            'api/staging/scholar/submit_renewal', // ← ADD THIS
+            'api/staging/debug/applicants',
+        ];
+
+        foreach ($publicRoutes as $publicRoute) {
+            if ($request->is($publicRoute)) {
+                return $next($request);
+            }
+        }
+
         $token = $request->bearerToken();
         
         if (!$token) {

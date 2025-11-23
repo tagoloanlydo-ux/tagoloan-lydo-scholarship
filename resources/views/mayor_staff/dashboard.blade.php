@@ -14,6 +14,7 @@
     <link rel="icon" type="image/x-icon" href="/img/LYDO.png">
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ asset('js/notification-refresh.js') }}"></script>
     <audio id="notificationSound" src="{{ asset('notification/blade.wav') }}" preload="auto"></audio>
 
     <style>
@@ -97,58 +98,57 @@
 </div>
 
     <div class="dashboard-grid">
-        <!-- Header -->
-<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
-            <div class="flex items-center">
-                <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
-                <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
-            </div>
-            <div class="flex items-center space-x-4">
-                <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
-                <div class="relative">
-                    <!-- 🔔 Bell Icon -->
-                    <button id="notifBell" class="relative focus:outline-none">
-                        <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
-                        @if($showBadge && $notifications->count() > 0)
-                            <span id="notifCount"
-                                class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                                {{ $notifications->count() }}
-                            </span>
-                        @endif
-                    </button>
-                    <!-- 🔽 Dropdown -->
-                    <div id="notifDropdown"
-                         class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                        <div class="p-3 border-b font-semibold text-violet-600">Notifications</div>
-                        <ul class="max-h-60 overflow-y-auto">
-                            @forelse($notifications as $notif)
-                                <li class="px-4 py-2 hover:bg-gray-50 text-base border-b">
-                                    {{-- New Application --}}
-                                    @if($notif->type === 'application')
-                                        <p class="text-blue-600 font-medium">
-                                            📝 {{ $notif->name }} submitted a new application
+            <!-- Header -->
+            <header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
+                <div class="flex items-center">
+                    <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
+                    <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
+                    <div class="relative">
+                        <!-- 🔔 Bell Icon -->
+                        <button id="notifBell" class="relative focus:outline-none">
+                            <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
+                            @if($showBadge && $notifications->count() > 0)
+                                <span id="notifCount"
+                                    class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
+                                    {{ $notifications->count() }}
+                                </span>
+                            @endif
+                        </button>
+                        <!-- 🔽 Dropdown -->
+                        <div id="notifDropdown"
+                            class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                            <div class="p-3 border-b font-semibold text-violet-600">Notifications</div>
+                            <ul class="max-h-60 overflow-y-auto">
+                                @forelse($notifications as $notif)
+                                    <li class="px-4 py-2 hover:bg-gray-50 text-base border-b">
+                                        {{-- New Application --}}
+                                        @if($notif->type === 'application')
+                                            <p class="text-blue-600 font-medium">
+                                                📝 {{ $notif->name }} submitted a new application
+                                            </p>
+                                        {{-- New Remark --}}
+                                        @elseif($notif->type === 'remark')
+                                            <p class="text-purple-600 font-medium">
+                                                💬 New remark for {{ $notif->name }}:
+                                                <b>{{ $notif->remarks }}</b>
+                                            </p>
+                                        @endif
+                                        {{-- Time ago --}}
+                                        <p class="text-xs text-gray-500">
+                                            {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
                                         </p>
-                                    {{-- New Remark --}}
-                                    @elseif($notif->type === 'remark')
-                                        <p class="text-purple-600 font-medium">
-                                            💬 New remark for {{ $notif->name }}:
-                                            <b>{{ $notif->remarks }}</b>
-                                        </p>
-                                    @endif
-                                    {{-- Time ago --}}
-                                    <p class="text-xs text-gray-500">
-                                        {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
-                                    </p>
-                                </li>
-                            @empty
-                                <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
-                            @endforelse
-                        </ul>
+                                    </li>
+                                @empty
+                                    <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
+                                @endforelse
+                            </ul>
+                        </div>
                     </div>
                 </div>
-             </div>
-            
-        </header>
+            </header>
         <!-- Main Content -->
         <div class="flex flex-1 overflow-hidden">
             <!-- Sidebar -->
@@ -679,64 +679,127 @@
         console.log('Welcome modal already shown, skipping');
     }
 </script>
-
 <script>
-    // Toggle dropdown and save state
-    function toggleDropdown(id) {
-        const menu = document.getElementById(id);
-        const isHidden = menu.classList.contains("hidden");
-
-        if (isHidden) {
-            menu.classList.remove("hidden");
-            localStorage.setItem(id, "open");
-        } else {
-            menu.classList.add("hidden");
-            localStorage.setItem(id, "closed");
-        }
-    }
-
-    // Restore dropdown state on page load
-    window.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll("ul[id]").forEach(menu => {
-            const state = localStorage.getItem(menu.id);
-            if (state === "open") {
-                menu.classList.remove("hidden");
+// Notification Dropdown Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const notifBell = document.getElementById('notifBell');
+    const notifDropdown = document.getElementById('notifDropdown');
+    
+    if (notifBell && notifDropdown) {
+        // Toggle dropdown when bell is clicked
+        notifBell.addEventListener('click', function(e) {
+            e.stopPropagation();
+            notifDropdown.classList.toggle('hidden');
+            
+            // Mark notifications as read when dropdown is opened
+            if (!notifDropdown.classList.contains('hidden')) {
+                markNotificationsAsViewed();
             }
         });
-    });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!notifBell.contains(e.target) && !notifDropdown.contains(e.target)) {
+                notifDropdown.classList.add('hidden');
+            }
+        });
+        
+        // Prevent dropdown from closing when clicking inside it
+        notifDropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+    
+    function markNotificationsAsViewed() {
+        fetch('/mayor_staff/mark-notifications-viewed', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (response.ok) {
+                // Remove notification badge
+                const notifCount = document.getElementById('notifCount');
+                if (notifCount) {
+                    notifCount.remove();
+                }
+            }
+        }).catch(error => {
+            console.error('Error marking notifications as viewed:', error);
+        });
+    }
+});
 </script>
 <script>
-    document.getElementById("notifBell").addEventListener("click", function () {
-        let dropdown = document.getElementById("notifDropdown");
-        dropdown.classList.toggle("hidden");
+// Sidebar Dropdown Functionality with Persistent State
+function toggleDropdown(menuId) {
+    const menu = document.getElementById(menuId);
+    const button = event.currentTarget;
+    const icon = button.querySelector('.bx-chevron-down');
+    
+    // Toggle the dropdown menu
+    const isHidden = menu.classList.toggle('hidden');
+    
+    // Rotate the chevron icon
+    if (icon) {
+        icon.classList.toggle('rotate-180');
+    }
+    
+    // Save the state to localStorage for persistence across pages
+    localStorage.setItem(`dropdown_${menuId}`, !isHidden);
+}
 
-        // remove badge when opened
-        let notifCount = document.getElementById("notifCount");
-        if (notifCount) {
-            notifCount.remove();
-            // Mark notifications as viewed
-            fetch('/mayor_staff/mark-notifications-viewed', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Content-Type': 'application/json'
-                }
-            });
+// Initialize dropdown states on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Restore sidebar dropdown states from localStorage
+    const dropdownMenus = document.querySelectorAll('[id$="Menu"]');
+    
+    dropdownMenus.forEach(menu => {
+        const isOpen = localStorage.getItem(`dropdown_${menu.id}`) === 'true';
+        const parentButton = menu.parentElement.querySelector('button');
+        const icon = parentButton ? parentButton.querySelector('.bx-chevron-down') : null;
+        
+        if (isOpen) {
+            menu.classList.remove('hidden');
+            if (icon) {
+                icon.classList.add('rotate-180');
+            }
         }
     });
-</script>
-<script>
-    // Play sound if there are new notifications
-    const hasNewNotifications = {{ $showBadge && $notifications->count() > 0 ? 'true' : 'false' }};
-    if (hasNewNotifications) {
-        document.getElementById('notificationSound').play();
+    
+
+});
+
+// Add CSS for smooth rotation
+const style = document.createElement('style');
+style.textContent = `
+    .bx-chevron-down {
+        transition: transform 0.3s ease;
     }
+    .rotate-180 {
+        transform: rotate(180deg);
+    }
+    
+    /* Ensure dropdowns have proper z-index */
+    #notifDropdown {
+        z-index: 1000;
+    }
+    
+    /* Sidebar dropdown styling */
+    [id$="Menu"] {
+        z-index: 999;
+    }
+    
+    /* Prevent dropdown from closing when clicking inside */
+    [id$="Menu"] a {
+        display: block;
+    }
+`;
+document.head.appendChild(style);
 </script>
-
  <script src="{{ asset('js/logout.js') }}"></script>
-
 <script src="{{ asset('js/spinner.js') }}"></script>
-<!-- Add this line after your existing script imports -->
 <script src="{{ asset('js/mayordashrefresh.js') }}"></script>
 </div>
 </body>

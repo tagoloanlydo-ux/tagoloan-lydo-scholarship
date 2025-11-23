@@ -400,7 +400,6 @@ public function status()
     return view('lydo_admin.status', compact('scholarsWithoutRenewal', 'graduatingScholars', 'barangays'));
 }
 
-// Add new method for marking scholars as graduated
 public function markAsGraduated(Request $request)
 {
     $request->validate([
@@ -408,6 +407,27 @@ public function markAsGraduated(Request $request)
         'selected_graduating_scholars.*' => 'exists:tbl_scholar,scholar_id'
     ]);
 
+    $graduatedScholars = [];
+
+    // Get scholar details before updating
+    $scholars = DB::table('tbl_scholar as s')
+        ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+        ->whereIn('s.scholar_id', $request->selected_graduating_scholars)
+        ->select(
+            's.scholar_id',
+            'a.applicant_fname',
+            'a.applicant_mname',
+            'a.applicant_lname',
+            'a.applicant_suffix',
+            'a.applicant_email',
+            'a.applicant_school_name',
+            'a.applicant_course',
+            'a.applicant_year_level'
+        )
+        ->get();
+
+    // Update scholar status
     DB::table('tbl_scholar')
         ->whereIn('scholar_id', $request->selected_graduating_scholars)
         ->update([
@@ -416,8 +436,130 @@ public function markAsGraduated(Request $request)
             'updated_at' => now()
         ]);
 
-    return redirect()->back()->with('success', 'Scholars marked as graduated successfully!');
+    // Prepare scholar data for email notification and certificate
+    foreach ($scholars as $scholar) {
+        $graduatedScholars[] = [
+            'email' => $scholar->applicant_email,
+            'name' => $scholar->applicant_fname . ' ' . 
+                     ($scholar->applicant_mname ? $scholar->applicant_mname . ' ' : '') . 
+                     $scholar->applicant_lname . 
+                     ($scholar->applicant_suffix ? ' ' . $scholar->applicant_suffix : ''),
+            'scholar_id' => $scholar->scholar_id,
+            'school' => $scholar->applicant_school_name,
+            'course' => $scholar->applicant_course,
+            'year_level' => $scholar->applicant_year_level
+        ];
+    }
+
+    // Send graduation notification emails with certificates
+    if (!empty($graduatedScholars)) {
+        $this->sendGraduationNotification($graduatedScholars);
+    }
+
+    return redirect()->back()->with('success', 'Scholars marked as graduated successfully! Email notifications with certificates sent to ' . count($graduatedScholars) . ' scholar(s).');
 }
+
+private function sendGraduationNotification($scholars)
+{
+    try {
+        $successCount = 0;
+        $errorCount = 0;
+
+        foreach ($scholars as $scholar) {
+            try {
+                // Generate individual certificate for each scholar
+                $certificatePdf = $this->generateIndividualCertificate($scholar);
+                
+                $emailData = [
+                    'scholar_name' => $scholar['name'],
+                    'scholar_id' => $scholar['scholar_id'],
+                    'school' => $scholar['school'],
+                    'course' => $scholar['course'],
+                    'graduation_date' => now()->format('F d, Y'),
+                    'current_year' => now()->format('Y'),
+                ];
+
+                Mail::send('emails.graduation-notification', $emailData, function ($message) use ($scholar, $certificatePdf) {
+                    $message->to($scholar['email'])
+                            ->subject('Congratulations! Scholarship Graduation - LYDO Scholarship Program')
+                            ->attachData($certificatePdf, 
+                                       'Graduation-Certificate-' . $scholar['scholar_id'] . '.pdf', 
+                                       ['mime' => 'application/pdf']);
+                });
+
+                $successCount++;
+                \Log::info('Graduation notification sent to: ' . $scholar['email']);
+
+            } catch (\Exception $e) {
+                $errorCount++;
+                \Log::error('Failed to send graduation notification to ' . $scholar['email'] . ': ' . $e->getMessage());
+                // Continue with other scholars even if one fails
+                continue;
+            }
+        }
+        
+        \Log::info('Graduation notifications completed. Success: ' . $successCount . ', Failed: ' . $errorCount);
+        return $successCount > 0;
+        
+    } catch (\Exception $e) {
+        \Log::error('Failed to send graduation notifications: ' . $e->getMessage());
+        return false;
+    }
+}
+private function generateIndividualCertificate($scholar)
+{
+    try {
+        $scholarData = [[
+            'name' => $scholar['name'],
+            'scholar_id' => $scholar['scholar_id'],
+            'school' => $scholar['school'],
+            'course' => $scholar['course'],
+            'year_level' => $scholar['year_level'],
+            'graduation_date' => now()->format('F d, Y')
+        ]];
+
+        // Get current user session safely
+        $currentUser = session('lydopers');
+        
+        // Get LYDO Admin name safely
+        $lydoAdminName = 'LYDO Program Director'; // Default fallback
+        if ($currentUser && isset($currentUser->lydopers_fname) && isset($currentUser->lydopers_lname)) {
+            $lydoAdminName = $currentUser->lydopers_fname . ' ' . $currentUser->lydopers_lname;
+        }
+
+        // Get Mayor Staff name safely
+        $mayorStaffName = 'City Mayor'; // Default fallback
+        try {
+            $mayorStaff = DB::table('tbl_lydopers')
+                ->where('lydopers_role', 'mayor_staff')
+                ->where('lydopers_status', 'active')
+                ->orderBy('lydopers_lname')
+                ->first();
+                
+            if ($mayorStaff && isset($mayorStaff->lydopers_fname) && isset($mayorStaff->lydopers_lname)) {
+                $mayorStaffName = $mayorStaff->lydopers_fname . ' ' . $mayorStaff->lydopers_lname;
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Could not fetch mayor staff name: ' . $e->getMessage());
+        }
+
+        $pdf = PDF::loadView('pdf.graduation-certificate', [
+            'graduatedScholars' => $scholarData,
+            'lydoAdminName' => $lydoAdminName,
+            'mayorStaffName' => $mayorStaffName
+        ])->setPaper('a4', 'portrait')
+          ->setOption('enable-local-file-access', true)
+          ->setOption('isHtml5ParserEnabled', true)
+          ->setOption('isRemoteEnabled', true);
+
+        return $pdf->output();
+        
+    } catch (\Exception $e) {
+        \Log::error('Certificate generation error for scholar ' . $scholar['scholar_id'] . ': ' . $e->getMessage());
+        throw $e;
+    }
+}
+
     public function updateScholarStatus(Request $request)
     {
         $request->validate([
@@ -778,13 +920,18 @@ public function applicants(Request $request)
             'tbl_application_personnel.status'
         );
 
-    // Initial screening filter
-    $initialScreeningStatus = $request->get('initial_screening', 'Approved');
+    // Enhanced initial screening filter with clearer options
+    $initialScreeningStatus = $request->get('initial_screening', 'all');
     if ($initialScreeningStatus && $initialScreeningStatus !== 'all') {
-        $query->where('tbl_application_personnel.initial_screening', $initialScreeningStatus);
+        if ($initialScreeningStatus === 'for_lydo_review') {
+            // Show applicants that are approved by Mayor Staff and ready for LYDO review
+            $query->where('tbl_application_personnel.initial_screening', 'Approved');
+        } else {
+            $query->where('tbl_application_personnel.initial_screening', $initialScreeningStatus);
+        }
     }
 
-    // Other filters
+    // Other filters remain the same
     if ($request->has('search') && !empty($request->search)) {
         $query->where(function($q) use ($request) {
             $q->where('applicant_fname', 'like', '%' . $request->search . '%')
@@ -822,6 +969,7 @@ public function applicants(Request $request)
 
     return view('lydo_admin.applicants', compact('applicants', 'barangays', 'academicYears', 'initialScreeningStatus'));
 }
+
     public function getAllFilteredApplicants(Request $request)
     {
         $query = DB::table('tbl_applicant')

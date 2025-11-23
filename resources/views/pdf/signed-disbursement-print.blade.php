@@ -17,6 +17,7 @@
             margin: 0;
             padding: 20px;
             background: #ffffff;
+            counter-reset: page;
         }
 
         .container {
@@ -145,10 +146,68 @@
             page-break-inside: avoid;
         }
 
+        /* Page numbering styles */
+        .page-number {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: left;
+            font-size: 10px;
+            color: #666666;
+            padding: 5px 15px;
+            background: white;
+        }
+
         /* Force landscape in DOMpdf */
         @page {
             size: landscape;
             margin: 10mm;
+            
+            @bottom-left {
+                content: "Page " counter(page);
+                font-size: 10px;
+                color: #666666;
+                font-family: "DejaVu Sans", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            }
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body {
+                margin: 0;
+                padding: 15px;
+                counter-reset: page;
+            }
+            
+            .container {
+                margin-bottom: 20px;
+            }
+            
+            /* Ensure proper page breaks */
+            table {
+                page-break-inside: auto;
+            }
+            
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            
+            thead {
+                display: table-header-group;
+            }
+            
+            /* Hide regular footer in print */
+            .footer {
+                display: none;
+            }
+        }
+
+        /* Page break handling */
+        .page-break {
+            page-break-after: always;
+            break-after: page;
         }
     </style>
 </head>
@@ -198,41 +257,73 @@
 
         <!-- TABLE -->
         @if($signedDisbursements->count() > 0)
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%;">#</th>
-                    <th style="width: 25%;">Scholar Name</th>
-                    <th style="width: 15%;">Barangay</th>
-                    <th style="width: 10%;">Semester</th>
-                    <th style="width: 15%;">Academic Year</th>
-                    <th style="width: 10%;" class="text-center">Amount</th>
-                    <th style="width: 10%;" class="text-center">Date</th>
-                    <th style="width: 10%;" class="text-center">Signature</th>
-                </tr>
-            </thead>
+        
+        @php
+            // Calculate how many rows per page for landscape orientation
+            $rowsPerPage = 15;
+            $totalPages = ceil($signedDisbursements->count() / $rowsPerPage);
+        @endphp
+        
+        @for($page = 0; $page < $totalPages; $page++)
+            @php
+                $currentPageDisbursements = $signedDisbursements->slice($page * $rowsPerPage, $rowsPerPage);
+                $currentPageNumber = $page + 1;
+                $totalDisbursementsCount = $signedDisbursements->count();
+                $startNumber = ($page * $rowsPerPage) + 1;
+                $endNumber = min(($page + 1) * $rowsPerPage, $totalDisbursementsCount);
+            @endphp
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">#</th>
+                        <th style="width: 25%;">Scholar Name</th>
+                        <th style="width: 15%;">Barangay</th>
+                        <th style="width: 10%;">Semester</th>
+                        <th style="width: 15%;">Academic Year</th>
+                        <th style="width: 10%;" class="text-center">Amount</th>
+                        <th style="width: 10%;" class="text-center">Date</th>
+                        <th style="width: 10%;" class="text-center">Signature</th>
+                    </tr>
+                </thead>
 
-            <tbody>
-                @foreach($signedDisbursements as $disburse)
-                <tr class="avoid-break">
-                    <td class="text-center">{{ $loop->iteration }}</td>
-                    <td class="text-left">{{ $disburse->full_name }}</td>
-                    <td class="text-center">{{ $disburse->applicant_brgy }}</td>
-                    <td class="text-center">{{ $disburse->disburse_semester }}</td>
-                    <td class="text-center">{{ $disburse->disburse_acad_year }}</td>
-                    <td class="text-center amount">Php {{ number_format($disburse->disburse_amount, 2) }}</td>
-                    <td class="text-center date">{{ \Carbon\Carbon::parse($disburse->disburse_date)->format('F d, Y') }}</td>
-                    <td class="text-center">
-                        @if($disburse->disburse_signature)
-                            <img src="{{ $disburse->disburse_signature }}" class="signature-img" alt="Signature" style="max-width: 60px; max-height: 25px;">
-                        @else
-                            <span style="color: #000000; font-weight: bold; font-size: 9px;">✓ SIGNED</span>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+                <tbody>
+                    @foreach($currentPageDisbursements as $index => $disburse)
+                    <tr class="avoid-break">
+                        <td class="text-center">{{ $startNumber + $index }}</td>
+                        <td class="text-left">{{ $disburse->full_name }}</td>
+                        <td class="text-center">{{ $disburse->applicant_brgy }}</td>
+                        <td class="text-center">{{ $disburse->disburse_semester }}</td>
+                        <td class="text-center">{{ $disburse->disburse_acad_year }}</td>
+                        <td class="text-center amount">Php {{ number_format($disburse->disburse_amount, 2) }}</td>
+                        <td class="text-center date">{{ \Carbon\Carbon::parse($disburse->disburse_date)->format('F d, Y') }}</td>
+                        <td class="text-center">
+                            @if($disburse->disburse_signature)
+                                <img src="{{ $disburse->disburse_signature }}" class="signature-img" alt="Signature" style="max-width: 60px; max-height: 25px;">
+                            @else
+                                <span style="color: #000000; font-weight: bold; font-size: 9px;">✓ SIGNED</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
+            <!-- Footer for current page -->
+            <div class="footer">
+                Report generated by LYDO Scholarship Management System <br>
+                {{ \Carbon\Carbon::now()->format('F d, Y — h:i A') }} | 
+                Showing {{ $startNumber }}-{{ $endNumber }} of {{ $totalDisbursementsCount }} Signed Disbursements
+                @if($totalPages > 1)
+                    | Page {{ $currentPageNumber }} of {{ $totalPages }}
+                @endif
+            </div>
+
+            @if($page < $totalPages - 1)
+                <div class="page-break"></div>
+            @endif
+            
+        @endfor
 
         @else
         <div class="text-center" style="padding: 30px;">
@@ -241,11 +332,24 @@
         </div>
         @endif
 
-        <div class="footer">
-            Report generated by LYDO Scholarship Management System <br>
-            {{ \Carbon\Carbon::now()->format('F d, Y — h:i A') }}
-        </div>
-
     </div>
+
+    <script>
+    // Add page numbers functionality for browser printing
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to calculate and update page numbers for print
+        function updatePageNumbers() {
+            console.log('Page numbering enabled for printing - Bottom Left Corner');
+        }
+
+        // Update page numbers when printing
+        window.addEventListener('beforeprint', function() {
+            updatePageNumbers();
+        });
+
+        // Initial update
+        updatePageNumbers();
+    });
+    </script>
 </body>
 </html>

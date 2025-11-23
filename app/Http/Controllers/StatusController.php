@@ -20,44 +20,57 @@ class StatusController extends Controller
 {
     public function status(Request $request)
     {
-        // NEW APPLICATIONS
-        $newApplications = DB::table("tbl_application as app")
-            ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
-            ->select(
-                "app.application_id",
-                "a.applicant_fname",
-                "a.applicant_lname",
-                "app.created_at"
-            )
-            ->orderBy("app.created_at", "desc")
-            ->limit(10)
-            ->get()
-            ->map(function ($item) {
-                return (object) [
-                    "type" => "application",
-                    "name" => $item->applicant_fname . " " . $item->applicant_lname,
-                    "created_at" => $item->created_at,
-                ];
-            });
+         // Get the current logged-in mayor staff ID
+    $currentStaffId = session('lydopers')->lydopers_id;
 
-        // NEW REMARKS
-        $newRemarks = DB::table("tbl_application_personnel as ap")
-            ->join("tbl_application as app", "ap.application_id", "=", "app.application_id")
-            ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
-            ->whereIn("ap.remarks", ["Poor", "Non Poor", "Ultra Poor", "Non Indigenous"])
-            ->select("ap.remarks", "a.applicant_fname", "a.applicant_lname", "ap.created_at")
-            ->orderBy("ap.created_at", "desc")
-            ->limit(10)
-            ->get()
-            ->map(function ($item) {
-                return (object) [
-                    "type" => "remark",
-                    "remarks" => $item->remarks,
-                    "name" => $item->applicant_fname . " " . $item->applicant_lname,
-                    "created_at" => $item->created_at,
-                ];
-            });
+    // Get NEW applications that need initial screening by this staff
+    $newApplications = DB::table("tbl_application as app")
+        ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+        ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
+        ->select(
+            "app.application_id",
+            "a.applicant_fname",
+            "a.applicant_lname",
+            "app.created_at",
+        )
+        ->where("ap.lydopers_id", $currentStaffId)
+        ->where("ap.initial_screening", "Pending")
+        ->orderBy("app.created_at", "desc")
+        ->limit(10)
+        ->get()
+        ->map(function ($item) {
+            return (object) [
+                "type" => "application",
+                "name" => $item->applicant_fname . " " . $item->applicant_lname,
+                "created_at" => $item->created_at,
+            ];
+        });
 
+    // Get NEW remarks for status approval that need review by this staff
+    $newRemarks = DB::table("tbl_application_personnel as ap")
+        ->join("tbl_application as app", "ap.application_id", "=", "app.application_id")
+        ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+        ->where("ap.lydopers_id", $currentStaffId)
+        ->where('ap.initial_screening', 'Reviewed')
+        ->where('ap.status', 'Pending')
+        ->whereIn('ap.remarks', ['Poor', 'Ultra Poor'])
+        ->select(
+            "ap.remarks",
+            "a.applicant_fname",
+            "a.applicant_lname",
+            "ap.created_at",
+        )
+        ->orderBy("ap.created_at", "desc")
+        ->limit(10)
+        ->get()
+        ->map(function ($item) {
+            return (object) [
+                "type" => "remark",
+                "remarks" => $item->remarks,
+                "name" => $item->applicant_fname . " " . $item->applicant_lname,
+                "created_at" => $item->created_at,
+            ];
+        });
         $notifications = $newApplications
             ->merge($newRemarks)
             ->sortByDesc("created_at");
@@ -569,4 +582,32 @@ private function parseJsonField($fieldValue, $fieldName)
             return back()->with('error', 'An error occurred while updating status.');
         }
     }
+public function getNotificationCount(Request $request)
+{
+    $currentStaffId = session('lydopers')->lydopers_id;
+    
+    // Count applications that need initial screening
+    $applicationCount = DB::table("tbl_application_personnel as ap")
+        ->join("tbl_application as app", "ap.application_id", "=", "app.application_id")
+        ->where("ap.lydopers_id", $currentStaffId)
+        ->where("ap.initial_screening", "Pending")
+        ->count();
+
+    // Count remarks that need status approval
+    $remarkCount = DB::table("tbl_application_personnel as ap")
+        ->join("tbl_application as app", "ap.application_id", "=", "app.application_id")
+        ->where("ap.lydopers_id", $currentStaffId)
+        ->where('ap.initial_screening', 'Reviewed')
+        ->where('ap.status', 'Pending')
+        ->whereIn('ap.remarks', ['Poor', 'Ultra Poor'])
+        ->count();
+
+    $totalCount = $applicationCount + $remarkCount;
+
+    return response()->json([
+        'count' => $totalCount,
+        'application_count' => $applicationCount,
+        'remark_count' => $remarkCount
+    ]);
+}
 }

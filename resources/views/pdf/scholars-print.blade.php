@@ -17,6 +17,8 @@
             background: #fff;
             padding: 15px;
             font-size: 12px; /* Added base font size */
+            counter-reset: page;
+            position: relative;
         }
 
         .container {
@@ -189,10 +191,81 @@
             color: #777;
             font-size: 12px; /* Added font size */
         }
+
+        /* Page numbering for print */
+        @media print {
+            body {
+                margin: 0;
+                padding: 15px;
+                counter-reset: page;
+            }
+            
+            /* Page footer for printing */
+            .page-footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                text-align: left;
+                font-size: 10px;
+                color: #666;
+                padding: 8px 15px;
+                background: white;
+            }
+            
+            .page-footer::after {
+                counter-increment: page;
+                content: "Page " counter(page);
+            }
+            
+            /* Ensure proper page breaks */
+            table {
+                page-break-inside: auto;
+            }
+            
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            
+            thead {
+                display: table-header-group;
+            }
+            
+            /* Hide regular footer in print */
+            .footer {
+                display: none;
+            }
+            
+            /* Ensure content doesn't overlap with footer */
+            .container {
+                margin-bottom: 30px;
+            }
+        }
+
+        /* Page footer for screen view */
+        .page-footer {
+            display: none;
+        }
+
+        @media screen {
+            .page-footer {
+                display: none;
+            }
+        }
+
+        /* Page break handling */
+        .page-break {
+            page-break-after: always;
+            break-after: page;
+        }
     </style>
 </head>
 
 <body>
+    <!-- Page footer for printing -->
+    <div class="page-footer"></div>
+
     <div class="container">
 
         <!-- IMPROVED HEADER - PORTRAIT STYLE -->
@@ -247,37 +320,66 @@
             $sortedScholars = $scholars->sortBy(function($item) {
                 return $item->applicant_lname;
             });
+            
+            // Calculate how many rows per page
+            $rowsPerPage = 25;
+            $totalPages = ceil($sortedScholars->count() / $rowsPerPage);
         @endphp
         
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th class="text-center col-number">#</th>
-                    <th class="text-center col-name">Name</th>
-                    <th class="text-center col-barangay">Barangay</th>
-                    <th class="text-center col-school">School</th>
-                    <th class="text-center col-course">Course</th>
-                    <th class="text-center">S.Y</th>
-                </tr>
-            </thead>
+        @for($page = 0; $page < $totalPages; $page++)
+            @php
+                $currentPageScholars = $sortedScholars->slice($page * $rowsPerPage, $rowsPerPage);
+            $currentPageNumber = $page + 1;
+            $totalScholarsCount = $sortedScholars->count();
+            $startNumber = ($page * $rowsPerPage) + 1;
+                $endNumber = min(($page + 1) * $rowsPerPage, $totalScholarsCount);
+            @endphp
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="text-center col-number">#</th>
+                        <th class="text-center col-name">Name</th>
+                        <th class="text-center col-barangay">Barangay</th>
+                        <th class="text-center col-school">School</th>
+                        <th class="text-center col-course">Course</th>
+                        <th class="text-center">S.Y</th>
+                    </tr>
+                </thead>
 
-            <tbody>
-                @foreach($sortedScholars as $index => $scholar)
-                <tr class="compact-row">
-                    <td class="text-center">{{ $loop->iteration }}</td>
-                    <td class="text-center name-format">
-                        {{ $scholar->applicant_lname }}{{ $scholar->applicant_suffix ? ' ' . $scholar->applicant_suffix : '' }}, 
-                        {{ $scholar->applicant_fname }} 
-                        {{ $scholar->applicant_mname ? $scholar->applicant_mname . ' ' : '' }}
-                    </td>
-                    <td class="text-center">{{ $scholar->applicant_brgy }}</td>
-                    <td class="text-center">{{ $scholar->applicant_school_name }}</td>
-                    <td class="text-center">{{ $scholar->applicant_course }}</td>
-                    <td class="text-center">{{ $scholar->applicant_acad_year ?? 'N/A' }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+                <tbody>
+                    @foreach($currentPageScholars as $index => $scholar)
+                    <tr class="compact-row">
+                        <td class="text-center">{{ $startNumber + $index }}</td>
+                        <td class="text-center name-format">
+                            {{ $scholar->applicant_lname }}{{ $scholar->applicant_suffix ? ' ' . $scholar->applicant_suffix : '' }}, 
+                            {{ $scholar->applicant_fname }} 
+                            {{ $scholar->applicant_mname ? $scholar->applicant_mname . ' ' : '' }}
+                        </td>
+                        <td class="text-center">{{ $scholar->applicant_brgy }}</td>
+                        <td class="text-center">{{ $scholar->applicant_school_name }}</td>
+                        <td class="text-center">{{ $scholar->applicant_course }}</td>
+                        <td class="text-center">{{ $scholar->applicant_acad_year ?? 'N/A' }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
+            <!-- Footer for current page -->
+            <div class="footer no-print">
+                Report generated by LYDO Scholarship Management System <br>
+                {{ \Carbon\Carbon::now()->format('F d, Y — h:i A') }} | 
+                Showing {{ $startNumber }}-{{ $endNumber }} of {{ $totalScholarsCount }} Scholars
+                @if($totalPages > 1)
+                    | Page {{ $currentPageNumber }} of {{ $totalPages }}
+                @endif
+            </div>
+
+            @if($page < $totalPages - 1)
+                <div class="page-break"></div>
+            @endif
+            
+        @endfor
 
         @else
         <div class="no-scholars">
@@ -286,12 +388,27 @@
         </div>
         @endif
 
-        <div class="footer">
-            Report generated by LYDO Scholarship Management System <br>
-            {{ \Carbon\Carbon::now()->format('F d, Y — h:i A') }} | 
-            Total Scholars: {{ $scholars->count() }}
-        </div>
-
     </div>
+
+    <script>
+    // Add page numbers functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to calculate and update page numbers for print
+        function updatePageNumbers() {
+            const pageFooter = document.querySelector('.page-footer');
+            if (pageFooter) {
+                console.log('Page numbering enabled for printing - Bottom Left Corner');
+            }
+        }
+
+        // Update page numbers when printing
+        window.addEventListener('beforeprint', function() {
+            updatePageNumbers();
+        });
+
+        // Initial update
+        updatePageNumbers();
+    });
+    </script>
 </body>
 </html>
