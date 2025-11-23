@@ -46,6 +46,12 @@
                             </a>
                         </li>
                         <li>
+                            <a href="{{ route('scholar.renewal_history') }}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                                <i class="bx bx-history text-center mx-auto md:mx-0 text-xl"></i>
+                                <span class="ml-4 hidden md:block text-lg">Renewal History</span>
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('scholar.settings') }}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
                                 <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl"></i>
                                 <span class="ml-4 hidden md:block text-lg">Settings</span>
@@ -53,15 +59,15 @@
                         </li>
                     </ul>
                 </nav>
-<div class="p-2 md:p-4 border-t">
-    <form method="POST" action="{{ route('logout') }}" id="logoutForm">
-        @csrf
-        <button type="submit" class="flex items-center p-2 text-red-600 hover:bg-violet-600 hover:text-white rounded-lg w-full text-left transition duration-200">
-            <i class="fas fa-sign-out-alt mx-auto md:mx-0 md:mr-2 text-red-600 hover:text-white"></i>
-            <span class="hidden md:block text-red-600 hover:text-white">Logout</span>
-        </button>
-    </form>
-</div>
+            <div class="p-2 md:p-4 border-t">
+                <form method="POST" action="{{ route('logout') }}" id="logoutForm">
+                    @csrf
+                    <button type="submit" class="flex items-center p-2 text-red-600 hover:bg-violet-600 hover:text-white rounded-lg w-full text-left transition duration-200">
+                        <i class="fas fa-sign-out-alt mx-auto md:mx-0 md:mr-2 text-red-600 hover:text-white"></i>
+                        <span class="hidden md:block text-red-600 hover:text-white">Logout</span>
+                    </button>
+                </form>
+            </div>
             </div>
 
             <div class="flex-1 overflow-y-auto p-4 md:p-6">
@@ -74,7 +80,7 @@
                         </div>
 
                     <div class="text-center">
-                      @php
+           @php
     $now = now();
     $isWithinRenewalPeriod = true;
     $deadlineMessage = '';
@@ -93,22 +99,28 @@
     // UPDATED LOGIC: Can submit renewal only if:
     // 1. Within renewal period AND
     // 2. No approved renewal exists AND  
-    // 3. Can renew for next year (current academic year different from start year AND August onwards)
+    // 3. Scholar is eligible to renew (not in their starting academic year)
     $canSubmitRenewal = $isWithinRenewalPeriod && !$hasApprovedRenewal && ($canRenewForNextYear ?? false);
     
     // Check if there are bad documents
     $hasBadDocuments = count(array_filter($badDocuments ?? [])) > 0;
 @endphp
+
 @if(!$canRenewForNextYear && !$hasApprovedRenewal)
     <div class="mb-4">
         <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-lg mb-4">
             <i class="fa-solid fa-info-circle mr-2"></i>
-            Renewal will be available next academic year.
+            Renewal is not available for your starting academic year.
             @php
                 $applicantStartYear = session('scholar')->applicant->applicant_acad_year ?? 'N/A';
+                $currentYear = now()->year;
+                $currentMonth = now()->month;
+                $currentAcademicYear = $currentMonth >= 6 
+                    ? $currentYear . '-' . ($currentYear + 1) 
+                    : ($currentYear - 1) . '-' . $currentYear;
             @endphp
             <br><small>Your starting academic year: {{ $applicantStartYear }}</small>
-           
+            <br><small>Current academic year: {{ $currentAcademicYear }}</small>
         </div>
     </div>
 @endif
@@ -406,8 +418,8 @@ function openModal() {
     
     if (!canRenewForNextYear) {
         Swal.fire({
-            title: 'Renewal Not Available Yet',
-            text: 'Renewal will be available starting August for the next academic year when your current academic year is different from your starting year.',
+            title: 'Renewal Not Available',
+            text: 'Renewal is not available for your starting academic year. You can submit renewal starting next academic year.',
             icon: 'info',
             confirmButtonColor: '#7c3aed',
             confirmButtonText: 'OK'
@@ -426,7 +438,7 @@ function openModal() {
         return;
     }
 
-    // Rest of the existing openModal function...
+    // If all checks pass, open the modal
     document.getElementById('renewalModal').classList.remove('hidden');
     setCurrentAcademicYearAndYearLevel();
     updateSubmitButton();
@@ -512,10 +524,12 @@ function openModal() {
     function setCurrentAcademicYearAndYearLevel() {
         const now = new Date();
         const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth() + 1;
 
+        // cutoff is July 10 of currentYear
+        const july10 = new Date(currentYear, 6, 10, 23, 59, 59); // month is 0-based: 6 = July
         let academicYear;
-        if (currentMonth >= 6) {
+
+        if (now > july10) {
             academicYear = currentYear + '-' + (currentYear + 1);
         } else {
             academicYear = (currentYear - 1) + '-' + currentYear;

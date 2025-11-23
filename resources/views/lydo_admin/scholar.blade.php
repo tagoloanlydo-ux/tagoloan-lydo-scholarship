@@ -357,9 +357,14 @@
                                 <h3 class="text-lg font-semibold text-black-800">Scholars List</h3>
                                 <p class="text-sm text-black-600 mt-1">This table contains the list of active scholars currently enrolled in the scholarship program.</p>
                             </div>
-                            <button type="button" id="sendEmailBtn" class="w-24 px-2 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"  disabled>
-                                <i class="fas fa-envelope mr-1"></i>Send
-                            </button>                 
+                            <div class="flex space-x-2">
+                                <button type="button" id="sendEmailBtn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
+                                    <i class="fas fa-envelope mr-2"></i>Email
+                                </button>
+                                <button type="button" id="sendSmsBtn" class="px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
+                                    <i class="fas fa-comment-alt mr-2"></i>SMS
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
@@ -428,24 +433,24 @@
                         </table>
                     <div class="px-3 py-2 bg-white border-t border-gray-200">
     <div class="flex justify-center">
-        <div class="pagination-container">
-            <div class="pagination-info" id="paginationInfo">
-                Showing page 1 of 10
-            </div>
-            <div class="pagination-buttons">
-                <button class="pagination-btn" id="prevPage" disabled>
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <div class="pagination-page-info">
-                    Page 
-                    <input type="number" class="pagination-page-input" id="currentPage" value="1" min="1">
-                    of <span id="totalPages">1</span>
-                </div>
-                <button class="pagination-btn" id="nextPage">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
+        <div class="pagination-container" id="paginationContainer">
+        <div class="pagination-info" id="paginationInfo">
+            Showing page 1 of 10
         </div>
+        <div class="pagination-buttons">
+            <button class="pagination-btn" id="prevPage" disabled>
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="pagination-page-info">
+                Page 
+                <input type="number" class="pagination-page-input" id="currentPage" value="1" min="1">
+                of <span id="totalPages">1</span>
+            </div>
+            <button class="pagination-btn" id="nextPage">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
     </div>
 </div>
                 </div>
@@ -593,615 +598,1194 @@
                         </form>
                     </div>
                 </div>
-        <script>
-                // Notification bell functionality
-            document.getElementById("notifBell").addEventListener("click", function () {
-                let dropdown = document.getElementById("notifDropdown");
-                dropdown.classList.toggle("hidden");
 
-                    // remove badge when opened
-                let notifCount = document.getElementById("notifCount");
-                 if (notifCount) {
-                     notifCount.remove();
-                    }
-            });
+<!-- Send SMS Modal -->
+<div id="sendSmsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-1 mx-auto p-4 md:p-6 border w-full max-w-4xl shadow-2xl rounded-xl bg-white max-h-[98vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+            <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                <i class="fas fa-comment-alt text-purple-600 mr-3"></i>
+                Send SMS to Scholars
+            </h3>
+            <button type="button" id="closeSendSmsModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
 
-
-            // Document Modal functionality
-            function openDocumentModal(scholarId) {
-                const modal = document.getElementById('documentModal');
-                const scholarName = document.getElementById('docScholarName');
-                const scholarEmail = document.getElementById('docScholarEmail');
-                const academicPeriodTabs = document.getElementById('academicPeriodTabs');
-                const documentsSection = document.getElementById('documentsSection');
-                const noDocumentsMessage = document.getElementById('noDocumentsMessage');
-
-                // Reset modal content
-                scholarName.textContent = '-';
-                scholarEmail.textContent = '-';
-                academicPeriodTabs.innerHTML = '';
-                documentsSection.innerHTML = '';
-                noDocumentsMessage.classList.add('hidden');
-
-                // Get scholar info from table
-                const scholarRow = document.querySelector(`.scholar-checkbox[data-scholar-id="${scholarId}"]`).closest('tr');
-                const scholarNameFromTable = scholarRow.querySelector('td:nth-child(2) div').textContent.trim();
-                const scholarEmailFromTable = scholarRow.querySelector('td:nth-child(4) div').textContent.trim();
-
-                scholarName.textContent = scholarNameFromTable;
-                scholarEmail.textContent = scholarEmailFromTable;
-
-                // Attach close event listeners
-                attachModalCloseListeners();
-
-                // Show modal
-                modal.classList.remove('hidden');
-
-                // Fetch scholar documents grouped by academic period
-                fetch(`/lydo_admin/get-scholar-documents/${scholarId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success && data.documents.length > 0) {
-                            // Group documents by academic year and semester
-                            const groupedDocuments = groupDocumentsByAcademicPeriod(data.documents);
-
-                            // Create tabs for each academic period
-                            createAcademicPeriodTabs(groupedDocuments, scholarId);
-
-                            // Load first tab by default
-                            if (Object.keys(groupedDocuments).length > 0) {
-                                const firstPeriod = Object.keys(groupedDocuments)[0];
-                                loadDocumentsForPeriod(groupedDocuments[firstPeriod], firstPeriod);
-                            }
-                        } else {
-                            noDocumentsMessage.classList.remove('hidden');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching documents:', error);
-                    });
-            }
-
-            // Function to attach modal close listeners
-            function attachModalCloseListeners() {
-                // Close document modal
-                document.getElementById('closeDocumentModal').addEventListener('click', function() {
-                    document.getElementById('documentModal').classList.add('hidden');
-                });
-
-                document.getElementById('closeDocument').addEventListener('click', function() {
-                    document.getElementById('documentModal').classList.add('hidden');
-                });
-
-                // Close modal when clicking outside
-                window.addEventListener('click', function(e) {
-                    const modal = document.getElementById('documentModal');
-                    if (e.target === modal) {
-                        modal.classList.add('hidden');
-                    }
-                });
-            }
-
-            // Group documents by academic year and semester
-            function groupDocumentsByAcademicPeriod(documents) {
-                const grouped = {};
-                
-                documents.forEach(doc => {
-                    const key = `${doc.renewal_acad_year}-${doc.renewal_semester}`;
-                    if (!grouped[key]) {
-                        grouped[key] = {
-                            academicYear: doc.renewal_acad_year,
-                            semester: doc.renewal_semester,
-                            dateSubmitted: doc.date_submitted,
-                            documents: []
-                        };
-                    }
-                    grouped[key].documents.push(doc);
-                });
-                
-                return grouped;
-            }
-
-            // Create tabs for academic periods
-            function createAcademicPeriodTabs(groupedDocuments, scholarId) {
-                const tabsContainer = document.getElementById('academicPeriodTabs');
-                
-                Object.keys(groupedDocuments).forEach((periodKey, index) => {
-                    const period = groupedDocuments[periodKey];
-                    const tab = document.createElement('button');
-                    tab.className = `px-4 py-2 rounded-lg border transition-colors ${
-                        index === 0 
-                        ? 'bg-blue-600 text-white border-blue-600' 
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    }`;
-                    tab.textContent = `${period.semester} - ${period.academicYear}`;
-                    tab.setAttribute('data-period', periodKey);
-                    
-                    tab.addEventListener('click', function() {
-                        // Update active tab
-                        document.querySelectorAll('#academicPeriodTabs button').forEach(btn => {
-                            btn.className = 'px-4 py-2 rounded-lg border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 transition-colors';
-                        });
-                        this.className = 'px-4 py-2 rounded-lg border bg-blue-600 text-white border-blue-600 transition-colors';
-                        
-                        // Load documents for selected period
-                        loadDocumentsForPeriod(groupedDocuments[periodKey], periodKey);
-                    });
-                    
-                    tabsContainer.appendChild(tab);
-                });
-            }
-
-            // Load documents for specific academic period
-            function loadDocumentsForPeriod(periodData, periodKey) {
-                const documentsSection = document.getElementById('documentsSection');
-                const noDocumentsMessage = document.getElementById('noDocumentsMessage');
-                
-                documentsSection.innerHTML = '';
-                
-                if (periodData.documents.length === 0) {
-                    noDocumentsMessage.classList.remove('hidden');
-                    return;
-                }
-                
-                noDocumentsMessage.classList.add('hidden');
-                
-                // Create period info
-                const periodInfo = document.createElement('div');
-                periodInfo.className = 'bg-green-50 border border-green-200 rounded-lg p-4 mb-4';
-                periodInfo.innerHTML = `
-                    <h4 class="text-lg font-semibold text-green-800 mb-2">Academic Period: ${periodData.semester} - ${periodData.academicYear}</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                        <div><span class="font-medium text-green-700">Date Submitted:</span> ${periodData.dateSubmitted || 'N/A'}</div>
+        <form id="sendSmsForm" method="POST">
+            @csrf
+            <div class="space-y-6">
+                <!-- Selected Scholars -->
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-purple-800 mb-2">Selected Scholars</h4>
+                    <div id="selectedSmsScholarsList" class="text-sm text-purple-700">
+                        <!-- Selected scholars will be listed here -->
                     </div>
-                `;
-                documentsSection.appendChild(periodInfo);
-                
-                // Create documents grid
-                const documentsGrid = document.createElement('div');
-                documentsGrid.className = 'grid grid-cols-1 md:grid-cols-3 gap-4';
-                documentsGrid.id = 'documentsGrid';
-                
-                const documentTypes = [
-                    { key: 'renewal_cert_of_reg', name: 'Certificate of Registration', color: 'blue' },
-                    { key: 'renewal_grade_slip', name: 'Grade Slip', color: 'green' },
-                    { key: 'renewal_brgy_indigency', name: 'Barangay Indigency', color: 'purple' }
-                ];
-                
-                documentTypes.forEach((docType, index) => {
-                    const docContainer = document.createElement('div');
-                    docContainer.className = 'border-2 border-gray-300 rounded-lg p-4 bg-white transition-all duration-300 hover:border-blue-300 document-container';
-                    docContainer.setAttribute('data-doc-id', index + 1);
-                    
-                    const latestDocument = periodData.documents[0]; // Get the latest submission for this period
-                    
-                    const colorClasses = {
-                        blue: 'bg-blue-100 text-blue-800',
-                        green: 'bg-green-100 text-green-800',
-                        purple: 'bg-purple-100 text-purple-800'
-                    };
-                    
-                    let previewContent = '<span class="text-gray-500 text-sm">No document available</span>';
-                    let downloadButton = '';
-                    
-                    if (latestDocument[docType.key]) {
-                        const fileUrl = latestDocument[docType.key];
-                        previewContent = `<iframe src="${fileUrl}" class="w-full h-full border-0" style="min-height: 200px;"></iframe>`;
-                        downloadButton = `
-                            <a href="${fileUrl}" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center mt-3">
-                                <i class="fas fa-download mr-2"></i>Download
-                            </a>
-                        `;
-                    }
-                    
-                // Gawing almost full height agad
-            docContainer.innerHTML = `
-                <div class="flex justify-between items-center mb-3">
-                    <h5 class="font-semibold text-gray-700 flex items-center">
-                        <span class="${colorClasses[docType.color]} text-xs font-bold px-2 py-1 rounded mr-2">${index + 1}</span>
-                        ${docType.name}
-                    </h5>
-                    <button class="text-blue-600 hover:text-blue-800 text-sm transition-colors expand-btn" title="Expand Document">
-                        <i class="fas fa-expand"></i>
-                    </button>
+                    <input type="hidden" name="selected_emails" id="selectedSmsEmailsInput">
                 </div>
-                <div class="mb-3 h-96 border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300 document-preview">
-                    ${previewContent}
+
+                <!-- SMS Type Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">SMS Type</label>
+                    <div class="flex space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="sms_type" value="plain" checked 
+                                   class="sms-type-radio text-purple-600 focus:ring-purple-500">
+                            <span class="ml-2 text-sm text-gray-700">Plain Text</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="sms_type" value="schedule"
+                                   class="sms-type-radio text-purple-600 focus:ring-purple-500">
+                            <span class="ml-2 text-sm text-gray-700">Schedule</span>
+                        </label>
+                    </div>
                 </div>
-                ${downloadButton}
-            `; 
-                    documentsGrid.appendChild(docContainer);
+
+                <!-- SMS Message -->
+                <div id="smsMessageContainer">
+                    <label for="smsMessage" class="block text-sm font-medium text-gray-700 mb-2">SMS Message</label>
+                    <textarea id="smsMessage" name="message" rows="4"  maxlength="160"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                              placeholder="Enter your SMS message (max 160 characters)..."></textarea>
+                    <div class="text-sm text-gray-500 mt-1">
+                        <span id="smsCharCount">0</span>/160 characters
+                    </div>
+                </div>
+
+                <!-- Schedule Fields (Hidden by Default) -->
+                <div id="scheduleFields" class="hidden mb-4 space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div>
+                        <label for="scheduleWhat" class="block text-sm font-medium text-gray-700 mb-2">What (Event/Activity)</label>
+                        <input type="text" id="scheduleWhat" name="schedule_what"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                               placeholder="e.g., Scholarship Orientation, Interview">
+                    </div>
+                    
+                    <div>
+                        <label for="scheduleWhere" class="block text-sm font-medium text-gray-700 mb-2">Where (Location)</label>
+                        <input type="text" id="scheduleWhere" name="schedule_where"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                               placeholder="e.g., LYDO Office, City Hall">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="scheduleDate" class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                            <input type="date" id="scheduleDate" name="schedule_date"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                        
+                        <div>
+                            <label for="scheduleTime" class="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                            <input type="time" id="scheduleTime" name="schedule_time"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SMS Options -->
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-3">SMS Options</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="sms_send_type" value="bulk" checked class="text-purple-600 focus:ring-purple-500">
+                            <span class="ml-2 text-sm text-gray-700">Send to all selected scholars</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="sms_send_type" value="individual" class="text-purple-600 focus:ring-purple-500">
+                            <span class="ml-2 text-sm text-gray-700">Send individual SMS to each scholar</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-6 border-t border-gray-200 mt-6 space-x-3">
+                <button type="button" id="cancelSendSms" class="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" class="px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors">
+                    <i class="fas fa-paper-plane mr-2"></i>Send SMS
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Global variables for checkbox management
+let selectAllCheckbox = null;
+let scholarCheckboxes = [];
+let sendEmailBtn = null;
+let sendSmsBtn = null;
+
+// Initialize checkbox system
+function initializeCheckboxSystem() {
+    selectAllCheckbox = document.getElementById('selectAll');
+    scholarCheckboxes = document.querySelectorAll('.scholar-checkbox');
+    sendEmailBtn = document.getElementById('sendEmailBtn');
+    sendSmsBtn = document.getElementById('sendSmsBtn');
+
+    // Initialize select all checkbox
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', handleSelectAllChange);
+    }
+
+    // Initialize individual checkboxes
+    scholarCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', handleCheckboxChange);
+    });
+
+    // Initial button state update
+    updateButtonStates();
+    updateSelectAllState();
+}
+
+// Handle select all checkbox change
+function handleSelectAllChange() {
+    const visibleCheckboxes = getVisibleCheckboxes();
+    visibleCheckboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+    updateButtonStates();
+}
+
+// Handle individual checkbox change
+function handleCheckboxChange() {
+    updateButtonStates();
+    updateSelectAllState();
+}
+
+// Update button visibility and state
+function updateButtonStates() {
+    const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+    const hasSelection = selectedCheckboxes.length > 0;
+
+    console.log('Selected checkboxes:', selectedCheckboxes.length); // Debug log
+
+    // Update Email Button
+    if (sendEmailBtn) {
+        sendEmailBtn.disabled = !hasSelection;
+        if (hasSelection) {
+            sendEmailBtn.classList.remove('hidden');
+        } else {
+            sendEmailBtn.classList.add('hidden');
+        }
+    }
+
+    // Update SMS Button
+    if (sendSmsBtn) {
+        sendSmsBtn.disabled = !hasSelection;
+        if (hasSelection) {
+            sendSmsBtn.classList.remove('hidden');
+        } else {
+            sendSmsBtn.classList.add('hidden');
+        }
+    }
+}
+
+// Update select all checkbox state
+function updateSelectAllState() {
+    if (!selectAllCheckbox) return;
+
+    const visibleCheckboxes = getVisibleCheckboxes();
+    const checkedVisibleCheckboxes = getCheckedVisibleCheckboxes();
+
+    if (visibleCheckboxes.length === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    } else if (checkedVisibleCheckboxes.length === visibleCheckboxes.length) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else if (checkedVisibleCheckboxes.length > 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    }
+}
+
+// Helper functions
+function getVisibleCheckboxes() {
+    return document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox');
+}
+
+function getCheckedVisibleCheckboxes() {
+    return document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox:checked');
+}
+
+// Send Email Modal functionality
+function initializeEmailModal() {
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
+    if (sendEmailBtn) {
+        sendEmailBtn.addEventListener('click', function() {
+            const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+            if (selectedCheckboxes.length === 0) {
+                Swal.fire({
+                    title: 'No Scholars Selected',
+                    text: 'Please select at least one scholar to send an email.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
                 });
-                
-                documentsSection.appendChild(documentsGrid);
-                
-                // Re-attach expand functionality
-                attachExpandFunctionality();
+                return;
             }
 
-            // Attach expand functionality to document previews
-            function attachExpandFunctionality() {
-                let currentlyExpandedDoc = null;
-                
-                document.querySelectorAll('.expand-btn').forEach((button, index) => {
-                    const preview = button.closest('.document-container').querySelector('.document-preview');
-                    const icon = button.querySelector('i');
-                    const container = preview.closest('.border-2');
-                    const documentsGrid = document.getElementById('documentsGrid');
-                    const modal = document.getElementById('documentModal');
-                    
-                    // Set initial collapsed state
-                    preview.classList.remove('expanded');
-                    preview.style.maxHeight = '200px';
-                    icon.className = 'fas fa-expand';
-                    button.title = 'Expand Document';
-                    
-                    button.addEventListener('click', function() {
-                        const isExpanded = preview.classList.contains('expanded');
-                        
-                        if (isExpanded) {
-                            // Collapse current document
-                            preview.classList.remove('expanded');
-                            preview.style.maxHeight = '200px';
-                            container.classList.remove('md:col-span-3', 'col-span-1');
-                            documentsGrid.classList.remove('grid-cols-1');
-                            documentsGrid.classList.add('md:grid-cols-3');
-                            icon.className = 'fas fa-expand';
-                            button.title = 'Expand Document';
-                            currentlyExpandedDoc = null;
-                        } else {
-                            // If another document is expanded, collapse it first
-                            if (currentlyExpandedDoc !== null && currentlyExpandedDoc !== index) {
-                                const prevButton = document.querySelectorAll('.expand-btn')[currentlyExpandedDoc];
-                                const prevPreview = prevButton.closest('.document-container').querySelector('.document-preview');
-                                const prevContainer = prevPreview.closest('.border-2');
-                                const prevIcon = prevButton.querySelector('i');
-                                
-                                prevPreview.classList.remove('expanded');
-                                prevPreview.style.maxHeight = '200px';
-                                prevContainer.classList.remove('md:col-span-3', 'col-span-1');
-                                prevIcon.className = 'fas fa-expand';
-                                prevButton.title = 'Expand Document';
-                            }
-                            
-                            // Expand current document
-                            preview.classList.add('expanded');
-                            preview.style.maxHeight = 'none';
-                            container.classList.add('md:col-span-3', 'col-span-1');
-                            documentsGrid.classList.remove('md:grid-cols-3');
-                            documentsGrid.classList.add('grid-cols-1');
-                            icon.className = 'fas fa-compress';
-                            button.title = 'Collapse Document';
-                            currentlyExpandedDoc = index;
-                        }
-                    });
-                });
-            }
-            // Add this to your existing JavaScript
-            document.addEventListener('DOMContentLoaded', function() {
-                // Get filter elements
-                const searchInput = document.getElementById('searchInput');
-                const barangaySelect = document.getElementById('barangaySelect');
-                const academicYearSelect = document.getElementById('academicYearSelect');
-                const statusSelect = document.getElementById('statusSelect');
-                
-                // Add event listeners for real-time filtering
-                searchInput.addEventListener('input', debounce(applyFilters, 500));
-                barangaySelect.addEventListener('change', applyFilters);
-                academicYearSelect.addEventListener('change', applyFilters);
-                statusSelect.addEventListener('change', applyFilters);
-                
-            function applyFilters() {
-                const searchValue = searchInput.value.toLowerCase();
-                const barangayValue = barangaySelect.value;
-                const academicYearValue = academicYearSelect.value;
-                const statusValue = statusSelect.value;
+            const selectedScholars = [];
+            const selectedEmails = [];
 
-                const rows = document.querySelectorAll('.scholar-row');
-                let visibleCount = 0;
+            selectedCheckboxes.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                const name = row.querySelector('td:nth-child(2) div').textContent.trim();
+                const email = checkbox.value;
 
-                rows.forEach(row => {
-                    const name = row.querySelector('td:nth-child(2) div').textContent.toLowerCase();
-                    const barangay = row.querySelector('td:nth-child(3) div').textContent;
-                    const academicYear = row.querySelector('td:nth-child(7) div').textContent;
-                    const statusElement = row.querySelector('td:nth-child(8) span');
-
-                    // Get status and normalize to lowercase for comparison
-                    let statusText = '';
-                    if (statusElement) {
-                        statusText = statusElement.textContent.trim().toLowerCase();
-                    }
-
-                    // Check if row matches all filters
-                    const matchesSearch = !searchValue || name.includes(searchValue);
-                    const matchesBarangay = !barangayValue || barangay === barangayValue;
-                    const matchesAcademicYear = !academicYearValue || academicYear === academicYearValue;
-
-                    // Fixed status matching logic
-                    let matchesStatus = true;
-                    if (statusValue !== 'all') {
-                        matchesStatus = statusText === statusValue.toLowerCase();
-                    }
-
-                    if (matchesSearch && matchesBarangay && matchesAcademicYear && matchesStatus) {
-                        row.style.display = '';
-                        visibleCount++;
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-
-                // Show no results message if needed
-                showNoResultsMessage(visibleCount === 0);
-
-                // Update select all checkbox
-                updateSelectAllCheckbox();
-                updateSendButton();
-            }
-
-                function showNoResultsMessage(show) {
-                    let noResultsRow = document.querySelector('.no-results-row');
-                    
-                    if (show && !noResultsRow) {
-                        noResultsRow = document.createElement('tr');
-                        noResultsRow.className = 'no-results-row';
-                        noResultsRow.innerHTML = `
-                            <td colspan="9" class="text-center py-4 border border-gray-200 text-gray-500">
-                                No scholars found matching your filters.
-                            </td>
-                        `;
-                        document.querySelector('tbody').appendChild(noResultsRow);
-                    } else if (!show && noResultsRow) {
-                        noResultsRow.remove();
-                    }
-                }
-                
-                    function updateSelectAllCheckbox() {
-                        const selectAll = document.getElementById('selectAll');
-                        const visibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox');
-                        const checkedVisibleCheckboxes = document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox:checked');
-                        
-                        if (visibleCheckboxes.length === 0) {
-                            selectAll.checked = false;
-                            selectAll.indeterminate = false;
-                        } else if (checkedVisibleCheckboxes.length === visibleCheckboxes.length) {
-                            selectAll.checked = true;
-                            selectAll.indeterminate = false;
-                        } else if (checkedVisibleCheckboxes.length > 0) {
-                            selectAll.checked = false;
-                            selectAll.indeterminate = true;
-                        } else {
-                            selectAll.checked = false;
-                            selectAll.indeterminate = false;
-                        }
-                        
-                        // Update email button visibility
-                        updateEmailButton();
-                    }
-                
-                // Debounce function to limit how often the filter runs during typing
-                function debounce(func, wait) {
-                    let timeout;
-                    return function executedFunction(...args) {
-                        const later = () => {
-                            clearTimeout(timeout);
-                            func(...args);
-                        };
-                        clearTimeout(timeout);
-                        timeout = setTimeout(later, wait);
-                    };
-                }
-                
-                // Initialize filters on page load
-                applyFilters();
-            });
-                        </script>
-
-            <script>
-            // Print to PDF functionality
-            document.getElementById('printPdfBtn').addEventListener('click', function() {
-                // Get current filter values
-                const searchValue = document.getElementById('searchInput').value;
-                const barangayValue = document.getElementById('barangaySelect').value;
-                const academicYearValue = document.getElementById('academicYearSelect').value;
-                const statusValue = document.getElementById('statusSelect').value;
-
-                // Build query parameters
-                const params = new URLSearchParams();
-
-                if (searchValue) params.append('search', searchValue);
-                if (barangayValue) params.append('barangay', barangayValue);
-                if (academicYearValue) params.append('academic_year', academicYearValue);
-                if (statusValue && statusValue !== 'all') params.append('status', statusValue);
-
-                // Generate PDF URL
-                const pdfUrl = `/lydo_admin/generate-scholars-pdf?${params.toString()}`;
-
-                // Show loading state
-                const originalText = this.innerHTML;
-                this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating PDF...';
-                this.disabled = true;
-
-                // Open PDF in new tab
-                const newWindow = window.open(pdfUrl, '_blank');
-
-                // Reset button after a delay
-                setTimeout(() => {
-                    this.innerHTML = originalText;
-                    this.disabled = false;
-                }, 3000);
-
-                setTimeout(() => {
-                    if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-                        Swal.fire({
-                            title: 'PDF Generated',
-                            text: 'Your PDF is ready. If it didn\'t open automatically, check your browser\'s pop-up settings.',
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        });
-                    }
-                }, 2000);
+                selectedScholars.push(name);
+                selectedEmails.push(email);
             });
 
+            // Populate modal
+            const scholarsList = document.getElementById('selectedScholarsList');
+            scholarsList.innerHTML = selectedScholars.map(name => `<div class="mb-1">• ${name}</div>`).join('');
 
-            </script>
+            document.getElementById('selectedEmailsInput').value = selectedEmails.join(',');
+
+            // Show modal
+            document.getElementById('sendEmailModal').classList.remove('hidden');
+        });
+    }
+}
+
+// Send SMS Modal functionality
+function initializeSmsModal() {
+    const sendSmsBtn = document.getElementById('sendSmsBtn');
+    if (sendSmsBtn) {
+        sendSmsBtn.addEventListener('click', function() {
+            const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+            if (selectedCheckboxes.length === 0) {
+                Swal.fire({
+                    title: 'No Scholars Selected',
+                    text: 'Please select at least one scholar to send an SMS.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            const selectedScholars = [];
+            const selectedEmails = [];
+
+            selectedCheckboxes.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                const name = row.querySelector('td:nth-child(2) div').textContent.trim();
+                const email = checkbox.value;
+
+                selectedScholars.push(name);
+                selectedEmails.push(email);
+            });
+
+            // Populate modal
+            const scholarsList = document.getElementById('selectedSmsScholarsList');
+            scholarsList.innerHTML = selectedScholars.map(name => `<div class="mb-1">• ${name}</div>`).join('');
+
+            document.getElementById('selectedSmsEmailsInput').value = selectedEmails.join(',');
             
-            <script>
-            // Send Email Modal functionality
-            document.getElementById('sendEmailBtn').addEventListener('click', function() {
-                const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
-                if (selectedCheckboxes.length === 0) {
+            // Reset form
+            document.getElementById('smsMessage').value = '';
+            document.getElementById('smsCharCount').textContent = '0';
+            
+            // Show modal
+            document.getElementById('sendSmsModal').classList.remove('hidden');
+        });
+    }
+}
+
+// SMS Character Count
+function initializeSmsCharacterCount() {
+    const smsMessage = document.getElementById('smsMessage');
+    if (smsMessage) {
+        smsMessage.addEventListener('input', function() {
+            const length = this.value.length;
+            const charCount = document.getElementById('smsCharCount');
+            
+            if (charCount) {
+                charCount.textContent = length;
+                
+                if (length > 160) {
+                    charCount.classList.add('text-red-600');
+                } else {
+                    charCount.classList.remove('text-red-600');
+                }
+            }
+        });
+    }
+}
+
+// Modal close functionality
+function initializeModalClose() {
+    // Close Send Email Modal
+    const closeSendEmailModal = document.getElementById('closeSendEmailModal');
+    if (closeSendEmailModal) {
+        closeSendEmailModal.addEventListener('click', function() {
+            document.getElementById('sendEmailModal').classList.add('hidden');
+        });
+    }
+
+    const cancelSendEmail = document.getElementById('cancelSendEmail');
+    if (cancelSendEmail) {
+        cancelSendEmail.addEventListener('click', function() {
+            document.getElementById('sendEmailModal').classList.add('hidden');
+        });
+    }
+
+    // Close Send SMS Modal
+    const closeSendSmsModal = document.getElementById('closeSendSmsModal');
+    if (closeSendSmsModal) {
+        closeSendSmsModal.addEventListener('click', function() {
+            document.getElementById('sendSmsModal').classList.add('hidden');
+        });
+    }
+
+    const cancelSendSms = document.getElementById('cancelSendSms');
+    if (cancelSendSms) {
+        cancelSendSms.addEventListener('click', function() {
+            document.getElementById('sendSmsModal').classList.add('hidden');
+        });
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(e) {
+        const smsModal = document.getElementById('sendSmsModal');
+        const emailModal = document.getElementById('sendEmailModal');
+        
+        if (e.target === smsModal) {
+            smsModal.classList.add('hidden');
+        }
+        if (e.target === emailModal) {
+            emailModal.classList.add('hidden');
+        }
+    });
+}
+
+// Handle Send Email Form Submission
+function initializeEmailForm() {
+    const sendEmailForm = document.getElementById('sendEmailForm');
+    if (sendEmailForm) {
+        sendEmailForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+            submitBtn.disabled = true;
+
+            // Submit form via AJAX
+            fetch('/lydo_admin/send-email-to-scholars', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
                     Swal.fire({
-                        title: 'No Scholars Selected',
-                        text: 'Please select at least one scholar to send an email.',
+                        title: 'Email Sent Successfully!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
+                    document.getElementById('sendEmailModal').classList.add('hidden');
+                    // Reset form
+                    this.reset();
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message || 'Failed to send email.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while sending the email.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            })
+            .finally(() => {
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    }
+}
+
+// Handle Send SMS Form Submission
+function initializeSmsForm() {
+    const sendSmsForm = document.getElementById('sendSmsForm');
+    if (sendSmsForm) {
+        sendSmsForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const message = document.getElementById('smsMessage').value.trim();
+            const smsType = document.querySelector('input[name="sms_type"]:checked').value;
+            
+            // Validate schedule fields if schedule type is selected
+            if (smsType === 'schedule') {
+                const scheduleWhat = document.getElementById('scheduleWhat').value.trim();
+                const scheduleWhere = document.getElementById('scheduleWhere').value.trim();
+                const scheduleDate = document.getElementById('scheduleDate').value;
+                const scheduleTime = document.getElementById('scheduleTime').value;
+                
+                if (!scheduleWhat || !scheduleWhere || !scheduleDate || !scheduleTime) {
+                    Swal.fire({
+                        title: 'Missing Schedule Information!',
+                        text: 'Please fill in all schedule fields (What, Where, Date, and Time).',
                         icon: 'warning',
                         confirmButtonText: 'OK'
                     });
                     return;
                 }
+            }
 
-                const selectedScholars = [];
-                const selectedEmails = [];
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
 
-                selectedCheckboxes.forEach(checkbox => {
-                    const row = checkbox.closest('tr');
-                    const name = row.querySelector('td:nth-child(2) div').textContent.trim();
-                    const email = checkbox.value;
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+            submitBtn.disabled = true;
 
-                    selectedScholars.push(name);
-                    selectedEmails.push(email);
-                });
-
-                // Populate modal
-                const scholarsList = document.getElementById('selectedScholarsList');
-                scholarsList.innerHTML = selectedScholars.map(name => `<div class="mb-1">• ${name}</div>`).join('');
-
-                document.getElementById('selectedEmailsInput').value = selectedEmails.join(',');
-
-                // Show modal
-                document.getElementById('sendEmailModal').classList.remove('hidden');
-            });
-
-            // Close Send Email Modal
-            document.getElementById('closeSendEmailModal').addEventListener('click', function() {
-                document.getElementById('sendEmailModal').classList.add('hidden');
-            });
-
-            document.getElementById('cancelSendEmail').addEventListener('click', function() {
-                document.getElementById('sendEmailModal').classList.add('hidden');
-            });
-
-            // Close modal when clicking outside
-            window.addEventListener('click', function(e) {
-                const modal = document.getElementById('sendEmailModal');
-                if (e.target === modal) {
-                    modal.classList.add('hidden');
+            // Submit form via AJAX
+            fetch('/lydo_admin/send-sms-to-scholars', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
-            });
-
-            // Handle Send Email Form Submission
-            document.getElementById('sendEmailForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                const formData = new FormData(this);
-                const submitBtn = this.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-
-                // Show loading state
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
-                submitBtn.disabled = true;
-
-                // Submit form via AJAX
-                fetch('/lydo_admin/send-email-to-scholars', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'SMS Sent Successfully!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
+                    
+                    // Show detailed results if available
+                    if (data.details && data.details.length > 0) {
+                        const details = data.details.join('\n');
                         Swal.fire({
-                            title: 'Email Sent Successfully!',
-                            text: data.message,
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        });
-                        document.getElementById('sendEmailModal').classList.add('hidden');
-                        // Reset form
-                        this.reset();
-                    } else {
-                        Swal.fire({
-                            title: 'Error',
-                            text: data.message || 'Failed to send email.',
-                            icon: 'error',
-                            confirmButtonText: 'OK'
+                            title: 'SMS Sending Details',
+                            text: details,
+                            icon: 'info',
+                            confirmButtonText: 'OK',
+                            width: '600px'
                         });
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
+                    
+                    document.getElementById('sendSmsModal').classList.add('hidden');
+                    // Reset form
+                    this.reset();
+                    document.getElementById('smsCharCount').textContent = '0';
+                } else {
                     Swal.fire({
                         title: 'Error',
-                        text: 'An error occurred while sending the email.',
+                        text: data.message || 'Failed to send SMS.',
                         icon: 'error',
                         confirmButtonText: 'OK'
                     });
-                })
-                .finally(() => {
-                    // Reset button
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                });
-            });
-
-            // Update Send Email Button State
-            function updateSendButton() {
-                const sendEmailBtn = document.getElementById('sendEmailBtn');
-                const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
-
-                if (selectedCheckboxes.length > 0) {
-                    sendEmailBtn.disabled = false;
-                    sendEmailBtn.classList.remove('disabled:bg-gray-400', 'disabled:cursor-not-allowed');
-                } else {
-                    sendEmailBtn.disabled = true;
-                    sendEmailBtn.classList.add('disabled:bg-gray-400', 'disabled:cursor-not-allowed');
                 }
-            }
-
-            // Update Email Button (alias for updateSendButton for consistency)
-            function updateEmailButton() {
-                updateSendButton();
-            }
-
-            // Initialize on page load
-            document.addEventListener('DOMContentLoaded', function() {
-                updateSendButton();
-
-                // Email type pre-fill functionality
-                const emailTypeSelect = document.getElementById('emailType');
-                const emailSubjectInput = document.getElementById('emailSubject');
-                const emailMessageTextarea = document.getElementById('emailMessage');
-
-                emailTypeSelect.addEventListener('change', function() {
-                    if (this.value === 'registration') {
-                        emailSubjectInput.value = 'Account Registration Required';
-                        emailMessageTextarea.value = 'Dear Scholar,\n\nYou are required to complete your account registration to access the scholarship system.\n\nPlease visit the following link to Create your username and password:\n\n{{ route("scholar.scholar_reg") }}\n\nNote: For personalized access, you may receive an individual email with a secure link.\n\nBest regards,\nLYDO Scholarship Team';
-                    } else if (this.value === 'custom') {
-                        // Clear fields for custom emails
-                        emailSubjectInput.value = '';
-                        emailMessageTextarea.value = '';
-                    }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while sending the SMS.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
                 });
+            })
+            .finally(() => {
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
             });
-            </script>
+        });
+    }
+}
 
-            <script src="{{ asset('js/filter_paginate.js') }}"></script>
-            <script src="{{ asset('js/scholar.js') }}"></script>
-            <script src="{{ asset('js/spinner.js') }}"></script>
-            <script src="{{ asset('js/scholar_logout.js') }}"></script>
-            <script src="{{ asset('js/toggle_dropdown.js') }}"></script>
+function initializeSmsTypeToggle() {
+    const smsTypeRadios = document.querySelectorAll('.sms-type-radio');
+    const scheduleFields = document.getElementById('scheduleFields');
+    const smsMessageContainer = document.getElementById('smsMessageContainer');
+    
+    smsTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'schedule') {
+                scheduleFields.classList.remove('hidden');
+                if (smsMessageContainer) smsMessageContainer.classList.add('hidden');
+            } else {
+                scheduleFields.classList.add('hidden');
+                if (smsMessageContainer) smsMessageContainer.classList.remove('hidden');
+            }
+        });
+    });
+
+    // Set initial visibility based on the currently checked radio
+    const selected = document.querySelector('input[name="sms_type"]:checked');
+    if (selected) {
+        if (selected.value === 'schedule') {
+            scheduleFields.classList.remove('hidden');
+            if (smsMessageContainer) smsMessageContainer.classList.add('hidden');
+        } else {
+            scheduleFields.classList.add('hidden');
+            if (smsMessageContainer) smsMessageContainer.classList.remove('hidden');
+        }
+    }
+}
+
+// Initialize everything when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize main functionality
+    initializeScholarData();
+    initializeScholarPagination();
+    initializeScholarFiltering();
+    
+    // Initialize checkbox and button system
+    initializeCheckboxSystem();
+    initializeEmailModal();
+    initializeSmsModal();
+    initializeSmsCharacterCount();
+    initializeModalClose();
+    initializeEmailForm();
+    initializeSmsForm();
+    
+    // ✅ DAGDAGIN ITO - Initialize SMS type toggle
+    initializeSmsTypeToggle();
+    
+    // Email type pre-fill functionality
+    const emailTypeSelect = document.getElementById('emailType');
+    const emailSubjectInput = document.getElementById('emailSubject');
+    const emailMessageTextarea = document.getElementById('emailMessage');
+
+    if (emailTypeSelect && emailSubjectInput && emailMessageTextarea) {
+        emailTypeSelect.addEventListener('change', function() {
+            if (this.value === 'registration') {
+                emailSubjectInput.value = 'Account Registration Required';
+                emailMessageTextarea.value = 'Dear Scholar,\n\nYou are required to complete your account registration to access the scholarship system.\n\nPlease visit the following link to Create your username and password:\n\n{{ route("scholar.scholar_reg") }}\n\nNote: For personalized access, you may receive an individual email with a secure link.\n\nBest regards,\nLYDO Scholarship Team';
+            } else if (this.value === 'custom') {
+                // Clear fields for custom emails
+                emailSubjectInput.value = '';
+                emailMessageTextarea.value = '';
+            }
+        });
+    }
+});
+// Global pagination state
+const paginationState = {
+    currentPage: 1,
+    rowsPerPage: 15,
+    allRows: [],
+    filteredRows: []
+};
+
+// Function to get full name for sorting
+function getFullNameForSorting(row) {
+    const nameCell = row.cells[1];
+    if (!nameCell) return '';
+    return nameCell.textContent.trim().toLowerCase();
+}
+
+// Function to sort rows alphabetically by last name
+function sortRowsAlphabetically(rows) {
+    return rows.sort((a, b) => {
+        const nameA = getFullNameForSorting(a);
+        const nameB = getFullNameForSorting(b);
+        return nameA.localeCompare(nameB);
+    });
+}
+
+// Initialize data from the table
+function initializeScholarData() {
+    const tableRows = Array.from(document.querySelectorAll('table tbody tr'));
+    paginationState.allRows = tableRows.filter(row => !row.querySelector('td[colspan]'));
+    
+    // Sort rows alphabetically by last name
+    paginationState.allRows = sortRowsAlphabetically(paginationState.allRows);
+    paginationState.filteredRows = [...paginationState.allRows];
+}
+
+// Initialize pagination
+function initializeScholarPagination() {
+    updateScholarPagination();
+}
+
+function updateScholarPagination() {
+    const state = paginationState;
+    const container = document.getElementById('paginationContainer');
+    
+    if (!container) return;
+    
+    // Hide all rows first
+    state.allRows.forEach(row => {
+        row.style.display = 'none';
+    });
+    
+    // Calculate pagination for filtered rows
+    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
+    const endIndex = startIndex + state.rowsPerPage;
+    const pageRows = state.filteredRows.slice(startIndex, endIndex);
+    
+    // Show only rows for current page
+    pageRows.forEach(row => {
+        row.style.display = '';
+    });
+    
+    // Update pagination controls
+    const totalPages = Math.max(1, Math.ceil(state.filteredRows.length / state.rowsPerPage));
+    const startItem = state.filteredRows.length === 0 ? 0 : Math.min((state.currentPage - 1) * state.rowsPerPage + 1, state.filteredRows.length);
+    const endItem = Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
+    
+    container.innerHTML = `
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-sm text-gray-600">
+                Showing <span class="font-semibold">${startItem}-${endItem}</span> of <span class="font-semibold">${state.filteredRows.length}</span> scholars
+            </div>
+            
+            <div class="flex items-center space-x-1">
+                <!-- First Page -->
+                <button onclick="changeScholarPage(1)"
+                    class="px-3 py-2 text-sm font-medium rounded-l-md border border-gray-300 ${state.currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'}"
+                    ${state.currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+
+                <!-- Previous Page -->
+                <button onclick="changeScholarPage(${state.currentPage - 1})"
+                    class="px-3 py-2 text-sm font-medium border border-gray-300 ${state.currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'}"
+                    ${state.currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-left"></i>
+                </button>
+
+                <!-- Page Info -->
+                <div class="flex items-center px-4 py-2 text-sm text-gray-700 border border-gray-300 bg-white">
+                    Page
+                    <input type="number"
+                           class="mx-2 w-12 text-center border border-gray-300 rounded px-1 py-1 text-sm"
+                           value="${state.currentPage}"
+                           min="1"
+                           max="${totalPages}"
+                           onchange="goToScholarPage(this.value)">
+                    of ${totalPages}
+                </div>
+
+                <!-- Next Page -->
+                <button onclick="changeScholarPage(${state.currentPage + 1})"
+                    class="px-3 py-2 text-sm font-medium border border-gray-300 ${state.currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'}"
+                    ${state.currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-angle-right"></i>
+                </button>
+
+                <!-- Last Page -->
+                <button onclick="changeScholarPage(${totalPages})"
+                    class="px-3 py-2 text-sm font-medium rounded-r-md border border-gray-300 ${state.currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'}"
+                    ${state.currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Reinitialize checkbox listeners and update button/select-all states
+    // (necessary because changing visible rows can affect checkbox elements)
+    initializeCheckboxSystem();
+    updateButtonStates();
+    updateSelectAllState();
+}
+// Change page
+function changeScholarPage(page) {
+    const state = paginationState;
+    // Ensure totalPages is at least 1 to avoid invalid page 0
+    const totalPages = Math.max(1, Math.ceil(state.filteredRows.length / state.rowsPerPage));
+    
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updateScholarPagination();
+}
+
+// Go to specific page
+function goToScholarPage(page) {
+    const state = paginationState;
+    // Ensure totalPages is at least 1 to avoid invalid page 0
+    const totalPages = Math.max(1, Math.ceil(state.filteredRows.length / state.rowsPerPage));
+    
+    page = parseInt(page);
+    if (isNaN(page) || page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    
+    state.currentPage = page;
+    updateScholarPagination();
+}
+
+// Initialize filtering functionality
+function initializeScholarFiltering() {
+    const searchInput = document.getElementById('searchInput');
+    const barangaySelect = document.getElementById('barangaySelect');
+    const academicYearSelect = document.getElementById('academicYearSelect');
+    const statusSelect = document.getElementById('statusSelect');
+
+    function filterScholarTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedBarangay = barangaySelect.value;
+        const selectedAcademicYear = academicYearSelect.value;
+        const selectedStatus = statusSelect.value.toLowerCase();
+
+        const filteredRows = paginationState.allRows.filter(row => {
+            const nameCell = row.cells[1];
+            const barangayCell = row.cells[2];
+            const academicYearCell = row.cells[6];
+            const statusCell = row.cells[7];
+
+            if (!nameCell || !barangayCell || !academicYearCell || !statusCell) return false;
+
+            const name = nameCell.textContent.toLowerCase();
+            const barangay = barangayCell.textContent.trim();
+            const academicYear = academicYearCell.textContent.trim();
+            const status = statusCell.textContent.trim().toLowerCase();
+
+            const nameMatch = name.includes(searchTerm);
+            const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+            const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
+            const statusMatch = selectedStatus === 'all' || status === selectedStatus;
+
+            return nameMatch && barangayMatch && academicYearMatch && statusMatch;
+        });
+
+        // Sort filtered results alphabetically
+        const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
+
+        // Update filtered rows and reset to page 1
+        paginationState.filteredRows = sortedFilteredRows;
+        paginationState.currentPage = 1;
+        updateScholarPagination();
+        
+        // Reset select all checkbox
+        document.getElementById('selectAll').checked = false;
+        document.getElementById('selectAll').indeterminate = false;
+        
+        // Update button states
+        updateButtonStates();
+    }
+
+    // Add event listeners with debouncing
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(filterScholarTable, 300));
+    }
+    if (barangaySelect) {
+        barangaySelect.addEventListener('change', filterScholarTable);
+    }
+    if (academicYearSelect) {
+        academicYearSelect.addEventListener('change', filterScholarTable);
+    }
+    if (statusSelect) {
+        statusSelect.addEventListener('change', filterScholarTable);
+    }
+}
+
+// Debounce function for search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Document Modal functionality
+function openDocumentModal(scholarId) {
+    const modal = document.getElementById('documentModal');
+    const scholarName = document.getElementById('docScholarName');
+    const scholarEmail = document.getElementById('docScholarEmail');
+    const academicPeriodTabs = document.getElementById('academicPeriodTabs');
+    const documentsSection = document.getElementById('documentsSection');
+    const noDocumentsMessage = document.getElementById('noDocumentsMessage');
+
+    // Reset modal content
+    scholarName.textContent = '-';
+    scholarEmail.textContent = '-';
+    academicPeriodTabs.innerHTML = '';
+    documentsSection.innerHTML = '';
+    noDocumentsMessage.classList.add('hidden');
+
+    // Get scholar info from table
+    const scholarRow = document.querySelector(`.scholar-checkbox[data-scholar-id="${scholarId}"]`).closest('tr');
+    const scholarNameFromTable = scholarRow.querySelector('td:nth-child(2) div').textContent.trim();
+    const scholarEmailFromTable = scholarRow.querySelector('td:nth-child(4) div').textContent.trim();
+
+    scholarName.textContent = scholarNameFromTable;
+    scholarEmail.textContent = scholarEmailFromTable;
+
+    // Attach close event listeners
+    attachModalCloseListeners();
+
+    // Show modal
+    modal.classList.remove('hidden');
+
+    // Fetch scholar documents grouped by academic period
+    fetch(`/lydo_admin/get-scholar-documents/${scholarId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.documents.length > 0) {
+                // Group documents by academic year and semester
+                const groupedDocuments = groupDocumentsByAcademicPeriod(data.documents);
+
+                // Create tabs for each academic period
+                createAcademicPeriodTabs(groupedDocuments, scholarId);
+
+                // Load first tab by default
+                if (Object.keys(groupedDocuments).length > 0) {
+                    const firstPeriod = Object.keys(groupedDocuments)[0];
+                    loadDocumentsForPeriod(groupedDocuments[firstPeriod], firstPeriod);
+                }
+            } else {
+                noDocumentsMessage.classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching documents:', error);
+        });
+}
+
+// Function to attach modal close listeners
+function attachModalCloseListeners() {
+    // Close document modal
+    document.getElementById('closeDocumentModal').addEventListener('click', function() {
+        document.getElementById('documentModal').classList.add('hidden');
+    });
+
+    document.getElementById('closeDocument').addEventListener('click', function() {
+        document.getElementById('documentModal').classList.add('hidden');
+    });
+}
+
+// Group documents by academic year and semester
+function groupDocumentsByAcademicPeriod(documents) {
+    const grouped = {};
+    
+    documents.forEach(doc => {
+        const key = `${doc.renewal_acad_year}-${doc.renewal_semester}`;
+        if (!grouped[key]) {
+            grouped[key] = {
+                academicYear: doc.renewal_acad_year,
+                semester: doc.renewal_semester,
+                dateSubmitted: doc.date_submitted,
+                documents: []
+            };
+        }
+        grouped[key].documents.push(doc);
+    });
+    
+    return grouped;
+}
+
+// Create tabs for academic periods
+function createAcademicPeriodTabs(groupedDocuments, scholarId) {
+    const tabsContainer = document.getElementById('academicPeriodTabs');
+    
+    Object.keys(groupedDocuments).forEach((periodKey, index) => {
+        const period = groupedDocuments[periodKey];
+        const tab = document.createElement('button');
+        tab.className = `px-4 py-2 rounded-lg border transition-colors ${
+            index === 0 
+            ? 'bg-blue-600 text-white border-blue-600' 
+            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+        }`;
+        tab.textContent = `${period.semester} - ${period.academicYear}`;
+        tab.setAttribute('data-period', periodKey);
+        
+        tab.addEventListener('click', function() {
+            // Update active tab
+            document.querySelectorAll('#academicPeriodTabs button').forEach(btn => {
+                btn.className = 'px-4 py-2 rounded-lg border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 transition-colors';
+            });
+            this.className = 'px-4 py-2 rounded-lg border bg-blue-600 text-white border-blue-600 transition-colors';
+            
+            // Load documents for selected period
+            loadDocumentsForPeriod(groupedDocuments[periodKey], periodKey);
+        });
+        
+        tabsContainer.appendChild(tab);
+    });
+}
+
+// Load documents for specific academic period
+function loadDocumentsForPeriod(periodData, periodKey) {
+    const documentsSection = document.getElementById('documentsSection');
+    const noDocumentsMessage = document.getElementById('noDocumentsMessage');
+    
+    documentsSection.innerHTML = '';
+    
+    if (periodData.documents.length === 0) {
+        noDocumentsMessage.classList.remove('hidden');
+        return;
+    }
+    
+    noDocumentsMessage.classList.add('hidden');
+    
+    // Create period info
+    const periodInfo = document.createElement('div');
+    periodInfo.className = 'bg-green-50 border border-green-200 rounded-lg p-4 mb-4';
+    periodInfo.innerHTML = `
+        <h4 class="text-lg font-semibold text-green-800 mb-2">Academic Period: ${periodData.semester} - ${periodData.academicYear}</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+            <div><span class="font-medium text-green-700">Date Submitted:</span> ${periodData.dateSubmitted || 'N/A'}</div>
+        </div>
+    `;
+    documentsSection.appendChild(periodInfo);
+    
+    // Create documents grid
+    const documentsGrid = document.createElement('div');
+    documentsGrid.className = 'grid grid-cols-1 md:grid-cols-3 gap-4';
+    documentsGrid.id = 'documentsGrid';
+    
+    const documentTypes = [
+        { key: 'renewal_cert_of_reg', name: 'Certificate of Registration', color: 'blue' },
+        { key: 'renewal_grade_slip', name: 'Grade Slip', color: 'green' },
+        { key: 'renewal_brgy_indigency', name: 'Barangay Indigency', color: 'purple' }
+    ];
+    
+    documentTypes.forEach((docType, index) => {
+        const docContainer = document.createElement('div');
+        docContainer.className = 'border-2 border-gray-300 rounded-lg p-4 bg-white transition-all duration-300 hover:border-blue-300 document-container';
+        docContainer.setAttribute('data-doc-id', index + 1);
+        
+        const latestDocument = periodData.documents[0]; // Get the latest submission for this period
+        
+        const colorClasses = {
+            blue: 'bg-blue-100 text-blue-800',
+            green: 'bg-green-100 text-green-800',
+            purple: 'bg-purple-100 text-purple-800'
+        };
+        
+        let previewContent = '<span class="text-gray-500 text-sm">No document available</span>';
+        let downloadButton = '';
+        
+        if (latestDocument[docType.key]) {
+            const fileUrl = latestDocument[docType.key];
+            previewContent = `<iframe src="${fileUrl}" class="w-full h-full border-0" style="min-height: 200px;"></iframe>`;
+            downloadButton = `
+                <a href="${fileUrl}" target="_blank" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center mt-3">
+                    <i class="fas fa-download mr-2"></i>Download
+                </a>
+            `;
+        }
+        
+    // Gawing almost full height agad
+docContainer.innerHTML = `
+    <div class="flex justify-between items-center mb-3">
+        <h5 class="font-semibold text-gray-700 flex items-center">
+            <span class="${colorClasses[docType.color]} text-xs font-bold px-2 py-1 rounded mr-2">${index + 1}</span>
+            ${docType.name}
+        </h5>
+        <button class="text-blue-600 hover:text-blue-800 text-sm transition-colors expand-btn" title="Expand Document">
+            <i class="fas fa-expand"></i>
+        </button>
+    </div>
+    <div class="mb-3 h-96 border border-gray-200 rounded flex items-center justify-center bg-gray-50 overflow-hidden transition-all duration-300 document-preview">
+        ${previewContent}
+    </div>
+    ${downloadButton}
+`; 
+        documentsGrid.appendChild(docContainer);
+    });
+    
+    documentsSection.appendChild(documentsGrid);
+    
+    // Re-attach expand functionality
+    attachExpandFunctionality();
+}
+
+// Attach expand functionality to document previews
+function attachExpandFunctionality() {
+    let currentlyExpandedDoc = null;
+    
+    document.querySelectorAll('.expand-btn').forEach((button, index) => {
+        const preview = button.closest('.document-container').querySelector('.document-preview');
+        const icon = button.querySelector('i');
+        const container = preview.closest('.border-2');
+        const documentsGrid = document.getElementById('documentsGrid');
+        
+        // Set initial collapsed state
+        preview.classList.remove('expanded');
+        preview.style.maxHeight = '200px';
+        icon.className = 'fas fa-expand';
+        button.title = 'Expand Document';
+        
+        button.addEventListener('click', function() {
+            const isExpanded = preview.classList.contains('expanded');
+            
+            if (isExpanded) {
+                // Collapse current document
+                preview.classList.remove('expanded');
+                preview.style.maxHeight = '200px';
+                container.classList.remove('md:col-span-3', 'col-span-1');
+                documentsGrid.classList.remove('grid-cols-1');
+                documentsGrid.classList.add('md:grid-cols-3');
+                icon.className = 'fas fa-expand';
+                button.title = 'Expand Document';
+                currentlyExpandedDoc = null;
+            } else {
+                // If another document is expanded, collapse it first
+                if (currentlyExpandedDoc !== null && currentlyExpandedDoc !== index) {
+                    const prevButton = document.querySelectorAll('.expand-btn')[currentlyExpandedDoc];
+                    const prevPreview = prevButton.closest('.document-container').querySelector('.document-preview');
+                    const prevContainer = prevPreview.closest('.border-2');
+                    const prevIcon = prevButton.querySelector('i');
+                    
+                    prevPreview.classList.remove('expanded');
+                    prevPreview.style.maxHeight = '200px';
+                    prevContainer.classList.remove('md:col-span-3', 'col-span-1');
+                    prevIcon.className = 'fas fa-expand';
+                    prevButton.title = 'Expand Document';
+                }
+                
+                // Expand current document
+                preview.classList.add('expanded');
+                preview.style.maxHeight = 'none';
+                container.classList.add('md:col-span-3', 'col-span-1');
+                documentsGrid.classList.remove('md:grid-cols-3');
+                documentsGrid.classList.add('grid-cols-1');
+                icon.className = 'fas fa-compress';
+                button.title = 'Collapse Document';
+                currentlyExpandedDoc = index;
+            }
+        });
+    });
+}
+
+// Print to PDF functionality
+document.getElementById('printPdfBtn').addEventListener('click', function() {
+    // Get current filter values
+    const searchValue = document.getElementById('searchInput').value;
+    const barangayValue = document.getElementById('barangaySelect').value;
+    const academicYearValue = document.getElementById('academicYearSelect').value;
+    const statusValue = document.getElementById('statusSelect').value;
+
+    // Build query parameters
+    const params = new URLSearchParams();
+
+    if (searchValue) params.append('search', searchValue);
+    if (barangayValue) params.append('barangay', barangayValue);
+    if (academicYearValue) params.append('academic_year', academicYearValue);
+    if (statusValue && statusValue !== 'all') params.append('status', statusValue);
+
+    // Generate PDF URL
+    const pdfUrl = `/lydo_admin/generate-scholars-pdf?${params.toString()}`;
+
+    // Show loading state
+    const originalText = this.innerHTML;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating PDF...';
+    this.disabled = true;
+
+    // Open PDF in new tab
+    const newWindow = window.open(pdfUrl, '_blank');
+
+    // Reset button after a delay
+    setTimeout(() => {
+        this.innerHTML = originalText;
+        this.disabled = false;
+    }, 3000);
+
+    setTimeout(() => {
+        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+            Swal.fire({
+                title: 'PDF Generated',
+               
+                text: 'Your PDF is ready. If it didn\'t open automatically, check your browser\'s pop-up settings.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+        }
+    }, 2000);
+});
+
+// Toggle dropdown and save state
+function toggleDropdown(id) {
+    const menu = document.getElementById(id);
+    const isHidden = menu.classList.contains("hidden");
+
+    if (isHidden) {
+        menu.classList.remove("hidden");
+        localStorage.setItem(id, "open");
+    } else {
+        menu.classList.add("hidden");
+        localStorage.setItem(id, "closed");
+    }
+}
+
+// Restore dropdown state on page load
+window.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("ul[id]").forEach(menu => {
+        const state = localStorage.getItem(menu.id);
+        if (state === "open") {
+            menu.classList.remove("hidden");
+        }
+    });
+});
+
+// Notification bell functionality
+document.getElementById("notifBell").addEventListener("click", function () {
+    let dropdown = document.getElementById("notifDropdown");
+    dropdown.classList.toggle("hidden");
+
+        // remove badge when opened
+    let notifCount = document.getElementById("notifCount");
+     if (notifCount) {
+         notifCount.remove();
+        }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prefer the consolidated initializer in public/js/filter_paginate.js
+    if (typeof initializeScholarPage === 'function') {
+        initializeScholarPage();
+    } else {
+        // Fallback: initialize core pieces if the consolidated initializer is not loaded
+        if (typeof initializeScholarData === 'function') initializeScholarData();
+        if (typeof initializeScholarPagination === 'function') initializeScholarPagination();
+        if (typeof initializeScholarFiltering === 'function') initializeScholarFiltering();
+        // Support both possible initializer names for checkbox logic to avoid runtime errors
+        if (typeof initializeCheckboxSelection === 'function') {
+            initializeCheckboxSelection();
+        } else if (typeof initializeCheckboxSystem === 'function') {
+            initializeCheckboxSystem();
+        }
+    }
+});
+</script>
+
+<script src="{{ asset('js/filter_paginate.js') }}"></script>
+<script src="{{ asset('js/scholar.js') }}"></script>
+<script src="{{ asset('js/spinner.js') }}"></script>
+<script src="{{ asset('js/scholar_logout.js') }}"></script>
+<script src="{{ asset('js/toggle_dropdown.js') }}"></script>
         </div>
     </div>
 </body>

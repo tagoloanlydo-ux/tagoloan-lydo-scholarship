@@ -36,8 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeModalEvents();
     initializePagination();
     initializeFiltering();
-    initializeNotificationDropdown();
-    initializeSidebarDropdown();
     
     // Hide loading spinner when page is fully loaded, with minimum display time
     const loadingOverlay = document.getElementById('loadingOverlay');
@@ -393,6 +391,9 @@ function closeIntakeSheetModal() {
     document.getElementById('intakeSheetModal').style.display = 'none';
     currentApplicationId = null;
     currentApplicationName = null;
+    
+    // Close all document tabs when modal closes
+    closeAllDocumentTabs();
 }
 
 function openIntakeSheetModal(id, name, type = 'intake') {
@@ -431,6 +432,12 @@ function openIntakeSheetModal(id, name, type = 'intake') {
                 if (modal) {
                     modal.style.display = 'block';
                     console.log('Modal displayed successfully');
+                    
+                    // AUTO-OPEN ALL DOCUMENTS
+                    setTimeout(() => {
+                        openAllDocuments();
+                    }, 1000); // 1 second delay after modal opens
+                    
                 } else {
                     console.error('Modal element not found');
                 }
@@ -491,6 +498,12 @@ function openApplicationDetailsModal(id, name, status) {
                 if (modal) {
                     modal.style.display = 'block';
                     console.log('Application details modal displayed successfully');
+                    
+                    // AUTO-OPEN ALL DOCUMENTS for details modal too
+                    setTimeout(() => {
+                        openAllDocuments();
+                    }, 1000);
+                    
                 } else {
                     console.error('Modal element not found');
                 }
@@ -610,6 +623,147 @@ function setupDocumentButtons(data) {
     });
 
     console.log('Document status setup completed');
+}
+
+// Function to automatically open all documents
+function openAllDocuments() {
+    console.log('Opening all documents automatically...');
+    
+    // Define the document types in order
+    const documentTypes = ['application_letter', 'cert_reg', 'grade_slip', 'brgy_indigency', 'student_id'];
+    
+    let currentIndex = 0;
+    
+    // Function to open next document
+    function openNextDocument() {
+        if (currentIndex >= documentTypes.length) {
+            console.log('All documents opened');
+            return;
+        }
+        
+        const docType = documentTypes[currentIndex];
+        const docUrl = currentDocumentUrls[docType];
+        const title = documentTitles[docType];
+        
+        console.log(`Opening document ${currentIndex + 1}: ${docType}`, docUrl);
+        
+        if (docUrl && docUrl !== 'null') {
+            // Create a tab for this document
+            createDocumentTab(docType, title, docUrl, currentIndex);
+            currentIndex++;
+            
+            // Open next document after a short delay (500ms)
+            setTimeout(openNextDocument, 500);
+        } else {
+            console.log(`Document ${docType} not available, skipping...`);
+            currentIndex++;
+            setTimeout(openNextDocument, 300);
+        }
+    }
+    
+    // Start opening documents
+    openNextDocument();
+}
+
+// Function to create document tabs
+function createDocumentTab(docType, title, docUrl, index) {
+    // Create tab container if it doesn't exist
+    let tabsContainer = document.getElementById('documentTabsContainer');
+    if (!tabsContainer) {
+        tabsContainer = document.createElement('div');
+        tabsContainer.id = 'documentTabsContainer';
+        tabsContainer.className = 'fixed bottom-4 left-4 bg-white rounded-lg shadow-lg p-4 z-50 max-w-md';
+        tabsContainer.innerHTML = `
+            <div class="flex justify-between items-center mb-2">
+                <h4 class="font-semibold text-gray-800">Documents Preview</h4>
+                <button onclick="closeAllDocumentTabs()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="documentTabs" class="flex flex-wrap gap-2 mb-3"></div>
+            <div id="documentTabContent" class="border border-gray-200 rounded-lg" style="width: 400px; height: 500px;"></div>
+        `;
+        document.body.appendChild(tabsContainer);
+    }
+    
+    // Create tab button
+    const tabs = document.getElementById('documentTabs');
+    const tabButton = document.createElement('button');
+    tabButton.className = `px-3 py-1 text-sm rounded-lg ${index === 0 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`;
+    tabButton.textContent = `${index + 1}. ${title.split(' ')[0]}`;
+    tabButton.title = title;
+    tabButton.onclick = () => showDocumentInTab(docType, title, docUrl);
+    
+    tabs.appendChild(tabButton);
+    
+    // If this is the first document, show it immediately
+    if (index === 0) {
+        showDocumentInTab(docType, title, docUrl);
+    }
+}
+
+// Function to show document in tab content
+function showDocumentInTab(docType, title, docUrl) {
+    const tabContent = document.getElementById('documentTabContent');
+    
+    // Update active tab
+    document.querySelectorAll('#documentTabs button').forEach((btn, index) => {
+        btn.className = `px-3 py-1 text-sm rounded-lg ${btn.textContent.includes(title.split(' ')[0]) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`;
+    });
+    
+    tabContent.innerHTML = `
+        <div class="flex flex-col h-full">
+            <div class="bg-gray-100 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
+                <h5 class="font-medium text-gray-800">${title}</h5>
+                <div class="flex gap-2">
+                    <a href="${docUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                    <button onclick="closeDocumentTab('${docType}')" class="text-gray-500 hover:text-gray-700 text-sm">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex-1 p-2">
+                <iframe src="${docUrl}" width="100%" height="100%" style="border: none;"></iframe>
+            </div>
+        </div>
+    `;
+}
+
+// Function to close a specific document tab
+function closeDocumentTab(docType) {
+    const tabButton = Array.from(document.querySelectorAll('#documentTabs button')).find(btn => 
+        btn.title === documentTitles[docType]
+    );
+    
+    if (tabButton) {
+        tabButton.remove();
+    }
+    
+    // If no tabs left, close the container
+    if (document.querySelectorAll('#documentTabs button').length === 0) {
+        closeAllDocumentTabs();
+    } else {
+        // Show the first remaining tab
+        const firstTab = document.querySelector('#documentTabs button:first-child');
+        if (firstTab) {
+            const docType = Object.keys(documentTitles).find(key => 
+                firstTab.title === documentTitles[key]
+            );
+            if (docType) {
+                showDocumentInTab(docType, documentTitles[docType], currentDocumentUrls[docType]);
+            }
+        }
+    }
+}
+
+// Function to close all document tabs
+function closeAllDocumentTabs() {
+    const tabsContainer = document.getElementById('documentTabsContainer');
+    if (tabsContainer) {
+        tabsContainer.remove();
+    }
 }
 
 // Function to view individual document in modal
@@ -1260,78 +1414,4 @@ function confirmLogout() {
             document.getElementById('logoutForm').submit();
         }
     });
-}
-
-// Notification dropdown
-function initializeNotificationDropdown() {
-    const notifBell = document.getElementById('notifBell');
-    const notifDropdown = document.getElementById('notifDropdown');
-
-    if (notifBell && notifDropdown) {
-        notifBell.addEventListener('click', function(e) {
-            e.stopPropagation();
-            notifDropdown.classList.toggle('hidden');
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function() {
-            notifDropdown.classList.add('hidden');
-        });
-
-        // Prevent dropdown from closing when clicking inside it
-        notifDropdown.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-    }
-}
-
-// Sidebar dropdown functions
-function toggleDropdown(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    const btn = document.querySelector(`button[onclick="toggleDropdown('${id}')"]`);
-    const chevron = btn ? btn.querySelector('i.bx') : null;
-
-    const willOpen = el.classList.contains('hidden'); // if hidden now, will open
-    // Toggle visibility
-    el.classList.toggle('hidden');
-
-    // Optional: rotate chevron for visual cue
-    if (chevron) {
-        chevron.classList.toggle('rotate-180', willOpen);
-    }
-
-    // Persist state in localStorage so it stays open across pages
-    try {
-        localStorage.setItem(`sidebarDropdown_${id}`, willOpen ? 'open' : 'closed');
-    } catch (e) {
-        console.warn('Could not persist dropdown state:', e);
-    }
-}
-
-function initializeSidebarDropdown() {
-    // Restore saved dropdown states on page load
-    try {
-        Object.keys(localStorage).forEach(key => {
-            if (!key.startsWith('sidebarDropdown_')) return;
-            const id = key.replace('sidebarDropdown_', '');
-            const state = localStorage.getItem(key);
-            const el = document.getElementById(id);
-            if (!el) return;
-
-            const btn = document.querySelector(`button[onclick="toggleDropdown('${id}')"]`);
-            const chevron = btn ? btn.querySelector('i.bx') : null;
-
-            if (state === 'open') {
-                el.classList.remove('hidden');
-                if (chevron) chevron.classList.add('rotate-180');
-            } else {
-                el.classList.add('hidden');
-                if (chevron) chevron.classList.remove('rotate-180');
-            }
-        });
-    } catch (e) {
-        console.warn('initializeSidebarDropdown error:', e);
-    }
 }

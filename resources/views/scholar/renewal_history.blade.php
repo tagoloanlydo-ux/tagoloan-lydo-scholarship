@@ -123,7 +123,6 @@
                                         <tr class="bg-gray-50 border-b">
                                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Academic Year</th>
                                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Semester</th>
-                                            <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Year Level</th>
                                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Date Submitted</th>
                                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Status</th>
                                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Actions</th>
@@ -134,7 +133,6 @@
                                             <tr class="border-b hover:bg-gray-50 transition duration-200">
                                                 <td class="py-4 px-4 text-sm text-gray-800">{{ $renewal->renewal_acad_year }}</td>
                                                 <td class="py-4 px-4 text-sm text-gray-800">{{ $renewal->renewal_semester }}</td>
-                                                <td class="py-4 px-4 text-sm text-gray-800">{{ $renewal->applicant_year_level ?? 'N/A' }}</td>
                                                 <td class="py-4 px-4 text-sm text-gray-800">{{ $renewal->date_submitted->format('M d, Y') }}</td>
                                                 <td class="py-4 px-4">
                                                     @if($renewal->renewal_status == 'Approved')

@@ -28,6 +28,13 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+        'iprogsms' => [
+        'api_key' => env('IPROGSMS_API_KEY'),
+        'api_url' => env('IPROGSMS_API_URL', 'https://api.iprogsms.com/api/send'),
+        'sender_name' => env('IPROGSMS_SENDER_NAME', 'LYDOScholar'),
+        'enabled' => env('IPROGSMS_ENABLED', true),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
