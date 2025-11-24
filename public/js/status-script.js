@@ -3,6 +3,7 @@ let currentApplicationId = null;
 let currentApplicationName = null;
 let currentView = 'table';
 let currentDocumentUrls = {};
+let isInitialLoad = true; // Add this flag to track initial load
 
 // Document titles mapping
 const documentTitles = {
@@ -29,35 +30,16 @@ const paginationState = {
     }
 };
 
-// Loading overlay reference counting to avoid spinner showing when nothing is loading
-let _loadingCount = 0;
-function showLoadingOverlay() {
-    const overlay = document.getElementById('loadingOverlay');
-    if (!overlay) return;
-    _loadingCount++;
-    if (_loadingCount === 1) {
-        overlay.classList.remove('fade-out');
-        overlay.style.display = 'flex';
-    }
-}
-function hideLoadingOverlay(force = false) {
-    const overlay = document.getElementById('loadingOverlay');
-    if (!overlay) return;
-    if (force) _loadingCount = 0;
-    if (_loadingCount > 0) _loadingCount--;
-    if (_loadingCount <= 0) {
-        _loadingCount = 0;
-        overlay.classList.add('fade-out');
-        // allow fade animation to complete before hiding
-        setTimeout(() => {
-            overlay.style.display = 'none';
-        }, 500);
-    }
-}
-
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded - initializing...');
+    
+    // Hide loading spinner immediately since page is already loaded
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+    }
+    
     initializeData();
     initializeModalEvents();
     initializePagination();
@@ -65,8 +47,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNotificationDropdown();
     initializeSidebarDropdown();
     
-    // Ensure loading overlay is hidden after initialization (do not force-show it)
-    hideLoadingOverlay(true);
+    // Mark initial load as complete
+    isInitialLoad = false;
 });
 
 // Initialize modal events
@@ -363,33 +345,29 @@ function getUniqueBarangays() {
 
 // Tab switching functions
 function showTable() {
-    // removed automatic overlay show - tab switching is client-side and fast
-    setTimeout(() => {
-        document.getElementById('tableView').classList.remove('hidden');
-        document.getElementById('listView').classList.add('hidden');
-        document.getElementById('tab-pending').classList.add('active');
-        document.getElementById('tab-approved-rejected').classList.remove('active');
-        currentView = 'table';
-        
-        // Reset to first page
-        paginationState.table.currentPage = 1;
-        updatePagination('table');
-    }, 300);
+    // Only show loading for actual data loading operations, not tab switches
+    document.getElementById('tableView').classList.remove('hidden');
+    document.getElementById('listView').classList.add('hidden');
+    document.getElementById('tab-pending').classList.add('active');
+    document.getElementById('tab-approved-rejected').classList.remove('active');
+    currentView = 'table';
+    
+    // Reset to first page
+    paginationState.table.currentPage = 1;
+    updatePagination('table');
 }
 
 function showList() {
-    // removed automatic overlay show - tab switching is client-side and fast
-    setTimeout(() => {
-        document.getElementById('tableView').classList.add('hidden');
-        document.getElementById('listView').classList.remove('hidden');
-        document.getElementById('tab-pending').classList.remove('active');
-        document.getElementById('tab-approved-rejected').classList.add('active');
-        currentView = 'list';
-        
-        // Reset to first page
-        paginationState.list.currentPage = 1;
-        updatePagination('list');
-    }, 300);
+    // Only show loading for actual data loading operations, not tab switches
+    document.getElementById('tableView').classList.add('hidden');
+    document.getElementById('listView').classList.remove('hidden');
+    document.getElementById('tab-pending').classList.remove('active');
+    document.getElementById('tab-approved-rejected').classList.add('active');
+    currentView = 'list';
+    
+    // Reset to first page
+    paginationState.list.currentPage = 1;
+    updatePagination('list');
 }
 
 // Modal functions
@@ -414,8 +392,8 @@ function openIntakeSheetModal(id, name, type = 'intake') {
     currentApplicationId = id;
     currentApplicationName = name;
 
-    // Show loading (use ref-counted function)
-    showLoadingOverlay();
+    // Show loading only when fetching data
+    showLoading();
 
     // Fetch intake sheet data
     fetch(`/mayor_staff/intake-sheet/${id}`)
@@ -449,14 +427,14 @@ function openIntakeSheetModal(id, name, type = 'intake') {
             }
             
             // Hide loading
-            hideLoadingOverlay();
+            hideLoading();
         })
         .catch(error => {
             console.error('Error fetching intake sheet:', error);
             Swal.fire('Error', 'Failed to load intake sheet data.', 'error');
             
             // Hide loading
-            hideLoadingOverlay();
+            hideLoading();
         });
 }
 
@@ -473,8 +451,8 @@ function openApplicationDetailsModal(id, name, status) {
     currentApplicationId = id;
     currentApplicationName = name;
 
-    // Show loading
-    showLoadingOverlay();
+    // Show loading only when fetching data
+    showLoading();
 
     // Fetch application details data
     fetch(`/mayor_staff/intake-sheet/${id}`)
@@ -508,15 +486,34 @@ function openApplicationDetailsModal(id, name, status) {
             }
             
             // Hide loading
-            hideLoadingOverlay();
+            hideLoading();
         })
         .catch(error => {
             console.error('Error fetching application details:', error);
             Swal.fire('Error', 'Failed to load application details.', 'error');
             
             // Hide loading
-            hideLoadingOverlay();
+            hideLoading();
         });
+}
+
+// Enhanced loading functions
+function showLoading() {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'flex';
+        loadingOverlay.classList.remove('fade-out');
+    }
+}
+
+function hideLoading() {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.classList.add('fade-out');
+        setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+        }, 500);
+    }
 }
 
 // Enhanced document handling functions
@@ -700,7 +697,7 @@ function showDocumentInTab(docType, title, docUrl) {
 }
 
 // Function to close a specific document tab
-function DocumentTab(docType) {
+function closeDocumentTab(docType) {
     const tabButton = Array.from(document.querySelectorAll('#documentTabs button')).find(btn => 
         btn.title === documentTitles[docType]
     );
@@ -1080,7 +1077,7 @@ function approveApplication(id, name) {
     }).then((result) => {
         if (result.isConfirmed) {
             // Show loading
-            showLoadingOverlay();
+            showLoading();
 
             // Send approval request
             fetch(`/mayor_staff/status/${id}/update`, {
@@ -1101,7 +1098,7 @@ function approveApplication(id, name) {
                 return response.json();
             })
             .then(data => {
-                hideLoadingOverlay();
+                hideLoading();
 
                 if (data.success === true) {
                     Swal.fire('Approved!', `Application for ${name} has been approved.`, 'success')
@@ -1116,7 +1113,7 @@ function approveApplication(id, name) {
             })
             .catch(error => {
                 console.error('Error approving application:', error);
-                hideLoadingOverlay();
+                hideLoading();
                 Swal.fire('Error!', 'Failed to approve application. Please try again.', 'error');
             });
         }
@@ -1153,7 +1150,7 @@ function rejectApplication(id, name) {
             const rejectionReason = result.value.trim();
 
             // Show loading
-            showLoadingOverlay();
+            showLoading();
 
             // Send rejection request with reason
             fetch(`/mayor_staff/status/${id}/update`, {
@@ -1175,7 +1172,7 @@ function rejectApplication(id, name) {
                 return response.json();
             })
             .then(data => {
-                hideLoadingOverlay();
+                hideLoading();
 
                 if (data.success === true) {
                     Swal.fire('Rejected!', `Application for ${name} has been rejected.`, 'success')
@@ -1189,7 +1186,7 @@ function rejectApplication(id, name) {
             })
             .catch(error => {
                 console.error('Error rejecting application:', error);
-                hideLoadingOverlay();
+                hideLoading();
                 Swal.fire('Error!', 'Failed to reject application. Please try again.', 'error');
             });
         }
@@ -1199,7 +1196,7 @@ function rejectApplication(id, name) {
 // Data refresh functions
 function refreshTableData() {
     // Show loading
-    showLoadingOverlay();
+    showLoading();
 
     // Fetch updated data
     fetch('/mayor_staff/status?ajax=1', {
@@ -1216,12 +1213,11 @@ function refreshTableData() {
         updateListView(data.listApplications);
         
         // Hide loading
-        hideLoadingOverlay();
+        hideLoading();
     })
     .catch(error => {
         console.error('Error refreshing data:', error);
-        // Fallback: reload the page (ensure overlay hidden before reload)
-        hideLoadingOverlay(true);
+        // Fallback: reload the page
         location.reload();
     });
 }
@@ -1377,3 +1373,22 @@ function initializeNotificationDropdown() {
     }
 }
 
+// Initialize sidebar dropdown
+function initializeSidebarDropdown() {
+    const dropdownToggle = document.querySelector('.dropdown-toggle');
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+
+    if (dropdownToggle && dropdownMenu) {
+        dropdownToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            dropdownMenu.classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.classList.add('hidden');
+            }
+        });
+    }
+}

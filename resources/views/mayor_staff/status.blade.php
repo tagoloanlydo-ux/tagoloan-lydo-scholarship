@@ -18,7 +18,12 @@
     <link rel="stylesheet" href="{{ asset('css/status-modal.css') }}" />
 </head>
 <body class="bg-gray-50">
-
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner">
+            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+        </div>
+    </div>
 
     @php
         // normalize variables
@@ -680,6 +685,7 @@ style.textContent = `
 document.head.appendChild(style);
 </script>
 <script src="{{ asset('js/status-script.js') }}"></script>
+<script src="{{ asset('js/spinner.js') }}"></script>
 
 </body>
 </html>           
