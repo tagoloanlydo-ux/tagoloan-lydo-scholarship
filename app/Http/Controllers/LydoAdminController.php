@@ -969,7 +969,71 @@ public function applicants(Request $request)
 
     return view('lydo_admin.applicants', compact('applicants', 'barangays', 'academicYears', 'initialScreeningStatus'));
 }
+public function getMayorApplicants(Request $request)
+{
+    try {
+        $query = DB::table('tbl_applicant as app')
+            ->join('tbl_application as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->join('tbl_application_personnel as ap', 'a.application_id', '=', 'ap.application_id')
+            ->select(
+                'app.*',
+                'ap.initial_screening',
+                'ap.status',
+                'ap.remarks'
+            )
+            ->whereIn('ap.initial_screening', ['Approved', 'Rejected'])
+            ->orderBy('app.applicant_lname', 'asc')
+            ->orderBy('app.applicant_fname', 'asc')
+            ->orderBy('app.applicant_mname', 'asc');
 
+        $applicants = $query->get();
+
+        return response()->json([
+            'success' => true,
+            'applicants' => $applicants
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Error getting mayor applicants: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error loading applicants.'
+        ], 500);
+    }
+}
+
+public function getLydoReviewedApplicants(Request $request)
+{
+    try {
+        $query = DB::table('tbl_applicant as app')
+            ->join('tbl_application as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->join('tbl_application_personnel as ap', 'a.application_id', '=', 'ap.application_id')
+            ->select(
+                'app.*',
+                'ap.initial_screening',
+                'ap.status',
+                'ap.remarks'
+            )
+            ->where('ap.initial_screening', 'Reviewed')
+            ->orderBy('app.applicant_lname', 'asc')
+            ->orderBy('app.applicant_fname', 'asc')
+            ->orderBy('app.applicant_mname', 'asc');
+
+        $applicants = $query->get();
+
+        return response()->json([
+            'success' => true,
+            'applicants' => $applicants
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Error getting LYDO reviewed applicants: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error loading applicants.'
+        ], 500);
+    }
+}
     public function getAllFilteredApplicants(Request $request)
     {
         $query = DB::table('tbl_applicant')

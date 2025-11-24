@@ -3,7 +3,7 @@ body { height: 100vh; overflow: hidden; }
 header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
 .sidebar-fixed { position: fixed; top: 80px; left: 0; bottom: 0; width: 64px; overflow-y: auto; z-index: 999; background: white; }
 @media (min-width: 768px) { .sidebar-fixed { width: 256px; } }
-.main-content-fixed { position: fixed; top: 80px; left: 64px; right: 0; bottom: 0; overflow-y: auto; padding: 1rem 1.25rem; }
+.main-content-fixed { position: fixed; top: 50px; left: 64px; right: 0; bottom: 0; overflow-y: auto; padding: 1rem 1.25rem; }
 @media (min-width: 768px) { .main-content-fixed { left: 256px; } }
 
 /* Modal Styles */
