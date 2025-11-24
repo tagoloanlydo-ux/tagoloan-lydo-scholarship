@@ -15,8 +15,19 @@
 
         body {
             background: #fff;
-            padding: 15px;
-            font-size: 12px; /* Added base font size */
+            padding: 0;
+            margin: 0;
+            font-size: 9px;
+        }
+
+        .page {
+            position: relative;
+            min-height: 100vh;
+            page-break-after: always;
+        }
+
+        .page:last-child {
+            page-break-after: auto;
         }
 
         .container {
@@ -26,13 +37,18 @@
             padding: 0;
         }
 
-        /* IMPROVED HEADER - PORTRAIT STYLE */
+        /* HEADER - FIXED POSITION FOR EACH PAGE */
         .header-portrait {
-            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
             text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #324b7a;
+            padding: 8px 10mm 5px 10mm;
+            background: white;
+            z-index: 1000;
+            height: 20mm;
+            border-bottom: none;
         }
 
         .header-table {
@@ -42,6 +58,7 @@
 
         .header-table td {
             vertical-align: top;
+            margin-top: 10px;
             padding: 0 8px;
         }
 
@@ -62,64 +79,76 @@
         }
 
         .name-section div {
-            font-size: 12px; /* Changed from 10px to 14px */
-            line-height: 1.2;
-            margin-bottom: 2px;
+            font-size: 9px;
+            line-height: 1.1;
+            margin-bottom: 1px;
         }
 
         .name-section strong {
-            font-size: 12px; /* Changed from 11px to 14px */
+            font-size: 10px;
             font-weight: 700;
         }
 
-        /* FILTERS BOX */
+        .page-title {
+            margin-top: 3px;
+            font-size: 9px;
+            font-weight: bold;
+            color: #324b7a;
+        }
+
+        /* FILTERS BOX - Only show on first page */
         .filters-info {
             background: #eef3ff;
-            padding: 8px 12px; /* Increased padding */
-            margin: 10px 0 0;
+            padding: 6px 10px;
+            margin: 8px 0 0;
             border-left: 4px solid #3f6ad8;
-            font-size: 12px; /* Changed from 9px to 14px */
+            font-size: 9px;
             border-radius: 4px;
             width: 100%;
         }
 
         .filters-info h3 {
-            margin-bottom: 4px; /* Increased margin */
-            font-size: 12px; /* Changed from 10px to 14px */
+            margin-bottom: 2px;
+            font-size: 10px;
             font-weight: 600;
             color: #324b7a;
         }
 
         .filters-info p {
-            margin: 3px 0; /* Increased margin */
+            margin: 1px 0;
             color: #555;
-            font-size: 14px; /* Added font size */
         }
 
-        /* DATA TABLE - PORTRAIT OPTIMIZED */
+        /* CONTENT AREA - ADJUST MARGIN FOR HEADER/FOOTER */
+        .content-wrapper {
+            margin-top: 40mm;
+            margin-bottom: 20mm;
+            padding: 0 15mm;
+        }
+
+        /* DATA TABLE */
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 14px; /* Changed from 9px to 14px */
+            font-size: 9px;
             border: 1px solid #b8c3d6;
         }
 
         .data-table th {
-            background: #ddddddff;
+            background: white;
             color: black;
-            padding: 8px 5px; /* Increased padding */
+            padding: 10px 3px;
             text-transform: uppercase;
-            font-size: 13px; /* Changed from 8px to 13px */
-            border: 1px solid #c7c7c9ff;
+            font-size: 8px;
+            border: 1px solid #000000ff;
             font-weight: 600;
         }
 
         .data-table td {
-            padding: 6px 4px; /* Increased padding */
-            border: 1px solid #cacbccff;
-            font-size: 14px; /* Changed from 8px to 14px */
-            line-height: 1.3;
+            padding: 4px 3px;
+            border: 1px solid #000000ff;
+            font-size: 8px;
+            line-height: 1.2;
         }
 
         .data-table tr:nth-child(even) {
@@ -134,164 +163,231 @@
             text-align: left;
         }
 
-        .footer {
-            margin-top: 20px;
+        /* FOOTER - FIXED POSITION FOR EACH PAGE */
+        .page-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             text-align: center;
-            font-size: 14px; /* Changed from 9px to 14px */
+            font-size: 9px;
             color: #666;
             border-top: 1px solid #ccc;
-            padding-top: 10px; /* Increased padding */
+            padding: 8px 15mm;
+            background: white;
+            height: 15mm;
         }
 
-        /* Column widths optimized for portrait */
+        .footer-left {
+            float: left;
+            text-align: left;
+        }
+
+        .footer-right {
+            float: right;
+            text-align: right;
+        }
+
+        /* Column widths */
         .col-number {
             width: 5%;
         }
         .col-name {
-            width: 22%;
+            width: 25%;
         }
         .col-barangay {
-            width: 13%;
-        }
-        .col-email {
-            width: 20%;
+            width: 15%;
         }
         .col-school {
-            width: 20%;
+            width: 25%;
         }
         .col-course {
             width: 20%;
         }
+        .col-year {
+            width: 10%;
+        }
 
-        /* Compact styling */
         .compact-row td {
-            padding: 5px 3px; /* Increased padding */
+            padding: 3px 2px;
         }
 
         .name-format {
             font-weight: 600;
-            font-size: 12px; /* Changed from 8px to 14px */
+            font-size: 8px;
         }
 
-        /* No scholars found styling */
-        .no-scholars {
-            padding: 40px; /* Increased padding */
+        /* PRINT STYLES - CRITICAL FOR MULTIPLE PAGES */
+        @media print {
+            @page {
+                margin: 35mm 0mm 20mm 0mm;
+                size: A4 portrait;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                font-size: 9px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .page {
+                min-height: 100vh;
+                position: relative;
+            }
+
+            .header-portrait {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 35mm;
+                border-bottom: none;
+            }
+
+            .page-footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 15mm;
+            }
+
+            .content-wrapper {
+                margin-top: 38mm;
+                margin-bottom: 20mm;
+            }
+
+            /* Ensure table breaks properly across pages */
+            table { 
+                page-break-inside: auto;
+            }
+
+            tr { 
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            thead { 
+                display: table-header-group;
+            }
+
+            tbody { 
+                display: table-row-group;
+            }
+        }
+
+        .no-data {
             text-align: center;
-        }
-
-        .no-scholars h3 {
-            color: #555;
-            font-size: 16px; /* Increased font size */
-            margin-bottom: 10px;
-        }
-
-        .no-scholars p {
-            color: #777;
-            font-size: 12px; /* Added font size */
+            padding: 50px 20px;
+            color: #666;
+            font-size: 14px;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
+    @php
+        $perPage = 48;
+        $chunks = $scholars->chunk($perPage);
+        $totalPages = $chunks->count();
+        $totalScholars = $scholars->count();
+    @endphp
 
-        <!-- IMPROVED HEADER - PORTRAIT STYLE -->
-        <div class="header-portrait">
-            <table class="header-table">
-                <tr>
-                    <td class="logo">
-                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture2.png'))) }}">
-                    </td>
+    @foreach($chunks as $page => $pageScholars)
+    <div class="page">
+        <div class="container">
+            <!-- HEADER - REPEATS ON EVERY PAGE -->
+            <div class="header-portrait">
+                <table class="header-table">
+                    <tr>
+                        <td class="logo">
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture2.png'))) }}">
+                        </td>
+                        <td class="name-section">
+                            <div><strong>Republic of the Philippines</strong></div>
+                            <div>PROVINCE OF MISAMIS ORIENTAL</div>
+                            <div>MUNICIPALITY OF TAGOLOAN</div>
+                            <div><strong>LOCAL YOUTH DEVELOPMENT OFFICE</strong></div>
+                            <div><strong>SCHOLARSHIP MANAGEMENT SYSTEM</strong></div>
+                            <div class="page-title">{{ $title }} - Page {{ $page + 1 }}</div>
+                            
+                            <!-- FILTERS ONLY ON FIRST PAGE -->
+                            @if($page === 0 && !empty($filters))
+                            <div class="filters-info">
+                                <h3>Applied Filters:</h3>
+                                @foreach($filters as $filter)
+                                    <p>{{ $filter }}</p>
+                                @endforeach
+                            </div>
+                            @endif
+                        </td>
+                        <td class="logo">
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture3.png'))) }}">
+                        </td>
+                    </tr>
+                </table>
+            </div>
 
-                    <td class="name-section">
-                        <div><strong>Republic of the Philippines</strong></div>
-                        <div>PROVINCE OF MISAMIS ORIENTAL</div>
-                        <div>MUNICIPALITY OF TAGOLOAN</div>
-                        <div><strong>LOCAL YOUTH DEVELOPMENT OFFICE</strong></div>
-                        <div><strong>SCHOLARSHIP MANAGEMENT SYSTEM</strong></div>
+            <!-- CONTENT -->
+            <div class="content-wrapper">
+                @if($pageScholars->count() > 0)
+                @php
+                    $sortedScholars = $pageScholars->sortBy('applicant_lname');
+                @endphp
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="text-center col-number">#</th>
+                            <th class="text-center col-name">Name</th>
+                            <th class="text-center col-barangay">Barangay</th>
+                            <th class="text-center col-school">School</th>
+                            <th class="text-center col-course">Course</th>
+                            <th class="text-center col-year">Academic Year</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($sortedScholars as $index => $scholar)
+                        <tr class="compact-row">
+                            <td class="text-center">{{ ($page * $perPage) + $loop->iteration }}</td>
+                            <td class="text-center name-format">
+                                {{ $scholar->applicant_lname }}{{ $scholar->applicant_suffix ? ' ' . $scholar->applicant_suffix : '' }}, 
+                                {{ $scholar->applicant_fname }} 
+                                {{ $scholar->applicant_mname ? $scholar->applicant_mname . ' ' : '' }}
+                            </td>
+                            <td class="text-center">{{ $scholar->applicant_brgy }}</td>
+                            <td class="text-center">{{ $scholar->applicant_school_name }}</td>
+                            <td class="text-center">{{ $scholar->applicant_course }}</td>
+                            <td class="text-center">{{ $scholar->applicant_acad_year ?? 'N/A' }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @else
+                <div class="no-data">
+                    <h3>No Scholars Found</h3>
+                    <p>No scholars match the current filter criteria.</p>
+                </div>
+                @endif
+            </div>
 
-                        @if(request('search') || request('barangay') || request('academic_year') || request('semester') || request('status'))
-                        <div class="filters-info">
-                            <h3>Applied Filters:</h3>
-                            @if(request('search'))
-                                <p><strong>Search:</strong> {{ request('search') }}</p>
-                            @endif
-                            @if(request('barangay'))
-                                <p><strong>Barangay:</strong> {{ request('barangay') }}</p>
-                            @endif
-                            @if(request('academic_year'))
-                                <p><strong>Academic Year:</strong> {{ request('academic_year') }}</p>
-                            @endif
-                            @if(request('semester'))
-                                <p><strong>Semester:</strong> {{ request('semester') }}</p>
-                            @endif
-                            @if(request('status'))
-                                <p><strong>Status:</strong> {{ ucfirst(request('status')) }}</p>
-                            @endif
-                        </div>
-                        @endif
-                    </td>
-
-                    <td class="logo">
-                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture3.png'))) }}">
-                    </td>
-                </tr>
-            </table>
+            <!-- FOOTER - INDIVIDUAL FOR EACH PAGE -->
+            <div class="page-footer">
+                <div class="footer-left">
+                    Report generated by LYDO Scholarship Management System<br>
+                    {{ \Carbon\Carbon::now()->format('F d, Y — h:i A') }}
+                </div>
+                <div class="footer-right">
+                    Page {{ $page + 1 }} of {{ $totalPages }}<br>
+                    Total Scholars: {{ $totalScholars }}
+                </div>
+                <div style="clear: both;"></div>
+            </div>
         </div>
-
-        <!-- TABLE CONTENT - PORTRAIT OPTIMIZED -->
-        @if($scholars->count() > 0)
-        
-        @php
-            // Sort the collection by last name alphabetically
-            $sortedScholars = $scholars->sortBy(function($item) {
-                return $item->applicant_lname;
-            });
-        @endphp
-        
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th class="text-center col-number">#</th>
-                    <th class="text-center col-name">Name</th>
-                    <th class="text-center col-barangay">Barangay</th>
-                    <th class="text-center col-school">School</th>
-                    <th class="text-center col-course">Course</th>
-                    <th class="text-center">S.Y</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @foreach($sortedScholars as $index => $scholar)
-                <tr class="compact-row">
-                    <td class="text-center">{{ $loop->iteration }}</td>
-                    <td class="text-center name-format">
-                        {{ $scholar->applicant_lname }}{{ $scholar->applicant_suffix ? ' ' . $scholar->applicant_suffix : '' }}, 
-                        {{ $scholar->applicant_fname }} 
-                        {{ $scholar->applicant_mname ? $scholar->applicant_mname . ' ' : '' }}
-                    </td>
-                    <td class="text-center">{{ $scholar->applicant_brgy }}</td>
-                    <td class="text-center">{{ $scholar->applicant_school_name }}</td>
-                    <td class="text-center">{{ $scholar->applicant_course }}</td>
-                    <td class="text-center">{{ $scholar->applicant_acad_year ?? 'N/A' }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-        @else
-        <div class="no-scholars">
-            <h3>No Scholars Found</h3>
-            <p>No scholars match the current filter criteria.</p>
-        </div>
-        @endif
-
-        <div class="footer">
-            Report generated by LYDO Scholarship Management System <br>
-            {{ \Carbon\Carbon::now()->format('F d, Y — h:i A') }} | 
-            Total Scholars: {{ $scholars->count() }}
-        </div>
-
     </div>
+    @endforeach
 </body>
 </html>

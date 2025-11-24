@@ -3,6 +3,7 @@ let currentApplicationId = null;
 let currentApplicationName = null;
 let currentView = 'table';
 let currentDocumentUrls = {};
+let isInitialLoad = true; // Add this flag to track initial load
 
 // Document titles mapping
 const documentTitles = {
@@ -32,6 +33,13 @@ const paginationState = {
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded - initializing...');
+    
+    // Hide loading spinner immediately since page is already loaded
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+    }
+    
     initializeData();
     initializeModalEvents();
     initializePagination();
@@ -39,16 +47,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNotificationDropdown();
     initializeSidebarDropdown();
     
-    // Hide loading spinner when page is fully loaded, with minimum display time
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    if (loadingOverlay) {
-        setTimeout(() => {
-            loadingOverlay.classList.add('fade-out');
-            setTimeout(() => {
-                loadingOverlay.style.display = 'none';
-            }, 1000);
-        }, 2000);
-    }
+    // Mark initial load as complete
+    isInitialLoad = false;
 });
 
 // Initialize modal events
@@ -345,47 +345,29 @@ function getUniqueBarangays() {
 
 // Tab switching functions
 function showTable() {
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    document.getElementById('loadingOverlay').classList.remove('fade-out');
-
-    setTimeout(() => {
-        document.getElementById('tableView').classList.remove('hidden');
-        document.getElementById('listView').classList.add('hidden');
-        document.getElementById('tab-pending').classList.add('active');
-        document.getElementById('tab-approved-rejected').classList.remove('active');
-        currentView = 'table';
-        
-        // Reset to first page
-        paginationState.table.currentPage = 1;
-        updatePagination('table');
-        
-        document.getElementById('loadingOverlay').classList.add('fade-out');
-        setTimeout(() => {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }, 1000);
-    }, 300);
+    // Only show loading for actual data loading operations, not tab switches
+    document.getElementById('tableView').classList.remove('hidden');
+    document.getElementById('listView').classList.add('hidden');
+    document.getElementById('tab-pending').classList.add('active');
+    document.getElementById('tab-approved-rejected').classList.remove('active');
+    currentView = 'table';
+    
+    // Reset to first page
+    paginationState.table.currentPage = 1;
+    updatePagination('table');
 }
 
 function showList() {
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    document.getElementById('loadingOverlay').classList.remove('fade-out');
-
-    setTimeout(() => {
-        document.getElementById('tableView').classList.add('hidden');
-        document.getElementById('listView').classList.remove('hidden');
-        document.getElementById('tab-pending').classList.remove('active');
-        document.getElementById('tab-approved-rejected').classList.add('active');
-        currentView = 'list';
-        
-        // Reset to first page
-        paginationState.list.currentPage = 1;
-        updatePagination('list');
-        
-        document.getElementById('loadingOverlay').classList.add('fade-out');
-        setTimeout(() => {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }, 1000);
-    }, 300);
+    // Only show loading for actual data loading operations, not tab switches
+    document.getElementById('tableView').classList.add('hidden');
+    document.getElementById('listView').classList.remove('hidden');
+    document.getElementById('tab-pending').classList.remove('active');
+    document.getElementById('tab-approved-rejected').classList.add('active');
+    currentView = 'list';
+    
+    // Reset to first page
+    paginationState.list.currentPage = 1;
+    updatePagination('list');
 }
 
 // Modal functions
@@ -393,6 +375,9 @@ function closeIntakeSheetModal() {
     document.getElementById('intakeSheetModal').style.display = 'none';
     currentApplicationId = null;
     currentApplicationName = null;
+    
+    // Close all document tabs when modal closes
+    closeAllDocumentTabs();
 }
 
 function openIntakeSheetModal(id, name, type = 'intake') {
@@ -407,11 +392,8 @@ function openIntakeSheetModal(id, name, type = 'intake') {
     currentApplicationId = id;
     currentApplicationName = name;
 
-    // Show loading
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    if (loadingOverlay) {
-        loadingOverlay.style.display = 'flex';
-    }
+    // Show loading only when fetching data
+    showLoading();
 
     // Fetch intake sheet data
     fetch(`/mayor_staff/intake-sheet/${id}`)
@@ -431,6 +413,12 @@ function openIntakeSheetModal(id, name, type = 'intake') {
                 if (modal) {
                     modal.style.display = 'block';
                     console.log('Modal displayed successfully');
+                    
+                    // AUTO-OPEN ALL DOCUMENTS
+                    setTimeout(() => {
+                        openAllDocuments();
+                    }, 1000); // 1 second delay after modal opens
+                    
                 } else {
                     console.error('Modal element not found');
                 }
@@ -439,18 +427,14 @@ function openIntakeSheetModal(id, name, type = 'intake') {
             }
             
             // Hide loading
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'none';
-            }
+            hideLoading();
         })
         .catch(error => {
             console.error('Error fetching intake sheet:', error);
             Swal.fire('Error', 'Failed to load intake sheet data.', 'error');
             
             // Hide loading
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'none';
-            }
+            hideLoading();
         });
 }
 
@@ -467,11 +451,8 @@ function openApplicationDetailsModal(id, name, status) {
     currentApplicationId = id;
     currentApplicationName = name;
 
-    // Show loading
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    if (loadingOverlay) {
-        loadingOverlay.style.display = 'flex';
-    }
+    // Show loading only when fetching data
+    showLoading();
 
     // Fetch application details data
     fetch(`/mayor_staff/intake-sheet/${id}`)
@@ -491,6 +472,12 @@ function openApplicationDetailsModal(id, name, status) {
                 if (modal) {
                     modal.style.display = 'block';
                     console.log('Application details modal displayed successfully');
+                    
+                    // AUTO-OPEN ALL DOCUMENTS for details modal too
+                    setTimeout(() => {
+                        openAllDocuments();
+                    }, 1000);
+                    
                 } else {
                     console.error('Modal element not found');
                 }
@@ -499,19 +486,34 @@ function openApplicationDetailsModal(id, name, status) {
             }
             
             // Hide loading
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'none';
-            }
+            hideLoading();
         })
         .catch(error => {
             console.error('Error fetching application details:', error);
             Swal.fire('Error', 'Failed to load application details.', 'error');
             
             // Hide loading
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'none';
-            }
+            hideLoading();
         });
+}
+
+// Enhanced loading functions
+function showLoading() {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'flex';
+        loadingOverlay.classList.remove('fade-out');
+    }
+}
+
+function hideLoading() {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.classList.add('fade-out');
+        setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+        }, 500);
+    }
 }
 
 // Enhanced document handling functions
@@ -564,7 +566,16 @@ function setupDocumentButtons(data) {
         return;
     }
 
-    // Create document status cards
+    // --- NEW: determine preview size (use A4-like height when there are exactly 5 documents) ---
+    const availableCount = availableDocuments.filter(d => d.available).length;
+    // A4 at ~96 DPI => 8.27 x 11.69 in => ~794 x 1123 px. We'll use height ~1123px.
+    const A4_HEIGHT_PX = 1123;
+    const defaultPreviewHeight = 420;
+    const previewHeight = (availableCount === 5) ? A4_HEIGHT_PX : defaultPreviewHeight;
+    const previewMinHeight = (availableCount === 5) ? A4_HEIGHT_PX : 320;
+    // -------------------------------------------------------------------------
+
+    // Create document status cards with inline preview (iframe) so they are opened immediately inside modal
     availableDocuments.forEach((doc, index) => {
         const statusColor = doc.status === 'Good' ? 'green' : 
                            doc.status === 'Bad' ? 'red' : 'gray';
@@ -573,8 +584,9 @@ function setupDocumentButtons(data) {
                           doc.status === 'Bad' ? 'fa-times-circle' : 'fa-question-circle';
 
         const documentDiv = document.createElement('div');
-        documentDiv.className = 'document-status-card mb-4 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden';
+        documentDiv.className = 'document-status-card mb-6 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden';
 
+        // Build inner HTML: header + info + inline iframe preview (if available)
         documentDiv.innerHTML = `
             <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
                 <h4 class="text-lg font-semibold text-gray-800">${doc.title}</h4>
@@ -583,33 +595,140 @@ function setupDocumentButtons(data) {
                 </span>
             </div>
             <div class="p-4">
-                <div class="flex justify-between items-center">
-                    <div class="document-info">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                    <div class="document-info flex-1">
                         <p class="text-sm text-gray-600 mb-2">
                             <strong>Status:</strong> 
                             <span class="text-${statusColor}-600 font-medium">${doc.status}</span>
                         </p>
                         ${doc.available ? 
-                            `<a href="${doc.url}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm font-medium">
-                                <i class="fas fa-external-link-alt mr-1"></i> View Document
+                            `<a href="${doc.url}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm font-medium inline-block mb-2">
+                                <i class="fas fa-external-link-alt mr-1"></i> Open in new tab
                             </a>` : 
                             '<p class="text-red-500 text-sm">Document not available</p>'
                         }
                     </div>
-                    ${doc.available ? `
-                    <button type="button" onclick="viewDocument('${doc.type}')" 
-                            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">
-                        <i class="fas fa-eye mr-2"></i>Preview
-                    </button>
-                    ` : ''}
                 </div>
+
+                ${doc.available ? `
+                    <div class="document-preview mt-4 border border-gray-200 rounded overflow-hidden" style="min-height:${previewMinHeight}px;">
+                        <iframe src="${doc.url}" width="100%" height="${previewHeight}" style="border:0;" loading="lazy"></iframe>
+                    </div>
+                ` : ''}
             </div>
         `;
 
         documentsContainer.appendChild(documentDiv);
     });
 
-    console.log('Document status setup completed');
+    console.log('Document status setup completed with inline previews');
+}
+
+// Function to automatically open all documents
+function openAllDocuments() {
+    // No-op: documents are now rendered inline inside the modal by setupDocumentButtons()
+    console.log('openAllDocuments() skipped because inline previews are used');
+}
+
+// Function to create document tabs
+function createDocumentTab(docType, title, docUrl, index) {
+    // Create tab container if it doesn't exist
+    let tabsContainer = document.getElementById('documentTabsContainer');
+    if (!tabsContainer) {
+        tabsContainer = document.createElement('div');
+        tabsContainer.id = 'documentTabsContainer';
+        tabsContainer.className = 'fixed bottom-4 left-4 bg-white rounded-lg shadow-lg p-4 z-50 max-w-md';
+        tabsContainer.innerHTML = `
+            <div class="flex justify-between items-center mb-2">
+                <h4 class="font-semibold text-gray-800">Documents Preview</h4>
+                <button onclick="closeAllDocumentTabs()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="documentTabs" class="flex flex-wrap gap-2 mb-3"></div>
+            <div id="documentTabContent" class="border border-gray-200 rounded-lg" style="width: 400px; height: 500px;"></div>
+        `;
+        document.body.appendChild(tabsContainer);
+    }
+    
+    // Create tab button
+    const tabs = document.getElementById('documentTabs');
+    const tabButton = document.createElement('button');
+    tabButton.className = `px-3 py-1 text-sm rounded-lg ${index === 0 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`;
+    tabButton.textContent = `${index + 1}. ${title.split(' ')[0]}`;
+    tabButton.title = title;
+    tabButton.onclick = () => showDocumentInTab(docType, title, docUrl);
+    
+    tabs.appendChild(tabButton);
+    
+    // If this is the first document, show it immediately
+    if (index === 0) {
+        showDocumentInTab(docType, title, docUrl);
+    }
+}
+
+// Function to show document in tab content
+function showDocumentInTab(docType, title, docUrl) {
+    const tabContent = document.getElementById('documentTabContent');
+    
+    // Update active tab
+    document.querySelectorAll('#documentTabs button').forEach((btn, index) => {
+        btn.className = `px-3 py-1 text-sm rounded-lg ${btn.textContent.includes(title.split(' ')[0]) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`;
+    });
+    
+    tabContent.innerHTML = `
+        <div class="flex flex-col h-full">
+            <div class="bg-gray-100 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
+                <h5 class="font-medium text-gray-800">${title}</h5>
+                <div class="flex gap-2">
+                    <a href="${docUrl}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                    <button onclick="closeDocumentTab('${docType}')" class="text-gray-500 hover:text-gray-700 text-sm">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex-1 p-2">
+                <iframe src="${docUrl}" width="100%" height="100%" style="border: none;"></iframe>
+            </div>
+        </div>
+    `;
+}
+
+// Function to close a specific document tab
+function closeDocumentTab(docType) {
+    const tabButton = Array.from(document.querySelectorAll('#documentTabs button')).find(btn => 
+        btn.title === documentTitles[docType]
+    );
+    
+    if (tabButton) {
+        tabButton.remove();
+    }
+    
+    // If no tabs left, close the container
+    if (document.querySelectorAll('#documentTabs button').length === 0) {
+        closeAllDocumentTabs();
+    } else {
+        // Show the first remaining tab
+        const firstTab = document.querySelector('#documentTabs button:first-child');
+        if (firstTab) {
+            const docType = Object.keys(documentTitles).find(key => 
+                firstTab.title === documentTitles[key]
+            );
+            if (docType) {
+                showDocumentInTab(docType, documentTitles[docType], currentDocumentUrls[docType]);
+            }
+        }
+    }
+}
+
+// Function to close all document tabs
+function closeAllDocumentTabs() {
+    const tabsContainer = document.getElementById('documentTabsContainer');
+    if (tabsContainer) {
+        tabsContainer.remove();
+    }
 }
 
 // Function to view individual document in modal
@@ -932,24 +1051,11 @@ function populateApplicationDetailsModal(data, name, status) {
         serviceRecordsTbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">No service records found</td></tr>';
     }
 
-    // Update action buttons based on status
+    // Hide action buttons for Approved/Rejected details modal
     const approveBtn = document.getElementById('approveBtn');
     const rejectBtn = document.getElementById('rejectBtn');
-    
-    if (status === 'Approved') {
-        approveBtn.style.display = 'none';
-        rejectBtn.style.display = 'inline-block';
-        rejectBtn.innerHTML = '<i class="fas fa-times mr-2"></i> Change to Rejected';
-    } else if (status === 'Rejected') {
-        approveBtn.style.display = 'inline-block';
-        approveBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Change to Approved';
-        rejectBtn.style.display = 'none';
-    } else {
-        approveBtn.style.display = 'inline-block';
-        rejectBtn.style.display = 'inline-block';
-        approveBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Approve';
-        rejectBtn.innerHTML = '<i class="fas fa-times mr-2"></i> Reject';
-    }
+    if (approveBtn) approveBtn.style.display = 'none';
+    if (rejectBtn) rejectBtn.style.display = 'none';
 
     // Populate signatures and other data
     document.getElementById('modal-worker-fullname').textContent = data.worker_name || '-';
@@ -971,8 +1077,7 @@ function approveApplication(id, name) {
     }).then((result) => {
         if (result.isConfirmed) {
             // Show loading
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            document.getElementById('loadingOverlay').classList.remove('fade-out');
+            showLoading();
 
             // Send approval request
             fetch(`/mayor_staff/status/${id}/update`, {
@@ -993,10 +1098,7 @@ function approveApplication(id, name) {
                 return response.json();
             })
             .then(data => {
-                document.getElementById('loadingOverlay').classList.add('fade-out');
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                }, 1000);
+                hideLoading();
 
                 if (data.success === true) {
                     Swal.fire('Approved!', `Application for ${name} has been approved.`, 'success')
@@ -1011,10 +1113,7 @@ function approveApplication(id, name) {
             })
             .catch(error => {
                 console.error('Error approving application:', error);
-                document.getElementById('loadingOverlay').classList.add('fade-out');
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                }, 1000);
+                hideLoading();
                 Swal.fire('Error!', 'Failed to approve application. Please try again.', 'error');
             });
         }
@@ -1051,8 +1150,7 @@ function rejectApplication(id, name) {
             const rejectionReason = result.value.trim();
 
             // Show loading
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            document.getElementById('loadingOverlay').classList.remove('fade-out');
+            showLoading();
 
             // Send rejection request with reason
             fetch(`/mayor_staff/status/${id}/update`, {
@@ -1074,10 +1172,7 @@ function rejectApplication(id, name) {
                 return response.json();
             })
             .then(data => {
-                document.getElementById('loadingOverlay').classList.add('fade-out');
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                }, 1000);
+                hideLoading();
 
                 if (data.success === true) {
                     Swal.fire('Rejected!', `Application for ${name} has been rejected.`, 'success')
@@ -1091,10 +1186,7 @@ function rejectApplication(id, name) {
             })
             .catch(error => {
                 console.error('Error rejecting application:', error);
-                document.getElementById('loadingOverlay').classList.add('fade-out');
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                }, 1000);
+                hideLoading();
                 Swal.fire('Error!', 'Failed to reject application. Please try again.', 'error');
             });
         }
@@ -1104,8 +1196,7 @@ function rejectApplication(id, name) {
 // Data refresh functions
 function refreshTableData() {
     // Show loading
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    document.getElementById('loadingOverlay').classList.remove('fade-out');
+    showLoading();
 
     // Fetch updated data
     fetch('/mayor_staff/status?ajax=1', {
@@ -1122,10 +1213,7 @@ function refreshTableData() {
         updateListView(data.listApplications);
         
         // Hide loading
-        document.getElementById('loadingOverlay').classList.add('fade-out');
-        setTimeout(() => {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }, 1000);
+        hideLoading();
     })
     .catch(error => {
         console.error('Error refreshing data:', error);
@@ -1285,53 +1373,22 @@ function initializeNotificationDropdown() {
     }
 }
 
-// Sidebar dropdown functions
-function toggleDropdown(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    const btn = document.querySelector(`button[onclick="toggleDropdown('${id}')"]`);
-    const chevron = btn ? btn.querySelector('i.bx') : null;
-
-    const willOpen = el.classList.contains('hidden'); // if hidden now, will open
-    // Toggle visibility
-    el.classList.toggle('hidden');
-
-    // Optional: rotate chevron for visual cue
-    if (chevron) {
-        chevron.classList.toggle('rotate-180', willOpen);
-    }
-
-    // Persist state in localStorage so it stays open across pages
-    try {
-        localStorage.setItem(`sidebarDropdown_${id}`, willOpen ? 'open' : 'closed');
-    } catch (e) {
-        console.warn('Could not persist dropdown state:', e);
-    }
-}
-
+// Initialize sidebar dropdown
 function initializeSidebarDropdown() {
-    // Restore saved dropdown states on page load
-    try {
-        Object.keys(localStorage).forEach(key => {
-            if (!key.startsWith('sidebarDropdown_')) return;
-            const id = key.replace('sidebarDropdown_', '');
-            const state = localStorage.getItem(key);
-            const el = document.getElementById(id);
-            if (!el) return;
+    const dropdownToggle = document.querySelector('.dropdown-toggle');
+    const dropdownMenu = document.querySelector('.dropdown-menu');
 
-            const btn = document.querySelector(`button[onclick="toggleDropdown('${id}')"]`);
-            const chevron = btn ? btn.querySelector('i.bx') : null;
+    if (dropdownToggle && dropdownMenu) {
+        dropdownToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            dropdownMenu.classList.toggle('hidden');
+        });
 
-            if (state === 'open') {
-                el.classList.remove('hidden');
-                if (chevron) chevron.classList.add('rotate-180');
-            } else {
-                el.classList.add('hidden');
-                if (chevron) chevron.classList.remove('rotate-180');
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.classList.add('hidden');
             }
         });
-    } catch (e) {
-        console.warn('initializeSidebarDropdown error:', e);
     }
 }

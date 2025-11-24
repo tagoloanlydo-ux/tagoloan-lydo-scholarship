@@ -4,100 +4,151 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signed Disbursements Report</title>
+    <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <style>
-        /* DOMpdf compatible styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: "DejaVu Sans", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #fff;
+            padding: 0;
             margin: 0;
-            padding: 20px;
-            background: #ffffff;
+            font-size: 9px;
+        }
+
+        .page {
+            position: relative;
+            min-height: 100vh;
+            page-break-after: always;
+        }
+
+        .page:last-child {
+            page-break-after: auto;
         }
 
         .container {
             width: 100%;
+            background: #fff;
             margin: 0 auto;
-            background: #ffffff;
+            padding: 0;
         }
 
-        /* HEADER TABLE */
+        /* HEADER - FIXED POSITION FOR EACH PAGE */
+        .header-portrait {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 8px 10mm 5px 10mm;
+            background: white;
+            z-index: 1000;
+            height: 20mm;
+            border-bottom: none;
+        }
+
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
         }
 
         .header-table td {
-            text-align: center;
-            padding: 5px;
-            vertical-align: middle;
+            vertical-align: top;
+            margin-top: 10px;
+            padding: 0 8px;
         }
 
-        .logo img {
-            width: 80px;
-            height: 80px;
+        .header-table .logo {
+            width: 20%;
+            text-align: center;
+        }
+
+        .header-table .logo img {
+            width: 60px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .header-table .name-section {
+            width: 60%;
+            text-align: center;
         }
 
         .name-section div {
-            font-size: 12px;
-            line-height: 1.2;
+            font-size: 9px;
+            line-height: 1.1;
+            margin-bottom: 1px;
         }
 
         .name-section strong {
-            font-size: 13px;
-            font-weight: bold;
+            font-size: 10px;
+            font-weight: 700;
         }
 
-        .report-title {
-            font-size: 14px;
+        .page-title {
+            margin-top: 3px;
+            font-size: 9px;
             font-weight: bold;
-            color: #2c3e50;
-            text-transform: uppercase;
-            margin-top: 5px;
+            color: #324b7a;
         }
 
-        /* FILTERS BOX */
+        /* FILTERS BOX - Only show on first page */
         .filters-info {
             background: #eef3ff;
-            padding: 8px;
-            margin-top: 8px;
+            padding: 6px 10px;
+            margin: 8px 0 0;
             border-left: 4px solid #3f6ad8;
-            font-size: 11px;
+            font-size: 9px;
+            border-radius: 4px;
+            width: 100%;
         }
 
         .filters-info h3 {
-            margin-bottom: 3px;
-            font-size: 12px;
-            font-weight: bold;
+            margin-bottom: 2px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #324b7a;
+        }
+
+        .filters-info p {
+            margin: 1px 0;
+            color: #555;
+        }
+
+        /* CONTENT AREA - ADJUST MARGIN FOR HEADER/FOOTER */
+        .content-wrapper {
+            margin-top: 40mm;
+            margin-bottom: 20mm;
+            padding: 0 15mm;
         }
 
         /* DATA TABLE */
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 11px;
-            border: 1px solid #000000;
+            font-size: 9px;
+            border: 1px solid #b8c3d6;
         }
 
         .data-table th {
-            background: #666666;
-            color: white;
-            padding: 6px;
+            background: white;
+            color: black;
+            padding: 10px 3px;
             text-transform: uppercase;
-            font-size: 10px;
-            border: 1px solid #000000;
-            font-weight: bold;
+            font-size: 8px;
+            border: 1px solid #000000ff;
+            font-weight: 600;
         }
 
         .data-table td {
-            padding: 6px;
-            border: 1px solid #000000;
+            padding: 4px 3px;
+            border: 1px solid #000000ff;
+            font-size: 8px;
+            line-height: 1.2;
         }
 
         .data-table tr:nth-child(even) {
@@ -112,140 +163,249 @@
             text-align: left;
         }
 
-        .footer {
-            margin-top: 25px;
+        /* FOOTER - FIXED POSITION FOR EACH PAGE */
+        .page-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             text-align: center;
-            font-size: 10px;
-            color: #666666;
-            border-top: 1px solid #cccccc;
-            padding-top: 8px;
+            font-size: 9px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding: 8px 15mm;
+            background: white;
+            height: 15mm;
         }
 
-        /* SIGNATURE STYLING */
+        .footer-left {
+            float: left;
+            text-align: left;
+        }
+
+        .footer-right {
+            float: right;
+            text-align: right;
+        }
+
+        /* Column widths for landscape */
+        .col-number {
+            width: 5%;
+        }
+        .col-name {
+            width: 22%;
+        }
+        .col-barangay {
+            width: 12%;
+        }
+        .col-semester {
+            width: 10%;
+        }
+        .col-year {
+            width: 12%;
+        }
+        .col-amount {
+            width: 12%;
+        }
+        .col-date {
+            width: 12%;
+        }
+        .col-signature {
+            width: 10%;
+        }
+
+        .compact-row td {
+            padding: 3px 2px;
+        }
+
+        .name-format {
+            font-weight: 600;
+            font-size: 8px;
+        }
+
         .signature-img {
             max-width: 60px;
             max-height: 25px;
             border: 1px solid #cccccc;
         }
 
-        /* AMOUNT STYLING */
-        .amount {
-            font-weight: bold;
-            color: #000000;
+        /* PRINT STYLES - CRITICAL FOR MULTIPLE PAGES */
+        @media print {
+            @page {
+                margin: 35mm 0mm 20mm 0mm;
+                size: A4 landscape;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                font-size: 9px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .page {
+                min-height: 100vh;
+                position: relative;
+            }
+
+            .header-portrait {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 35mm;
+                border-bottom: none;
+            }
+
+            .page-footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 15mm;
+            }
+
+            .content-wrapper {
+                margin-top: 38mm;
+                margin-bottom: 20mm;
+            }
+
+            /* Ensure table breaks properly across pages */
+            table { 
+                page-break-inside: auto;
+            }
+
+            tr { 
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            thead { 
+                display: table-header-group;
+            }
+
+            tbody { 
+                display: table-row-group;
+            }
         }
 
-        /* DATE STYLING */
-        .date {
-            font-size: 9px;
-            color: #666666;
-        }
-
-        /* Page break avoidance */
-        .avoid-break {
-            page-break-inside: avoid;
-        }
-
-        /* Force landscape in DOMpdf */
-        @page {
-            size: landscape;
-            margin: 10mm;
+        .no-data {
+            text-align: center;
+            padding: 50px 20px;
+            color: #666;
+            font-size: 14px;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
+    @php
+        $perPage = 48;
+        $chunks = $signedDisbursements->chunk($perPage);
+        $totalPages = $chunks->count();
+        $totalDisbursements = $signedDisbursements->count();
+    @endphp
 
-        <!-- HEADER -->
-        <table class="header-table">
-            <tr>
-                <td class="logo" style="width: 100px;">
-                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture2.png'))) }}" style="width: 80px; height: 80px;">
-                </td>
+    @foreach($chunks as $page => $pageDisbursements)
+    <div class="page">
+        <div class="container">
+            <!-- HEADER - REPEATS ON EVERY PAGE -->
+            <div class="header-portrait">
+                <table class="header-table">
+                    <tr>
+                        <td class="logo">
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture2.png'))) }}">
+                        </td>
+                        <td class="name-section">
+                            <div><strong>Republic of the Philippines</strong></div>
+                            <div>PROVINCE OF MISAMIS ORIENTAL</div>
+                            <div>MUNICIPALITY OF TAGOLOAN</div>
+                            <div><strong>LOCAL YOUTH DEVELOPMENT OFFICE</strong></div>
+                            <div><strong>SCHOLARSHIP MANAGEMENT SYSTEM</strong></div>
+                            <div class="page-title">Signed Disbursements Report - Page {{ $page + 1 }}</div>
+                            
+                            <!-- FILTERS ONLY ON FIRST PAGE -->
+                            @if($page === 0 && !empty($filters))
+                            <div class="filters-info">
+                                <h3>Applied Filters:</h3>
+                                @foreach($filters as $filter)
+                                    <p>{{ $filter }}</p>
+                                @endforeach
+                            </div>
+                            @endif
+                        </td>
+                        <td class="logo">
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture3.png'))) }}">
+                        </td>
+                    </tr>
+                </table>
+            </div>
 
-                <td class="name-section">
-                    <div><strong>Republic of the Philippines</strong></div>
-                    <div>PROVINCE OF MISAMIS ORIENTAL</div>
-                    <div>MUNICIPALITY OF TAGOLOAN</div>
-                    <div><strong>LOCAL YOUTH DEVELOPMENT OFFICE</strong></div>
-                    <div><strong>SCHOLARSHIP MANAGEMENT SYSTEM</strong></div>
-                    <div class="report-title">SIGNED DISBURSEMENTS REPORT</div>
+            <!-- CONTENT -->
+            <div class="content-wrapper">
+                @if($pageDisbursements->count() > 0)
+                @php
+                    $sortedDisbursements = $pageDisbursements->sortBy('full_name');
+                @endphp
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="text-center col-number">#</th>
+                            <th class="text-center col-name">Name</th>
+                            <th class="text-center col-barangay">Barangay</th>
+                            <th class="text-center col-semester">Semester</th>
+                            <th class="text-center col-year">Academic Year</th>
+                            <th class="text-center col-amount">Amount</th>
+                            <th class="text-center col-date">Date</th>
+                            <th class="text-center col-signature">Signature</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($sortedDisbursements as $index => $disburse)
+                        <tr class="compact-row">
+                            <td class="text-center">{{ ($page * $perPage) + $loop->iteration }}</td>
+                            <td class="text-center name-format">{{ $disburse->full_name }}</td>
+                            <td class="text-center">{{ $disburse->applicant_brgy }}</td>
+                            <td class="text-center">{{ $disburse->disburse_semester }}</td>
+                            <td class="text-center">{{ $disburse->disburse_acad_year }}</td>
+                            <td class="text-center">Php {{ number_format($disburse->disburse_amount, 2) }}</td>
+                            <td class="text-center">{{ \Carbon\Carbon::parse($disburse->disburse_date)->format('M d, Y') }}</td>
+                            <td class="text-center">
+                                @if($disburse->disburse_signature)
+                                    <img src="{{ $disburse->disburse_signature }}" class="signature-img" alt="Signature">
+                                @else
+                                    <span style="color: #000000; font-weight: bold; font-size: 8px;">✓ SIGNED</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @else
+                <div class="no-data">
+                    <h3>No Signed Disbursements Found</h3>
+                    <p>No signed disbursements match the current filter criteria.</p>
+                </div>
+                @endif
+            </div>
 
-                    @if(!empty($filters))
-                    <div class="filters-info">
-                        <h3>Applied Filters:</h3>
-                        @if(isset($filters['search']))
-                            <p><strong>Search:</strong> "{{ $filters['search'] }}"</p>
-                        @endif
-                        @if(isset($filters['barangay']))
-                            <p><strong>Barangay:</strong> {{ $filters['barangay'] }}</p>
-                        @endif
-                        @if(isset($filters['academic_year']))
-                            <p><strong>Academic Year:</strong> {{ $filters['academic_year'] }}</p>
-                        @endif
-                        @if(isset($filters['semester']))
-                            <p><strong>Semester:</strong> {{ $filters['semester'] }}</p>
-                        @endif
-                    </div>
-                    @endif
-                </td>
-
-                <td class="logo" style="width: 100px;">
-                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture3.png'))) }}" style="width: 80px; height: 80px;">
-                </td>
-            </tr>
-        </table>
-
-        <!-- TABLE -->
-        @if($signedDisbursements->count() > 0)
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%;">#</th>
-                    <th style="width: 25%;">Scholar Name</th>
-                    <th style="width: 15%;">Barangay</th>
-                    <th style="width: 10%;">Semester</th>
-                    <th style="width: 15%;">Academic Year</th>
-                    <th style="width: 10%;" class="text-center">Amount</th>
-                    <th style="width: 10%;" class="text-center">Date</th>
-                    <th style="width: 10%;" class="text-center">Signature</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @foreach($signedDisbursements as $disburse)
-                <tr class="avoid-break">
-                    <td class="text-center">{{ $loop->iteration }}</td>
-                    <td class="text-left">{{ $disburse->full_name }}</td>
-                    <td class="text-center">{{ $disburse->applicant_brgy }}</td>
-                    <td class="text-center">{{ $disburse->disburse_semester }}</td>
-                    <td class="text-center">{{ $disburse->disburse_acad_year }}</td>
-                    <td class="text-center amount">Php {{ number_format($disburse->disburse_amount, 2) }}</td>
-                    <td class="text-center date">{{ \Carbon\Carbon::parse($disburse->disburse_date)->format('F d, Y') }}</td>
-                    <td class="text-center">
-                        @if($disburse->disburse_signature)
-                            <img src="{{ $disburse->disburse_signature }}" class="signature-img" alt="Signature" style="max-width: 60px; max-height: 25px;">
-                        @else
-                            <span style="color: #000000; font-weight: bold; font-size: 9px;">✓ SIGNED</span>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-        @else
-        <div class="text-center" style="padding: 30px;">
-            <h3 style="color: #555555; font-size: 14px;">No Signed Disbursements Found</h3>
-            <p style="color: #777777; font-size: 12px;">No signed disbursements match the current filter criteria.</p>
+            <!-- FOOTER - INDIVIDUAL FOR EACH PAGE -->
+            <div class="page-footer">
+                <div class="footer-left">
+                    Report generated by LYDO Scholarship Management System<br>
+                    {{ \Carbon\Carbon::now()->format('F d, Y — h:i A') }}
+                </div>
+                <div class="footer-right">
+                    Page {{ $page + 1 }} of {{ $totalPages }}<br>
+                    Total Records: {{ $totalDisbursements }}
+                </div>
+                <div style="clear: both;"></div>
+            </div>
         </div>
-        @endif
-
-        <div class="footer">
-            Report generated by LYDO Scholarship Management System <br>
-            {{ \Carbon\Carbon::now()->format('F d, Y — h:i A') }}
-        </div>
-
     </div>
+    @endforeach
 </body>
 </html>

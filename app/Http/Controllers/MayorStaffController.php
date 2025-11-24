@@ -17,53 +17,43 @@ use App\Http\Controllers\SmsController;
 
 class MayorStaffController extends Controller
 {
+
     public function index()
     {
+        
+    $currentStaffId = session('lydopers')->lydopers_id;
+
+        // Get NEW applications that need initial screening by this staff
         $newApplications = DB::table("tbl_application as app")
-            ->join(
-                "tbl_applicant as a",
-                "a.applicant_id",
-                "=",
-                "app.applicant_id",
-            )
+            ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+            ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
             ->select(
                 "app.application_id",
                 "a.applicant_fname",
                 "a.applicant_lname",
                 "app.created_at",
             )
+            ->where("ap.lydopers_id", $currentStaffId)
+            ->where("ap.initial_screening", "Pending")
             ->orderBy("app.created_at", "desc")
             ->limit(10)
             ->get()
             ->map(function ($item) {
                 return (object) [
                     "type" => "application",
-                    "name" =>
-                        $item->applicant_fname . " " . $item->applicant_lname,
+                    "name" => $item->applicant_fname . " " . $item->applicant_lname,
                     "created_at" => $item->created_at,
                 ];
             });
 
-        // Get NEW remarks (Poor, Non Poor, Ultra Poor, Non Indigenous)
+        // Get NEW remarks for status approval that need review by this staff
         $newRemarks = DB::table("tbl_application_personnel as ap")
-            ->join(
-                "tbl_application as app",
-                "ap.application_id",
-                "=",
-                "app.application_id",
-            )
-            ->join(
-                "tbl_applicant as a",
-                "a.applicant_id",
-                "=",
-                "app.applicant_id",
-            )
-            ->whereIn("ap.remarks", [
-                "Poor",
-                "Non Poor",
-                "Ultra Poor",
-                "Non Indigenous",
-            ])
+            ->join("tbl_application as app", "ap.application_id", "=", "app.application_id")
+            ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+            ->where("ap.lydopers_id", $currentStaffId)
+            ->where('ap.initial_screening', 'Reviewed')
+            ->where('ap.status', 'Pending')
+            ->whereIn('ap.remarks', ['Poor', 'Ultra Poor'])
             ->select(
                 "ap.remarks",
                 "a.applicant_fname",
@@ -77,12 +67,10 @@ class MayorStaffController extends Controller
                 return (object) [
                     "type" => "remark",
                     "remarks" => $item->remarks,
-                    "name" =>
-                        $item->applicant_fname . " " . $item->applicant_lname,
+                    "name" => $item->applicant_fname . " " . $item->applicant_lname,
                     "created_at" => $item->created_at,
                 ];
             });
-
 
         $notifications = $newApplications
             ->merge($newRemarks)
@@ -350,51 +338,40 @@ public function application(Request $request)
         ->pluck("applicant_brgy")
         ->unique();
 
+     // Get the current logged-in mayor staff ID
+    $currentStaffId = session('lydopers')->lydopers_id;
+
+    // Get NEW applications that need initial screening by this staff
     $newApplications = DB::table("tbl_application as app")
-        ->join(
-            "tbl_applicant as a",
-            "a.applicant_id",
-            "=",
-            "app.applicant_id",
-        )
+        ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+        ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
         ->select(
             "app.application_id",
             "a.applicant_fname",
             "a.applicant_lname",
             "app.created_at",
         )
+        ->where("ap.lydopers_id", $currentStaffId)
+        ->where("ap.initial_screening", "Pending")
         ->orderBy("app.created_at", "desc")
         ->limit(10)
         ->get()
         ->map(function ($item) {
             return (object) [
                 "type" => "application",
-                "name" =>
-                    $item->applicant_fname . " " . $item->applicant_lname,
+                "name" => $item->applicant_fname . " " . $item->applicant_lname,
                 "created_at" => $item->created_at,
             ];
         });
 
-    // Get NEW remarks (Poor, Non Poor, Ultra Poor, Non Indigenous)
+    // Get NEW remarks for status approval that need review by this staff
     $newRemarks = DB::table("tbl_application_personnel as ap")
-        ->join(
-            "tbl_application as app",
-            "ap.application_id",
-            "=",
-            "app.application_id",
-        )
-        ->join(
-            "tbl_applicant as a",
-            "a.applicant_id",
-            "=",
-            "app.applicant_id",
-        )
-        ->whereIn("ap.remarks", [
-            "Poor",
-            "Non Poor",
-            "Ultra Poor",
-            "Non Indigenous",
-        ])
+        ->join("tbl_application as app", "ap.application_id", "=", "app.application_id")
+        ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+        ->where("ap.lydopers_id", $currentStaffId)
+        ->where('ap.initial_screening', 'Reviewed')
+        ->where('ap.status', 'Pending')
+        ->whereIn('ap.remarks', ['Poor', 'Ultra Poor'])
         ->select(
             "ap.remarks",
             "a.applicant_fname",
@@ -408,12 +385,10 @@ public function application(Request $request)
             return (object) [
                 "type" => "remark",
                 "remarks" => $item->remarks,
-                "name" =>
-                    $item->applicant_fname . " " . $item->applicant_lname,
+                "name" => $item->applicant_fname . " " . $item->applicant_lname,
                 "created_at" => $item->created_at,
             ];
         });
-
   
     $notifications = $newApplications
         ->merge($newRemarks)
@@ -536,6 +511,8 @@ public function deleteApplication($id)
 
     public function approveApplication($id)
     {
+          session(['notifications_viewed' => true]);
+
         // Get the application_id and applicant email from application_personnel and applicant
         $applicationPersonnel = DB::table('tbl_application_personnel as ap')
             ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
@@ -578,6 +555,8 @@ public function deleteApplication($id)
 
     public function rejectApplication(Request $request, $id)
     {
+         session(['notifications_viewed' => true]);
+         
         $request->validate([
             'reason' => 'required|string|max:1000'
         ]);
@@ -818,70 +797,57 @@ public function deleteApplication($id)
 
     public function settings()
     {
-                   $newApplications = DB::table("tbl_application as app")
-            ->join(
-                "tbl_applicant as a",
-                "a.applicant_id",
-                "=",
-                "app.applicant_id",
-            )
-            ->select(
-                "app.application_id",
-                "a.applicant_fname",
-                "a.applicant_lname",
-                "app.created_at",
-            )
-            ->orderBy("app.created_at", "desc")
-            ->limit(10)
-            ->get()
-            ->map(function ($item) {
-                return (object) [
-                    "type" => "application",
-                    "name" =>
-                        $item->applicant_fname . " " . $item->applicant_lname,
-                    "created_at" => $item->created_at,
-                ];
-            });
+           // Get the current logged-in mayor staff ID
+    $currentStaffId = session('lydopers')->lydopers_id;
 
-        // Get NEW remarks (Poor, Non Poor, Ultra Poor, Non Indigenous)
-        $newRemarks = DB::table("tbl_application_personnel as ap")
-            ->join(
-                "tbl_application as app",
-                "ap.application_id",
-                "=",
-                "app.application_id",
-            )
-            ->join(
-                "tbl_applicant as a",
-                "a.applicant_id",
-                "=",
-                "app.applicant_id",
-            )
-            ->whereIn("ap.remarks", [
-                "Poor",
-                "Non Poor",
-                "Ultra Poor",
-                "Non Indigenous",
-            ])
-            ->select(
-                "ap.remarks",
-                "a.applicant_fname",
-                "a.applicant_lname",
-                "ap.created_at",
-            )
-            ->orderBy("ap.created_at", "desc")
-            ->limit(10)
-            ->get()
-            ->map(function ($item) {
-                return (object) [
-                    "type" => "remark",
-                    "remarks" => $item->remarks,
-                    "name" =>
-                        $item->applicant_fname . " " . $item->applicant_lname,
-                    "created_at" => $item->created_at,
-                ];
-            });
+    // Get NEW applications that need initial screening by this staff
+    $newApplications = DB::table("tbl_application as app")
+        ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+        ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
+        ->select(
+            "app.application_id",
+            "a.applicant_fname",
+            "a.applicant_lname",
+            "app.created_at",
+        )
+        ->where("ap.lydopers_id", $currentStaffId)
+        ->where("ap.initial_screening", "Pending")
+        ->orderBy("app.created_at", "desc")
+        ->limit(10)
+        ->get()
+        ->map(function ($item) {
+            return (object) [
+                "type" => "application",
+                "name" => $item->applicant_fname . " " . $item->applicant_lname,
+                "created_at" => $item->created_at,
+            ];
+        });
 
+    // Get NEW remarks for status approval that need review by this staff
+    $newRemarks = DB::table("tbl_application_personnel as ap")
+        ->join("tbl_application as app", "ap.application_id", "=", "app.application_id")
+        ->join("tbl_applicant as a", "a.applicant_id", "=", "app.applicant_id")
+        ->where("ap.lydopers_id", $currentStaffId)
+        ->where('ap.initial_screening', 'Reviewed')
+        ->where('ap.status', 'Pending')
+        ->whereIn('ap.remarks', ['Poor', 'Ultra Poor'])
+        ->select(
+            "ap.remarks",
+            "a.applicant_fname",
+            "a.applicant_lname",
+            "ap.created_at",
+        )
+        ->orderBy("ap.created_at", "desc")
+        ->limit(10)
+        ->get()
+        ->map(function ($item) {
+            return (object) [
+                "type" => "remark",
+                "remarks" => $item->remarks,
+                "name" => $item->applicant_fname . " " . $item->applicant_lname,
+                "created_at" => $item->created_at,
+            ];
+        });
 
         $notifications = $newApplications
             ->merge($newRemarks)

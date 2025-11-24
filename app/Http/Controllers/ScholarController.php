@@ -36,54 +36,59 @@ class ScholarController extends Controller
         return view('scholar.scholar_setting', compact('scholar'));
     }
 
-    // Update scholar personal info and password
-    public function updateSettings(Request $request)
-    {
-        $scholar = session('scholar');
-        if (!$scholar) {
-            return redirect()->route('scholar.login')->withErrors(['error' => 'Please login to update settings.']);
+public function updateSettings(Request $request)
+{
+    $scholar = session('scholar');
+    if (!$scholar) {
+        return redirect()->route('scholar.login')->withErrors(['error' => 'Please login to update settings.']);
+    }
+    $scholar->load('applicant');
+
+    $request->validate([
+        'applicant_fname' => 'required|string|max:255',
+        'applicant_mname' => 'nullable|string|max:255',
+        'applicant_lname' => 'required|string|max:255',
+        'applicant_suffix' => 'nullable|string|max:10',
+        'applicant_bdate' => 'required|date|before:today',
+        'applicant_civil_status' => 'required|in:single,married,widowed,divorced',
+        'applicant_brgy' => 'required|string|max:255',
+        'applicant_email' => 'required|email|unique:tbl_applicant,applicant_email,' . $scholar->applicant->applicant_id . ',applicant_id',
+        'applicant_contact_number' => 'required|string|max:15',
+        'applicant_school_name' => 'required|string|max:255',
+        'password' => 'nullable|string|min:8|confirmed',
+        'current_password' => 'required_with:password|string',
+    ]);
+
+    $applicant = $scholar->applicant;
+
+    $applicant->applicant_fname = $request->input('applicant_fname');
+    $applicant->applicant_mname = $request->input('applicant_mname');
+    $applicant->applicant_lname = $request->input('applicant_lname');
+    $applicant->applicant_suffix = $request->input('applicant_suffix');
+    $applicant->applicant_bdate = $request->input('applicant_bdate');
+    $applicant->applicant_civil_status = $request->input('applicant_civil_status');
+    $applicant->applicant_brgy = $request->input('applicant_brgy');
+    $applicant->applicant_email = $request->input('applicant_email');
+    $applicant->applicant_contact_number = $request->input('applicant_contact_number');
+    $applicant->applicant_school_name = $request->input('applicant_school_name');
+    $applicant->save();
+
+    // Update password if provided (verify current password first)
+    if ($request->filled('password')) {
+        if (!\Illuminate\Support\Facades\Hash::check($request->input('current_password'), $scholar->scholar_pass)) {
+            return redirect()->back()->withErrors(['current_password' => 'Current password is incorrect.'])->withInput();
         }
+
+        $scholar->scholar_pass = \Illuminate\Support\Facades\Hash::make($request->input('password'));
+        $scholar->save();
+
+        // Refresh session scholar object
         $scholar->load('applicant');
-
-        $request->validate([
-            'applicant_fname' => 'required|string|max:255',
-            'applicant_mname' => 'nullable|string|max:255',
-            'applicant_lname' => 'required|string|max:255',
-            'applicant_suffix' => 'nullable|string|max:10',            'applicant_bdate' => 'required|date|before:today',
-            'applicant_civil_status' => 'required|in:single,married,widowed,divorced',
-            'applicant_brgy' => 'required|string|max:255',
-            'applicant_email' => 'required|email|unique:tbl_applicant,applicant_email,' . $scholar->applicant->applicant_id . ',applicant_id',
-            'applicant_contact_number' => 'required|string|max:15',
-            'applicant_school_name' => 'required|string|max:255',
-            'applicant_school_name_other' => 'nullable|string|max:255',
-            // year level and acad year are not updatable
-            'password' => 'nullable|string|min:8|confirmed',
-        ]);
-
-        $applicant = $scholar->applicant;
-
-        $applicant->applicant_fname = $request->input('applicant_fname');
-        $applicant->applicant_mname = $request->input('applicant_mname');
-        $applicant->applicant_lname = $request->input('applicant_lname');
-        $applicant->applicant_suffix = $request->input('applicant_suffix');        $applicant->applicant_bdate = $request->input('applicant_bdate');
-        $applicant->applicant_civil_status = $request->input('applicant_civil_status');
-        $applicant->applicant_brgy = $request->input('applicant_brgy');
-        $applicant->applicant_email = $request->input('applicant_email');
-        $applicant->applicant_contact_number = $request->input('applicant_contact_number');
-        $applicant->applicant_school_name = $request->input('applicant_school_name');
-        $applicant->applicant_school_name_other = $request->input('applicant_school_name_other');
-
-        $applicant->save();
-
-        // Update password if provided
-        if ($request->filled('password')) {
-            $scholar->scholar_pass = \Illuminate\Support\Facades\Hash::make($request->input('password'));
-            $scholar->save();
-        }
-
-        return redirect()->back()->with('success', 'Settings updated successfully.');
+        session(['scholar' => $scholar]);
     }
 
+    return redirect()->back()->with('success', 'Settings updated successfully.');
+}
 
         public function checkEmail(Request $request)
         {
@@ -334,6 +339,7 @@ class ScholarController extends Controller
         $announcements = Announce::where('announce_type', 'Scholars')->orderBy('date_posted', 'desc')->get();
         return view('scholar.scholar_dash', compact('announcements'));
     }
+
 public function showRenewalApp()
 {
     $scholar = session('scholar');
@@ -349,40 +355,82 @@ public function showRenewalApp()
             $scholar->load('applicant');
         }
 
-        // Get current academic year
+        // Get current academic year using new cutoff (July 10)
         $now = now();
-        $currentYear = $now->year;
-        $currentMonth = $now->month;
-
-        $academicYear = $currentMonth >= 6
-            ? $currentYear . '-' . ($currentYear + 1)
-            : ($currentYear - 1) . '-' . $currentYear;
+        $academicYear = $this->getCurrentAcademicYear($now);
 
         // Get applicant's starting academic year
         $applicantStartYear = $scholar->applicant->applicant_acad_year;
         
-        // Check if current academic year is different from applicant's start year
-        // AND we're in the renewal period (August onwards for next academic year)
-        $canRenewForNextYear = ($academicYear !== $applicantStartYear) && 
-                              ($currentMonth >= 8); // August onwards
+        // Extract years from academic year strings
+        $startYearParts = explode('-', $applicantStartYear);
+        $currentYearParts = explode('-', $academicYear);
+        
+        $startYearInt = intval($startYearParts[0]);
+        $currentYearInt = intval($currentYearParts[0]);
+        
+        // Scholar can renew if current academic year is DIFFERENT from start academic year
+        // AND current academic year is GREATER than start academic year
+        $canRenewForNextYear = ($academicYear !== $applicantStartYear) && ($currentYearInt > $startYearInt);
 
-        // Get the renewal semester from settings
+        // BLOCK RENEWAL: If current academic year matches applicant's starting academic year
+        $blockedByStartDateYear = false;
+        if ($settings && $settings->renewal_start_date) {
+            try {
+                // Get the academic year of the renewal start date
+                $renewalStartAcademicYear = $this->getCurrentAcademicYear($settings->renewal_start_date);
+                
+                // Block if applicant's start year matches renewal start academic year
+                $blockedByStartDateYear = ($applicantStartYear === $renewalStartAcademicYear);
+                
+                // ALSO block if current academic year matches applicant's starting academic year
+                if ($academicYear === $applicantStartYear) {
+                    $blockedByStartDateYear = true;
+                }
+                
+                // If blocked, override canRenewForNextYear to false
+                if ($blockedByStartDateYear) {
+                    $canRenewForNextYear = false;
+                }
+            } catch (\Exception $e) {
+                // If there's error parsing, just use the basic comparison
+                if ($academicYear === $applicantStartYear) {
+                    $blockedByStartDateYear = true;
+                    $canRenewForNextYear = false;
+                }
+            }
+        } else {
+            // If no renewal start date setting, still block if current academic year matches start year
+            if ($academicYear === $applicantStartYear) {
+                $blockedByStartDateYear = true;
+                $canRenewForNextYear = false;
+            }
+        }
+
+        // Debug logging
+        \Log::info('Academic Year Renewal Check:', [
+            'applicant_start_year' => $applicantStartYear,
+            'current_academic_year' => $academicYear,
+            'renewal_start_academic_year' => $renewalStartAcademicYear ?? 'N/A',
+            'can_renew' => $canRenewForNextYear,
+            'blocked_by_start_date_year' => $blockedByStartDateYear,
+            'current_date' => $now->format('Y-m-d')
+        ]);
+
+        // Rest of your existing code...
         $renewalSemester = $settings->renewal_semester ?? '1st Semester';
 
-        // Check if renewal exists for current academic year AND the same semester
         $renewal = \App\Models\Renewal::where('scholar_id', $scholar->scholar_id)
             ->where('renewal_acad_year', $academicYear)
             ->where('renewal_semester', $renewalSemester)
             ->first();
 
-        // Check if there's an APPROVED renewal for current academic year AND the same semester
         $approvedRenewalExists = \App\Models\Renewal::where('scholar_id', $scholar->scholar_id)
             ->where('renewal_acad_year', $academicYear)
             ->where('renewal_semester', $renewalSemester)
             ->where('renewal_status', 'Approved')
             ->exists();
 
-        // Get bad documents status if renewal exists
         if ($renewal) {
             $badDocuments = [
                 'renewal_cert_of_reg' => $renewal->cert_of_reg_status === 'bad',
@@ -392,7 +440,7 @@ public function showRenewalApp()
         }
     }
 
-    return view('scholar.renewal_app', compact('renewal', 'settings', 'approvedRenewalExists', 'badDocuments', 'canRenewForNextYear'));
+    return view('scholar.renewal_app', compact('renewal', 'settings', 'approvedRenewalExists', 'badDocuments', 'canRenewForNextYear', 'blockedByStartDateYear'));
 }
 
 // Add this helper method to determine current semester
@@ -898,15 +946,21 @@ return redirect()->route('home')->with('success', 'Application documents updated
 /**
  * Move uploaded files into storage/documents/
  */
-private function getCurrentAcademicYear()
+private function getCurrentAcademicYear($date = null)
 {
-    $now = now();
-    $currentYear = $now->year;
-    $currentMonth = $now->month;
+    $now = $date ? \Carbon\Carbon::parse($date) : now();
+    $currentYear = (int)$now->year;
 
-    return $currentMonth >= 6
-        ? $currentYear . '-' . ($currentYear + 1)
-        : ($currentYear - 1) . '-' . $currentYear;
+    // Academic year ends on July 10 of the year
+    $cutoff = \Carbon\Carbon::createFromDate($currentYear, 7, 10)->endOfDay();
+
+    if ($now->greaterThan($cutoff)) {
+        // After July 10 -> academic year is currentYear - nextYear (e.g. 2025-2026)
+        return $currentYear . '-' . ($currentYear + 1);
+    } else {
+        // On or before July 10 -> academic year is previousYear - currentYear (e.g. 2024-2025)
+        return ($currentYear - 1) . '-' . $currentYear;
+    }
 }
 // Add this method to your ScholarController class
 

@@ -11,9 +11,46 @@
     <link rel="stylesheet" href="{{ asset('css/staff.css') }}" />
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <audio id="notificationSound" src="{{ asset('notification/blade.wav') }}" preload="auto"></audio>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
   <style>
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.scale-0 {
+    transform: scale(0);
+    transition: transform 0.3s ease;
+}
+
+#notifCount {
+    transition: all 0.3s ease;
+}
+
+#notifDropdown {
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
   /* Toggle Password Button Styles */
 .toggle-password {
     transition: color 0.3s ease;
@@ -106,52 +143,52 @@
 @php
     $badgeCount = ($notifications->where('initial_screening', 'Approved')->count() > 0 && $pendingRenewals > 0) ? $notifications->where('initial_screening', 'Approved')->count() : 0;
 @endphp
- <div class="dashboard-grid">
-<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
+    <div class="dashboard-grid">
+        <header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
             <div class="flex items-center">
-                <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
+                <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg">
                 <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
             </div>
             <div class="flex items-center space-x-4">
-                            <div class="flex items-center space-x-2">
-                   <!-- Navbar -->
-                   <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Lydo Staff</span>
+                <div class="flex items-center space-x-2">
+                    <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Lydo Staff</span>
                 </div>
+                
+                <!-- Notification Bell with Improved System -->
                 <div class="relative">
                     <button id="notifBell" class="relative focus:outline-none">
                         <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
                         @if($badgeCount > 0)
-                            <span id="notifCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
+                            <span id="notifCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center transition-all duration-300">
                                 {{ $badgeCount }}
                             </span>
+                        @else
+                            <span id="notifCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center hidden transition-all duration-300"></span>
                         @endif
                     </button>
                     <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                        <div class="p-3 border-b font-semibold text-gray-700">Notifications</div>
-                        <ul class="max-h-60 overflow-y-auto"> @forelse($notifications as $notif) <li class="px-4 py-2 hover:bg-gray-50 text-sm border-b"> @if($notif->initial_screening == 'Approved') <p class="text-green-600 font-medium"> ✅ {{ $notif->name }} passed initial screening </p> @elseif($notif->status == 'Renewed') <p class="text-blue-600 font-medium"> 🔄 {{ $notif->name }} submitted renewal </p> @endif <p class="text-xs text-gray-500">
+                        <div class="p-3 border-b font-semibold text-gray-700 flex justify-between items-center">
+                            <span>Notifications</span>
+                            <button id="markAllRead" class="text-xs text-blue-600 hover:text-blue-800 transition-colors">Mark all as read</button>
+                        </div>
+                        <ul id="notifList" class="max-h-60 overflow-y-auto">
+                            @forelse($notifications as $notif)
+                            <li class="px-4 py-2 hover:bg-gray-50 text-sm border-b transition-colors">
+                                @if($notif->initial_screening == 'Approved')
+                                <p class="text-green-600 font-medium"> ✅ {{ $notif->name }} passed initial screening </p>
+                                @elseif($notif->status == 'Renewed')
+                                <p class="text-blue-600 font-medium"> 🔄 {{ $notif->name }} submitted renewal </p>
+                                @endif
+                                <p class="text-xs text-gray-500">
                                     {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
                                 </p>
-                            </li> @empty <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li> @endforelse </ul>
+                            </li>
+                            @empty
+                            <li class="px-4 py-3 text-gray-500 text-sm">No new notifications</li>
+                            @endforelse
+                        </ul>
                     </div>
                 </div>
-                <script>
-                    document.getElementById("notifBell").addEventListener("click", function() {
-                        document.getElementById("notifDropdown").classList.toggle("hidden");
-                        let notifCount = document.getElementById("notifCount");
-                        if (notifCount) {
-                            notifCount.innerText = '0'; // magiging zero ang count
-                            // Mark notifications as viewed
-                            fetch('/lydo_staff/mark-notifications-viewed', {
-                                method: 'POST',
-                                headers: {
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-                        }
-                    });
-                </script>
-
             </div>
         </header>
         
@@ -1003,6 +1040,188 @@ document.addEventListener('DOMContentLoaded', function() {
     // Validate password fields if they have values
     validatePassword(document.getElementById('new_password'));
     validatePasswordConfirmation(document.getElementById('new_password_confirmation'));
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const notifBell = document.getElementById('notifBell');
+    const notifDropdown = document.getElementById('notifDropdown');
+    const notifCount = document.getElementById('notifCount');
+    const markAllRead = document.getElementById('markAllRead');
+    const notificationSound = document.getElementById('notificationSound');
+    
+    let notificationCheckInterval;
+    let lastBadgeCount = {{ $badgeCount }};
+    let isDropdownOpen = false;
+
+    // Function to check for new notifications
+    function checkNewNotifications() {
+        fetch('{{ route("lydo_staff.notification_counts") }}', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.badge_count > lastBadgeCount) {
+                    // New notification arrived
+                    playNotificationSound();
+                    updateBadgeCount(data.badge_count);
+                    lastBadgeCount = data.badge_count;
+                    
+                    // Show visual pulse effect
+                    notifBell.classList.add('animate-pulse');
+                    setTimeout(() => {
+                        notifBell.classList.remove('animate-pulse');
+                    }, 2000);
+                } else if (data.badge_count !== lastBadgeCount) {
+                    // Count changed (decreased)
+                    updateBadgeCount(data.badge_count);
+                    lastBadgeCount = data.badge_count;
+                }
+            })
+            .catch(error => console.error('Error checking notifications:', error));
+    }
+
+    // Function to play notification sound
+    function playNotificationSound() {
+        if (notificationSound) {
+            notificationSound.currentTime = 0;
+            notificationSound.play().catch(e => console.log('Audio play failed:', e));
+        }
+    }
+
+    // Function to update badge count
+    function updateBadgeCount(count) {
+        if (notifCount) {
+            if (count > 0) {
+                notifCount.textContent = count;
+                notifCount.classList.remove('hidden');
+                notifCount.classList.add('flex');
+            } else {
+                notifCount.classList.add('hidden');
+                notifCount.classList.remove('flex');
+            }
+        }
+    }
+
+    // Toggle notification dropdown
+    notifBell.addEventListener('click', function(e) {
+        e.stopPropagation();
+        isDropdownOpen = !notifDropdown.classList.contains('hidden');
+        
+        if (!isDropdownOpen) {
+            // Opening dropdown - mark as read
+            notifDropdown.classList.remove('hidden');
+            markNotificationsAsRead();
+            isDropdownOpen = true;
+        } else {
+            // Closing dropdown
+            notifDropdown.classList.add('hidden');
+            isDropdownOpen = false;
+        }
+    });
+
+    // Mark all as read button
+    if (markAllRead) {
+        markAllRead.addEventListener('click', function(e) {
+            e.stopPropagation();
+            markNotificationsAsRead();
+        });
+    }
+
+    // Function to mark notifications as read
+    function markNotificationsAsRead() {
+        fetch('{{ route("lydo_staff.mark_notifications_read") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                updateBadgeCount(0);
+                lastBadgeCount = 0;
+                
+                // Add visual feedback
+                notifCount.classList.add('scale-0');
+                setTimeout(() => {
+                    notifCount.classList.remove('scale-0');
+                }, 300);
+            }
+        })
+        .catch(error => console.error('Error marking notifications as read:', error));
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!notifBell.contains(event.target) && !notifDropdown.contains(event.target)) {
+            notifDropdown.classList.add('hidden');
+            isDropdownOpen = false;
+        }
+    });
+
+    // Close dropdown on escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && isDropdownOpen) {
+            notifDropdown.classList.add('hidden');
+            isDropdownOpen = false;
+        }
+    });
+
+    // Start checking for new notifications every 5 seconds
+    notificationCheckInterval = setInterval(checkNewNotifications, 5000);
+
+    // Initial check
+    checkNewNotifications();
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        clearInterval(notificationCheckInterval);
+    });
+
+    // Handle page visibility changes (stop checking when tab is not active)
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            clearInterval(notificationCheckInterval);
+        } else {
+            notificationCheckInterval = setInterval(checkNewNotifications, 5000);
+            // Check immediately when returning to tab
+            checkNewNotifications();
+        }
+    });
+});
+
+// Real-time updates using Laravel Echo and Pusher (if you have it set up)
+document.addEventListener('DOMContentLoaded', function() {
+    // If you have Laravel Echo configured for real-time updates
+    @if(config('broadcasting.default') !== 'log')
+    window.Echo.channel('lydo-staff-updates')
+        .listen('.applicant.updated', (e) => {
+            if (e.type === 'pending_initial') {
+                // Trigger immediate notification check
+                checkNewNotifications();
+            }
+        })
+        .listen('.renewal.updated', (e) => {
+            if (e.type === 'pending_renewals') {
+                // Trigger immediate notification check
+                checkNewNotifications();
+            }
+        });
+    @endif
 });
 </script>
 <script src="{{ asset('js/spinner.js') }}"></script>

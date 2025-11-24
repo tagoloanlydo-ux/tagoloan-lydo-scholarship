@@ -13,6 +13,129 @@
       <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 </head>
 <style>
+/* Center the pagination container */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    max-width: fit-content;
+}
+
+/* For mobile responsiveness */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+.pagination-info {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: white;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 1rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.pagination-page-input {
+    width: 3.5rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    text-align: center;
+}
+
+.pagination-page-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .pagination-buttons {
+        order: -1;
+    }
+}
+    /* Note box styling */
+    .note-box {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .note-box h4 {
+        color: #0369a1;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .note-box p {
+        color: #0c4a6e;
+        font-size: 0.875rem;
+    }
+
+    .note-box ul {
+        list-style-type: disc;
+        margin-left: 1.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .note-box li {
+        margin-bottom: 0.25rem;
+    }
  .loading-overlay {
     position: fixed;
     top: 0;
@@ -209,7 +332,21 @@
                     </form>
                 </div>
             </div>
-            <div class="flex-1 overflow-hidden p-4 md:p-5 text-[16px]">
+            <div class="flex-1 p-4 md:p-5 text-[16px]">
+                <!-- Announcement Type Note -->
+                <div class="note-box">
+                    <h4><i class="fas fa-info-circle mr-2"></i>Announcement Types</h4>
+                    <p>When creating announcements, please note the following:</p>
+                    <ul>
+                        <li><strong>For Applicants:</strong> These announcements will be visible on the front page/public application portal for all applicants to see.</li>
+                        <li><strong>For Scholars:</strong> These announcements will be visible only in the scholar dashboard for current scholarship recipients.</li>
+                    </ul>
+                    <p class="mt-2 text-amber-600 font-medium">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        <strong>Note:</strong> Choose the appropriate type to ensure your announcement reaches the intended audience.
+                    </p>
+                </div>
+
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold text-gray-800">Announcements</h2>
                     <button onclick="openModal()" 
@@ -289,6 +426,29 @@
                                 @endforelse
                             </tbody>
                         </table>
+                        <!-- Pagination Container -->
+                        <div class="px-6 py-4 bg-white border-t border-gray-200">
+                            <div class="flex justify-center">
+                                <div class="pagination-container">
+                                    <div class="pagination-info" id="paginationInfo">
+                                        Showing page 1 of 1
+                                    </div>
+                                    <div class="pagination-buttons">
+                                        <button class="pagination-btn" id="prevPage" disabled>
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <div class="pagination-page-info">
+                                            Page 
+                                            <input type="number" class="pagination-page-input" id="currentPage" value="1" min="1">
+                                            of <span id="totalPages">1</span>
+                                        </div>
+                                        <button class="pagination-btn" id="nextPage">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -638,6 +798,115 @@
                 closeModal();
             }
         });
+
+        // Global variables for pagination
+let currentPage = 1;
+const itemsPerPage = 10; // Adjust as needed
+let allApplicants = [];
+let filteredApplicants = [];
+
+// Pagination setup function
+function setupPagination() {
+    const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
+    document.getElementById('totalPages').textContent = totalPages;
+    document.getElementById('paginationInfo').textContent = `Showing page ${currentPage} of ${totalPages}`;
+    
+    document.getElementById('prevPage').disabled = currentPage === 1;
+    document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
+
+    // Event listeners
+    document.getElementById('prevPage').onclick = () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderApplicantsTable();
+            setupPagination();
+        }
+    };
+
+    document.getElementById('nextPage').onclick = () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderApplicantsTable();
+            setupPagination();
+        }
+    };
+
+    document.getElementById('currentPage').onchange = (e) => {
+        const page = parseInt(e.target.value);
+        if (page >= 1 && page <= totalPages) {
+            currentPage = page;
+            renderApplicantsTable();
+            setupPagination();
+        } else {
+            e.target.value = currentPage;
+        }
+    };
+}
+
+// Render table with pagination
+function renderApplicantsTable() {
+    const tableBody = document.getElementById('applicantsTable');
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = filteredApplicants.slice(startIndex, endIndex);
+
+    if (currentItems.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="9" class="px-6 py-4 text-center text-gray-500">
+                    No applicants found.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tableBody.innerHTML = currentItems.map(applicant => `
+        <tr class="hover:bg-gray-50 border-b">
+            <td class="px-6 py-4 whitespace-nowrap border border-gray-200">
+                <!-- Your applicant data here -->
+                <span class="font-medium text-gray-900">${applicant.full_name}</span>
+            </td>
+            <!-- Other columns -->
+        </tr>
+    `).join('');
+}
+
+// Apply filters with pagination reset
+function applyFilters() {
+    // Your filtering logic here
+    filteredApplicants = allApplicants.filter(applicant => {
+        // Filter conditions
+        return true; // Replace with actual conditions
+    });
+
+    currentPage = 1; // Reset to first page when filtering
+    renderApplicantsTable();
+    setupPagination();
+}
+
+// Load data function
+async function loadApplicants() {
+    showLoadingOverlay();
+    try {
+        const response = await fetch('/your-api-endpoint');
+        const data = await response.json();
+        allApplicants = data.applicants || [];
+        filteredApplicants = [...allApplicants];
+        currentPage = 1;
+        renderApplicantsTable();
+        setupPagination();
+    } catch (error) {
+        console.error('Error loading applicants:', error);
+    } finally {
+        hideLoadingOverlay();
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadApplicants();
+});
     </script>
 <script src="{{ asset('js/spinner.js') }}"></script>
 

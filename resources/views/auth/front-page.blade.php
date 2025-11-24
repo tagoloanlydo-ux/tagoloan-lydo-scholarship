@@ -112,13 +112,13 @@
       <button
         class="flex items-center justify-center gap-2 bg-blue-800 hover:bg-indigo-500 py-3 rounded-xl shadow text-white font-medium transition text-sm md:text-base"
         onclick="window.location='{{ route('scholar.login') }}'">
-        <i class="fa-solid fa-right-to-bracket"></i> Log In Scholar
+        <i class="fa-solid fa-right-to-bracket"></i> Log In as Scholar
       </button>
 
       <button
         class="flex items-center justify-center gap-2 bg-green-800 hover:bg-indigo-500 py-3 rounded-xl shadow text-white font-medium transition text-sm md:text-base"
         onclick="window.location='{{ route('login') }}'">
-        <i class="fa-solid fa-right-to-bracket"></i> Log In Lydo Personnel
+        <i class="fa-solid fa-right-to-bracket"></i> Log In as Lydo Personnel
       </button>
           @php
             $settings = \App\Models\Settings::first();

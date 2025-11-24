@@ -2,8 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-// ✅ API Controllers
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\ApplicantController;
 use App\Http\Controllers\API\ApplicationController;
@@ -30,7 +28,7 @@ Route::prefix('staging')->group(function () {
 
     // Public routes (no authentication required)
     Route::post('/applicants', [ApplicantController::class, 'store']);
-    Route::get('/applicants', [ApplicantController::class, 'indexPublic']);
+    Route::get('/applicants', [ApplicantController::class, 'index']); // ✅ This is now truly public
 
     // Protected routes with Sanctum
     Route::middleware('auth:sanctum')->group(function () {
@@ -53,9 +51,8 @@ Route::prefix('staging')->group(function () {
             Route::get('/renewal/{renewalId}/details', [ScholarRenewalController::class, 'getRenewalDetails']);
         });
 
-     
-        // API Resources (excluding applicants store which is now public)
-        Route::apiResource('/applicants', ApplicantController::class)->except(['store']);
+        // API Resources - EXCLUDE 'index' and 'store' from applicants since they're public
+        Route::apiResource('/applicants', ApplicantController::class)->except(['index', 'store']); // ✅ Fixed
         Route::apiResource('/applications', ApplicationController::class);
         Route::apiResource('/scholars', ScholarController::class);
         Route::apiResource('/renewals', ScholarRenewalController::class);
@@ -70,29 +67,26 @@ Route::prefix('staging')->group(function () {
         Route::get('/settings', [AdminController::class, 'getSettings']);
     });
 
-    // Add this route for debugging
-Route::get('/staging/debug/applicants', function () {
-    $allApplicants = DB::table('tbl_applicant')->get();
-    $allApplications = DB::table('tbl_application')->get();
-    $allApplicationPersonnel = DB::table('tbl_application_personnel')->get();
-    $mayorStaff = DB::table('tbl_lydopers')->where('lydopers_role', 'mayor_staff')->get();
+    // Debug route (optional)
+    Route::get('/debug/applicants', function () {
+        $allApplicants = DB::table('tbl_applicant')->get();
+        $allApplications = DB::table('tbl_application')->get();
+        $allApplicationPersonnel = DB::table('tbl_application_personnel')->get();
+        $mayorStaff = DB::table('tbl_lydopers')->where('lydopers_role', 'mayor_staff')->get();
 
-    return response()->json([
-        'applicants_count' => $allApplicants->count(),
-        'applications_count' => $allApplications->count(),
-        'application_personnel_count' => $allApplicationPersonnel->count(),
-        'mayor_staff_count' => $mayorStaff->count(),
-        'mayor_staff' => $mayorStaff,
-        'recent_applications' => DB::table('tbl_application as app')
-            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-            ->leftJoin('tbl_application_personnel as ap', 'app.application_id', '=', 'ap.application_id')
-            ->select('a.*', 'app.*', 'ap.*')
-            ->orderBy('app.application_id', 'desc')
-            ->limit(10)
-            ->get()
-    ]);
-});
-
-
-
+        return response()->json([
+            'applicants_count' => $allApplicants->count(),
+            'applications_count' => $allApplications->count(),
+            'application_personnel_count' => $allApplicationPersonnel->count(),
+            'mayor_staff_count' => $mayorStaff->count(),
+            'mayor_staff' => $mayorStaff,
+            'recent_applications' => DB::table('tbl_application as app')
+                ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+                ->leftJoin('tbl_application_personnel as ap', 'app.application_id', '=', 'ap.application_id')
+                ->select('a.*', 'app.*', 'ap.*')
+                ->orderBy('app.application_id', 'desc')
+                ->limit(10)
+                ->get()
+        ]);
+    });
 });

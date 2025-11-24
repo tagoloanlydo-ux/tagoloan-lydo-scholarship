@@ -8,6 +8,7 @@ use App\Http\Controllers\LydopersController;
 use App\Http\Controllers\RenewalController;
 use App\Http\Controllers\ScholarController;
 use App\Http\Controllers\StatusController;
+use App\Http\Controllers\SmsController;
 use App\Http\Controllers\AdminScholarController;
 
 
@@ -46,7 +47,14 @@ Route::get('/reset-password/{token}', [LydopersController::class, 'showResetForm
 Route::post('/reset-password', [LydopersController::class, 'resetPassword'])->name('password.update');
 
 Route::middleware(['role:lydo_admin'])->group(function () {
-
+    Route::post('/lydo_admin/send-sms-to-scholars', [AdminScholarController::class, 'sendSmsToScholars'])->name('LydoAdmin.sendSmsToScholars');    Route::get('/lydo_admin/generate-mayor-applicants-pdf', [LydoAdminController::class, 'generateMayorApplicantsPdf']);
+    Route::get('/lydo_admin/generate-lydo-applicants-pdf', [LydoAdminController::class, 'generateLydoApplicantsPdf']);
+    Route::get('/lydo_admin/get-mayor-applicants', [LydoAdminController::class, 'getMayorApplicants']);
+    Route::get('/lydo_admin/get-lydo-reviewed-applicants', [LydoAdminController::class, 'getLydoReviewedApplicants']);
+    Route::get('/lydo_admin/generate-graduation-certificates', [LydoAdminController::class, 'generateGraduationCertificates'])->name('LydoAdmin.generateGraduationCertificates');
+    Route::get('/lydo_admin/test-sms', [SmsController::class, 'testSms']);
+    Route::get('/lydo_admin/sms-status', [SmsController::class, 'checkSmsStatus']);
+    Route::post('/lydo_admin/send-sms-to-applicants', [SmsController::class, 'sendSmsToApplicants'])->name('LydoAdmin.sendSmsToApplicants');
     Route::get('/lydo-admin/search', [LydoAdminController::class, 'search'])->name('LydoAdmin.search');
     Route::get('/applicants/search', [LydoAdminController::class, 'ajaxSearchApplicants'])->name('applicants.ajaxSearch');
     Route::post('/lydo_admin/mark-graduated', [LydoAdminController::class, 'markAsGraduated'])->name('LydoAdmin.markAsGraduated');
@@ -76,17 +84,13 @@ Route::middleware(['role:lydo_admin'])->group(function () {
     Route::post('/lydo_admin/get-scholar-names', [LydoAdminController::class, 'getScholarNames'])->name('LydoAdmin.getScholarNames');
     Route::post('/lydo_admin/get-scholar-names', [LydoAdminController::class, 'getScholarNames'])->name('LydoAdmin.getScholarNames');
     Route::post('/lydo_admin/create-disbursement', [LydoAdminController::class, 'createDisbursement'])->name('LydoAdmin.createDisbursement');
-    Route::post('/lydo_admin/send-email-to-applicants', [LydoAdminController::class, 'sendEmailToApplicants'])->name('LydoAdmin.sendEmailToApplicants');
-    Route::post('/lydo_admin/send-sms-to-applicants', [SmsController::class, 'sendSmsToApplicants'])->name('LydoAdmin.sendSmsToApplicants');
-    Route::get('/lydo_admin/report/pdf/applicants', [LydoAdminController::class, 'generateApplicantsPdf'])->name('LydoAdmin.report.pdf.applicants');
-    Route::get('/lydo_admin/report/pdf/renewal', [LydoAdminController::class, 'generateRenewalPdf'])->name('LydoAdmin.report.pdf.renewal');
+    Route::post('/lydo_admin/send-email-to-applicants', [LydoAdminController::class, 'sendEmailToApplicants'])->name('LydoAdmin.sendEmailToApplicants');    Route::get('/lydo_admin/report/pdf/renewal', [LydoAdminController::class, 'generateRenewalPdf'])->name('LydoAdmin.report.pdf.renewal');
     Route::get('/lydo_admin/report/pdf/summary', [LydoAdminController::class, 'generateSummaryPdf'])->name('LydoAdmin.report.pdf.summary');
     Route::get('/lydo_admin/get-scholars-by-barangay', [LydoAdminController::class, 'getScholarsByBarangay'])->name('LydoAdmin.getScholarsByBarangay');
     Route::get('/lydo_admin/get-scholars-with-disbursement', [LydoAdminController::class, 'getScholarsWithDisbursement'])->name('LydoAdmin.getScholarsWithDisbursement');
     Route::get('/lydo_admin/generate-disbursement-records-pdf', [LydoAdminController::class, 'generateDisbursementRecordsPdf'])->name('LydoAdmin.generateDisbursementRecordsPdf');
     Route::get('/lydo_admin/disbursement-pdf', [LydoAdminController::class, 'generateDisbursementPdf'])->name('LydoAdmin.disbursementPdf');
     Route::get('/lydo_admin/scholar/{scholarId}/documents', [LydoAdminController::class, 'getScholarDocuments'])->name('LydoAdmin.scholar.documents');
-    Route::get('/lydo_admin/generate-applicants-pdf', [LydoAdminController::class, 'generateApplicantsPdf'])->name('lydo_admin.applicants.pdf');
     Route::get('/lydo_admin/generate-signed-disbursement-pdf', [LydoAdminController::class, 'generateSignedDisbursementPdf'])->name('LydoAdmin.generateSignedDisbursementPdf');
     Route::get('/lydo_admin/generate-signed-disbursement-pdf', [LydoAdminController::class, 'generateSignedDisbursementPdf'])->name('LydoAdmin.generateSignedDisbursementPdf');
     Route::get('/lydo_admin/get-scholars-without-disbursement', [LydoAdminController::class, 'getScholarsWithoutDisbursement'])->name('LydoAdmin.getScholarsWithoutDisbursement');
@@ -101,13 +105,17 @@ Route::middleware(['role:lydo_admin'])->group(function () {
 });
 
 Route::middleware(['role:lydo_staff'])->group(function () {
+    Route::get('/lydo_staff/notification-counts', [LydoStaffController::class, 'getNotificationCounts'])->name('lydo_staff.notification_counts');    
+    Route::post('/lydo_staff/mark-notifications-read', [LydoStaffController::class, 'markNotificationsAsRead'])->name('lydo_staff.mark_notifications_read');
+    Route::get('/lydo_staff/dashboard/card-data', [LydoStaffController::class, 'getCardData'])->name('lydo_staff.card-data');
+    Route::get('/lydo_staff/dashboard/applicants-data', [LydoStaffController::class, 'getApplicantsData'])->name('lydo_staff.applicants-data');
     Route::get('/lydo_staff/dashboard', [LydoStaffController::class, 'index'])->name('LydoStaff.dashboard');
     Route::get('/lydo_staff/screening', [LydoStaffController::class, 'screening'])->name('LydoStaff.screening');
     Route::post('/lydo_staff/update-remarks/{id}', [LydoStaffController::class, 'updateRemarks'])->name('updateApplicantsRemarks');
     Route::post('/lydo_staff/update-intake-sheet/{application_personnel_id}', [LydoStaffController::class, 'updateIntakeSheet'])->name('updateIntakeSheet');
     Route::get('/lydo_staff/renewal', [RenewalController::class, 'renewal'])->name('LydoStaff.renewal');
     Route::post('/lydo_staff/renewal/update/{scholarId}', [RenewalController::class, 'updateStatus']);
-Route::get('/lydo_staff/renewal/{id}/requirements', [RenewalController::class, 'getRequirements']);
+    Route::get('/lydo_staff/renewal/{id}/requirements', [RenewalController::class, 'getRequirements']);
     Route::post('/lydo_staff/update-renewal-status/{renewalId}', [RenewalController::class, 'updateRenewalStatus'])->name('renewal.updateStatus');
     Route::get('/reviewed-applicants/pdf', [RenewalController::class, 'reviewedApplicantsPdf'])->name('LydoStaff.reviewedApplicantsPdf');
     Route::get('/lydo_staff/disbursement', [LydoStaffController::class, 'disbursement'])->name('LydoStaff.disbursement');
@@ -140,6 +148,8 @@ Route::get('/lydo_staff/renewal/{id}/requirements', [RenewalController::class, '
 
 // Mayor Staff Routes - Only accessible by mayor_staff role
 Route::middleware(['role:mayor_staff'])->group(function () {
+    Route::get('/mayor_staff/notification-count', [StatusController::class, 'getNotificationCount']);Route::get('/mayor_staff/get-table-data', [MayorStaffController::class, 'getTableData'])->name('mayor_staff.table.data');
+    Route::get('/mayor_staff/get-list-data', [MayorStaffController::class, 'getListData'])->name('mayor_staff.list.data');
     Route::post('/mayor_staff/store-application', [MayorStaffController::class, 'storeApplication'])->name('mayor_staff.store_application');
     Route::get('/mayor_staff/dashboard', [MayorStaffController::class, 'index']) ->name('MayorStaff.dashboard');
     Route::get('/application-personnel/{id}/requirements', [MayorStaffController::class, 'getApplicationRequirements'])->name('application.requirements');
@@ -205,5 +215,4 @@ Route::middleware(['scholar.auth'])->group(function () {
     Route::get('/scholar/renewal/{renewalId}/details', [ScholarController::class, 'getRenewalDetails'])->name('scholar.renewal_details');
 });
 
-use App\Http\Controllers\SmsController;
 Route::get('/test-sms', [SmsController::class, 'testSend'])->name('test.sms');

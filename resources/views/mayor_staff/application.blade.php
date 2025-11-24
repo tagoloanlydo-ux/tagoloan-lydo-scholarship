@@ -6,13 +6,12 @@
     <title>Scholarship Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
-
+    <script src="{{ asset('js/notification-refresh.js') }}"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="{{ asset('css/application.css') }}" />
-
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.tailwindcss.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
@@ -23,6 +22,21 @@
 .document-modal-content {
     max-height: 80vh;
     overflow-y: auto;
+}
+/* Smooth transitions for table updates */
+table tbody {
+    transition: opacity 0.3s ease;
+}
+
+/* Ensure pagination updates smoothly */
+.pagination-container {
+    transition: all 0.3s ease;
+}
+
+/* Loading states for better UX */
+.refreshing {
+    opacity: 0.7;
+    pointer-events: none;
 }
 .pagination-container {
     display: flex;
@@ -198,15 +212,13 @@
         </div>
 
             <!-- Header -->
-        <header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
+            <header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
                 <div class="flex items-center">
                     <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
-                        <h1 class="text-2xl font-bold text-white ml-4">Lydo Scholarship</h1>
+                    <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
                 </div>
-
                 <div class="flex items-center space-x-4">
                     <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
-
                     <div class="relative">
                         <!-- 🔔 Bell Icon -->
                         <button id="notifBell" class="relative focus:outline-none">
@@ -218,7 +230,6 @@
                                 </span>
                             @endif
                         </button>
-
                         <!-- 🔽 Dropdown -->
                         <div id="notifDropdown"
                             class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
@@ -238,7 +249,6 @@
                                                 <b>{{ $notif->remarks }}</b>
                                             </p>
                                         @endif
-
                                         {{-- Time ago --}}
                                         <p class="text-xs text-gray-500">
                                             {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
@@ -252,7 +262,6 @@
                     </div>
                 </div>
             </header>
-
             <!-- Sidebar -->
             <div class="sidebar-fixed w-72 bg-white shadow-md flex flex-col transition-all duration-300">
                 <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
@@ -2234,58 +2243,124 @@ function rejectApplication() {
             }
         </script>
         
-                            
-    <script>
-    document.getElementById("notifBell").addEventListener("click", function () {
-            let dropdown = document.getElementById("notifDropdown");
-            dropdown.classList.toggle("hidden");
-            // remove badge when opened
-            let notifCount = document.getElementById("notifCount");
-            if (notifCount) {
-            notifCount.remove();
-            // Mark notifications as viewed on the server
-            fetch('/mayor_staff/mark-notifications-viewed', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                }
-            }).then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Notifications marked as viewed');
-                }
-            }).catch(error => {
-                console.error('Error marking notifications as viewed:', error);
-            });
+        <script>
+// Notification Dropdown Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const notifBell = document.getElementById('notifBell');
+    const notifDropdown = document.getElementById('notifDropdown');
+    
+    if (notifBell && notifDropdown) {
+        // Toggle dropdown when bell is clicked
+        notifBell.addEventListener('click', function(e) {
+            e.stopPropagation();
+            notifDropdown.classList.toggle('hidden');
+            
+            // Mark notifications as read when dropdown is opened
+            if (!notifDropdown.classList.contains('hidden')) {
+                markNotificationsAsViewed();
             }
-            });
-            </script>
-                        <script>
-                    // Toggle dropdown and save state
-                    function toggleDropdown(id) {
-                        const menu = document.getElementById(id);
-                        const isHidden = menu.classList.contains("hidden");
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!notifBell.contains(e.target) && !notifDropdown.contains(e.target)) {
+                notifDropdown.classList.add('hidden');
+            }
+        });
+        
+        // Prevent dropdown from closing when clicking inside it
+        notifDropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+    
+    function markNotificationsAsViewed() {
+        fetch('/mayor_staff/mark-notifications-viewed', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (response.ok) {
+                // Remove notification badge
+                const notifCount = document.getElementById('notifCount');
+                if (notifCount) {
+                    notifCount.remove();
+                }
+            }
+        }).catch(error => {
+            console.error('Error marking notifications as viewed:', error);
+        });
+    }
+});
+</script>
+<script>
+// Sidebar Dropdown Functionality with Persistent State
+function toggleDropdown(menuId) {
+    const menu = document.getElementById(menuId);
+    const button = event.currentTarget;
+    const icon = button.querySelector('.bx-chevron-down');
+    
+    // Toggle the dropdown menu
+    const isHidden = menu.classList.toggle('hidden');
+    
+    // Rotate the chevron icon
+    if (icon) {
+        icon.classList.toggle('rotate-180');
+    }
+    
+    // Save the state to localStorage for persistence across pages
+    localStorage.setItem(`dropdown_${menuId}`, !isHidden);
+}
 
-                        if (isHidden) {
-                            menu.classList.remove("hidden");
-                            localStorage.setItem(id, "open");
-                        } else {
-                            menu.classList.add("hidden");
-                            localStorage.setItem(id, "closed");
-                        }
-                    }
+// Initialize dropdown states on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Restore sidebar dropdown states from localStorage
+    const dropdownMenus = document.querySelectorAll('[id$="Menu"]');
+    
+    dropdownMenus.forEach(menu => {
+        const isOpen = localStorage.getItem(`dropdown_${menu.id}`) === 'true';
+        const parentButton = menu.parentElement.querySelector('button');
+        const icon = parentButton ? parentButton.querySelector('.bx-chevron-down') : null;
+        
+        if (isOpen) {
+            menu.classList.remove('hidden');
+            if (icon) {
+                icon.classList.add('rotate-180');
+            }
+        }
+    });
+    
+});
 
-                    // Restore dropdown state on page load
-                    window.addEventListener("DOMContentLoaded", () => {
-                        document.querySelectorAll("ul[id]").forEach(menu => {
-                            const state = localStorage.getItem(menu.id);
-                            if (state === "open") {
-                                menu.classList.remove("hidden");
-                            }
-                        });
-                    });
-                </script>
+// Add CSS for smooth rotation
+const style = document.createElement('style');
+style.textContent = `
+    .bx-chevron-down {
+        transition: transform 0.3s ease;
+    }
+    .rotate-180 {
+        transform: rotate(180deg);
+    }
+    
+    /* Ensure dropdowns have proper z-index */
+    #notifDropdown {
+        z-index: 1000;
+    }
+    
+    /* Sidebar dropdown styling */
+    [id$="Menu"] {
+        z-index: 999;
+    }
+    
+    /* Prevent dropdown from closing when clicking inside */
+    [id$="Menu"] a {
+        display: block;
+    }
+`;
+document.head.appendChild(style);
+</script>
     <script src="{{ asset('js/logout.js') }}"></script>
 
     <script>
@@ -2305,5 +2380,6 @@ function rejectApplication() {
     </script>
 <script src="{{ asset('js/app_spinner.js') }}"></script>
 <script src="{{ asset('js/application_paginate.js') }}"></script>
+
     </body>
     </html>

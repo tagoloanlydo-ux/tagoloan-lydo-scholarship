@@ -418,6 +418,7 @@
             }
         });
     });
+
 </script>
 
 <li>
@@ -1789,6 +1790,240 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Your existing initialization code...
 });
+
+// Add this after the existing email modal code
+// Certificate Modal HTML - Add this before the closing body tag
+const certificateModalHTML = `
+<div id="certificateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-2xl rounded-xl bg-white">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+            <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                <i class="fas fa-certificate text-purple-600 mr-2"></i>
+                Generate Graduation Certificates
+            </h3>
+            <button type="button" id="closeCertificateModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-purple-600 mr-2"></i>
+                    <p class="text-purple-800 font-medium">
+                        Generate professional certificates for the recently graduated scholars
+                    </p>
+                </div>
+            </div>
+
+            <div id="certificateScholarList" class="max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-4">
+                <!-- Scholar list will be populated here -->
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="certificateLoading" class="hidden flex items-center justify-center py-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                <span class="ml-3 text-gray-600 font-medium">Generating certificates...</span>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <button type="button" id="cancelCertificate" class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                    Cancel
+                </button>
+                <button type="button" id="generateCertificateBtn" class="px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors shadow-sm">
+                    <i class="fas fa-download mr-2"></i>Generate Certificates
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+
+// Add the modal HTML to the body
+document.body.insertAdjacentHTML('beforeend', certificateModalHTML);
+
+// Certificate modal functionality
+const certificateModal = document.getElementById('certificateModal');
+const closeCertificateModal = document.getElementById('closeCertificateModal');
+const cancelCertificate = document.getElementById('cancelCertificate');
+const generateCertificateBtn = document.getElementById('generateCertificateBtn');
+const certificateScholarList = document.getElementById('certificateScholarList');
+const certificateLoading = document.getElementById('certificateLoading');
+
+// Function to show certificate modal
+function showCertificateModal() {
+    const visibleCheckboxes = document.querySelectorAll('.graduating-scholar-checkbox:checked');
+    
+    if (visibleCheckboxes.length === 0) {
+        Swal.fire({
+            title: 'No Selection!',
+            text: 'Please select at least one scholar to generate certificates.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    // Populate scholar list
+    let scholarListHTML = '<div class="space-y-2">';
+    visibleCheckboxes.forEach((checkbox, index) => {
+        const row = checkbox.closest('tr');
+        const name = row.querySelector('td:nth-child(2)').textContent.trim();
+        const school = row.querySelector('td:nth-child(5)').textContent.trim();
+        const course = row.querySelector('td:nth-child(7)').textContent.trim();
+        
+        scholarListHTML += `
+            <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                <div>
+                    <div class="font-semibold text-gray-800">${name}</div>
+                    <div class="text-sm text-gray-600">${school} - ${course}</div>
+                </div>
+                <div class="text-green-600">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+        `;
+    });
+    scholarListHTML += '</div>';
+    
+    certificateScholarList.innerHTML = scholarListHTML;
+    certificateModal.classList.remove('hidden');
+}
+
+// Close certificate modal
+if (closeCertificateModal) {
+    closeCertificateModal.addEventListener('click', function() {
+        certificateModal.classList.add('hidden');
+    });
+}
+
+if (cancelCertificate) {
+    cancelCertificate.addEventListener('click', function() {
+        certificateModal.classList.add('hidden');
+    });
+}
+
+// Close modal on outside click
+certificateModal.addEventListener('click', function(e) {
+    if (e.target === certificateModal) {
+        certificateModal.classList.add('hidden');
+    }
+});
+
+// Generate certificates
+if (generateCertificateBtn) {
+    generateCertificateBtn.addEventListener('click', function() {
+        generateCertificateBtn.disabled = true;
+        certificateLoading.classList.remove('hidden');
+        
+        // Submit the form first to mark as graduated
+        const form = document.getElementById('graduatingScholarForm');
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // After marking as graduated, generate certificates
+                return fetch('/lydo_admin/generate-graduation-certificates', {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+            } else {
+                throw new Error('Failed to mark scholars as graduated');
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.blob();
+            } else {
+                throw new Error('Failed to generate certificates');
+            }
+        })
+        .then(blob => {
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'graduation-certificates-' + new Date().toISOString().split('T')[0] + '.pdf';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            certificateModal.classList.add('hidden');
+            
+            Swal.fire({
+                title: 'Success!',
+                text: 'Certificates generated and downloaded successfully!',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'Failed to generate certificates: ' + error.message,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        })
+        .finally(() => {
+            generateCertificateBtn.disabled = false;
+            certificateLoading.classList.add('hidden');
+        });
+    });
+}
+
+// Update the markAsGraduatedBtn event listener to show certificate modal
+if (markAsGraduatedBtn) {
+    markAsGraduatedBtn.addEventListener('click', function() {
+        const visibleCheckboxes = document.querySelectorAll('.graduating-scholar-checkbox:checked');
+
+        if (visibleCheckboxes.length === 0) {
+            Swal.fire({
+                title: 'No Selection!',
+                text: 'Please select at least one scholar to mark as graduated.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // Show certificate generation option
+        Swal.fire({
+            title: 'Graduation Options',
+            text: `You are about to mark ${visibleCheckboxes.length} scholar(s) as graduated. Would you like to generate certificates?`,
+            icon: 'question',
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Generate Certificates',
+            denyButtonText: 'Mark as Graduated Only',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show certificate modal
+                showCertificateModal();
+            } else if (result.isDenied) {
+                // Submit form without certificate generation
+                const form = document.getElementById('graduatingScholarForm');
+                const submitButton = markAsGraduatedBtn;
+
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+                form.submit();
+            }
+        });
+    });
+}
 </script>
 </body>
 
