@@ -1007,6 +1007,7 @@
         // Tab functionality
         document.addEventListener('DOMContentLoaded', function() {
             // Tab switching
+            
             const tabButtons = document.querySelectorAll('.tab-button');
             const tabContents = document.querySelectorAll('.tab-content');
             
