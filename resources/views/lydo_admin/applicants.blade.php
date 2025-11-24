@@ -434,6 +434,10 @@
                     <div class="note-box">
                         <h4>📋 Mayor Staff Applicants</h4>
                         <p>This tab displays applicants who have been processed by Mayor Staff. You can view applications that are either <strong>Approved</strong> or <strong>Rejected</strong> by the Mayor's office. Use this section to review decisions made by Mayor Staff and communicate with applicants about their status.</p>
+                        <p class="mt-2 text-amber-600 font-medium">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                            <strong>Note:</strong> Approved applicants will no longer appear in this list once they have been reviewed by LYDO Staff. They will be moved to the "LYDO Reviewed Applicants" tab.
+                        </p>
                     </div>
 
                     <!-- Filter Section for Mayor Staff Applicants -->
@@ -1043,335 +1047,388 @@
             window.toggleDropdown = toggleDropdown;
         });
 
-        // Global variables for pagination
-        let currentPageMayor = 1;
-        let currentPageLydo = 1;
-        const itemsPerPage = 10;
-        let allMayorApplicants = [];
-        let allLydoApplicants = [];
+ // Global variables for pagination and data
+let currentPageMayor = 1;
+let currentPageLydo = 1;
+const itemsPerPage = 15;
+let allMayorApplicants = [];
+let allLydoApplicants = [];
+let filteredMayorApplicants = [];
+let filteredLydoApplicants = [];
 
-        // Load Mayor Staff Applicants
-        async function loadMayorApplicants() {
-            showLoadingOverlay();
-            try {
-                const response = await fetch('/lydo_admin/get-mayor-applicants');
-                const data = await response.json();
-                allMayorApplicants = data.applicants || [];
-                currentPageMayor = 1;
-                renderMayorApplicantsTable();
-                setupMayorPagination();
-                setupMayorFilters();
-            } catch (error) {
-                console.error('Error loading mayor applicants:', error);
-            } finally {
-                hideLoadingOverlay();
-            }
+// Load Mayor Staff Applicants
+async function loadMayorApplicants() {
+    showLoadingOverlay();
+    try {
+        const response = await fetch('/lydo_admin/get-mayor-applicants');
+        const data = await response.json();
+        allMayorApplicants = data.applicants || [];
+        filteredMayorApplicants = [...allMayorApplicants]; // Initialize filtered data
+        currentPageMayor = 1;
+        renderMayorApplicantsTable();
+        setupMayorPagination();
+        setupMayorFilters();
+    } catch (error) {
+        console.error('Error loading mayor applicants:', error);
+    } finally {
+        hideLoadingOverlay();
+    }
+}
+
+// Load LYDO Reviewed Applicants
+async function loadLydoReviewedApplicants() {
+    showLoadingOverlay();
+    try {
+        const response = await fetch('/lydo_admin/get-lydo-reviewed-applicants');
+        const data = await response.json();
+        allLydoApplicants = data.applicants || [];
+        filteredLydoApplicants = [...allLydoApplicants]; // Initialize filtered data
+        currentPageLydo = 1;
+        renderLydoApplicantsTable();
+        setupLydoPagination();
+        setupLydoFilters();
+    } catch (error) {
+        console.error('Error loading LYDO reviewed applicants:', error);
+    } finally {
+        hideLoadingOverlay();
+    }
+}
+
+// Render Mayor Applicants Table - FIXED
+function renderMayorApplicantsTable() {
+    const tableBody = document.getElementById('mayorApplicantsTable');
+    const startIndex = (currentPageMayor - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = filteredMayorApplicants.slice(startIndex, endIndex); // Use filtered data
+
+    if (currentItems.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="9" class="px-4 py-2 text-center text-sm text-gray-500">
+                    No applicants found.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tableBody.innerHTML = currentItems.map(applicant => `
+        <tr class="hover:bg-gray-50 border-b">
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <input type="checkbox" name="selected_applicants" value="${applicant.applicant_id}" 
+                       class="applicant-checkbox-mayor rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm font-medium text-gray-900">
+                    ${formatName(applicant)}
+                </div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">${applicant.applicant_brgy || 'N/A'}</div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">${applicant.applicant_email || 'N/A'}</div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">${applicant.applicant_contact_number || 'N/A'}</div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">${applicant.applicant_school_name || 'N/A'}</div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">${applicant.applicant_acad_year || 'N/A'}</div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="flex gap-2 justify-center">
+                    <button type="button" 
+                            onclick="viewApplicantDocuments('${applicant.applicant_id}', '${escapeString(formatName(applicant))}', '${applicant.initial_screening}')"
+                            class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow">
+                        <i class="fas fa-file-alt mr-1"></i> View Documents
+                    </button>
+                </div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                    ${applicant.initial_screening === 'Approved' ? 'bg-green-100 text-green-800' : 
+                      applicant.initial_screening === 'Rejected' ? 'bg-red-100 text-red-800' : 
+                      'bg-yellow-100 text-yellow-800'}">
+                    ${applicant.initial_screening === 'Approved' ? 'Approved by Mayor' : applicant.initial_screening || 'Pending'}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+
+    setupMayorCheckboxes();
+}
+
+// Render LYDO Reviewed Applicants Table - FIXED
+function renderLydoApplicantsTable() {
+    const tableBody = document.getElementById('lydoApplicantsTable');
+    const startIndex = (currentPageLydo - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = filteredLydoApplicants.slice(startIndex, endIndex); // Use filtered data
+
+    if (currentItems.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="9" class="px-4 py-2 text-center text-sm text-gray-500">
+                    No applicants found.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tableBody.innerHTML = currentItems.map(applicant => `
+        <tr class="hover:bg-gray-50 border-b">
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <input type="checkbox" name="selected_applicants" value="${applicant.applicant_id}" 
+                       class="applicant-checkbox-lydo rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm font-medium text-gray-900">
+                    ${formatName(applicant)}
+                </div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">${applicant.applicant_brgy || 'N/A'}</div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">${applicant.applicant_email || 'N/A'}</div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">${applicant.applicant_contact_number || 'N/A'}</div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">${applicant.applicant_school_name || 'N/A'}</div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="text-sm text-gray-900">${applicant.applicant_acad_year || 'N/A'}</div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <div class="flex gap-2 justify-center">
+                    <button type="button" 
+                            onclick="viewApplicantIntakeSheet('${applicant.applicant_id}', '${escapeString(formatName(applicant))}', '${applicant.initial_screening}')"
+                            class="px-3 py-1 text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-lg shadow">
+                        <i class="fas fa-clipboard-list mr-1"></i> View Application
+                    </button>
+                </div>
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                    ${applicant.remarks === 'Poor' ? 'bg-orange-100 text-orange-800' : 
+                      applicant.remarks === 'Non-Poor' ? 'bg-green-100 text-green-800' : 
+                      applicant.remarks === 'Ultra Poor' ? 'bg-red-100 text-red-800' : 
+                      'bg-gray-100 text-gray-800'}">
+                    ${applicant.remarks || 'Not Specified'}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+
+    setupLydoCheckboxes();
+}
+
+// Filter setup for Mayor Applicants - FIXED
+function setupMayorFilters() {
+    const searchInput = document.getElementById('searchInputMayor');
+    const barangaySelect = document.getElementById('barangaySelectMayor');
+    const academicYearSelect = document.getElementById('academicYearSelectMayor');
+    const initialScreeningSelect = document.getElementById('initialScreeningSelectMayor');
+
+  // In your setupMayorFilters function, enhance the filtering logic:
+const applyFilters = () => {
+    const searchTerm = searchInput.value.toLowerCase();
+    const barangayFilter = barangaySelect.value;
+    const academicYearFilter = academicYearSelect.value;
+    const screeningFilter = initialScreeningSelect.value;
+
+    filteredMayorApplicants = allMayorApplicants.filter(applicant => {
+        const matchesSearch = !searchTerm || 
+            formatName(applicant).toLowerCase().includes(searchTerm) ||
+            (applicant.applicant_email && applicant.applicant_email.toLowerCase().includes(searchTerm)) ||
+            (applicant.applicant_school_name && applicant.applicant_school_name.toLowerCase().includes(searchTerm));
+        
+        const matchesBarangay = !barangayFilter || applicant.applicant_brgy === barangayFilter;
+        const matchesAcademicYear = !academicYearFilter || applicant.applicant_acad_year === academicYearFilter;
+        
+        // Enhanced status filtering
+        let matchesScreening = true;
+        if (screeningFilter === 'Approved') {
+            matchesScreening = applicant.initial_screening === 'Approved';
+        } else if (screeningFilter === 'Rejected') {
+            matchesScreening = applicant.initial_screening === 'Rejected';
+        } else if (screeningFilter === 'Pending') {
+            matchesScreening = !applicant.initial_screening || applicant.initial_screening === 'Pending';
         }
+        // 'all' returns all applicants
 
-        // Load LYDO Reviewed Applicants
-        async function loadLydoReviewedApplicants() {
-            showLoadingOverlay();
-            try {
-                const response = await fetch('/lydo_admin/get-lydo-reviewed-applicants');
-                const data = await response.json();
-                allLydoApplicants = data.applicants || [];
-                currentPageLydo = 1;
-                renderLydoApplicantsTable();
-                setupLydoPagination();
-                setupLydoFilters();
-            } catch (error) {
-                console.error('Error loading LYDO reviewed applicants:', error);
-            } finally {
-                hideLoadingOverlay();
-            }
+        return matchesSearch && matchesBarangay && matchesAcademicYear && matchesScreening;
+    });
+
+    currentPageMayor = 1;
+    renderMayorApplicantsTable();
+    setupMayorPagination();
+};
+
+function updateApprovedCount() {
+    const approvedCount = allMayorApplicants.filter(applicant => 
+        applicant.initial_screening === 'Approved'
+    ).length;
+    
+    const approvedTabButton = document.querySelector('[data-tab="mayor-applicants"]');
+    if (approvedTabButton) {
+        const existingBadge = approvedTabButton.querySelector('.approved-badge');
+        if (existingBadge) {
+            existingBadge.remove();
         }
-
-        // Render Mayor Applicants Table
-        function renderMayorApplicantsTable() {
-            const tableBody = document.getElementById('mayorApplicantsTable');
-            const startIndex = (currentPageMayor - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const currentItems = allMayorApplicants.slice(startIndex, endIndex);
-
-            if (currentItems.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="8" class="px-4 py-2 text-center text-sm text-gray-500">
-                            No applicants found.
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tableBody.innerHTML = currentItems.map(applicant => `
-                <tr class="hover:bg-gray-50 border-b">
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <input type="checkbox" name="selected_applicants" value="${applicant.applicant_id}" 
-                               class="applicant-checkbox-mayor rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="text-sm font-medium text-gray-900">
-                            ${formatName(applicant)}
-                        </div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="text-sm text-gray-900">${applicant.applicant_brgy || 'N/A'}</div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="text-sm text-gray-900">${applicant.applicant_email || 'N/A'}</div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="text-sm text-gray-900">${applicant.applicant_contact_number || 'N/A'}</div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="text-sm text-gray-900">${applicant.applicant_school_name || 'N/A'}</div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="text-sm text-gray-900">${applicant.applicant_acad_year || 'N/A'}</div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="flex gap-2 justify-center">
-                            <button type="button" 
-                                    onclick="viewApplicantDocuments('${applicant.applicant_id}', '${escapeString(formatName(applicant))}', '${applicant.initial_screening}')"
-                                    class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow">
-                                <i class="fas fa-file-alt mr-1"></i> View Documents
-                            </button>
-                        </div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <span class="px-2 py-1 rounded-full text-xs font-semibold 
-                            ${applicant.initial_screening === 'Approved' ? 'bg-green-100 text-green-800' : 
-                              applicant.initial_screening === 'Rejected' ? 'bg-red-100 text-red-800' : 
-                              'bg-yellow-100 text-yellow-800'}">
-                            ${applicant.initial_screening === 'Approved' ? 'Approved by Mayor' : applicant.initial_screening || 'Pending'}
-                        </span>
-                    </td>
-                </tr>
-            `).join('');
-
-            setupMayorCheckboxes();
+        
+        if (approvedCount > 0) {
+            const badge = document.createElement('span');
+            badge.className = 'approved-badge ml-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full';
+            badge.textContent = approvedCount;
+            approvedTabButton.appendChild(badge);
         }
+    }
+}
 
-        // Render LYDO Reviewed Applicants Table
-        function renderLydoApplicantsTable() {
-            const tableBody = document.getElementById('lydoApplicantsTable');
-            const startIndex = (currentPageLydo - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const currentItems = allLydoApplicants.slice(startIndex, endIndex);
+// Call this after loading mayor applicants
+async function loadMayorApplicants() {
+    showLoadingOverlay();
+    try {
+        const response = await fetch('/lydo_admin/get-mayor-applicants');
+        const data = await response.json();
+        allMayorApplicants = data.applicants || [];
+        filteredMayorApplicants = [...allMayorApplicants];
+        currentPageMayor = 1;
+        renderMayorApplicantsTable();
+        setupMayorPagination();
+        setupMayorFilters();
+        updateApprovedCount(); // Add this line
+    } catch (error) {
+        console.error('Error loading mayor applicants:', error);
+    } finally {
+        hideLoadingOverlay();
+    }
+}
+    searchInput.addEventListener('input', debounce(applyFilters, 300));
+    barangaySelect.addEventListener('change', applyFilters);
+    academicYearSelect.addEventListener('change', applyFilters);
+    initialScreeningSelect.addEventListener('change', applyFilters);
+}
 
-            if (currentItems.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="8" class="px-4 py-2 text-center text-sm text-gray-500">
-                            No applicants found.
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
+// Filter setup for LYDO Reviewed Applicants - FIXED
+function setupLydoFilters() {
+    const searchInput = document.getElementById('searchInputLydo');
+    const barangaySelect = document.getElementById('barangaySelectLydo');
+    const academicYearSelect = document.getElementById('academicYearSelectLydo');
+    const remarksSelect = document.getElementById('remarksSelectLydo');
 
-            tableBody.innerHTML = currentItems.map(applicant => `
-                <tr class="hover:bg-gray-50 border-b">
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <input type="checkbox" name="selected_applicants" value="${applicant.applicant_id}" 
-                               class="applicant-checkbox-lydo rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="text-sm font-medium text-gray-900">
-                            ${formatName(applicant)}
-                        </div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="text-sm text-gray-900">${applicant.applicant_brgy || 'N/A'}</div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="text-sm text-gray-900">${applicant.applicant_email || 'N/A'}</div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="text-sm text-gray-900">${applicant.applicant_contact_number || 'N/A'}</div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="text-sm text-gray-900">${applicant.applicant_school_name || 'N/A'}</div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="text-sm text-gray-900">${applicant.applicant_acad_year || 'N/A'}</div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <div class="flex gap-2 justify-center">
-                            <button type="button" 
-                                    onclick="viewApplicantIntakeSheet('${applicant.applicant_id}', '${escapeString(formatName(applicant))}', '${applicant.initial_screening}')"
-                                    class="px-3 py-1 text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-lg shadow">
-                                <i class="fas fa-clipboard-list mr-1"></i> View Application
-                            </button>
-                        </div>
-                    </td>
-                    <td class="px-4 border border-gray-200 py-2 text-center">
-                        <span class="px-2 py-1 rounded-full text-xs font-semibold 
-                            ${applicant.remarks === 'Poor' ? 'bg-orange-100 text-orange-800' : 
-                              applicant.remarks === 'Non-Poor' ? 'bg-green-100 text-green-800' : 
-                              applicant.remarks === 'Ultra Poor' ? 'bg-red-100 text-red-800' : 
-                              'bg-gray-100 text-gray-800'}">
-                            ${applicant.remarks || 'Not Specified'}
-                        </span>
-                    </td>
-                </tr>
-            `).join('');
+    const applyFilters = () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        const barangayFilter = barangaySelect.value;
+        const academicYearFilter = academicYearSelect.value;
+        const remarksFilter = remarksSelect.value;
 
-            setupLydoCheckboxes();
-        }
-
-        // Pagination setup for Mayor Applicants
-        function setupMayorPagination() {
-            const totalPages = Math.ceil(allMayorApplicants.length / itemsPerPage);
-            document.getElementById('totalPagesMayor').textContent = totalPages;
-            document.getElementById('paginationInfoMayor').textContent = `Showing page ${currentPageMayor} of ${totalPages}`;
+        filteredLydoApplicants = allLydoApplicants.filter(applicant => {
+            const matchesSearch = !searchTerm || 
+                formatName(applicant).toLowerCase().includes(searchTerm) ||
+                (applicant.applicant_email && applicant.applicant_email.toLowerCase().includes(searchTerm)) ||
+                (applicant.applicant_school_name && applicant.applicant_school_name.toLowerCase().includes(searchTerm));
             
-            document.getElementById('prevPageMayor').disabled = currentPageMayor === 1;
-            document.getElementById('nextPageMayor').disabled = currentPageMayor === totalPages;
+            const matchesBarangay = !barangayFilter || applicant.applicant_brgy === barangayFilter;
+            const matchesAcademicYear = !academicYearFilter || applicant.applicant_acad_year === academicYearFilter;
+            const matchesRemarks = !remarksFilter || applicant.remarks === remarksFilter;
 
-            // Event listeners
-            document.getElementById('prevPageMayor').onclick = () => {
-                if (currentPageMayor > 1) {
-                    currentPageMayor--;
-                    renderMayorApplicantsTable();
-                    setupMayorPagination();
-                }
-            };
+            return matchesSearch && matchesBarangay && matchesAcademicYear && matchesRemarks;
+        });
 
-            document.getElementById('nextPageMayor').onclick = () => {
-                if (currentPageMayor < totalPages) {
-                    currentPageMayor++;
-                    renderMayorApplicantsTable();
-                    setupMayorPagination();
-                }
-            };
+        currentPageLydo = 1;
+        renderLydoApplicantsTable();
+        setupLydoPagination();
+    };
 
-            document.getElementById('currentPageMayor').onchange = (e) => {
-                const page = parseInt(e.target.value);
-                if (page >= 1 && page <= totalPages) {
-                    currentPageMayor = page;
-                    renderMayorApplicantsTable();
-                    setupMayorPagination();
-                } else {
-                    e.target.value = currentPageMayor;
-                }
-            };
+    searchInput.addEventListener('input', debounce(applyFilters, 300));
+    barangaySelect.addEventListener('change', applyFilters);
+    academicYearSelect.addEventListener('change', applyFilters);
+    remarksSelect.addEventListener('change', applyFilters);
+}
+
+// Pagination setup for Mayor Applicants - FIXED
+function setupMayorPagination() {
+    const totalPages = Math.ceil(filteredMayorApplicants.length / itemsPerPage); // Use filtered data
+    document.getElementById('totalPagesMayor').textContent = totalPages;
+    document.getElementById('paginationInfoMayor').textContent = `Showing page ${currentPageMayor} of ${totalPages}`;
+    
+    document.getElementById('prevPageMayor').disabled = currentPageMayor === 1;
+    document.getElementById('nextPageMayor').disabled = currentPageMayor === totalPages || totalPages === 0;
+
+    // Event listeners
+    document.getElementById('prevPageMayor').onclick = () => {
+        if (currentPageMayor > 1) {
+            currentPageMayor--;
+            renderMayorApplicantsTable();
+            setupMayorPagination();
         }
+    };
 
-        // Pagination setup for LYDO Reviewed Applicants
-        function setupLydoPagination() {
-            const totalPages = Math.ceil(allLydoApplicants.length / itemsPerPage);
-            document.getElementById('totalPagesLydo').textContent = totalPages;
-            document.getElementById('paginationInfoLydo').textContent = `Showing page ${currentPageLydo} of ${totalPages}`;
-            
-            document.getElementById('prevPageLydo').disabled = currentPageLydo === 1;
-            document.getElementById('nextPageLydo').disabled = currentPageLydo === totalPages;
-
-            // Event listeners
-            document.getElementById('prevPageLydo').onclick = () => {
-                if (currentPageLydo > 1) {
-                    currentPageLydo--;
-                    renderLydoApplicantsTable();
-                    setupLydoPagination();
-                }
-            };
-
-            document.getElementById('nextPageLydo').onclick = () => {
-                if (currentPageLydo < totalPages) {
-                    currentPageLydo++;
-                    renderLydoApplicantsTable();
-                    setupLydoPagination();
-                }
-            };
-
-            document.getElementById('currentPageLydo').onchange = (e) => {
-                const page = parseInt(e.target.value);
-                if (page >= 1 && page <= totalPages) {
-                    currentPageLydo = page;
-                    renderLydoApplicantsTable();
-                    setupLydoPagination();
-                } else {
-                    e.target.value = currentPageLydo;
-                }
-            };
+    document.getElementById('nextPageMayor').onclick = () => {
+        if (currentPageMayor < totalPages) {
+            currentPageMayor++;
+            renderMayorApplicantsTable();
+            setupMayorPagination();
         }
+    };
 
-        // Filter setup for Mayor Applicants
-        function setupMayorFilters() {
-            const searchInput = document.getElementById('searchInputMayor');
-            const barangaySelect = document.getElementById('barangaySelectMayor');
-            const academicYearSelect = document.getElementById('academicYearSelectMayor');
-            const initialScreeningSelect = document.getElementById('initialScreeningSelectMayor');
-
-            const applyFilters = () => {
-                const searchTerm = searchInput.value.toLowerCase();
-                const barangayFilter = barangaySelect.value;
-                const academicYearFilter = academicYearSelect.value;
-                const screeningFilter = initialScreeningSelect.value;
-
-                const filtered = allMayorApplicants.filter(applicant => {
-                    const matchesSearch = !searchTerm || 
-                        formatName(applicant).toLowerCase().includes(searchTerm) ||
-                        (applicant.applicant_email && applicant.applicant_email.toLowerCase().includes(searchTerm)) ||
-                        (applicant.applicant_school_name && applicant.applicant_school_name.toLowerCase().includes(searchTerm));
-                    
-                    const matchesBarangay = !barangayFilter || applicant.applicant_brgy === barangayFilter;
-                    const matchesAcademicYear = !academicYearFilter || applicant.applicant_acad_year === academicYearFilter;
-                    const matchesScreening = screeningFilter === 'all' || applicant.initial_screening === screeningFilter;
-
-                    return matchesSearch && matchesBarangay && matchesAcademicYear && matchesScreening;
-                });
-
-                allMayorApplicants = filtered;
-                currentPageMayor = 1;
-                renderMayorApplicantsTable();
-                setupMayorPagination();
-            };
-
-            searchInput.addEventListener('input', debounce(applyFilters, 300));
-            barangaySelect.addEventListener('change', applyFilters);
-            academicYearSelect.addEventListener('change', applyFilters);
-            initialScreeningSelect.addEventListener('change', applyFilters);
+    document.getElementById('currentPageMayor').onchange = (e) => {
+        const page = parseInt(e.target.value);
+        if (page >= 1 && page <= totalPages) {
+            currentPageMayor = page;
+            renderMayorApplicantsTable();
+            setupMayorPagination();
+        } else {
+            e.target.value = currentPageMayor;
         }
+    };
+}
 
-        // Filter setup for LYDO Reviewed Applicants
-        function setupLydoFilters() {
-            const searchInput = document.getElementById('searchInputLydo');
-            const barangaySelect = document.getElementById('barangaySelectLydo');
-            const academicYearSelect = document.getElementById('academicYearSelectLydo');
-            const remarksSelect = document.getElementById('remarksSelectLydo');
+// Pagination setup for LYDO Reviewed Applicants - FIXED
+function setupLydoPagination() {
+    const totalPages = Math.ceil(filteredLydoApplicants.length / itemsPerPage); // Use filtered data
+    document.getElementById('totalPagesLydo').textContent = totalPages;
+    document.getElementById('paginationInfoLydo').textContent = `Showing page ${currentPageLydo} of ${totalPages}`;
+    
+    document.getElementById('prevPageLydo').disabled = currentPageLydo === 1;
+    document.getElementById('nextPageLydo').disabled = currentPageLydo === totalPages || totalPages === 0;
 
-            const applyFilters = () => {
-                const searchTerm = searchInput.value.toLowerCase();
-                const barangayFilter = barangaySelect.value;
-                const academicYearFilter = academicYearSelect.value;
-                const remarksFilter = remarksSelect.value;
-
-                const filtered = allLydoApplicants.filter(applicant => {
-                    const matchesSearch = !searchTerm || 
-                        formatName(applicant).toLowerCase().includes(searchTerm) ||
-                        (applicant.applicant_email && applicant.applicant_email.toLowerCase().includes(searchTerm)) ||
-                        (applicant.applicant_school_name && applicant.applicant_school_name.toLowerCase().includes(searchTerm));
-                    
-                    const matchesBarangay = !barangayFilter || applicant.applicant_brgy === barangayFilter;
-                    const matchesAcademicYear = !academicYearFilter || applicant.applicant_acad_year === academicYearFilter;
-                    const matchesRemarks = !remarksFilter || applicant.remarks === remarksFilter;
-
-                    return matchesSearch && matchesBarangay && matchesAcademicYear && matchesRemarks;
-                });
-
-                allLydoApplicants = filtered;
-                currentPageLydo = 1;
-                renderLydoApplicantsTable();
-                setupLydoPagination();
-            };
-
-            searchInput.addEventListener('input', debounce(applyFilters, 300));
-            barangaySelect.addEventListener('change', applyFilters);
-            academicYearSelect.addEventListener('change', applyFilters);
-            remarksSelect.addEventListener('change', applyFilters);
+    // Event listeners
+    document.getElementById('prevPageLydo').onclick = () => {
+        if (currentPageLydo > 1) {
+            currentPageLydo--;
+            renderLydoApplicantsTable();
+            setupLydoPagination();
         }
+    };
+
+    document.getElementById('nextPageLydo').onclick = () => {
+        if (currentPageLydo < totalPages) {
+            currentPageLydo++;
+            renderLydoApplicantsTable();
+            setupLydoPagination();
+        }
+    };
+
+    document.getElementById('currentPageLydo').onchange = (e) => {
+        const page = parseInt(e.target.value);
+        if (page >= 1 && page <= totalPages) {
+            currentPageLydo = page;
+            renderLydoApplicantsTable();
+            setupLydoPagination();
+        } else {
+            e.target.value = currentPageLydo;
+        }
+    };
+}
 
         // Checkbox setup functions
         function setupMayorCheckboxes() {
@@ -1920,6 +1977,95 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Print PDF functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Mayor Staff Applicants Print Button
+    document.getElementById('printPdfBtnMayor').addEventListener('click', function() {
+        printMayorApplicantsPdf();
+    });
+
+    // LYDO Reviewed Applicants Print Button
+    document.getElementById('printPdfBtnLydo').addEventListener('click', function() {
+        printLydoReviewedApplicantsPdf();
+    });
+});
+
+// Function to print Mayor Staff Applicants PDF
+function printMayorApplicantsPdf() {
+    showLoadingOverlay();
+    
+    // Get current filter values for Mayor Staff
+    const search = document.getElementById('searchInputMayor').value;
+    const barangay = document.getElementById('barangaySelectMayor').value;
+    const academicYear = document.getElementById('academicYearSelectMayor').value;
+    const initialScreening = document.getElementById('initialScreeningSelectMayor').value;
+
+    // Build query parameters for Mayor Staff
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (barangay) params.append('barangay', barangay);
+    if (academicYear) params.append('academic_year', academicYear);
+    
+    // For Mayor Staff: Approved, Rejected, Reviewed, or all
+    if (initialScreening && initialScreening !== 'all') {
+        params.append('initial_screening', initialScreening);
+    } else {
+        // If "All Applicants" is selected, don't send any initial_screening parameter
+        // This will show Approved, Rejected, AND Reviewed
+        params.append('initial_screening', 'all');
+    }
+
+    // Open PDF in new tab with Mayor Staff specific endpoint
+    const url = `/lydo_admin/generate-mayor-applicants-pdf?${params.toString()}`;
+    
+    // Debug log
+    console.log('Mayor PDF URL:', url);
+    
+    window.open(url, '_blank');
+    
+    // Hide loading after a delay to ensure PDF opens
+    setTimeout(() => {
+        hideLoadingOverlay();
+    }, 2000);
+}
+
+// Function to print LYDO Reviewed Applicants PDF
+function printLydoReviewedApplicantsPdf() {
+    showLoadingOverlay();
+    
+    // Get current filter values for LYDO Reviewed
+    const search = document.getElementById('searchInputLydo').value;
+    const barangay = document.getElementById('barangaySelectLydo').value;
+    const academicYear = document.getElementById('academicYearSelectLydo').value;
+    const remarks = document.getElementById('remarksSelectLydo').value;
+
+    // Build query parameters for LYDO Reviewed
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (barangay) params.append('barangay', barangay);
+    if (academicYear) params.append('academic_year', academicYear);
+    
+    // Add remarks filter if selected
+    if (remarks) {
+        params.append('remarks', remarks);
+    }
+
+    // Note: We don't send initial_screening for LYDO since it's hardcoded to 'Reviewed'
+    
+    // Open PDF in new tab with LYDO specific endpoint
+    const url = `/lydo_admin/generate-lydo-applicants-pdf?${params.toString()}`;
+    
+    // Debug log
+    console.log('LYDO PDF URL:', url);
+    
+    window.open(url, '_blank');
+    
+    // Hide loading after a delay to ensure PDF opens
+    setTimeout(() => {
+        hideLoadingOverlay();
+    }, 2000);
+}
     </script>
 </body>
 </html>

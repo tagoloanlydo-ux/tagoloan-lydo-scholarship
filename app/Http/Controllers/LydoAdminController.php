@@ -981,7 +981,8 @@ public function getMayorApplicants(Request $request)
                 'ap.status',
                 'ap.remarks'
             )
-            ->whereIn('ap.initial_screening', ['Approved', 'Rejected'])
+            // ✅ SOLUSYON: Isama ang 'Reviewed' status
+            ->whereIn('ap.initial_screening', ['Approved', 'Rejected', 'Reviewed'])
             ->orderBy('app.applicant_lname', 'asc')
             ->orderBy('app.applicant_fname', 'asc')
             ->orderBy('app.applicant_mname', 'asc');
@@ -1693,81 +1694,166 @@ private function getDocumentUrl($filePath)
 }
 
 
-public function generateApplicantsPdf(Request $request)
+public function generateMayorApplicantsPdf(Request $request)
 {
     try {
-        // Set time limit for PDF generation
+        \Log::info('Mayor PDF Request:', $request->all());
+        
         set_time_limit(120);
         
-        // Get applicants with filtering
-        $query = DB::table('tbl_applicant')
-            ->join('tbl_application', 'tbl_applicant.applicant_id', '=', 'tbl_application.applicant_id')
-            ->join('tbl_application_personnel', 'tbl_application.application_id', '=', 'tbl_application_personnel.application_id')
+        // Get Mayor Staff applicants (Approved, Rejected, AND Reviewed)
+        $query = DB::table('tbl_applicant as app')
+            ->join('tbl_application as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->join('tbl_application_personnel as ap', 'a.application_id', '=', 'ap.application_id')
             ->select(
-                'tbl_applicant.*',
-                'tbl_application_personnel.initial_screening',
-                'tbl_application_personnel.status'
-            );
+                'app.*',
+                'ap.initial_screening',
+                'ap.status',
+                'ap.remarks'
+            )
+            ->whereIn('ap.initial_screening', ['Approved', 'Rejected', 'Reviewed']);
 
-        // Apply initial screening status filter
-        $initialScreeningStatus = $request->get('initial_screening', 'all');
-        if ($initialScreeningStatus && $initialScreeningStatus !== 'all') {
-            $query->where('tbl_application_personnel.initial_screening', $initialScreeningStatus);
-        }
-
-        // Apply other filters
-        if ($request->has('search') && !empty($request->search)) {
+        // Apply filters only if they have values
+        if ($request->filled('search')) {
             $searchTerm = $request->search;
             $query->where(function($q) use ($searchTerm) {
-                $q->where('applicant_fname', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('applicant_lname', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('applicant_mname', 'like', '%' . $searchTerm . '%');
+                $q->where('app.applicant_fname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('app.applicant_lname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('app.applicant_mname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('app.applicant_email', 'like', '%' . $searchTerm . '%');
             });
         }
 
-        if ($request->has('barangay') && !empty($request->barangay)) {
-            $query->where('applicant_brgy', $request->barangay);
+        if ($request->filled('barangay')) {
+            $query->where('app.applicant_brgy', $request->barangay);
         }
 
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
-            $query->where('applicant_acad_year', $request->academic_year);
+        if ($request->filled('academic_year')) {
+            $query->where('app.applicant_acad_year', $request->academic_year);
         }
 
-        // Order alphabetically by last name, first name, middle name
+        if ($request->filled('initial_screening') && $request->initial_screening !== 'all') {
+            $query->where('ap.initial_screening', $request->initial_screening);
+        }
+
+        // Get all records without limit
         $applicants = $query
-            ->orderBy('applicant_lname', 'asc')
-            ->orderBy('applicant_fname', 'asc')
-            ->orderBy('applicant_mname', 'asc')
+            ->orderBy('app.applicant_lname', 'asc')
+            ->orderBy('app.applicant_fname', 'asc')
+            ->orderBy('app.applicant_mname', 'asc')
             ->get();
 
-        // Get filter info for page title
+        \Log::info("Final applicants count: {$applicants->count()}");
+
+        // Get filter info - ALWAYS include this for all pages
         $filters = [];
-        if ($request->search) {
-            $filters[] = 'Search: ' . $request->search;
+        if ($request->filled('search')) $filters[] = 'Search: ' . $request->search;
+        if ($request->filled('barangay')) $filters[] = 'Barangay: ' . $request->barangay;
+        if ($request->filled('academic_year')) $filters[] = 'Academic Year: ' . $request->academic_year;
+        if ($request->filled('initial_screening') && $request->initial_screening !== 'all') {
+            $filters[] = 'Status: ' . $request->initial_screening;
+        } else {
+            $filters[] = 'Status: All Mayor Staff Applicants (Approved, Rejected, Reviewed)';
         }
-        if ($request->barangay) {
-            $filters[] = 'Barangay: ' . $request->barangay;
-        }
-        if ($request->academic_year) {
-            $filters[] = 'Academic Year: ' . $request->academic_year;
-        }
-        if ($request->initial_screening && $request->initial_screening !== 'all') {
-            $filters[] = 'Initial Screening: ' . $request->initial_screening;
-        }
+        
+        // Add record count to filters so it shows on all pages
+        $filters[] = 'Total Records: ' . $applicants->count();
 
-        $filename = 'applicants-list-' . date('Y-m-d-H-i-s') . '.pdf';
+        $title = 'Mayor Staff Applicants Report';
 
-        $pdf = Pdf::loadView('pdf.applicants-print', compact('applicants', 'filters'))
+        \Log::info("Generating PDF with {$applicants->count()} applicants");
+
+        $pdf = Pdf::loadView('pdf.mayor-applicants-print', compact('applicants', 'filters', 'title'))
             ->setPaper('a4', 'portrait')
-            ->setOption('enable-javascript', true)
-            ->setOption('javascript-delay', 1000)
-            ->setOption('enable-smart-shrinking', true)
-            ->setOption('no-stop-slow-scripts', true);
+            ->setOption('isHtml5ParserEnabled', true)
+            ->setOption('isRemoteEnabled', true);
 
-        return $pdf->stream($filename);
+        return $pdf->stream('mayor-applicants-' . date('Y-m-d-H-i-s') . '.pdf');
         
     } catch (\Exception $e) {
-        \Log::error('PDF Generation Error: ' . $e->getMessage());
+        \Log::error('Mayor PDF Generation Error: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        return back()->with('error', 'Failed to generate PDF: ' . $e->getMessage());
+    }
+}
+public function generateLydoApplicantsPdf(Request $request)
+{
+    try {
+        \Log::info('LYDO PDF Request:', $request->all());
+        
+        set_time_limit(120);
+        
+        // Get LYDO Reviewed applicants (ONLY Reviewed)
+        $query = DB::table('tbl_applicant as app')
+            ->join('tbl_application as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->join('tbl_application_personnel as ap', 'a.application_id', '=', 'ap.application_id')
+            ->select(
+                'app.*',
+                'ap.initial_screening',
+                'ap.status',
+                'ap.remarks'
+            )
+            ->where('ap.initial_screening', 'Reviewed');
+
+        // Apply filters
+        if ($request->filled('remarks')) {
+            $query->where('ap.remarks', $request->remarks);
+        }
+
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('app.applicant_fname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('app.applicant_lname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('app.applicant_mname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('app.applicant_email', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        if ($request->filled('barangay')) {
+            $query->where('app.applicant_brgy', $request->barangay);
+        }
+
+        if ($request->filled('academic_year')) {
+            $query->where('app.applicant_acad_year', $request->academic_year);
+        }
+
+        // Get all records without limit
+        $applicants = $query
+            ->orderBy('app.applicant_lname', 'asc')
+            ->orderBy('app.applicant_fname', 'asc')
+            ->orderBy('app.applicant_mname', 'asc')
+            ->get();
+
+        \Log::info("Final applicants count: {$applicants->count()}");
+
+        // Get filter info - ALWAYS include this for all pages
+        $filters = [];
+        if ($request->filled('search')) $filters[] = 'Search: ' . $request->search;
+        if ($request->filled('barangay')) $filters[] = 'Barangay: ' . $request->barangay;
+        if ($request->filled('academic_year')) $filters[] = 'Academic Year: ' . $request->academic_year;
+        $filters[] = 'Status: Reviewed by LYDO';
+        if ($request->filled('remarks')) {
+            $filters[] = 'Remarks: ' . $request->remarks;
+        }
+        
+        // Add record count to filters so it shows on all pages
+        $filters[] = 'Total Records: ' . $applicants->count();
+
+        $title = 'LYDO Reviewed Applicants Report';
+
+        \Log::info("Generating PDF with {$applicants->count()} applicants");
+
+        $pdf = Pdf::loadView('pdf.lydo-applicants-print', compact('applicants', 'filters', 'title'))
+            ->setPaper('a4', 'portrait')
+            ->setOption('isHtml5ParserEnabled', true)
+            ->setOption('isRemoteEnabled', true);
+
+        return $pdf->stream('lydo-reviewed-applicants-' . date('Y-m-d-H-i-s') . '.pdf');
+        
+    } catch (\Exception $e) {
+        \Log::error('LYDO PDF Generation Error: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
         return back()->with('error', 'Failed to generate PDF: ' . $e->getMessage());
     }
 }

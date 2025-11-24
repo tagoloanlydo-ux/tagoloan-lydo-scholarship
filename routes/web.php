@@ -47,8 +47,11 @@ Route::get('/reset-password/{token}', [LydopersController::class, 'showResetForm
 Route::post('/reset-password', [LydopersController::class, 'resetPassword'])->name('password.update');
 
 Route::middleware(['role:lydo_admin'])->group(function () {
+// Separate PDF routes for Mayor and LYDO applicants
+    Route::get('/lydo_admin/generate-mayor-applicants-pdf', [LydoAdminController::class, 'generateMayorApplicantsPdf']);
+    Route::get('/lydo_admin/generate-lydo-applicants-pdf', [LydoAdminController::class, 'generateLydoApplicantsPdf']);
     Route::get('/lydo_admin/get-mayor-applicants', [LydoAdminController::class, 'getMayorApplicants']);
-Route::get('/lydo_admin/get-lydo-reviewed-applicants', [LydoAdminController::class, 'getLydoReviewedApplicants']);
+    Route::get('/lydo_admin/get-lydo-reviewed-applicants', [LydoAdminController::class, 'getLydoReviewedApplicants']);
     Route::get('/lydo_admin/generate-graduation-certificates', [LydoAdminController::class, 'generateGraduationCertificates'])->name('LydoAdmin.generateGraduationCertificates');
     Route::post('/lydo_admin/send-sms-to-scholars', [SmsController::class, 'sendSmsToScholars'])->name('LydoAdmin.sendSmsToScholars');
     Route::get('/lydo_admin/test-sms', [SmsController::class, 'testSms']);
@@ -83,16 +86,13 @@ Route::get('/lydo_admin/get-lydo-reviewed-applicants', [LydoAdminController::cla
     Route::post('/lydo_admin/get-scholar-names', [LydoAdminController::class, 'getScholarNames'])->name('LydoAdmin.getScholarNames');
     Route::post('/lydo_admin/get-scholar-names', [LydoAdminController::class, 'getScholarNames'])->name('LydoAdmin.getScholarNames');
     Route::post('/lydo_admin/create-disbursement', [LydoAdminController::class, 'createDisbursement'])->name('LydoAdmin.createDisbursement');
-    Route::post('/lydo_admin/send-email-to-applicants', [LydoAdminController::class, 'sendEmailToApplicants'])->name('LydoAdmin.sendEmailToApplicants');
-    Route::get('/lydo_admin/report/pdf/applicants', [LydoAdminController::class, 'generateApplicantsPdf'])->name('LydoAdmin.report.pdf.applicants');
-    Route::get('/lydo_admin/report/pdf/renewal', [LydoAdminController::class, 'generateRenewalPdf'])->name('LydoAdmin.report.pdf.renewal');
+    Route::post('/lydo_admin/send-email-to-applicants', [LydoAdminController::class, 'sendEmailToApplicants'])->name('LydoAdmin.sendEmailToApplicants');    Route::get('/lydo_admin/report/pdf/renewal', [LydoAdminController::class, 'generateRenewalPdf'])->name('LydoAdmin.report.pdf.renewal');
     Route::get('/lydo_admin/report/pdf/summary', [LydoAdminController::class, 'generateSummaryPdf'])->name('LydoAdmin.report.pdf.summary');
     Route::get('/lydo_admin/get-scholars-by-barangay', [LydoAdminController::class, 'getScholarsByBarangay'])->name('LydoAdmin.getScholarsByBarangay');
     Route::get('/lydo_admin/get-scholars-with-disbursement', [LydoAdminController::class, 'getScholarsWithDisbursement'])->name('LydoAdmin.getScholarsWithDisbursement');
     Route::get('/lydo_admin/generate-disbursement-records-pdf', [LydoAdminController::class, 'generateDisbursementRecordsPdf'])->name('LydoAdmin.generateDisbursementRecordsPdf');
     Route::get('/lydo_admin/disbursement-pdf', [LydoAdminController::class, 'generateDisbursementPdf'])->name('LydoAdmin.disbursementPdf');
     Route::get('/lydo_admin/scholar/{scholarId}/documents', [LydoAdminController::class, 'getScholarDocuments'])->name('LydoAdmin.scholar.documents');
-    Route::get('/lydo_admin/generate-applicants-pdf', [LydoAdminController::class, 'generateApplicantsPdf'])->name('lydo_admin.applicants.pdf');
     Route::get('/lydo_admin/generate-signed-disbursement-pdf', [LydoAdminController::class, 'generateSignedDisbursementPdf'])->name('LydoAdmin.generateSignedDisbursementPdf');
     Route::get('/lydo_admin/generate-signed-disbursement-pdf', [LydoAdminController::class, 'generateSignedDisbursementPdf'])->name('LydoAdmin.generateSignedDisbursementPdf');
     Route::get('/lydo_admin/get-scholars-without-disbursement', [LydoAdminController::class, 'getScholarsWithoutDisbursement'])->name('LydoAdmin.getScholarsWithoutDisbursement');
