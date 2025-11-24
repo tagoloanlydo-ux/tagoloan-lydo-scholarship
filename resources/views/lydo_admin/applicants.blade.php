@@ -519,6 +519,7 @@
                                         <th class="px-4 py-3 border border-gray-200 align-middle text-center">Full Name</th>
                                         <th class="px-4 py-3 border border-gray-200 align-middle text-center">Barangay</th>
                                         <th class="px-4 py-3 border border-gray-200 align-middle text-center">Email</th>
+                                        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Phone Number</th>
                                         <th class="px-4 py-3 border border-gray-200 align-middle text-center">School</th>
                                         <th class="px-4 py-3 border border-gray-200 align-middle text-center">Academic Year</th>
                                         <th class="px-4 py-3 border border-gray-200 align-middle text-center">Application History</th>
@@ -648,6 +649,7 @@
                                         <th class="px-4 py-3 border border-gray-200 align-middle text-center">Full Name</th>
                                         <th class="px-4 py-3 border border-gray-200 align-middle text-center">Barangay</th>
                                         <th class="px-4 py-3 border border-gray-200 align-middle text-center">Email</th>
+                                        <th class="px-4 py-3 border border-gray-200 align-middle text-center">Phone Number</th>
                                         <th class="px-4 py-3 border border-gray-200 align-middle text-center">School</th>
                                         <th class="px-4 py-3 border border-gray-200 align-middle text-center">Academic Year</th>
                                         <th class="px-4 py-3 border border-gray-200 align-middle text-center">Application History</th>
@@ -695,7 +697,7 @@
             <div class="mt-3">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-800">Send Email to Selected Applicants</h3>
-                    <button id="closeEmailModal" class="text-gray-400 hover:text-gray-600">
+                    <button id="closeEmailModal" class="text-gray-400 hover:text-gray-600" onclick="closeEmailModal()">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
@@ -1120,6 +1122,9 @@
                         <div class="text-sm text-gray-900">${applicant.applicant_email || 'N/A'}</div>
                     </td>
                     <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm text-gray-900">${applicant.applicant_contact_number || 'N/A'}</div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
                         <div class="text-sm text-gray-900">${applicant.applicant_school_name || 'N/A'}</div>
                     </td>
                     <td class="px-4 border border-gray-200 py-2 text-center">
@@ -1182,6 +1187,9 @@
                     </td>
                     <td class="px-4 border border-gray-200 py-2 text-center">
                         <div class="text-sm text-gray-900">${applicant.applicant_email || 'N/A'}</div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm text-gray-900">${applicant.applicant_contact_number || 'N/A'}</div>
                     </td>
                     <td class="px-4 border border-gray-200 py-2 text-center">
                         <div class="text-sm text-gray-900">${applicant.applicant_school_name || 'N/A'}</div>
@@ -1664,15 +1672,49 @@
         }
 
         function openEmailModal(tab) {
-            // Implement email modal opening logic
             const modal = document.getElementById('emailModal');
+            const preview = document.getElementById('recipientsPreview');
+
+            const checkboxes = document.querySelectorAll(`.applicant-checkbox-${tab}:checked`);
+            if (checkboxes.length === 0) {
+                preview.textContent = 'No recipients selected';
+            } else {
+                const items = Array.from(checkboxes).map(cb => {
+                    const row = cb.closest('tr');
+                    const name = row.querySelector('td:nth-child(2)').textContent.trim();
+                    const email = row.querySelector('td:nth-child(4)').textContent.trim();
+                    return `<div class="mb-1"><strong>${escapeHtml(name)}</strong> — ${escapeHtml(email)}</div>`;
+                }).join('');
+                preview.innerHTML = items;
+            }
+
             modal.classList.remove('hidden');
         }
 
         function openSmsModal(tab) {
-            // Implement SMS modal opening logic
             const modal = document.getElementById('smsModal');
+            const preview = document.getElementById('smsRecipientsPreview');
+
+            const checkboxes = document.querySelectorAll(`.applicant-checkbox-${tab}:checked`);
+            if (checkboxes.length === 0) {
+                preview.textContent = 'No recipients selected';
+            } else {
+                const items = Array.from(checkboxes).map(cb => {
+                    const row = cb.closest('tr');
+                    const name = row.querySelector('td:nth-child(2)').textContent.trim();
+                    const phone = row.querySelector('td:nth-child(5)').textContent.trim();
+                    return `<div class="mb-1"><strong>${escapeHtml(name)}</strong> — ${escapeHtml(phone)}</div>`;
+                }).join('');
+                preview.innerHTML = items;
+            }
+
             modal.classList.remove('hidden');
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
         }
 
         // Include your existing loading overlay functions and other utilities
@@ -1707,6 +1749,177 @@
         window.viewApplicantDocuments = viewApplicantDocuments;
         window.viewApplicantIntakeSheet = viewApplicantIntakeSheet;
         window.closeApplicationModal = closeApplicationModal;
+
+        // SMS Form Submission
+document.getElementById('smsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const sendSmsBtn = document.getElementById('sendSmsBtn');
+    const sendSmsText = document.getElementById('sendSmsText');
+    const sendSmsLoading = document.getElementById('sendSmsLoading');
+    
+    // Get selected applicants based on active tab
+    const activeTab = document.querySelector('.tab-button.active').getAttribute('data-tab');
+    const checkboxes = document.querySelectorAll(`.applicant-checkbox-${activeTab === 'mayor-applicants' ? 'mayor' : 'lydo'}:checked`);
+    
+    if (checkboxes.length === 0) {
+        Swal.fire('Error', 'Please select at least one applicant', 'error');
+        return;
+    }
+
+    const selectedEmails = Array.from(checkboxes).map(checkbox => {
+        const row = checkbox.closest('tr');
+        return row.querySelector('td:nth-child(4)').textContent.trim();
+    }).join(',');
+
+    const formData = new FormData(this);
+    formData.append('selected_emails', selectedEmails);
+    formData.append('sms_type', document.querySelector('input[name="smsType"]:checked').value);
+
+    // Show loading state
+    sendSmsText.classList.add('hidden');
+    sendSmsLoading.classList.remove('hidden');
+    sendSmsBtn.disabled = true;
+
+    fetch('/lydo_admin/send-sms-to-applicants', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire('Success', data.message, 'success');
+            // Show details if available
+            if (data.details) {
+                console.log('SMS Details:', data.details);
+            }
+            document.getElementById('smsModal').classList.add('hidden');
+            document.getElementById('smsForm').reset();
+            document.getElementById('scheduleFields').classList.add('hidden');
+        } else {
+            Swal.fire('Error', data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Failed to send SMS', 'error');
+    })
+    .finally(() => {
+        // Reset loading state
+        sendSmsText.classList.remove('hidden');
+        sendSmsLoading.classList.add('hidden');
+        sendSmsBtn.disabled = false;
+    });
+});
+
+// SMS Type Toggle
+document.querySelectorAll('.sms-type-radio').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const scheduleFields = document.getElementById('scheduleFields');
+        if (this.value === 'schedule') {
+            scheduleFields.classList.remove('hidden');
+            // Make schedule what field required
+            document.getElementById('scheduleWhat').required = true;
+        } else {
+            scheduleFields.classList.add('hidden');
+            // Remove required from schedule fields
+            document.getElementById('scheduleWhat').required = false;
+        }
+    });
+});
+
+// Character count for SMS
+document.getElementById('smsMessage').addEventListener('input', function() {
+    const charCount = this.value.length;
+    document.getElementById('smsCharCount').textContent = charCount;
+    
+    if (charCount > 160) {
+        document.getElementById('smsCharCount').classList.add('text-red-500');
+    } else {
+        document.getElementById('smsCharCount').classList.remove('text-red-500');
+    }
+});
+// Modal close functions
+function closeEmailModal() {
+    document.getElementById('emailModal').classList.add('hidden');
+}
+
+function closeSmsModal() {
+    document.getElementById('smsModal').classList.add('hidden');
+}
+
+function closeApplicationModal() {
+    const modal = document.getElementById('applicationHistoryModal');
+    const modalContent = document.getElementById('modalContent');
+    
+    modalContent.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+// Make functions global
+window.closeEmailModal = closeEmailModal;
+window.closeSmsModal = closeSmsModal;
+window.closeApplicationModal = closeApplicationModal;
+
+// Add event listeners for modal close buttons
+document.addEventListener('DOMContentLoaded', function() {
+    // Email modal close
+    const closeEmailModalBtn = document.getElementById('closeEmailModal');
+    const cancelEmailBtn = document.getElementById('cancelEmailBtn');
+    
+    if (closeEmailModalBtn) {
+        closeEmailModalBtn.addEventListener('click', closeEmailModal);
+    }
+    if (cancelEmailBtn) {
+        cancelEmailBtn.addEventListener('click', closeEmailModal);
+    }
+
+    // SMS modal close
+    const closeSmsModalBtn = document.getElementById('closeSmsModal');
+    const cancelSmsBtn = document.getElementById('cancelSmsBtn');
+    
+    if (closeSmsModalBtn) {
+        closeSmsModalBtn.addEventListener('click', closeSmsModal);
+    }
+    if (cancelSmsBtn) {
+        cancelSmsBtn.addEventListener('click', closeSmsModal);
+    }
+
+    // Close modals when clicking outside
+    const emailModal = document.getElementById('emailModal');
+    const smsModal = document.getElementById('smsModal');
+    const applicationHistoryModal = document.getElementById('applicationHistoryModal');
+
+    if (emailModal) {
+        emailModal.addEventListener('click', function(e) {
+            if (e.target === emailModal) {
+                closeEmailModal();
+            }
+        });
+    }
+
+    if (smsModal) {
+        smsModal.addEventListener('click', function(e) {
+            if (e.target === smsModal) {
+                closeSmsModal();
+            }
+        });
+    }
+
+    if (applicationHistoryModal) {
+        applicationHistoryModal.addEventListener('click', function(e) {
+            if (e.target === applicationHistoryModal) {
+                closeApplicationModal();
+            }
+        });
+    }
+});
     </script>
 </body>
 </html>
