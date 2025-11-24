@@ -191,8 +191,7 @@ class SmsController extends Controller
     /**
      * Real SMS function using iProgSMS API
      */
-    private function sendRealSms($mobile, $message)
-    {
+public function sendRealSms($mobile, $message)    {
         try {
             $apiKey = config('services.iprogsms.api_key');
             $apiUrl = config('services.iprogsms.api_url');

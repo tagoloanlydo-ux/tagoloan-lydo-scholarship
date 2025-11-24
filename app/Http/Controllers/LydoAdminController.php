@@ -189,7 +189,7 @@ public function lydo()
         ->where('lydopers_role', 'lydo_staff')
         ->where('lydopers_status', 'active')
         ->orderBy('lydopers_lname') // Alphabetical by last name
-        ->paginate(15);
+        ->paginate(1500);
 
     return view('lydo_admin.lydo', compact('inactiveStaff', 'activeStaff'));
 }
@@ -233,7 +233,7 @@ public function mayor()
         ->where('lydopers_status', 'inactive')
         ->orderBy('lydopers_lname', 'asc')
         ->orderBy('lydopers_fname', 'asc')
-        ->paginate(15, ['*'], 'inactive_page');
+        ->paginate(1500, ['*'], 'inactive_page');
 
     // Active Mayor Staff
     $activeStaff = DB::table('tbl_lydopers')
@@ -1476,112 +1476,12 @@ public function getScholarsWithoutDisbursement(Request $request)
     }
 }
 
-public function generateDisbursementPdf(Request $request)
-{
-    try {
-        // Set time limit for PDF generation
-        set_time_limit(120); // 2 minutes
-        
-        // Get disbursement records with applicant information
-        $query = DB::table('tbl_disburse as d')
-            ->join('tbl_scholar as s', 'd.scholar_id', '=', 's.scholar_id')
-            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
-            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-            ->select(
-                'd.disburse_semester',
-                'd.disburse_acad_year',
-                'd.disburse_amount',
-                'd.disburse_date',
-                'd.disburse_signature',
-                'a.applicant_brgy',
-                DB::raw("
-                    CONCAT(
-                        UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)),
-                        ', ',
-                        UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
-                        ' ',
-                        CASE 
-                            WHEN a.applicant_mname IS NOT NULL AND a.applicant_mname != '' 
-                                THEN CONCAT(UPPER(LEFT(a.applicant_mname,1)), '. ')
-                            ELSE ''
-                        END,
-                        COALESCE(
-                            CONCAT(
-                                UPPER(LEFT(a.applicant_suffix,1)), LOWER(SUBSTRING(a.applicant_suffix,2))
-                            ), ''
-                        )
-                    ) AS full_name
-                ")
-            );
-
-        // Determine if we want signed or unsigned disbursements
-        $type = $request->get('type', 'signed'); // Default to signed
-        if ($type === 'signed') {
-            $query->whereNotNull('d.disburse_signature'); // Only signed disbursements
-            $title = 'Signed Disbursements Report';
-        } else {
-            $query->whereNull('d.disburse_signature'); // Only unsigned disbursements
-            $title = 'Disbursement Records (Pending Signature)';
-        }
-
-        // Apply filters
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('a.applicant_fname', 'like', '%' . $search . '%')
-                  ->orWhere('a.applicant_lname', 'like', '%' . $search . '%')
-                  ->orWhere('a.applicant_mname', 'like', '%' . $search . '%');
-            });
-        }
-
-        if ($request->has('barangay') && !empty($request->barangay)) {
-            $query->where('a.applicant_brgy', $request->barangay);
-        }
-
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
-            $query->where('d.disburse_acad_year', $request->academic_year);
-        }
-
-        if ($request->has('semester') && !empty($request->semester)) {
-            $query->where('d.disburse_semester', $request->semester);
-        }
-
-        // Limit results for PDF generation
-        $disbursements = $query->limit(1000)->get();
-
-        // Get filter info for page title
-        $filters = [];
-        if ($request->search) {
-            $filters[] = 'Search: ' . $request->search;
-        }
-        if ($request->barangay) {
-            $filters[] = 'Barangay: ' . $request->barangay;
-        }
-        if ($request->academic_year) {
-            $filters[] = 'Academic Year: ' . $request->academic_year;
-        }
-        if ($request->semester) {
-            $filters[] = 'Semester: ' . $request->semester;
-        }
-
-        $pdf = Pdf::loadView('pdf.disbursement-print', compact('disbursements', 'filters', 'title'))
-            ->setPaper('a4', 'landscape');
-
-        $filename = $type === 'signed' ? 'signed-disbursement-report-' : 'disbursement-records-';
-        $filename .= date('Y-m-d') . '.pdf';
-
-        return $pdf->stream($filename);
-        
-    } catch (\Exception $e) {
-        \Log::error('PDF Generation Error: ' . $e->getMessage());
-        return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
-    }
-}
 public function generateDisbursementRecordsPdf(Request $request)
 {
     try {
-        // Set time limit for PDF generation
-        set_time_limit(120); // 2 minutes
+        \Log::info('Disbursement Records PDF Request:', $request->all());
+        
+        set_time_limit(120);
         
         // Get only UNSIGNED disbursement records with applicant information
         $query = DB::table('tbl_disburse as d')
@@ -1616,55 +1516,66 @@ public function generateDisbursementRecordsPdf(Request $request)
             ->whereNull('d.disburse_signature'); // Only unsigned disbursements
 
         // Apply filters
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('a.applicant_fname', 'like', '%' . $search . '%')
-                  ->orWhere('a.applicant_lname', 'like', '%' . $search . '%')
-                  ->orWhere('a.applicant_mname', 'like', '%' . $search . '%');
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('a.applicant_fname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('a.applicant_lname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('a.applicant_mname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('a.applicant_email', 'like', '%' . $searchTerm . '%');
             });
         }
 
-        if ($request->has('barangay') && !empty($request->barangay)) {
+        if ($request->filled('barangay')) {
             $query->where('a.applicant_brgy', $request->barangay);
         }
 
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
+        if ($request->filled('academic_year')) {
             $query->where('d.disburse_acad_year', $request->academic_year);
         }
 
-        if ($request->has('semester') && !empty($request->semester)) {
+        if ($request->filled('semester')) {
             $query->where('d.disburse_semester', $request->semester);
         }
 
-        // Limit results for PDF generation
-        $unsignedDisbursements = $query->limit(1000)->get();
+        // Get all records without limit
+        $unsignedDisbursements = $query
+            ->orderBy('a.applicant_lname', 'asc')
+            ->orderBy('a.applicant_fname', 'asc')
+            ->orderBy('a.applicant_mname', 'asc')
+            ->get();
 
-        // Get filter info for page title
+        \Log::info("Final unsigned disbursements count: {$unsignedDisbursements->count()}");
+
+        // Get filter info - ALWAYS include this for all pages
         $filters = [];
-        if ($request->search) {
-            $filters[] = 'Search: ' . $request->search;
-        }
-        if ($request->barangay) {
-            $filters[] = 'Barangay: ' . $request->barangay;
-        }
-        if ($request->academic_year) {
-            $filters[] = 'Academic Year: ' . $request->academic_year;
-        }
-        if ($request->semester) {
-            $filters[] = 'Semester: ' . $request->semester;
-        }
+        if ($request->filled('search')) $filters[] = 'Search: ' . $request->search;
+        if ($request->filled('barangay')) $filters[] = 'Barangay: ' . $request->barangay;
+        if ($request->filled('academic_year')) $filters[] = 'Academic Year: ' . $request->academic_year;
+        if ($request->filled('semester')) $filters[] = 'Semester: ' . $request->semester;
+        $filters[] = 'Status: Pending Signature';
+        
+        // Add record count to filters so it shows on all pages
+        $filters[] = 'Total Records: ' . $unsignedDisbursements->count();
 
-        $pdf = Pdf::loadView('pdf.disbursement-records-print', compact('unsignedDisbursements', 'filters'))
-            ->setPaper('a4', 'landscape');
+        $title = 'Disbursement Records Report';
 
-        return $pdf->stream('disbursement-records-' . date('Y-m-d') . '.pdf');
+        \Log::info("Generating PDF with {$unsignedDisbursements->count()} unsigned disbursements");
+
+        $pdf = Pdf::loadView('pdf.disbursement-records-print', compact('unsignedDisbursements', 'filters', 'title'))
+            ->setPaper('a4', 'landscape')
+            ->setOption('isHtml5ParserEnabled', true)
+            ->setOption('isRemoteEnabled', true);
+
+        return $pdf->stream('disbursement-records-' . date('Y-m-d-H-i-s') . '.pdf');
         
     } catch (\Exception $e) {
-        \Log::error('PDF Generation Error: ' . $e->getMessage());
-        return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
+        \Log::error('Disbursement Records PDF Generation Error: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        return back()->with('error', 'Failed to generate PDF: ' . $e->getMessage());
     }
 }
+
 
 
 // Helper method to generate proper document URLs
@@ -1919,6 +1830,8 @@ public function dashboardData(Request $request)
 public function generateSignedDisbursementPdf(Request $request)
 {
     try {
+        \Log::info('Signed Disbursement PDF Request:', $request->all());
+        
         set_time_limit(120);
         
         $query = DB::table('tbl_disburse as d')
@@ -1932,53 +1845,88 @@ public function generateSignedDisbursementPdf(Request $request)
                 'd.disburse_date',
                 'd.disburse_signature',
                 'a.applicant_brgy',
-                DB::raw("CONCAT(a.applicant_fname, ' ', COALESCE(a.applicant_mname, ''), ' ', a.applicant_lname, ' ', COALESCE(a.applicant_suffix, '')) as full_name")
+                DB::raw("
+                    CONCAT(
+                        UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)),
+                        ', ',
+                        UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
+                        ' ',
+                        CASE 
+                            WHEN a.applicant_mname IS NOT NULL AND a.applicant_mname != '' 
+                                THEN CONCAT(UPPER(LEFT(a.applicant_mname,1)), '. ')
+                            ELSE ''
+                        END,
+                        COALESCE(
+                            CONCAT(
+                                UPPER(LEFT(a.applicant_suffix,1)), LOWER(SUBSTRING(a.applicant_suffix,2))
+                            ), ''
+                        )
+                    ) AS full_name
+                ")
             )
             ->whereNotNull('d.disburse_signature'); // Only signed disbursements
 
         // Apply filters
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('a.applicant_fname', 'like', '%' . $search . '%')
-                  ->orWhere('a.applicant_lname', 'like', '%' . $search . '%')
-                  ->orWhere('a.applicant_mname', 'like', '%' . $search . '%');
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('a.applicant_fname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('a.applicant_lname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('a.applicant_mname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('a.applicant_email', 'like', '%' . $searchTerm . '%');
             });
         }
 
-        if ($request->has('barangay') && !empty($request->barangay)) {
+        if ($request->filled('barangay')) {
             $query->where('a.applicant_brgy', $request->barangay);
         }
 
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
+        if ($request->filled('academic_year')) {
             $query->where('d.disburse_acad_year', $request->academic_year);
         }
 
-        if ($request->has('semester') && !empty($request->semester)) {
+        if ($request->filled('semester')) {
             $query->where('d.disburse_semester', $request->semester);
         }
 
-        $signedDisbursements = $query->orderBy('a.applicant_lname')->get();
+        // Get all records without limit
+        $signedDisbursements = $query
+            ->orderBy('a.applicant_lname', 'asc')
+            ->orderBy('a.applicant_fname', 'asc')
+            ->orderBy('a.applicant_mname', 'asc')
+            ->get();
 
-        // Get filter info for display
+        \Log::info("Final signed disbursements count: {$signedDisbursements->count()}");
+
+        // Get filter info - ALWAYS include this for all pages
         $filters = [];
-        if ($request->search) $filters['search'] = $request->search;
-        if ($request->barangay) $filters['barangay'] = $request->barangay;
-        if ($request->academic_year) $filters['academic_year'] = $request->academic_year;
-        if ($request->semester) $filters['semester'] = $request->semester;
+        if ($request->filled('search')) $filters[] = 'Search: ' . $request->search;
+        if ($request->filled('barangay')) $filters[] = 'Barangay: ' . $request->barangay;
+        if ($request->filled('academic_year')) $filters[] = 'Academic Year: ' . $request->academic_year;
+        if ($request->filled('semester')) $filters[] = 'Semester: ' . $request->semester;
+        $filters[] = 'Status: Signed';
+        
+        // Add record count to filters so it shows on all pages
+        $filters[] = 'Total Records: ' . $signedDisbursements->count();
 
-        $pdf = Pdf::loadView('pdf.signed-disbursement-print', [
-            'signedDisbursements' => $signedDisbursements, 
-            'filters' => $filters
-        ])->setPaper('a4', 'portrait');
+        $title = 'Signed Disbursements Report';
 
-        return $pdf->stream('signed-disbursement-report-' . date('Y-m-d') . '.pdf');
+        \Log::info("Generating PDF with {$signedDisbursements->count()} signed disbursements");
+
+        $pdf = Pdf::loadView('pdf.signed-disbursement-print', compact('signedDisbursements', 'filters', 'title'))
+            ->setPaper('a4', 'landscape')
+            ->setOption('isHtml5ParserEnabled', true)
+            ->setOption('isRemoteEnabled', true);
+
+        return $pdf->stream('signed-disbursement-report-' . date('Y-m-d-H-i-s') . '.pdf');
         
     } catch (\Exception $e) {
-        \Log::error('Signed PDF Generation Error: ' . $e->getMessage());
-        return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
+        \Log::error('Signed Disbursement PDF Generation Error: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        return back()->with('error', 'Failed to generate PDF: ' . $e->getMessage());
     }
 }
+
 public function getApplicantDocuments($applicantId)
 {
     try {

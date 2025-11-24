@@ -15,6 +15,107 @@
 </head>
 
 <style>
+/* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    max-width: fit-content;
+}
+
+.pagination-info {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: white;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 1rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.pagination-page-input {
+    width: 3.5rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    text-align: center;
+}
+
+.pagination-page-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .pagination-buttons {
+        order: -1;
+    }
+}
+        .note-box {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .note-box h4 {
+            color: #0369a1;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .note-box p {
+            color: #0c4a6e;
+            font-size: 0.875rem;
+        }
  .loading-overlay {
     position: fixed;
     top: 0;
@@ -82,28 +183,17 @@
         height: 60px;
     }
 }
-/* Center the pagination container */
+/* Pagination Container - Same as announcement page */
 .pagination-container {
     display: flex;
-    justify-content: center; /* Center the content */
+    justify-content: center;
     align-items: center;
-    margin: 0 auto; /* Remove top margin, center horizontally */
+    margin: 0 auto;
     padding: 1rem;
     background-color: white;
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    max-width: fit-content; /* Only take as much width as needed */
-}
-
-/* For mobile responsiveness */
-@media (max-width: 768px) {
-    .pagination-container {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-        width: 100%;
-        max-width: 100%;
-    }
+    max-width: fit-content;
 }
 
 .pagination-info {
@@ -170,6 +260,8 @@
         flex-direction: column;
         gap: 1rem;
         text-align: center;
+        width: 100%;
+        max-width: 100%;
     }
     
     .pagination-buttons {
@@ -298,11 +390,14 @@
                     </div>
                 </div>
             <div class="flex-1 overflow-auto p-4 md:p-5 text-[16px]">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-3xl font-bold text-gray-800">List of Scholars</h2>
-                </div>
-                 <!-- Filter Section -->
-                <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+                            <div class="note-box">
+                              
+                                <p>This section displays all scholars currently enrolled in the scholarship program. You can view scholar information, track their academic progress, and manage their scholarship status. Use the filters to find specific scholars by name, barangay, academic year, or status.</p>
+                                <p class="mt-2 text-amber-600 font-medium">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    <strong>Note:</strong> Scholars are categorized by status: Active, Inactive, or Graduated. Make sure to update scholar status regularly to maintain accurate records.
+                                </p>
+                            </div>                <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
                     <form method="GET" action="{{ route('LydoAdmin.scholar') }}" id="filterForm">
                         <div class="flex flex-col md:flex-row gap-4">
                             <div class="flex-1">
@@ -353,10 +448,7 @@
                 <div class="bg-white  shadow-sm overflow-hidden">
                         <!-- Add this after the table description and before the table -->
                         <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                            <div>
-                                <h3 class="text-lg font-semibold text-black-800">Scholars List</h3>
-                                <p class="text-sm text-black-600 mt-1">This table contains the list of active scholars currently enrolled in the scholarship program.</p>
-                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800">Lydo Scholar List</h3>
                             <div class="flex space-x-2">
                                 <button type="button" id="sendEmailBtn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed hidden">
                                     <i class="fas fa-envelope mr-2"></i>Email
@@ -414,7 +506,10 @@
                                             <div class="text-sm text-gray-900">{{ $scholar->applicant_acad_year ?? 'N/A' }}</div>
                                         </td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $scholar->scholar_status == 'active' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                                                {{ $scholar->scholar_status == 'active' ? 'bg-green-100 text-green-800' : 
+                                                ($scholar->scholar_status == 'rejected' ? 'bg-red-100 text-red-800' : 
+                                                ($scholar->scholar_status == 'graduated' ? 'bg-violet-100 text-violet-800' : 'bg-gray-100 text-gray-800')) }}">
                                                 {{ ucfirst($scholar->scholar_status) }}
                                             </span>
                                         </td>
@@ -431,26 +526,27 @@
                                 @endforelse
                             </tbody>
                         </table>
-                    <div class="px-3 py-2 bg-white border-t border-gray-200">
+<!-- Pagination Container -->
+<div class="px-6 py-4 bg-white border-t border-gray-200">
     <div class="flex justify-center">
-        <div class="pagination-container" id="paginationContainer">
-        <div class="pagination-info" id="paginationInfo">
-            Showing page 1 of 10
-        </div>
-        <div class="pagination-buttons">
-            <button class="pagination-btn" id="prevPage" disabled>
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="pagination-page-info">
-                Page 
-                <input type="number" class="pagination-page-input" id="currentPage" value="1" min="1">
-                of <span id="totalPages">1</span>
+        <div class="pagination-container">
+            <div class="pagination-info" id="paginationInfo">
+                Showing page 1 of 1
             </div>
-            <button class="pagination-btn" id="nextPage">
-                <i class="fas fa-chevron-right"></i>
-            </button>
+            <div class="pagination-buttons">
+                <button class="pagination-btn" id="prevPage" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="pagination-page-info">
+                    Page 
+                    <input type="number" class="pagination-page-input" id="currentPage" value="1" min="1">
+                    of <span id="totalPages">1</span>
+                </div>
+                <button class="pagination-btn" id="nextPage">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
         </div>
-    </div>
     </div>
 </div>
                 </div>
@@ -1123,7 +1219,6 @@ function initializeSmsForm() {
         });
     }
 }
-
 function initializeSmsTypeToggle() {
     const smsTypeRadios = document.querySelectorAll('.sms-type-radio');
     const scheduleFields = document.getElementById('scheduleFields');
@@ -1779,6 +1874,390 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// Global variables for pagination
+let currentPageInactive = 1;
+let currentPageActive = 1;
+const itemsPerPage = 15;
+let allInactiveStaff = [];
+let allActiveStaff = [];
+let filteredInactiveStaff = [];
+let filteredActiveStaff = [];
+
+// Initialize pagination on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Convert existing table data to arrays
+    initializeStaffData();
+    setupPagination();
+});
+
+function initializeStaffData() {
+    // Get inactive staff from table
+    const inactiveRows = document.querySelectorAll('#inactiveLydo tbody tr.staff-row');
+    allInactiveStaff = Array.from(inactiveRows).map(row => ({
+        id: row.dataset.id,
+        fname: row.dataset.fname,
+        mname: row.dataset.mname,
+        lname: row.dataset.lname,
+        suffix: row.dataset.suffix,
+        address: row.dataset.address,
+        bdate: row.dataset.bdate,
+        email: row.dataset.email,
+        contact: row.dataset.contact,
+        username: row.dataset.username,
+        role: row.dataset.role,
+        status: row.dataset.status,
+        created: row.dataset.created
+    }));
+    
+    // Get active staff from table
+    const activeRows = document.querySelectorAll('#activeLydo tbody tr.staff-row');
+    allActiveStaff = Array.from(activeRows).map(row => ({
+        id: row.dataset.id,
+        fname: row.dataset.fname,
+        mname: row.dataset.mname,
+        lname: row.dataset.lname,
+        suffix: row.dataset.suffix,
+        address: row.dataset.address,
+        bdate: row.dataset.bdate,
+        email: row.dataset.email,
+        contact: row.dataset.contact,
+        username: row.dataset.username,
+        role: row.dataset.role,
+        status: row.dataset.status,
+        created: row.dataset.created
+    }));
+    
+    filteredInactiveStaff = [...allInactiveStaff];
+    filteredActiveStaff = [...allActiveStaff];
+}
+
+function setupPagination() {
+    renderInactiveStaffTable();
+    renderActiveStaffTable();
+    setupInactivePagination();
+    setupActivePagination();
+}
+
+// Render Inactive Staff Table
+function renderInactiveStaffTable() {
+    const tableBody = document.querySelector('#inactiveLydo tbody');
+    const startIndex = (currentPageInactive - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = filteredInactiveStaff.slice(startIndex, endIndex);
+
+    if (currentItems.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-4 border border-gray-200 text-gray-500">
+                    No inactive staff found.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tableBody.innerHTML = currentItems.map(staff => `
+        <tr class="staff-row hover:bg-gray-50 border-b"
+            data-id="${staff.id}"
+            data-fname="${staff.fname}"
+            data-mname="${staff.mname}"
+            data-lname="${staff.lname}"
+            data-suffix="${staff.suffix}"
+            data-address="${staff.address}"
+            data-bdate="${staff.bdate}"
+            data-email="${staff.email}"
+            data-contact="${staff.contact}"
+            data-username="${staff.username}"
+            data-role="${staff.role}"
+            data-status="${staff.status}"
+            data-created="${staff.created}">
+            <td class="px-4 border border-gray-200 py-2 text-center">${staff.id}</td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                ${formatStaffName(staff)}
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">${capitalizeFirst(staff.role)}</td>
+            <td class="px-4 border border-gray-200 py-2 text-center text-red-600 font-semibold">
+                ${capitalizeFirst(staff.status)}
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center text-gray-600">
+                ${formatDate(staff.created)}
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <button onclick="confirmToggle(${staff.id}, 'active')"
+                   class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                   Set Active
+                </button>
+            </td>
+        </tr>
+    `).join('');
+
+    // Reattach click events for modal
+    attachModalEvents('#inactiveLydo');
+}
+
+// Render Active Staff Table
+function renderActiveStaffTable() {
+    const tableBody = document.querySelector('#activeLydo tbody');
+    const startIndex = (currentPageActive - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = filteredActiveStaff.slice(startIndex, endIndex);
+
+    if (currentItems.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-4 border border-gray-200 text-gray-500">
+                    No active staff found.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tableBody.innerHTML = currentItems.map(staff => `
+        <tr class="staff-row hover:bg-gray-50 border-b"
+            data-id="${staff.id}"
+            data-fname="${staff.fname}"
+            data-mname="${staff.mname}"
+            data-lname="${staff.lname}"
+            data-suffix="${staff.suffix}"
+            data-address="${staff.address}"
+            data-bdate="${staff.bdate}"
+            data-email="${staff.email}"
+            data-contact="${staff.contact}"
+            data-username="${staff.username}"
+            data-role="${staff.role}"
+            data-status="${staff.status}"
+            data-created="${staff.created}">
+            <td class="px-4 border border-gray-200 py-2 text-center">${staff.id}</td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                ${formatStaffName(staff)}
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">${capitalizeFirst(staff.role)}</td>
+            <td class="px-4 border border-gray-200 py-2 text-center text-green-600 font-semibold">
+                ${capitalizeFirst(staff.status)}
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center text-gray-600">
+                ${formatDate(staff.created)}
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <button onclick="confirmToggle(${staff.id}, 'inactive')"
+                   class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                   Set Inactive
+                </button>
+            </td>
+        </tr>
+    `).join('');
+
+    // Reattach click events for modal
+    attachModalEvents('#activeLydo');
+}
+
+// Setup Inactive Staff Pagination
+function setupInactivePagination() {
+    const totalPages = Math.ceil(filteredInactiveStaff.length / itemsPerPage);
+    
+    // Create or update pagination container
+    let paginationContainer = document.getElementById('paginationInactive');
+    if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.id = 'paginationInactive';
+        paginationContainer.className = 'pagination-container mt-3';
+        paginationContainer.innerHTML = `
+            <div class="pagination-info" id="paginationInfoInactive">
+                Showing page ${currentPageInactive} of ${totalPages}
+            </div>
+            <div class="pagination-buttons">
+                <button class="pagination-btn" id="prevPageInactive" ${currentPageInactive === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="pagination-page-info">
+                    Page 
+                    <input type="number" class="pagination-page-input" id="currentPageInactive" value="${currentPageInactive}" min="1" max="${totalPages}">
+                    of <span id="totalPagesInactive">${totalPages}</span>
+                </div>
+                <button class="pagination-btn" id="nextPageInactive" ${currentPageInactive === totalPages || totalPages === 0 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        `;
+        
+        const inactiveTab = document.getElementById('inactiveLydo');
+        const existingPagination = inactiveTab.querySelector('.mt-3');
+        if (existingPagination) {
+            existingPagination.remove();
+        }
+        inactiveTab.appendChild(paginationContainer);
+    } else {
+        document.getElementById('paginationInfoInactive').textContent = `Showing page ${currentPageInactive} of ${totalPages}`;
+        document.getElementById('currentPageInactive').value = currentPageInactive;
+        document.getElementById('totalPagesInactive').textContent = totalPages;
+        document.getElementById('prevPageInactive').disabled = currentPageInactive === 1;
+        document.getElementById('nextPageInactive').disabled = currentPageInactive === totalPages || totalPages === 0;
+    }
+
+    // Event listeners
+    document.getElementById('prevPageInactive').onclick = () => {
+        if (currentPageInactive > 1) {
+            currentPageInactive--;
+            renderInactiveStaffTable();
+            setupInactivePagination();
+        }
+    };
+
+    document.getElementById('nextPageInactive').onclick = () => {
+        if (currentPageInactive < totalPages) {
+            currentPageInactive++;
+            renderInactiveStaffTable();
+            setupInactivePagination();
+        }
+    };
+
+    document.getElementById('currentPageInactive').onchange = (e) => {
+        const page = parseInt(e.target.value);
+        if (page >= 1 && page <= totalPages) {
+            currentPageInactive = page;
+            renderInactiveStaffTable();
+            setupInactivePagination();
+        } else {
+            e.target.value = currentPageInactive;
+        }
+    };
+}
+
+// Setup Active Staff Pagination
+function setupActivePagination() {
+    const totalPages = Math.ceil(filteredActiveStaff.length / itemsPerPage);
+    
+    // Create or update pagination container
+    let paginationContainer = document.getElementById('paginationActive');
+    if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.id = 'paginationActive';
+        paginationContainer.className = 'pagination-container mt-3';
+        paginationContainer.innerHTML = `
+            <div class="pagination-info" id="paginationInfoActive">
+                Showing page ${currentPageActive} of ${totalPages}
+            </div>
+            <div class="pagination-buttons">
+                <button class="pagination-btn" id="prevPageActive" ${currentPageActive === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="pagination-page-info">
+                    Page 
+                    <input type="number" class="pagination-page-input" id="currentPageActive" value="${currentPageActive}" min="1" max="${totalPages}">
+                    of <span id="totalPagesActive">${totalPages}</span>
+                </div>
+                <button class="pagination-btn" id="nextPageActive" ${currentPageActive === totalPages || totalPages === 0 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        `;
+        
+        const activeTab = document.getElementById('activeLydo');
+        const existingPagination = activeTab.querySelector('.mt-3');
+        if (existingPagination) {
+            existingPagination.remove();
+        }
+        activeTab.appendChild(paginationContainer);
+    } else {
+        document.getElementById('paginationInfoActive').textContent = `Showing page ${currentPageActive} of ${totalPages}`;
+        document.getElementById('currentPageActive').value = currentPageActive;
+        document.getElementById('totalPagesActive').textContent = totalPages;
+        document.getElementById('prevPageActive').disabled = currentPageActive === 1;
+        document.getElementById('nextPageActive').disabled = currentPageActive === totalPages || totalPages === 0;
+    }
+
+    // Event listeners
+    document.getElementById('prevPageActive').onclick = () => {
+        if (currentPageActive > 1) {
+            currentPageActive--;
+            renderActiveStaffTable();
+            setupActivePagination();
+        }
+    };
+
+    document.getElementById('nextPageActive').onclick = () => {
+        if (currentPageActive < totalPages) {
+            currentPageActive++;
+            renderActiveStaffTable();
+            setupActivePagination();
+        }
+    };
+
+    document.getElementById('currentPageActive').onchange = (e) => {
+        const page = parseInt(e.target.value);
+        if (page >= 1 && page <= totalPages) {
+            currentPageActive = page;
+            renderActiveStaffTable();
+            setupActivePagination();
+        } else {
+            e.target.value = currentPageActive;
+        }
+    };
+}
+
+// Helper functions
+function formatStaffName(staff) {
+    let name = '';
+    if (staff.lname) {
+        name += staff.lname.charAt(0).toUpperCase() + staff.lname.slice(1).toLowerCase();
+    }
+    if (staff.suffix) {
+        name += ' ' + staff.suffix;
+    }
+    if (staff.fname) {
+        name += (name ? ', ' : '') + staff.fname.charAt(0).toUpperCase() + staff.fname.slice(1).toLowerCase();
+    }
+    if (staff.mname) {
+        name += ' ' + staff.mname.charAt(0).toUpperCase() + '.';
+    }
+    return name;
+}
+
+function capitalizeFirst(str) {
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function attachModalEvents(tabSelector) {
+    const rows = document.querySelectorAll(`${tabSelector} tbody tr.staff-row`);
+    rows.forEach(row => {
+        const clickableCells = row.querySelectorAll('td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5)');
+        clickableCells.forEach(cell => {
+            cell.classList.add('cursor-pointer', 'hover:bg-gray-50');
+            cell.addEventListener('click', function() {
+                const staffData = {
+                    lydopers_id: row.dataset.id,
+                    lydopers_fname: row.dataset.fname,
+                    lydopers_mname: row.dataset.mname,
+                    lydopers_lname: row.dataset.lname,
+                    lydopers_suffix: row.dataset.suffix,
+                    lydopers_address: row.dataset.address,
+                    lydopers_bdate: row.dataset.bdate,
+                    lydopers_email: row.dataset.email,
+                    lydopers_contact_number: row.dataset.contact,
+                    lydopers_username: row.dataset.username,
+                    lydopers_role: row.dataset.role,
+                    lydopers_status: row.dataset.status,
+                    created_at: row.dataset.created
+                };
+                openStaffModal(staffData);
+            });
+        });
+    });
+}
 </script>
 
 <script src="{{ asset('js/filter_paginate.js') }}"></script>

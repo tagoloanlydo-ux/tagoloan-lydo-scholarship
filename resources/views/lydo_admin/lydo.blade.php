@@ -12,6 +12,146 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <style>
+    /* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    max-width: fit-content;
+}
+
+.pagination-info {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: white;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-page-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 1rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.pagination-page-input {
+    width: 3.5rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    text-align: center;
+}
+
+.pagination-page-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .pagination-buttons {
+        order: -1;
+    }
+}
+        /* Note box styling */
+    .note-box {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .note-box h4 {
+        color: #0369a1;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .note-box p {
+        color: #0c4a6e;
+        font-size: 0.875rem;
+    }
+
+    .note-box ul {
+        list-style-type: disc;
+        margin-left: 1.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .note-box li {
+        margin-bottom: 0.25rem;
+    }
+    .note-boxs {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.note-boxs h4 {
+    color: #0369a1;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.note-boxs p {
+    color: #0c4a6e;
+    font-size: 0.875rem;
+}
+
+.note-boxs ul {
+    list-style-type: disc;
+    margin-left: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.note-boxs li {
+    margin-bottom: 0.25rem;
+}
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -311,12 +451,17 @@
                             Active LYDO Staff
                         </button>
                     </div>
-
-                    <div id="inactiveLydo" class="tab-content hidden">
-                        <h2 class="text-lg font-semibold mb-2">Inactive Lydo Staff</h2>
-                        <p class="text-sm text-black-600 mb-4">This table lists all LYDO staff members who are currently inactive. These staff members are not allowed to use the Scholarship Management Account. Please click the 'Activate' button to allow them to access their account.</p>
+<div id="inactiveLydo" class="tab-content hidden">
+    <div class="note-boxs">
+        <h4>📋 Inactive LYDO Staff</h4>
+        <p class="text-sm text-black-600 mb-4">This table lists all LYDO staff members who are currently inactive. These staff members are not allowed to use the Scholarship Management Account. Please click the 'Activate' button to allow them to access their account.</p>
+        <p class="mt-2 text-amber-600 font-medium">
+            <i class="fas fa-info-circle mr-1"></i>
+            <strong>Tip:</strong> Click on any column except the 'Update Status' column to view the personal information of LYDO staff.
+        </p>
+    </div>
                         <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
-                            <thead class="bg-gradient-to-r from-violet-600 to-teal-600 text-white uppercase text-sm">
+                                <thead class="bg-violet-600 to-teal-600 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-4 py-3 border border-gray-200 text-center">ID</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Full Name</th>
@@ -371,16 +516,20 @@
                             </tbody>
                         </table>
 
-                        <!-- Pagination -->
-                        <div class="mt-3">
-                            {{ $inactiveStaff->appends(['active_page' => request('active_page')])->links() }}
-                        </div>
+
                     </div>
                     
                     <div id="activeLydo" class="tab-content mt-6">
                         <h2 class="text-lg font-semibold mb-2">Active Lydo Staff</h2>
-                        <p class="text-sm text-black-600 mb-4">This table lists all LYDO staff members who are currently active. These staff members are allowed to use their Scholarship Management Account. Please click the 'Inactivate' button to disable their account access.</p>
-                        <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
+                            <div class="note-box">
+                                <h4>📋 Active LYDO Staff</h4>
+                                <p class="text-sm text-black-600 mb-4">This table lists all LYDO staff members who are currently active. These staff members are allowed to use their Scholarship Management Account. Please click the 'Inactivate' button to disable their account access.</p>
+                                <p class="mt-2 text-amber-600 font-medium">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    <strong>Tip:</strong> Click on any column except the 'Update Status' column to view the personal information of LYDO staff.
+                                </p>
+                            </div>                       
+                             <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
                             <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-4 py-3 border border-gray-200 text-center">ID</th>
@@ -934,6 +1083,390 @@
                 }
             });
         });
+
+        // Global variables for pagination
+let currentPageInactive = 1;
+let currentPageActive = 1;
+const itemsPerPage = 15;
+let allInactiveStaff = [];
+let allActiveStaff = [];
+let filteredInactiveStaff = [];
+let filteredActiveStaff = [];
+
+// Initialize pagination on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Convert existing table data to arrays
+    initializeStaffData();
+    setupPagination();
+});
+
+function initializeStaffData() {
+    // Get inactive staff from table
+    const inactiveRows = document.querySelectorAll('#inactiveLydo tbody tr.staff-row');
+    allInactiveStaff = Array.from(inactiveRows).map(row => ({
+        id: row.dataset.id,
+        fname: row.dataset.fname,
+        mname: row.dataset.mname,
+        lname: row.dataset.lname,
+        suffix: row.dataset.suffix,
+        address: row.dataset.address,
+        bdate: row.dataset.bdate,
+        email: row.dataset.email,
+        contact: row.dataset.contact,
+        username: row.dataset.username,
+        role: row.dataset.role,
+        status: row.dataset.status,
+        created: row.dataset.created
+    }));
+    
+    // Get active staff from table
+    const activeRows = document.querySelectorAll('#activeLydo tbody tr.staff-row');
+    allActiveStaff = Array.from(activeRows).map(row => ({
+        id: row.dataset.id,
+        fname: row.dataset.fname,
+        mname: row.dataset.mname,
+        lname: row.dataset.lname,
+        suffix: row.dataset.suffix,
+        address: row.dataset.address,
+        bdate: row.dataset.bdate,
+        email: row.dataset.email,
+        contact: row.dataset.contact,
+        username: row.dataset.username,
+        role: row.dataset.role,
+        status: row.dataset.status,
+        created: row.dataset.created
+    }));
+    
+    filteredInactiveStaff = [...allInactiveStaff];
+    filteredActiveStaff = [...allActiveStaff];
+}
+
+function setupPagination() {
+    renderInactiveStaffTable();
+    renderActiveStaffTable();
+    setupInactivePagination();
+    setupActivePagination();
+}
+
+// Render Inactive Staff Table
+function renderInactiveStaffTable() {
+    const tableBody = document.querySelector('#inactiveLydo tbody');
+    const startIndex = (currentPageInactive - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = filteredInactiveStaff.slice(startIndex, endIndex);
+
+    if (currentItems.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-4 border border-gray-200 text-gray-500">
+                    No inactive staff found.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tableBody.innerHTML = currentItems.map(staff => `
+        <tr class="staff-row hover:bg-gray-50 border-b"
+            data-id="${staff.id}"
+            data-fname="${staff.fname}"
+            data-mname="${staff.mname}"
+            data-lname="${staff.lname}"
+            data-suffix="${staff.suffix}"
+            data-address="${staff.address}"
+            data-bdate="${staff.bdate}"
+            data-email="${staff.email}"
+            data-contact="${staff.contact}"
+            data-username="${staff.username}"
+            data-role="${staff.role}"
+            data-status="${staff.status}"
+            data-created="${staff.created}">
+            <td class="px-4 border border-gray-200 py-2 text-center">${staff.id}</td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                ${formatStaffName(staff)}
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">${capitalizeFirst(staff.role)}</td>
+            <td class="px-4 border border-gray-200 py-2 text-center text-red-600 font-semibold">
+                ${capitalizeFirst(staff.status)}
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center text-gray-600">
+                ${formatDate(staff.created)}
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <button onclick="confirmToggle(${staff.id}, 'active')"
+                   class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                   Set Active
+                </button>
+            </td>
+        </tr>
+    `).join('');
+
+    // Reattach click events for modal
+    attachModalEvents('#inactiveLydo');
+}
+
+// Render Active Staff Table
+function renderActiveStaffTable() {
+    const tableBody = document.querySelector('#activeLydo tbody');
+    const startIndex = (currentPageActive - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = filteredActiveStaff.slice(startIndex, endIndex);
+
+    if (currentItems.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-4 border border-gray-200 text-gray-500">
+                    No active staff found.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tableBody.innerHTML = currentItems.map(staff => `
+        <tr class="staff-row hover:bg-gray-50 border-b"
+            data-id="${staff.id}"
+            data-fname="${staff.fname}"
+            data-mname="${staff.mname}"
+            data-lname="${staff.lname}"
+            data-suffix="${staff.suffix}"
+            data-address="${staff.address}"
+            data-bdate="${staff.bdate}"
+            data-email="${staff.email}"
+            data-contact="${staff.contact}"
+            data-username="${staff.username}"
+            data-role="${staff.role}"
+            data-status="${staff.status}"
+            data-created="${staff.created}">
+            <td class="px-4 border border-gray-200 py-2 text-center">${staff.id}</td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                ${formatStaffName(staff)}
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">${capitalizeFirst(staff.role)}</td>
+            <td class="px-4 border border-gray-200 py-2 text-center text-green-600 font-semibold">
+                ${capitalizeFirst(staff.status)}
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center text-gray-600">
+                ${formatDate(staff.created)}
+            </td>
+            <td class="px-4 border border-gray-200 py-2 text-center">
+                <button onclick="confirmToggle(${staff.id}, 'inactive')"
+                   class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                   Set Inactive
+                </button>
+            </td>
+        </tr>
+    `).join('');
+
+    // Reattach click events for modal
+    attachModalEvents('#activeLydo');
+}
+
+// Setup Inactive Staff Pagination
+function setupInactivePagination() {
+    const totalPages = Math.ceil(filteredInactiveStaff.length / itemsPerPage);
+    
+    // Create or update pagination container
+    let paginationContainer = document.getElementById('paginationInactive');
+    if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.id = 'paginationInactive';
+        paginationContainer.className = 'pagination-container mt-3';
+        paginationContainer.innerHTML = `
+            <div class="pagination-info" id="paginationInfoInactive">
+                Showing page ${currentPageInactive} of ${totalPages}
+            </div>
+            <div class="pagination-buttons">
+                <button class="pagination-btn" id="prevPageInactive" ${currentPageInactive === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="pagination-page-info">
+                    Page 
+                    <input type="number" class="pagination-page-input" id="currentPageInactive" value="${currentPageInactive}" min="1" max="${totalPages}">
+                    of <span id="totalPagesInactive">${totalPages}</span>
+                </div>
+                <button class="pagination-btn" id="nextPageInactive" ${currentPageInactive === totalPages || totalPages === 0 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        `;
+        
+        const inactiveTab = document.getElementById('inactiveLydo');
+        const existingPagination = inactiveTab.querySelector('.mt-3');
+        if (existingPagination) {
+            existingPagination.remove();
+        }
+        inactiveTab.appendChild(paginationContainer);
+    } else {
+        document.getElementById('paginationInfoInactive').textContent = `Showing page ${currentPageInactive} of ${totalPages}`;
+        document.getElementById('currentPageInactive').value = currentPageInactive;
+        document.getElementById('totalPagesInactive').textContent = totalPages;
+        document.getElementById('prevPageInactive').disabled = currentPageInactive === 1;
+        document.getElementById('nextPageInactive').disabled = currentPageInactive === totalPages || totalPages === 0;
+    }
+
+    // Event listeners
+    document.getElementById('prevPageInactive').onclick = () => {
+        if (currentPageInactive > 1) {
+            currentPageInactive--;
+            renderInactiveStaffTable();
+            setupInactivePagination();
+        }
+    };
+
+    document.getElementById('nextPageInactive').onclick = () => {
+        if (currentPageInactive < totalPages) {
+            currentPageInactive++;
+            renderInactiveStaffTable();
+            setupInactivePagination();
+        }
+    };
+
+    document.getElementById('currentPageInactive').onchange = (e) => {
+        const page = parseInt(e.target.value);
+        if (page >= 1 && page <= totalPages) {
+            currentPageInactive = page;
+            renderInactiveStaffTable();
+            setupInactivePagination();
+        } else {
+            e.target.value = currentPageInactive;
+        }
+    };
+}
+
+// Setup Active Staff Pagination
+function setupActivePagination() {
+    const totalPages = Math.ceil(filteredActiveStaff.length / itemsPerPage);
+    
+    // Create or update pagination container
+    let paginationContainer = document.getElementById('paginationActive');
+    if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.id = 'paginationActive';
+        paginationContainer.className = 'pagination-container mt-3';
+        paginationContainer.innerHTML = `
+            <div class="pagination-info" id="paginationInfoActive">
+                Showing page ${currentPageActive} of ${totalPages}
+            </div>
+            <div class="pagination-buttons">
+                <button class="pagination-btn" id="prevPageActive" ${currentPageActive === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="pagination-page-info">
+                    Page 
+                    <input type="number" class="pagination-page-input" id="currentPageActive" value="${currentPageActive}" min="1" max="${totalPages}">
+                    of <span id="totalPagesActive">${totalPages}</span>
+                </div>
+                <button class="pagination-btn" id="nextPageActive" ${currentPageActive === totalPages || totalPages === 0 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        `;
+        
+        const activeTab = document.getElementById('activeLydo');
+        const existingPagination = activeTab.querySelector('.mt-3');
+        if (existingPagination) {
+            existingPagination.remove();
+        }
+        activeTab.appendChild(paginationContainer);
+    } else {
+        document.getElementById('paginationInfoActive').textContent = `Showing page ${currentPageActive} of ${totalPages}`;
+        document.getElementById('currentPageActive').value = currentPageActive;
+        document.getElementById('totalPagesActive').textContent = totalPages;
+        document.getElementById('prevPageActive').disabled = currentPageActive === 1;
+        document.getElementById('nextPageActive').disabled = currentPageActive === totalPages || totalPages === 0;
+    }
+
+    // Event listeners
+    document.getElementById('prevPageActive').onclick = () => {
+        if (currentPageActive > 1) {
+            currentPageActive--;
+            renderActiveStaffTable();
+            setupActivePagination();
+        }
+    };
+
+    document.getElementById('nextPageActive').onclick = () => {
+        if (currentPageActive < totalPages) {
+            currentPageActive++;
+            renderActiveStaffTable();
+            setupActivePagination();
+        }
+    };
+
+    document.getElementById('currentPageActive').onchange = (e) => {
+        const page = parseInt(e.target.value);
+        if (page >= 1 && page <= totalPages) {
+            currentPageActive = page;
+            renderActiveStaffTable();
+            setupActivePagination();
+        } else {
+            e.target.value = currentPageActive;
+        }
+    };
+}
+
+// Helper functions
+function formatStaffName(staff) {
+    let name = '';
+    if (staff.lname) {
+        name += staff.lname.charAt(0).toUpperCase() + staff.lname.slice(1).toLowerCase();
+    }
+    if (staff.suffix) {
+        name += ' ' + staff.suffix;
+    }
+    if (staff.fname) {
+        name += (name ? ', ' : '') + staff.fname.charAt(0).toUpperCase() + staff.fname.slice(1).toLowerCase();
+    }
+    if (staff.mname) {
+        name += ' ' + staff.mname.charAt(0).toUpperCase() + '.';
+    }
+    return name;
+}
+
+function capitalizeFirst(str) {
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function attachModalEvents(tabSelector) {
+    const rows = document.querySelectorAll(`${tabSelector} tbody tr.staff-row`);
+    rows.forEach(row => {
+        const clickableCells = row.querySelectorAll('td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5)');
+        clickableCells.forEach(cell => {
+            cell.classList.add('cursor-pointer', 'hover:bg-gray-50');
+            cell.addEventListener('click', function() {
+                const staffData = {
+                    lydopers_id: row.dataset.id,
+                    lydopers_fname: row.dataset.fname,
+                    lydopers_mname: row.dataset.mname,
+                    lydopers_lname: row.dataset.lname,
+                    lydopers_suffix: row.dataset.suffix,
+                    lydopers_address: row.dataset.address,
+                    lydopers_bdate: row.dataset.bdate,
+                    lydopers_email: row.dataset.email,
+                    lydopers_contact_number: row.dataset.contact,
+                    lydopers_username: row.dataset.username,
+                    lydopers_role: row.dataset.role,
+                    lydopers_status: row.dataset.status,
+                    created_at: row.dataset.created
+                };
+                openStaffModal(staffData);
+            });
+        });
+    });
+}
     </script>
     <script src="{{ asset('js/spinner.js') }}"></script>
 </body>

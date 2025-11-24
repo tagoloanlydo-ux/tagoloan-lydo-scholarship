@@ -44,10 +44,10 @@
             left: 0;
             right: 0;
             text-align: center;
-            padding: 8px 15mm 5px 15mm;
+            padding: 8px 10mm 5px 10mm;
             background: white;
             z-index: 1000;
-            height: 35mm;
+            height: 20mm;
             border-bottom: none;
         }
 
@@ -58,6 +58,7 @@
 
         .header-table td {
             vertical-align: top;
+            margin-top: 10px;
             padding: 0 8px;
         }
 
@@ -120,7 +121,7 @@
 
         /* CONTENT AREA - ADJUST MARGIN FOR HEADER/FOOTER */
         .content-wrapper {
-            margin-top: 38mm;
+            margin-top: 40mm;
             margin-bottom: 20mm;
             padding: 0 15mm;
         }
@@ -134,9 +135,9 @@
         }
 
         .data-table th {
-            background: gray;
-            color: white;
-            padding: 5px 3px;
+            background: white;
+            color: black;
+            padding: 10px 3px;
             text-transform: uppercase;
             font-size: 8px;
             border: 1px solid #000000ff;
@@ -307,7 +308,7 @@
 
 <body>
     @php
-        $perPage = 30;
+        $perPage = 48;
         $chunks = $applicants->chunk($perPage);
         $totalPages = $chunks->count();
         $totalApplicants = $applicants->count();

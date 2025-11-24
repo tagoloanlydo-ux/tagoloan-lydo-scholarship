@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 
 class AdminScholarController extends Controller
 {
@@ -217,10 +218,11 @@ private function getDocumentUrl($filePath)
 public function generateScholarsPdf(Request $request)
 {
     try {
-        // Set time limit for PDF generation
-        set_time_limit(120); // 2 minutes
+        \Log::info('Scholars PDF Request:', $request->all());
         
-        // Get scholars with applicant information - same query as scholar method
+        set_time_limit(120);
+        
+        // Get scholars with applicant information
         $query = DB::table('tbl_scholar as s')
             ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
             ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
@@ -251,48 +253,65 @@ public function generateScholarsPdf(Request $request)
         }
 
         // Apply other filters
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where(function($q) use ($request) {
-                $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
-                  ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%');
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('a.applicant_fname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('a.applicant_lname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('a.applicant_mname', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('a.applicant_email', 'like', '%' . $searchTerm . '%');
             });
         }
 
-        if ($request->has('barangay') && !empty($request->barangay)) {
+        if ($request->filled('barangay')) {
             $query->where('a.applicant_brgy', $request->barangay);
         }
 
-        if ($request->has('academic_year') && !empty($request->academic_year)) {
+        if ($request->filled('academic_year')) {
             $query->where('a.applicant_acad_year', $request->academic_year);
         }
 
-        $scholars = $query->get();
+        // Get all records without limit
+        $scholars = $query
+            ->orderBy('a.applicant_lname', 'asc')
+            ->orderBy('a.applicant_fname', 'asc')
+            ->orderBy('a.applicant_mname', 'asc')
+            ->get();
 
-        // Get filter info for page title
+        \Log::info("Final scholars count: {$scholars->count()}");
+
+        // Get filter info - ALWAYS include this for all pages
         $filters = [];
-        if ($request->search) {
-            $filters[] = 'Search: ' . $request->search;
-        }
-        if ($request->barangay) {
-            $filters[] = 'Barangay: ' . $request->barangay;
-        }
-        if ($request->academic_year) {
-            $filters[] = 'Academic Year: ' . $request->academic_year;
-        }
-        if ($request->status) {
+        if ($request->filled('search')) $filters[] = 'Search: ' . $request->search;
+        if ($request->filled('barangay')) $filters[] = 'Barangay: ' . $request->barangay;
+        if ($request->filled('academic_year')) $filters[] = 'Academic Year: ' . $request->academic_year;
+        if ($request->filled('status')) {
             $filters[] = 'Status: ' . ucfirst($request->status);
+        } else {
+            $filters[] = 'Status: Active'; // Default
         }
+        
+        // Add record count to filters so it shows on all pages
+        $filters[] = 'Total Records: ' . $scholars->count();
 
-        $pdf = Pdf::loadView('pdf.scholars-print', compact('scholars', 'filters'))
-            ->setPaper('a4', 'portrait'); // Changed from 'landscape' to 'portrait'
+        $title = 'Scholars List Report';
 
-        return $pdf->stream('scholars-list-' . date('Y-m-d') . '.pdf');
+        \Log::info("Generating PDF with {$scholars->count()} scholars");
+
+        $pdf = Pdf::loadView('pdf.scholars-print', compact('scholars', 'filters', 'title'))
+            ->setPaper('a4', 'portrait')
+            ->setOption('isHtml5ParserEnabled', true)
+            ->setOption('isRemoteEnabled', true);
+
+        return $pdf->stream('scholars-list-' . date('Y-m-d-H-i-s') . '.pdf');
         
     } catch (\Exception $e) {
-        \Log::error('PDF Generation Error: ' . $e->getMessage());
-        return response()->json(['error' => 'Failed to generate PDF: ' . $e->getMessage()], 500);
+        \Log::error('Scholars PDF Generation Error: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        return back()->with('error', 'Failed to generate PDF: ' . $e->getMessage());
     }
 }
+
     public function getAllFilteredScholars(Request $request)
     {
         $query = DB::table('tbl_scholar as s')
@@ -322,5 +341,333 @@ public function generateScholarsPdf(Request $request)
 
         return response()->json(['scholar_emails' => $scholarEmails]);
     }
+public function sendSmsToScholars(Request $request)
+{
+    $request->validate([
+        'selected_emails' => 'required|string',
+        'message' => 'nullable|string|max:160',
+        'sms_type' => 'required|string|in:plain,schedule',
+        'schedule_what' => 'nullable|string|max:255',
+        'schedule_where' => 'nullable|string|max:255',
+        'schedule_date' => 'nullable|date',
+        'schedule_time' => 'nullable|string',
+    ]);
 
+    $selectedEmails = explode(',', $request->selected_emails);
+    $selectedEmails = array_map('trim', $selectedEmails);
+    $message = $request->message;
+    $smsType = $request->sms_type;
+
+    try {
+        // Get scholar contact numbers for the selected emails
+        $scholars = DB::table('tbl_scholar as s')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->whereIn('a.applicant_email', $selectedEmails)
+            ->where('s.scholar_status', 'active')
+            ->select(
+                'a.applicant_email',
+                'a.applicant_contact_number',
+                'a.applicant_fname',
+                'a.applicant_lname',
+                'a.applicant_mname',
+                'a.applicant_suffix'
+            )
+            ->get();
+
+        if ($scholars->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'No valid scholars found for the selected emails.']);
+        }
+
+        // Create announcement if it's a schedule type
+        if ($smsType === 'schedule' && $request->schedule_what) {
+            $this->createScholarScheduleAnnouncement($request);
+        }
+
+        $sentCount = 0;
+        $failedCount = 0;
+        $results = [];
+
+        foreach ($scholars as $scholar) {
+            $mobile = $this->formatPhoneNumber($scholar->applicant_contact_number);
+            
+            if (!$mobile) {
+                $results[] = "Invalid phone number for {$scholar->applicant_fname} {$scholar->applicant_lname} ({$scholar->applicant_contact_number})";
+                $failedCount++;
+                continue;
+            }
+
+            $personalizedMessage = $this->buildScholarSmsMessage($message, $scholar, $request);
+            $fullName = $scholar->applicant_fname . ' ' . ($scholar->applicant_mname ? $scholar->applicant_mname . ' ' : '') . $scholar->applicant_lname . ($scholar->applicant_suffix ? ' ' . $scholar->applicant_suffix : '');
+
+            // Send real SMS using the existing SmsController
+            $smsController = new SmsController();
+    $smsResult = $smsController->sendRealSms($mobile, $personalizedMessage);
+            if ($smsResult['success']) {
+                $sentCount++;
+                $results[] = "✓ SMS sent to {$fullName} ({$mobile})";
+                Log::info("Scholar SMS Success: {$fullName} - {$mobile}");
+            } else {
+                $failedCount++;
+                $results[] = "✗ Failed to send SMS to {$fullName}: {$smsResult['message']}";
+                Log::error("Scholar SMS Failed: {$fullName} - {$mobile} - Error: {$smsResult['message']}");
+            }
+
+            // Add small delay between messages to avoid rate limiting
+            usleep(500000); // 0.5 second delay
+        }
+
+        $summary = "SMS sending completed. Sent: {$sentCount}, Failed: {$failedCount}";
+        
+        Log::info("Scholar SMS Summary: " . $summary);
+        
+        return response()->json([
+            'success' => true, 
+            'message' => $summary,
+            'details' => $results
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error("Scholar SMS sending error: " . $e->getMessage());
+        return response()->json([
+            'success' => false, 
+            'message' => 'Failed to send SMS: ' . $e->getMessage()
+        ]);
+    }
+}
+
+/**
+ * Create announcement for schedule type SMS for scholars
+ */
+private function createScholarScheduleAnnouncement(Request $request)
+{
+    try {
+        $scheduleWhat = $request->schedule_what;
+        $scheduleWhere = $request->schedule_where;
+        $scheduleDate = $request->schedule_date;
+        $scheduleTime = $request->schedule_time;
+
+        // Build announcement content
+        $announcementContent = "Schedule Announcement:\n\n";
+        $announcementContent .= "What: {$scheduleWhat}\n";
+        
+        if ($scheduleWhere) {
+            $announcementContent .= "Where: {$scheduleWhere}\n";
+        }
+        
+        if ($scheduleDate) {
+            $formattedDate = \Carbon\Carbon::parse($scheduleDate)->format('F d, Y');
+            $announcementContent .= "Date: {$formattedDate}\n";
+        }
+        
+        if ($scheduleTime) {
+            $formattedTime = \Carbon\Carbon::parse($scheduleTime)->format('h:i A');
+            $announcementContent .= "Time: {$formattedTime}\n";
+        }
+
+        // Create announcement with type 'scholar'
+        DB::table('tbl_announce')->insert([
+            'lydopers_id' => session('lydopers')->lydopers_id,
+            'announce_title' => $scheduleWhat,
+            'announce_content' => $announcementContent,
+            'announce_type' => 'scholar',
+            'date_posted' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Log::info("Scholar schedule announcement created: {$scheduleWhat}");
+
+    } catch (\Exception $e) {
+        Log::error("Failed to create scholar schedule announcement: " . $e->getMessage());
+    }
+}
+
+/**
+ * Build the SMS message for scholars based on type
+ */
+private function buildScholarSmsMessage($baseMessage, $scholar, Request $request)
+{
+    $message = $baseMessage;
+    $fullName = $scholar->applicant_fname . ' ' . ($scholar->applicant_mname ? $scholar->applicant_mname . ' ' : '') . $scholar->applicant_lname . ($scholar->applicant_suffix ? ' ' . $scholar->applicant_suffix : '');
+    
+    // Replace name placeholder
+    $message = str_replace('{name}', $fullName, $message);
+
+    // If schedule type, append schedule details
+    if ($request->sms_type === 'schedule') {
+        $scheduleDetails = "\n\nSchedule Details:\n";
+        
+        if ($request->schedule_what) {
+            $scheduleDetails .= "📅 " . $request->schedule_what . "\n";
+        }
+        
+        if ($request->schedule_where) {
+            $scheduleDetails .= "📍 " . $request->schedule_where . "\n";
+        }
+        
+        if ($request->schedule_date) {
+            $formattedDate = \Carbon\Carbon::parse($request->schedule_date)->format('M d, Y');
+            $scheduleDetails .= "🗓️ " . $formattedDate . "\n";
+        }
+        
+        if ($request->schedule_time) {
+            $formattedTime = \Carbon\Carbon::parse($request->schedule_time)->format('h:i A');
+            $scheduleDetails .= "⏰ " . $formattedTime . "\n";
+        }
+
+        $message .= $scheduleDetails;
+    }
+
+    return $message;
+}
+
+/**
+ * Format phone number to international format
+ */
+private function formatPhoneNumber($phone)
+{
+    if (empty($phone)) {
+        return false;
+    }
+
+    // Remove all non-digit characters
+    $phone = preg_replace('/[^0-9]/', '', $phone);
+
+    // Check if number starts with 0, convert to international format
+    if (substr($phone, 0, 1) === '0') {
+        $phone = '63' . substr($phone, 1);
+    }
+
+    // Ensure it's 12 digits (63 + 10 digits)
+    if (strlen($phone) === 12 && substr($phone, 0, 2) === '63') {
+        return $phone;
+    }
+
+    // If it's already 11 digits with 63, return as is
+    if (strlen($phone) === 11 && substr($phone, 0, 2) === '63') {
+        return $phone;
+    }
+
+    Log::warning("Invalid phone number format: " . $phone);
+    return false;
+}
+/**
+ * Send SMS to scholar using the same logic as SmsController
+ */
+private function sendScholarSms($mobile, $message)
+{
+    try {
+        // Your SMS API configuration - use the same as in SmsController
+        $apiUrl = env('SMS_API_URL', 'https://api.itexmo.com/api/broadcast');
+        $apiKey = env('SMS_API_KEY', '');
+        $apiPassword = env('SMS_API_PASSWORD', '');
+        $senderId = env('SMS_SENDER_ID', 'LYDO_SCHOLAR');
+
+        // Prepare the request data
+        $postData = [
+            'Email' => $apiKey,
+            'Password' => $apiPassword,
+            'Recipients' => [$mobile],
+            'Message' => $message,
+            'ApiCode' => $senderId,
+            'SenderId' => $senderId
+        ];
+
+        // Initialize cURL
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $apiUrl);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Accept: application/json'
+        ]);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+        // Execute the request
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        // Log the response for debugging
+        Log::info("SMS API Response for {$mobile}: " . $response);
+
+        // Check for cURL errors
+        if ($curlError) {
+            Log::error("SMS cURL Error for {$mobile}: " . $curlError);
+            return [
+                'success' => false,
+                'message' => 'SMS gateway connection failed: ' . $curlError
+            ];
+        }
+
+        // Parse the response
+        $responseData = json_decode($response, true);
+
+        // Check if SMS was sent successfully
+        if ($httpCode === 200 && isset($responseData['response']) && $responseData['response'] === 'success') {
+            return [
+                'success' => true,
+                'message' => 'SMS sent successfully'
+            ];
+        } else {
+            $errorMessage = $responseData['message'] ?? 'Unknown error occurred';
+            Log::error("SMS API Error for {$mobile}: " . $errorMessage);
+            return [
+                'success' => false,
+                'message' => 'SMS failed: ' . $errorMessage
+            ];
+        }
+
+    } catch (\Exception $e) {
+        Log::error("SMS sending exception for {$mobile}: " . $e->getMessage());
+        return [
+            'success' => false,
+            'message' => 'SMS exception: ' . $e->getMessage()
+        ];
+    }
+}
+
+/**
+ * Alternative simple SMS sending using different API if needed
+ */
+private function sendScholarSmsAlternative($mobile, $message)
+{
+    try {
+        // Alternative SMS API - adjust based on your provider
+        $apiKey = env('SMS_API_KEY');
+        $apiSecret = env('SMS_API_SECRET');
+        
+        // Example using a different SMS gateway
+        $postData = http_build_query([
+            'apikey' => $apiKey,
+            'secret' => $apiSecret,
+            'number' => $mobile,
+            'message' => $message,
+            'sendername' => 'LYDO_SCHOLAR'
+        ]);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://api.some-sms-provider.com/send');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        // Check response and return accordingly
+        if (strpos($response, 'OK') !== false) {
+            return ['success' => true, 'message' => 'SMS sent successfully'];
+        } else {
+            return ['success' => false, 'message' => 'SMS sending failed'];
+        }
+
+    } catch (\Exception $e) {
+        return ['success' => false, 'message' => 'SMS exception: ' . $e->getMessage()];
+    }
+}
 }

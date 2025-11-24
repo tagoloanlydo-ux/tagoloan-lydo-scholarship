@@ -432,7 +432,7 @@
                 <!-- Mayor Staff Applicants Tab -->
                 <div class="tab-content active" id="mayor-applicants">
                     <div class="note-box">
-                        <h4>📋 Mayor Staff Applicants</h4>
+                      
                         <p>This tab displays applicants who have been processed by Mayor Staff. You can view applications that are either <strong>Approved</strong> or <strong>Rejected</strong> by the Mayor's office. Use this section to review decisions made by Mayor Staff and communicate with applicants about their status.</p>
                         <p class="mt-2 text-amber-600 font-medium">
                             <i class="fas fa-exclamation-triangle mr-1"></i>
@@ -565,7 +565,7 @@
                 <!-- LYDO Reviewed Applicants Tab -->
                 <div class="tab-content" id="lydo-reviewed">
                     <div class="note-box">
-                        <h4>🔍 LYDO Reviewed Applicants</h4>
+                        
                         <p>This tab displays applicants who have been <strong>reviewed by LYDO Staff</strong>. These applications have undergone final evaluation and have been categorized based on economic status (Poor, Non-Poor, Ultra Poor). Use this section to manage finalized applications and communicate with reviewed applicants.</p>
                     </div>
 

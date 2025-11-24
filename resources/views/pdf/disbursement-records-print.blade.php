@@ -14,352 +14,386 @@
         }
 
         body {
-            background: #f4f6f9;
-            padding: 30px;
-            counter-reset: page;
+            background: #fff;
+            padding: 0;
+            margin: 0;
+            font-size: 9px;
+        }
+
+        .page {
+            position: relative;
+            min-height: 100vh;
+            page-break-after: always;
+        }
+
+        .page:last-child {
+            page-break-after: auto;
         }
 
         .container {
             width: 100%;
-            max-width: 1000px;
             background: #fff;
-            margin: auto;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            position: relative;
+            margin: 0 auto;
+            padding: 0;
         }
 
-        /* Page numbering for print */
-        @page {
-            margin: 1cm;
-            size: A4;
-            
-            @bottom-left {
-                content: "Page " counter(page);
-                font-size: 10px;
-                color: #666;
-                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            }
+        /* HEADER - FIXED POSITION FOR EACH PAGE */
+        .header-portrait {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 8px 10mm 5px 10mm;
+            background: white;
+            z-index: 1000;
+            height: 20mm;
+            border-bottom: none;
         }
 
-        /* Page footer for print */
-        .page-footer {
-            display: none;
-        }
-
-        /* Force page breaks for print */
-        .page-break {
-            page-break-after: always;
-            break-after: page;
-        }
-
-        /* Print-specific styles */
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-                margin: 0;
-                counter-reset: page;
-            }
-            
-            .container {
-                box-shadow: none;
-                border-radius: 0;
-                padding: 0;
-                margin: 0;
-                width: 100%;
-                max-width: 100%;
-            }
-            
-            /* Page footer for printing */
-            .page-footer {
-                display: block;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                text-align: left;
-                font-size: 10px;
-                color: #666;
-                padding: 8px 15px;
-                background: white;
-            }
-            
-            .page-footer::after {
-                counter-increment: page;
-                content: "Page " counter(page);
-            }
-            
-            /* Ensure proper page breaks */
-            table {
-                page-break-inside: auto;
-            }
-            
-            tr {
-                page-break-inside: avoid;
-                page-break-after: auto;
-            }
-            
-            thead {
-                display: table-header-group;
-            }
-            
-            tfoot {
-                display: table-footer-group;
-            }
-            
-            /* Hide non-essential elements in print */
-            .no-print {
-                display: none;
-            }
-            
-            /* Ensure content doesn't overlap with footer */
-            .container {
-                margin-bottom: 30px;
-            }
-        }
-
-        /* HEADER TABLE (no outline) */
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
         }
 
         .header-table td {
-            text-align: center;
-            padding: 10px;
-            vertical-align: middle;
+            vertical-align: top;
+            margin-top: 10px;
+            padding: 0 8px;
         }
 
-        .logo img {
-            width: 95px;
-            height: 100px;
+        .header-table .logo {
+            width: 20%;
+            text-align: center;
+        }
+
+        .header-table .logo img {
+            width: 60px;
+            height: auto;
             object-fit: contain;
         }
 
+        .header-table .name-section {
+            width: 60%;
+            text-align: center;
+        }
+
         .name-section div {
-            font-size: 13px;
-            line-height: 1.3;
+            font-size: 9px;
+            line-height: 1.1;
+            margin-bottom: 1px;
         }
 
         .name-section strong {
-            font-size: 14px;
+            font-size: 10px;
             font-weight: 700;
         }
 
-        /* FILTERS BOX */
+        .page-title {
+            margin-top: 3px;
+            font-size: 9px;
+            font-weight: bold;
+            color: #324b7a;
+        }
+
+        /* FILTERS BOX - Only show on first page */
         .filters-info {
             background: #eef3ff;
-            padding: 10px;
-            margin-top: 8px;
+            padding: 6px 10px;
+            margin: 8px 0 0;
             border-left: 4px solid #3f6ad8;
-            font-size: 12px;
+            font-size: 9px;
+            border-radius: 4px;
+            width: 100%;
         }
 
         .filters-info h3 {
-            margin-bottom: 5px;
-            font-size: 13px;
+            margin-bottom: 2px;
+            font-size: 10px;
             font-weight: 600;
+            color: #324b7a;
         }
 
-        /* DATA TABLE (with outline & professional style) */
+        .filters-info p {
+            margin: 1px 0;
+            color: #555;
+        }
+
+        /* CONTENT AREA - ADJUST MARGIN FOR HEADER/FOOTER */
+        .content-wrapper {
+            margin-top: 40mm;
+            margin-bottom: 20mm;
+            padding: 0 15mm;
+        }
+
+        /* DATA TABLE */
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 18px;
-            font-size: 13px;
-            border: 1px solid #b8c3d6; /* ✅ clean border */
+            font-size: 9px;
+            border: 1px solid #b8c3d6;
         }
 
         .data-table th {
-            background: gray;
-            color: white;
-            padding: 8px;
+            background: white;
+            color: black;
+            padding: 10px 3px;
             text-transform: uppercase;
-            font-size: 11px;
-            border: 1px solid #2d4170;
+            font-size: 8px;
+            border: 1px solid #000000ff;
+            font-weight: 600;
         }
 
         .data-table td {
-            padding: 8px;
-            border: 1px solid #cbd4e1; /* ✅ subtle borders */
+            padding: 4px 3px;
+            border: 1px solid #000000ff;
+            font-size: 8px;
+            line-height: 1.2;
         }
 
         .data-table tr:nth-child(even) {
             background: #f7f9fc;
         }
 
-        .data-table tr:hover {
-            background: #eef3ff;
-        }
-
         .text-center {
             text-align: center;
         }
 
-        .footer {
-            margin-top: 35px;
+        .text-left {
+            text-align: left;
+        }
+
+        /* FOOTER - FIXED POSITION FOR EACH PAGE */
+        .page-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             text-align: center;
-            font-size: 11px;
+            font-size: 9px;
             color: #666;
             border-top: 1px solid #ccc;
-            padding-top: 10px;
+            padding: 8px 15mm;
+            background: white;
+            height: 15mm;
+        }
+
+        .footer-left {
+            float: left;
+            text-align: left;
+        }
+
+        .footer-right {
+            float: right;
+            text-align: right;
+        }
+
+        /* Column widths for landscape */
+        .col-number {
+            width: 5%;
+        }
+        .col-name {
+            width: 25%;
+        }
+        .col-barangay {
+            width: 12%;
+        }
+        .col-semester {
+            width: 10%;
+        }
+        .col-year {
+            width: 12%;
+        }
+        .col-amount {
+            width: 12%;
+        }
+        .col-signature {
+            width: 12%;
+        }
+
+        .compact-row td {
+            padding: 3px 2px;
+        }
+
+        .name-format {
+            font-weight: 600;
+            font-size: 8px;
         }
 
         .status-pending {
             color: #d97706;
             font-weight: 600;
         }
-        
-        /* Print button styling */
-        .print-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #3f6ad8;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+
+        /* PRINT STYLES - CRITICAL FOR MULTIPLE PAGES */
+        @media print {
+            @page {
+                margin: 35mm 0mm 20mm 0mm;
+                size: A4 landscape;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                font-size: 9px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .page {
+                min-height: 100vh;
+                position: relative;
+            }
+
+            .header-portrait {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 35mm;
+                border-bottom: none;
+            }
+
+            .page-footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 15mm;
+            }
+
+            .content-wrapper {
+                margin-top: 38mm;
+                margin-bottom: 20mm;
+            }
+
+            /* Ensure table breaks properly across pages */
+            table { 
+                page-break-inside: auto;
+            }
+
+            tr { 
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            thead { 
+                display: table-header-group;
+            }
+
+            tbody { 
+                display: table-row-group;
+            }
         }
-        
-        .print-button:hover {
-            background: #2d55b5;
+
+        .no-data {
+            text-align: center;
+            padding: 50px 20px;
+            color: #666;
+            font-size: 14px;
         }
     </style>
 </head>
 
 <body>
-    <!-- Page footer for printing -->
-    <div class="page-footer"></div>
+    @php
+        $perPage = 48;
+        $chunks = $unsignedDisbursements->chunk($perPage);
+        $totalPages = $chunks->count();
+        $totalDisbursements = $unsignedDisbursements->count();
+    @endphp
 
-    <!-- Print Button -->
-    <button class="print-button no-print" onclick="window.print()">Print Report</button>
+    @foreach($chunks as $page => $pageDisbursements)
+    <div class="page">
+        <div class="container">
+            <!-- HEADER - REPEATS ON EVERY PAGE -->
+            <div class="header-portrait">
+                <table class="header-table">
+                    <tr>
+                        <td class="logo">
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture2.png'))) }}">
+                        </td>
+                        <td class="name-section">
+                            <div><strong>Republic of the Philippines</strong></div>
+                            <div>PROVINCE OF MISAMIS ORIENTAL</div>
+                            <div>MUNICIPALITY OF TAGOLOAN</div>
+                            <div><strong>LOCAL YOUTH DEVELOPMENT OFFICE</strong></div>
+                            <div><strong>SCHOLARSHIP MANAGEMENT SYSTEM</strong></div>
+                            <div class="page-title">Disbursement Records Report - Page {{ $page + 1 }}</div>
+                            
+                            <!-- FILTERS ONLY ON FIRST PAGE -->
+                            @if($page === 0 && !empty($filters))
+                            <div class="filters-info">
+                                <h3>Applied Filters:</h3>
+                                @foreach($filters as $filter)
+                                    <p>{{ $filter }}</p>
+                                @endforeach
+                            </div>
+                            @endif
+                        </td>
+                        <td class="logo">
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture3.png'))) }}">
+                        </td>
+                    </tr>
+                </table>
+            </div>
 
-    <div class="container">
-        <!-- HEADER (NO OUTLINE) -->
-        <table class="header-table">
-            <tr>
-                <td class="logo h-3xl">
-                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture2.png'))) }}">
-                </td>
-
-                <td class="name-section">
-                    <div><strong>Republic of the Philippines</strong></div>
-                    <div>PROVINCE OF MISAMIS ORIENTAL</div>
-                    <div>MUNICIPALITY OF TAGOLOAN</div>
-                    <div><strong>LOCAL YOUTH DEVELOPMENT OFFICE</strong></div>
-                    <div><strong>SCHOLARSHIP MANAGEMENT SYSTEM</strong></div>
-
-                    @if(!empty($filters))
-                    <div class="filters-info">
-                        <h3>Applied Filters:</h3>
-                        @foreach($filters as $filter)
-                            <p>{{ $filter }}</p>
+            <!-- CONTENT -->
+            <div class="content-wrapper">
+                @if($pageDisbursements->count() > 0)
+                @php
+                    $sortedDisbursements = $pageDisbursements->sortBy('full_name');
+                @endphp
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="text-center col-number">#</th>
+                            <th class="text-center col-name">Name</th>
+                            <th class="text-center col-barangay">Barangay</th>
+                            <th class="text-center col-semester">Semester</th>
+                            <th class="text-center col-year">Academic Year</th>
+                            <th class="text-center col-amount">Amount</th>
+                            <th class="text-center col-signature">Signature</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($sortedDisbursements as $index => $disburse)
+                        <tr class="compact-row">
+                            <td class="text-center">{{ ($page * $perPage) + $loop->iteration }}</td>
+                            <td class="text-center name-format">{{ $disburse->full_name }}</td>
+                            <td class="text-center">{{ $disburse->applicant_brgy }}</td>
+                            <td class="text-center">{{ $disburse->disburse_semester }}</td>
+                            <td class="text-center">{{ $disburse->disburse_acad_year }}</td>
+                            <td class="text-center">Php {{ number_format($disburse->disburse_amount, 0) }}</td>
+                            <td class="text-center status-pending">Pending</td>
+                        </tr>
                         @endforeach
-                    </div>
-                    @endif
-                </td>
+                    </tbody>
+                </table>
+                @else
+                <div class="no-data">
+                    <h3>No Pending Disbursements Found</h3>
+                    <p>No unsigned disbursements match the current filter criteria.</p>
+                </div>
+                @endif
+            </div>
 
-                <td class="logo">
-                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/Picture3.png'))) }}">
-                </td>
-            </tr>
-        </table>
-
-        <!-- TABLE WITH OUTLINE -->
-        @if($unsignedDisbursements->count() > 0)
-        
-        @php
-            // Sort the collection by last name alphabetically
-            $sortedDisbursements = $unsignedDisbursements->sortBy(function($item) {
-                // Extract last name from full_name (assuming format: "Lastname, Firstname Middle")
-                $nameParts = explode(',', $item->full_name);
-                return trim($nameParts[0]); // Return last name for sorting
-            });
-            
-            // Calculate how many rows per page (adjust based on your content)
-            $rowsPerPage = 20;
-            $totalPages = ceil($sortedDisbursements->count() / $rowsPerPage);
-        @endphp
-        
-        @for($page = 0; $page < $totalPages; $page++)
-            @php
-                $currentPageDisbursements = $sortedDisbursements->slice($page * $rowsPerPage, $rowsPerPage);
-            @endphp
-            
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Barangay</th>
-                        <th>Semester</th>
-                        <th>Academic Year</th>
-                        <th class="text-center">Amount</th>
-                        <th class="text-center">Signature</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach($currentPageDisbursements as $index => $disburse)
-                    <tr>
-                        <td class="text-center">{{ ($page * $rowsPerPage) + $loop->iteration }}</td>
-                        <td class="text-center">{{ $disburse->full_name }}</td>
-                        <td class="text-center">{{ $disburse->applicant_brgy }}</td>
-                        <td class="text-center">{{ $disburse->disburse_semester }}</td>
-                        <td class="text-center">{{ $disburse->disburse_acad_year }}</td>
-                        <td class="text-center">Php {{ number_format($disburse->disburse_amount, 0) }}</td>
-                        <td class="text-center status-pending"></td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            
-            @if($page < $totalPages - 1)
-                <div class="page-break"></div>
-            @endif
-        @endfor
-
-        @else
-        <div class="text-center" style="padding: 40px;">
-            <h3 style="color: #555;">No Pending Disbursements Found</h3>
-            <p style="color: #777;">No unsigned disbursements match the current filter criteria.</p>
+            <!-- FOOTER - INDIVIDUAL FOR EACH PAGE -->
+            <div class="page-footer">
+                <div class="footer-left">
+                    Report generated by LYDO Scholarship Management System<br>
+                    {{ \Carbon\Carbon::now()->format('F d, Y — h:i A') }}
+                </div>
+                <div class="footer-right">
+                    Page {{ $page + 1 }} of {{ $totalPages }}<br>
+                    Total Records: {{ $totalDisbursements }}
+                </div>
+                <div style="clear: both;"></div>
+            </div>
         </div>
-        @endif
-
-        <div class="footer no-print">
-            Report generated by LYDO Scholarship Management System <br>
-            {{ \Carbon\Carbon::now()->format('F d, Y — h:i A') }}
-        </div>
-
     </div>
-    
-    <script>
-    // Add page numbers functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        // Function to calculate and update page numbers for print
-        function updatePageNumbers() {
-            const pageFooter = document.querySelector('.page-footer');
-            if (pageFooter) {
-                console.log('Page numbering enabled for printing - Bottom Left Corner');
-            }
-        }
-
-        // Update page numbers when printing
-        window.addEventListener('beforeprint', function() {
-            updatePageNumbers();
-        });
-
-        // Initial update
-        updatePageNumbers();
-    });
-    </script>
+    @endforeach
 </body>
 </html>
