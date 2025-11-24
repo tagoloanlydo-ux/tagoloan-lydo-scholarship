@@ -437,7 +437,7 @@
                             
                             <!-- Print to PDF Button -->
                             <div class="flex-1">
-                                <button type="button" id="printPdfBtn" class="w-full px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center">
+                                <button type="button" id="printPdfBtn" class="w-full px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center">
                                     <i class="fas fa-file-pdf mr-2"></i>Print to PDF
                                 </button>
                             </div>
@@ -668,7 +668,7 @@
                                 </div>
 
                                 <!-- Send Options -->
-                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                <div class="bg-gray-50 border hidden border-gray-200 rounded-lg p-4">
                                     <h4 class="text-lg font-semibold text-gray-800 mb-3">Send Options</h4>
                                     <div class="space-y-2">
                                         <label class="flex items-center">
@@ -737,6 +737,19 @@
                     </div>
                 </div>
 
+                <!-- Schedule Note (Hidden by Default) -->
+                <div id="scheduleNote" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                        <div>
+                            <h4 class="text-sm font-semibold text-blue-800 mb-1">Schedule Notification</h4>
+                            <p class="text-sm text-blue-700">
+                                When you send a schedule SMS, the same schedule information will also be sent to scholars via email for their reference.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- SMS Message -->
                 <div id="smsMessageContainer">
                     <label for="smsMessage" class="block text-sm font-medium text-gray-700 mb-2">SMS Message</label>
@@ -780,7 +793,7 @@
                 </div>
 
                 <!-- SMS Options -->
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div class="bg-gray-50 border border-gray-200 hidden rounded-lg p-4">
                     <h4 class="text-lg font-semibold text-gray-800 mb-3">SMS Options</h4>
                     <div class="space-y-2">
                         <label class="flex items-center">
@@ -1170,9 +1183,16 @@ function initializeSmsForm() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    let successMessage = data.message;
+                    
+                    // Add additional info for schedule type
+                    if (smsType === 'schedule') {
+                        successMessage += '\n\nEmail notifications have also been sent to all selected scholars.';
+                    }
+                    
                     Swal.fire({
                         title: 'SMS Sent Successfully!',
-                        text: data.message,
+                        text: successMessage,
                         icon: 'success',
                         confirmButtonText: 'OK'
                     });
@@ -1193,6 +1213,13 @@ function initializeSmsForm() {
                     // Reset form
                     this.reset();
                     document.getElementById('smsCharCount').textContent = '0';
+                    
+                    // Reset schedule fields visibility
+                    document.getElementById('scheduleFields').classList.add('hidden');
+                    document.getElementById('smsMessageContainer').classList.remove('hidden');
+                    
+                    // Reset radio to plain type
+                    document.querySelector('input[name="sms_type"][value="plain"]').checked = true;
                 } else {
                     Swal.fire({
                         title: 'Error',
@@ -1222,15 +1249,18 @@ function initializeSmsForm() {
 function initializeSmsTypeToggle() {
     const smsTypeRadios = document.querySelectorAll('.sms-type-radio');
     const scheduleFields = document.getElementById('scheduleFields');
+    const scheduleNote = document.getElementById('scheduleNote');
     const smsMessageContainer = document.getElementById('smsMessageContainer');
     
     smsTypeRadios.forEach(radio => {
         radio.addEventListener('change', function() {
             if (this.value === 'schedule') {
                 scheduleFields.classList.remove('hidden');
+                scheduleNote.classList.remove('hidden');
                 if (smsMessageContainer) smsMessageContainer.classList.add('hidden');
             } else {
                 scheduleFields.classList.add('hidden');
+                scheduleNote.classList.add('hidden');
                 if (smsMessageContainer) smsMessageContainer.classList.remove('hidden');
             }
         });
@@ -1241,9 +1271,11 @@ function initializeSmsTypeToggle() {
     if (selected) {
         if (selected.value === 'schedule') {
             scheduleFields.classList.remove('hidden');
+            scheduleNote.classList.remove('hidden');
             if (smsMessageContainer) smsMessageContainer.classList.add('hidden');
         } else {
             scheduleFields.classList.add('hidden');
+            scheduleNote.classList.add('hidden');
             if (smsMessageContainer) smsMessageContainer.classList.remove('hidden');
         }
     }

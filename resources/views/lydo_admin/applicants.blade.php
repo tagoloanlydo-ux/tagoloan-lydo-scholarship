@@ -746,103 +746,116 @@
         </div>
     </div>
 
-    <!-- SMS Modal -->
-    <div id="smsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Send SMS to Selected Applicants</h3>
-                    <button id="closeSmsModal" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
+<!-- SMS Modal -->
+<div id="smsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Send SMS to Selected Applicants</h3>
+                <button id="closeSmsModal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- NOTE: Schedule Type Notification -->
+            <div id="scheduleNote" class="hidden mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-500 mt-1 mr-2"></i>
+                    <div>
+                        <p class="text-sm text-blue-800 font-medium">
+                            <strong>Note:</strong> When selecting "Schedule" type, emails will also be sent automatically 
+                            to all selected applicants along with the SMS notifications.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <form id="smsForm">
+                <!-- SMS Type Selection -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">SMS Type</label>
+                    <div class="flex space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="smsType" value="plain" checked 
+                                   class="sms-type-radio text-blue-600 focus:ring-blue-500">
+                            <span class="ml-2 text-sm text-gray-700">Plain Text</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="smsType" value="schedule"
+                                   class="sms-type-radio text-blue-600 focus:ring-blue-500">
+                            <span class="ml-2 text-sm text-gray-700">Schedule</span>
+                        </label>
+                    </div>
                 </div>
 
-                <form id="smsForm">
-                    <!-- SMS Type Selection -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">SMS Type</label>
-                        <div class="flex space-x-4">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="smsType" value="plain" checked 
-                                       class="sms-type-radio text-blue-600 focus:ring-blue-500">
-                                <span class="ml-2 text-sm text-gray-700">Plain Text</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="smsType" value="schedule"
-                                       class="sms-type-radio text-blue-600 focus:ring-blue-500">
-                                <span class="ml-2 text-sm text-gray-700">Schedule</span>
-                            </label>
-                        </div>
+                <!-- SMS Message (Hidden for Schedule Type) -->
+                <div id="smsMessageContainer" class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">SMS Message</label>
+                    <textarea id="smsMessage" name="message" rows="4" maxlength="160"
+                            class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter your SMS message (max 160 characters)..."></textarea>
+                    <div class="text-sm text-gray-500 mt-1">
+                        <span id="smsCharCount">0</span>/160 characters
                     </div>
+                </div>
 
-                    <!-- SMS Message -->
-                    <div id="smsMessageContainer" class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">SMS Message</label>
-                        <textarea id="smsMessage" name="message" rows="4"  maxlength="160"
-                                  class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                  placeholder="Enter your SMS message (max 160 characters)..."></textarea>
-                        <div class="text-sm text-gray-500 mt-1">
-                            <span id="smsCharCount">0</span>/160 characters
-                        </div>
+                <!-- Schedule Fields (Hidden by Default) -->
+                <div id="scheduleFields" class="hidden mb-4 space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">What (Event/Activity)</label>
+                        <input type="text" id="scheduleWhat" name="schedule_what"
+                               class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="e.g., Scholarship Orientation, Interview">
                     </div>
-
-                    <!-- Schedule Fields (Hidden by Default) -->
-                    <div id="scheduleFields" class="hidden mb-4 space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Where (Location)</label>
+                        <input type="text" id="scheduleWhere" name="schedule_where"
+                               class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="e.g., LYDO Office, City Hall">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">What (Event/Activity)</label>
-                            <input type="text" id="scheduleWhat" name="schedule_what"
-                                   class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="e.g., Scholarship Orientation, Interview">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                            <input type="date" id="scheduleDate" name="schedule_date"
+                                   class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Where (Location)</label>
-                            <input type="text" id="scheduleWhere" name="schedule_where"
-                                   class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="e.g., LYDO Office, City Hall">
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                                <input type="date" id="scheduleDate" name="schedule_date"
-                                       class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Time</label>
-                                <input type="time" id="scheduleTime" name="schedule_time"
-                                       class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                            <input type="time" id="scheduleTime" name="schedule_time"
+                                   class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                         </div>
                     </div>
+                </div>
 
-                    <!-- Recipients Preview -->
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Recipients Preview</label>
-                        <div id="smsRecipientsPreview" class="p-3 bg-gray-50 border border-gray-200 rounded-md max-h-32 overflow-y-auto text-sm text-gray-600">
-                            No recipients selected
-                        </div>
+                <!-- Recipients Preview -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Recipients Preview</label>
+                    <div id="smsRecipientsPreview" class="p-3 bg-gray-50 border border-gray-200 rounded-md max-h-32 overflow-y-auto text-sm text-gray-600">
+                        No recipients selected
                     </div>
+                </div>
 
-                    <!-- Action Buttons -->
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" id="cancelSmsBtn"
-                                class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                            Cancel
-                        </button>
-                        <button type="submit" id="sendSmsBtn"
-                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
-                            <span id="sendSmsText">Send SMS</span>
-                            <span id="sendSmsLoading" class="hidden">
-                                <i class="fas fa-spinner fa-spin mr-2"></i>Sending...
-                            </span>
-                        </button>
-                    </div>
-                </form>
-            </div>
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelSmsBtn"
+                            class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" id="sendSmsBtn"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        <span id="sendSmsText">Send SMS</span>
+                        <span id="sendSmsLoading" class="hidden">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>Sending...
+                        </span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
     <!-- Application History Modal -->
     <div id="applicationHistoryModal" class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 transition-opacity duration-300">
@@ -1873,18 +1886,29 @@ document.getElementById('smsForm').addEventListener('submit', function(e) {
     });
 });
 
-// SMS Type Toggle
+// SMS Type Toggle with Note and Hide SMS Message
 document.querySelectorAll('.sms-type-radio').forEach(radio => {
     radio.addEventListener('change', function() {
         const scheduleFields = document.getElementById('scheduleFields');
+        const scheduleNote = document.getElementById('scheduleNote');
+        const smsMessageContainer = document.getElementById('smsMessageContainer');
+        
         if (this.value === 'schedule') {
             scheduleFields.classList.remove('hidden');
+            scheduleNote.classList.remove('hidden');
+            smsMessageContainer.classList.add('hidden'); // Hide SMS message
             // Make schedule what field required
             document.getElementById('scheduleWhat').required = true;
+            // Remove required from SMS message
+            document.getElementById('smsMessage').required = false;
         } else {
             scheduleFields.classList.add('hidden');
+            scheduleNote.classList.add('hidden');
+            smsMessageContainer.classList.remove('hidden'); // Show SMS message
             // Remove required from schedule fields
             document.getElementById('scheduleWhat').required = false;
+            // Add required back to SMS message
+            document.getElementById('smsMessage').required = true;
         }
     });
 });

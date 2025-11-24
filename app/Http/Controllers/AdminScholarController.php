@@ -388,6 +388,11 @@ public function sendSmsToScholars(Request $request)
         $failedCount = 0;
         $results = [];
 
+        // Send email notification for schedule type SMS
+        if ($smsType === 'schedule') {
+            $this->sendScheduleEmailNotification($scholars, $request);
+        }
+
         foreach ($scholars as $scholar) {
             $mobile = $this->formatPhoneNumber($scholar->applicant_contact_number);
             
@@ -402,7 +407,8 @@ public function sendSmsToScholars(Request $request)
 
             // Send real SMS using the existing SmsController
             $smsController = new SmsController();
-    $smsResult = $smsController->sendRealSms($mobile, $personalizedMessage);
+            $smsResult = $smsController->sendRealSms($mobile, $personalizedMessage);
+            
             if ($smsResult['success']) {
                 $sentCount++;
                 $results[] = "✓ SMS sent to {$fullName} ({$mobile})";
@@ -419,6 +425,11 @@ public function sendSmsToScholars(Request $request)
 
         $summary = "SMS sending completed. Sent: {$sentCount}, Failed: {$failedCount}";
         
+        // Add email notification info if schedule type
+        if ($smsType === 'schedule') {
+            $summary .= " | Email notification sent to all selected scholars";
+        }
+        
         Log::info("Scholar SMS Summary: " . $summary);
         
         return response()->json([
@@ -433,6 +444,59 @@ public function sendSmsToScholars(Request $request)
             'success' => false, 
             'message' => 'Failed to send SMS: ' . $e->getMessage()
         ]);
+    }
+}
+
+/**
+ * Send email notification for schedule type SMS
+ */
+private function sendScheduleEmailNotification($scholars, Request $request)
+{
+    try {
+        $scheduleWhat = $request->schedule_what;
+        $scheduleWhere = $request->schedule_where;
+        $scheduleDate = $request->schedule_date;
+        $scheduleTime = $request->schedule_time;
+
+        // Build email subject and message
+        $emailSubject = "Schedule Announcement: {$scheduleWhat}";
+        
+        $emailMessage = "Dear Scholar,\n\n";
+        $emailMessage .= "You have received an important schedule announcement:\n\n";
+        $emailMessage .= "What: {$scheduleWhat}\n";
+        
+        if ($scheduleWhere) {
+            $emailMessage .= "Where: {$scheduleWhere}\n";
+        }
+        
+        if ($scheduleDate) {
+            $formattedDate = \Carbon\Carbon::parse($scheduleDate)->format('F d, Y');
+            $emailMessage .= "Date: {$formattedDate}\n";
+        }
+        
+        if ($scheduleTime) {
+            $formattedTime = \Carbon\Carbon::parse($scheduleTime)->format('h:i A');
+            $emailMessage .= "Time: {$formattedTime}\n";
+        }
+        
+        $emailMessage .= "\nThis message has also been sent to your mobile phone via SMS.\n\n";
+        $emailMessage .= "Best regards,\nLYDO Scholarship Team";
+
+        // Send email to all scholars
+        $recipientEmails = $scholars->pluck('applicant_email')->toArray();
+
+        Mail::send('emails.plain-email', [
+            'subject' => $emailSubject, 
+            'emailMessage' => $emailMessage
+        ], function ($mail) use ($recipientEmails, $emailSubject) {
+            $mail->to($recipientEmails)
+                 ->subject($emailSubject);
+        });
+
+        Log::info("Schedule email notification sent to " . count($recipientEmails) . " scholars");
+
+    } catch (\Exception $e) {
+        Log::error("Failed to send schedule email notification: " . $e->getMessage());
     }
 }
 
