@@ -1228,7 +1228,6 @@ public function updatePassword(Request $request)
         return back()->with('error', 'An error occurred while updating password.');
     }
 }
-
 public function createDisbursement(Request $request)
 {
     // Handle both array format (from disbursement.blade.php) and string format (from scholar.blade.php modal)
@@ -1240,6 +1239,10 @@ public function createDisbursement(Request $request)
             'disbursement_date' => 'required|date',
             'semester' => 'required|string|in:1st Semester,2nd Semester,Summer',
             'academic_year' => 'required|string',
+            'disbursement_location' => 'required|string',
+            'disbursement_time' => 'required|string',
+            'barangayFilter' => 'nullable|string', // ADDED
+            'scholar_academic_year' => 'nullable|string', // ADDED
         ]);
         $scholarIds = $request->scholar_ids;
     } else {
@@ -1249,6 +1252,10 @@ public function createDisbursement(Request $request)
             'disbursement_date' => 'required|date',
             'semester' => 'required|string|in:1st Semester,2nd Semester,Summer',
             'academic_year' => 'required|string',
+            'disbursement_location' => 'required|string',
+            'disbursement_time' => 'required|string',
+            'barangayFilter' => 'nullable|string', // ADDED
+            'scholar_academic_year' => 'nullable|string', // ADDED
         ]);
         $scholarIds = explode(',', $request->scholar_ids);
     }
@@ -1257,6 +1264,13 @@ public function createDisbursement(Request $request)
     $academicYear = $request->academic_year;
     $semester = $request->semester;
     $disbursementDate = $request->disbursement_date;
+    $disbursementLocation = $request->disbursement_location;
+    $disbursementTime = $request->disbursement_time;
+    
+    // GET THE FILTER VALUES
+    $selectedBarangay = $request->input('barangayFilter', '');
+    $selectedAcademicYear = $request->input('scholar_academic_year', '');
+    
     $createdCount = 0;
     $skippedScholars = [];
     $skippedNames = [];
@@ -1267,10 +1281,10 @@ public function createDisbursement(Request $request)
             $cleanScholarId = trim($scholarId);
 
             // Check for existing disbursement for this scholar, year, and semester
-$existing = Disburse::where('scholar_id', $cleanScholarId)
-    ->where('disburse_acad_year', $academicYear)
-    ->where('disburse_semester', $semester)
-    ->exists();
+            $existing = Disburse::where('scholar_id', $cleanScholarId)
+                ->where('disburse_acad_year', $academicYear)
+                ->where('disburse_semester', $semester)
+                ->exists();
 
             if ($existing) {
                 // Get scholar name for message
@@ -1314,7 +1328,22 @@ $existing = Disburse::where('scholar_id', $cleanScholarId)
 
         // Send email notifications to successful scholars
         if (!empty($successfulScholars)) {
-            $this->sendDisbursementNotification($successfulScholars, $disbursementDate, $semester, $academicYear, $request->amount,  $request->disbursement_time,  $request->disbursement_location );
+            $this->sendDisbursementNotification($successfulScholars, $disbursementDate, $semester, $academicYear, $request->amount, $disbursementTime, $disbursementLocation);
+        }
+
+        // Create announcement for disbursement if at least one disbursement was created
+        if ($createdCount > 0) {
+            $this->createDisbursementAnnouncement(
+                $disbursementDate, 
+                $disbursementLocation, 
+                $disbursementTime, 
+                $semester, 
+                $academicYear, 
+                $createdCount, 
+                $request->amount, 
+                $selectedBarangay, 
+                $selectedAcademicYear
+            );
         }
 
         if ($createdCount > 0) {
@@ -1332,6 +1361,9 @@ $existing = Disburse::where('scholar_id', $cleanScholarId)
                 $message .= " Email notifications sent to " . count($successfulScholars) . " scholar(s).";
             }
             
+            // Add announcement info
+            $message .= " Announcement created for the disbursement schedule.";
+            
             return redirect()->back()->with('success', $message);
         } else {
             $skippedList = implode(', ', array_slice($skippedNames, 0, 3));
@@ -1344,7 +1376,84 @@ $existing = Disburse::where('scholar_id', $cleanScholarId)
         return redirect()->back()->with('error', 'Failed to create disbursement: ' . $e->getMessage());
     }
 }
+private function createDisbursementAnnouncement($disbursementDate, $location, $time, $semester, $academicYear, $scholarCount, $amount, $selectedBarangay = '', $selectedAcademicYear = '')
+{
+    try {
+        $formattedDate = \Carbon\Carbon::parse($disbursementDate)->format('F d, Y');
+        $formattedTime = \Carbon\Carbon::parse($time)->format('h:i A');
+        $formattedAmount = number_format($amount, 2);
 
+        // Build the announcement title dynamically
+        $announcementTitle = "Disbursement Schedule - {$semester} {$academicYear}";
+        if ($selectedBarangay) {
+            $announcementTitle .= " - {$selectedBarangay}";
+        }
+        
+        // Build the announcement content with proper barangay inclusion
+        $barangaySection = "";
+        if ($selectedBarangay) {
+            $barangaySection = "<li><strong>Barangay:</strong> {$selectedBarangay}</li>";
+        }
+
+        $filteredAcademicYearSection = "";
+        if ($selectedAcademicYear && $selectedAcademicYear !== $academicYear) {
+            $filteredAcademicYearSection = "<li><strong>Filtered Academic Year:</strong> {$selectedAcademicYear}</li>";
+        }
+
+        $announcementContent = "
+        <p><strong>ATTENTION ALL SCHOLARS!</strong></p>
+        
+        <p>We are pleased to announce the upcoming disbursement schedule for the {$semester} of Academic Year {$academicYear}.</p>
+        
+        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;'>
+            <p><strong>📅 Disbursement Details:</strong></p>
+            <ul>
+                <li><strong>Date:</strong> {$formattedDate}</li>
+                <li><strong>Time:</strong> {$formattedTime}</li>
+                <li><strong>Location:</strong> {$location}</li>
+                <li><strong>Amount:</strong> ₱{$formattedAmount}</li>
+                <li><strong>Number of Scholars:</strong> {$scholarCount}</li>
+                <li><strong>Semester:</strong> {$semester}</li>
+                <li><strong>Academic Year:</strong> {$academicYear}</li>
+                {$barangaySection}
+                {$filteredAcademicYearSection}
+            </ul>
+        </div>
+
+        <p><strong>📋 Important Reminders:</strong></p>
+        <ul>
+            <li>Please bring your valid school ID and any required documents</li>
+            <li>Be on time to avoid long queues</li>
+            <li>Wear proper attire</li>
+            <li>Prepare your signature for the disbursement receipt</li>
+        </ul>
+
+        <p><strong>ℹ️ Additional Information:</strong></p>
+        <p>This disbursement covers your scholarship stipend for the {$semester}. If you have any questions or concerns, please contact the LYDO office during office hours.</p>
+
+        <p style='color: #666; font-style: italic; margin-top: 20px;'>
+            Thank you for your cooperation and continue to strive for academic excellence!
+        </p>
+
+        <p><strong>LYDO Scholarship Program</strong><br>
+        City Government</p>
+        ";
+
+        Announce::create([
+            'lydopers_id' => session('lydopers')->lydopers_id,
+            'announce_title' => $announcementTitle,
+            'announce_content' => $announcementContent,
+            'announce_type' => 'scholars',
+            'date_posted' => now(),
+        ]);
+
+        \Log::info("Disbursement announcement created for {$semester} {$academicYear} - Barangay: " . ($selectedBarangay ?: 'All'));
+
+    } catch (\Exception $e) {
+        \Log::error('Failed to create disbursement announcement: ' . $e->getMessage());
+        // Don't throw error here to avoid disrupting the main disbursement process
+    }
+}
 private function sendDisbursementNotification($scholars, $disbursementDate, $semester, $academicYear, $amount, $disbursementTime = null, $disbursementLocation = null)
 {
     try {
