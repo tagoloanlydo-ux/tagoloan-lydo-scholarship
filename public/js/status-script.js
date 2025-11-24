@@ -29,6 +29,32 @@ const paginationState = {
     }
 };
 
+// Loading overlay reference counting to avoid spinner showing when nothing is loading
+let _loadingCount = 0;
+function showLoadingOverlay() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (!overlay) return;
+    _loadingCount++;
+    if (_loadingCount === 1) {
+        overlay.classList.remove('fade-out');
+        overlay.style.display = 'flex';
+    }
+}
+function hideLoadingOverlay(force = false) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (!overlay) return;
+    if (force) _loadingCount = 0;
+    if (_loadingCount > 0) _loadingCount--;
+    if (_loadingCount <= 0) {
+        _loadingCount = 0;
+        overlay.classList.add('fade-out');
+        // allow fade animation to complete before hiding
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 500);
+    }
+}
+
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded - initializing...');
@@ -39,16 +65,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNotificationDropdown();
     initializeSidebarDropdown();
     
-    // Hide loading spinner when page is fully loaded, with minimum display time
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    if (loadingOverlay) {
-        setTimeout(() => {
-            loadingOverlay.classList.add('fade-out');
-            setTimeout(() => {
-                loadingOverlay.style.display = 'none';
-            }, 1000);
-        }, 2000);
-    }
+    // Ensure loading overlay is hidden after initialization (do not force-show it)
+    hideLoadingOverlay(true);
 });
 
 // Initialize modal events
@@ -345,9 +363,7 @@ function getUniqueBarangays() {
 
 // Tab switching functions
 function showTable() {
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    document.getElementById('loadingOverlay').classList.remove('fade-out');
-
+    // removed automatic overlay show - tab switching is client-side and fast
     setTimeout(() => {
         document.getElementById('tableView').classList.remove('hidden');
         document.getElementById('listView').classList.add('hidden');
@@ -358,18 +374,11 @@ function showTable() {
         // Reset to first page
         paginationState.table.currentPage = 1;
         updatePagination('table');
-        
-        document.getElementById('loadingOverlay').classList.add('fade-out');
-        setTimeout(() => {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }, 1000);
     }, 300);
 }
 
 function showList() {
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    document.getElementById('loadingOverlay').classList.remove('fade-out');
-
+    // removed automatic overlay show - tab switching is client-side and fast
     setTimeout(() => {
         document.getElementById('tableView').classList.add('hidden');
         document.getElementById('listView').classList.remove('hidden');
@@ -380,11 +389,6 @@ function showList() {
         // Reset to first page
         paginationState.list.currentPage = 1;
         updatePagination('list');
-        
-        document.getElementById('loadingOverlay').classList.add('fade-out');
-        setTimeout(() => {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }, 1000);
     }, 300);
 }
 
@@ -410,11 +414,8 @@ function openIntakeSheetModal(id, name, type = 'intake') {
     currentApplicationId = id;
     currentApplicationName = name;
 
-    // Show loading
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    if (loadingOverlay) {
-        loadingOverlay.style.display = 'flex';
-    }
+    // Show loading (use ref-counted function)
+    showLoadingOverlay();
 
     // Fetch intake sheet data
     fetch(`/mayor_staff/intake-sheet/${id}`)
@@ -448,18 +449,14 @@ function openIntakeSheetModal(id, name, type = 'intake') {
             }
             
             // Hide loading
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'none';
-            }
+            hideLoadingOverlay();
         })
         .catch(error => {
             console.error('Error fetching intake sheet:', error);
             Swal.fire('Error', 'Failed to load intake sheet data.', 'error');
             
             // Hide loading
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'none';
-            }
+            hideLoadingOverlay();
         });
 }
 
@@ -477,10 +474,7 @@ function openApplicationDetailsModal(id, name, status) {
     currentApplicationName = name;
 
     // Show loading
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    if (loadingOverlay) {
-        loadingOverlay.style.display = 'flex';
-    }
+    showLoadingOverlay();
 
     // Fetch application details data
     fetch(`/mayor_staff/intake-sheet/${id}`)
@@ -514,18 +508,14 @@ function openApplicationDetailsModal(id, name, status) {
             }
             
             // Hide loading
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'none';
-            }
+            hideLoadingOverlay();
         })
         .catch(error => {
             console.error('Error fetching application details:', error);
             Swal.fire('Error', 'Failed to load application details.', 'error');
             
             // Hide loading
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'none';
-            }
+            hideLoadingOverlay();
         });
 }
 
@@ -1090,8 +1080,7 @@ function approveApplication(id, name) {
     }).then((result) => {
         if (result.isConfirmed) {
             // Show loading
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            document.getElementById('loadingOverlay').classList.remove('fade-out');
+            showLoadingOverlay();
 
             // Send approval request
             fetch(`/mayor_staff/status/${id}/update`, {
@@ -1112,10 +1101,7 @@ function approveApplication(id, name) {
                 return response.json();
             })
             .then(data => {
-                document.getElementById('loadingOverlay').classList.add('fade-out');
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                }, 1000);
+                hideLoadingOverlay();
 
                 if (data.success === true) {
                     Swal.fire('Approved!', `Application for ${name} has been approved.`, 'success')
@@ -1130,10 +1116,7 @@ function approveApplication(id, name) {
             })
             .catch(error => {
                 console.error('Error approving application:', error);
-                document.getElementById('loadingOverlay').classList.add('fade-out');
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                }, 1000);
+                hideLoadingOverlay();
                 Swal.fire('Error!', 'Failed to approve application. Please try again.', 'error');
             });
         }
@@ -1170,8 +1153,7 @@ function rejectApplication(id, name) {
             const rejectionReason = result.value.trim();
 
             // Show loading
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            document.getElementById('loadingOverlay').classList.remove('fade-out');
+            showLoadingOverlay();
 
             // Send rejection request with reason
             fetch(`/mayor_staff/status/${id}/update`, {
@@ -1193,10 +1175,7 @@ function rejectApplication(id, name) {
                 return response.json();
             })
             .then(data => {
-                document.getElementById('loadingOverlay').classList.add('fade-out');
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                }, 1000);
+                hideLoadingOverlay();
 
                 if (data.success === true) {
                     Swal.fire('Rejected!', `Application for ${name} has been rejected.`, 'success')
@@ -1210,10 +1189,7 @@ function rejectApplication(id, name) {
             })
             .catch(error => {
                 console.error('Error rejecting application:', error);
-                document.getElementById('loadingOverlay').classList.add('fade-out');
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                }, 1000);
+                hideLoadingOverlay();
                 Swal.fire('Error!', 'Failed to reject application. Please try again.', 'error');
             });
         }
@@ -1223,8 +1199,7 @@ function rejectApplication(id, name) {
 // Data refresh functions
 function refreshTableData() {
     // Show loading
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    document.getElementById('loadingOverlay').classList.remove('fade-out');
+    showLoadingOverlay();
 
     // Fetch updated data
     fetch('/mayor_staff/status?ajax=1', {
@@ -1241,14 +1216,12 @@ function refreshTableData() {
         updateListView(data.listApplications);
         
         // Hide loading
-        document.getElementById('loadingOverlay').classList.add('fade-out');
-        setTimeout(() => {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }, 1000);
+        hideLoadingOverlay();
     })
     .catch(error => {
         console.error('Error refreshing data:', error);
-        // Fallback: reload the page
+        // Fallback: reload the page (ensure overlay hidden before reload)
+        hideLoadingOverlay(true);
         location.reload();
     });
 }
@@ -1404,53 +1377,3 @@ function initializeNotificationDropdown() {
     }
 }
 
-// Sidebar dropdown functions
-function toggleDropdown(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    const btn = document.querySelector(`button[onclick="toggleDropdown('${id}')"]`);
-    const chevron = btn ? btn.querySelector('i.bx') : null;
-
-    const willOpen = el.classList.contains('hidden'); // if hidden now, will open
-    // Toggle visibility
-    el.classList.toggle('hidden');
-
-    // Optional: rotate chevron for visual cue
-    if (chevron) {
-        chevron.classList.toggle('rotate-180', willOpen);
-    }
-
-    // Persist state in localStorage so it stays open across pages
-    try {
-        localStorage.setItem(`sidebarDropdown_${id}`, willOpen ? 'open' : 'closed');
-    } catch (e) {
-        console.warn('Could not persist dropdown state:', e);
-    }
-}
-
-function initializeSidebarDropdown() {
-    // Restore saved dropdown states on page load
-    try {
-        Object.keys(localStorage).forEach(key => {
-            if (!key.startsWith('sidebarDropdown_')) return;
-            const id = key.replace('sidebarDropdown_', '');
-            const state = localStorage.getItem(key);
-            const el = document.getElementById(id);
-            if (!el) return;
-
-            const btn = document.querySelector(`button[onclick="toggleDropdown('${id}')"]`);
-            const chevron = btn ? btn.querySelector('i.bx') : null;
-
-            if (state === 'open') {
-                el.classList.remove('hidden');
-                if (chevron) chevron.classList.add('rotate-180');
-            } else {
-                el.classList.add('hidden');
-                if (chevron) chevron.classList.remove('rotate-180');
-            }
-        });
-    } catch (e) {
-        console.warn('initializeSidebarDropdown error:', e);
-    }
-}
