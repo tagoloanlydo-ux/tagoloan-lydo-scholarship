@@ -1182,7 +1182,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Start checking for new notifications every 5 seconds
-    notificationCheckInterval = setInterval(checkNewNotifications, 5000);
+    notificationCheckInterval = setInterval(checkNewNotifications, 2000);
 
     // Initial check
     checkNewNotifications();

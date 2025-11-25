@@ -517,25 +517,30 @@ private function parseJsonField($fieldValue, $fieldName)
                     // Continue processing even if email fails
                 }
 
-                // Send SMS notification
-                try {
-                    $mobile = $applicationPersonnel->applicant_contact_number;
-                    Log::info("Original mobile number: " . $mobile);
-                    if (preg_match('/^0\d{10}$/', $mobile)) {
-                        $mobile = '+63' . substr($mobile, 1);
-                    } elseif (preg_match('/^9\d{9}$/', $mobile)) {
-                        $mobile = '+63' . $mobile;
+                    // Send SMS notification
+                    try {
+                        $mobile = $applicationPersonnel->applicant_contact_number;
+                        Log::info("Original mobile number: " . $mobile);
+                        
+                        // Format the phone number using SmsController's method
+                        $smsController = new SmsController();
+                        $formattedMobile = $smsController->formatPhoneNumber($mobile);
+                        
+                        if (!$formattedMobile) {
+                            Log::warning("Invalid phone number format: " . $mobile);
+                        } else {
+                            Log::info("Formatted mobile number: " . $formattedMobile);
+                            $smsMessage = "Congratulations {$applicationPersonnel->applicant_fname}! Your scholarship application has been approved. Update your username/password: {$registrationLink}";
+                            Log::info("Sending SMS to: " . $formattedMobile . " with message: " . $smsMessage);
+                            
+                            // Use the correct method name: sendRealSms instead of sendSms
+                            $result = $smsController->sendRealSms($formattedMobile, $smsMessage);
+                            Log::info("SMS send result: " . ($result['success'] ? 'Success' : 'Failed - ' . ($result['message'] ?? 'Unknown error')));
+                        }
+                    } catch (\Exception $e) {
+                        Log::error("Failed to send approval SMS to: " . ($mobile ?? 'unknown') . " - " . $e->getMessage());
+                        // Continue processing even if SMS fails
                     }
-                    Log::info("Formatted mobile number: " . $mobile);
-                    $smsController = new SmsController();
-                    $smsMessage = "Congratulations {$applicationPersonnel->applicant_fname}! Your scholarship application has been approved. Update your username/password: {$registrationLink}";
-                    Log::info("Sending SMS to: " . $mobile . " with message: " . $smsMessage);
-                    $result = $smsController->sendSms($mobile, $smsMessage);
-                    Log::info("SMS send result: " . ($result ? 'Success' : 'Failed'));
-                } catch (\Exception $e) {
-                    Log::error("Failed to send approval SMS to: " . $mobile . " - " . $e->getMessage());
-                    // Continue processing even if SMS fails
-                }
             }
 
             // If status is Rejected, send rejection email

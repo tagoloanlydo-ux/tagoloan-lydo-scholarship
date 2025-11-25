@@ -849,10 +849,10 @@ function initializeCheckboxSystem() {
     updateSelectAllState();
 }
 
-// Handle select all checkbox change
+// Handle select all checkbox change - MODIFIED TO SELECT ALL SCHOLARS ACROSS ALL PAGES
 function handleSelectAllChange() {
-    const visibleCheckboxes = getVisibleCheckboxes();
-    visibleCheckboxes.forEach(checkbox => {
+    const allScholarCheckboxes = document.querySelectorAll('.scholar-checkbox');
+    allScholarCheckboxes.forEach(checkbox => {
         checkbox.checked = this.checked;
     });
     updateButtonStates();
@@ -892,35 +892,26 @@ function updateButtonStates() {
     }
 }
 
-// Update select all checkbox state
+// Update select all checkbox state - MODIFIED TO CHECK ALL SCHOLARS ACROSS ALL PAGES
 function updateSelectAllState() {
     if (!selectAllCheckbox) return;
 
-    const visibleCheckboxes = getVisibleCheckboxes();
-    const checkedVisibleCheckboxes = getCheckedVisibleCheckboxes();
+    const allScholarCheckboxes = document.querySelectorAll('.scholar-checkbox');
+    const allCheckedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
 
-    if (visibleCheckboxes.length === 0) {
+    if (allScholarCheckboxes.length === 0) {
         selectAllCheckbox.checked = false;
         selectAllCheckbox.indeterminate = false;
-    } else if (checkedVisibleCheckboxes.length === visibleCheckboxes.length) {
+    } else if (allCheckedCheckboxes.length === allScholarCheckboxes.length) {
         selectAllCheckbox.checked = true;
         selectAllCheckbox.indeterminate = false;
-    } else if (checkedVisibleCheckboxes.length > 0) {
+    } else if (allCheckedCheckboxes.length > 0) {
         selectAllCheckbox.checked = false;
         selectAllCheckbox.indeterminate = true;
     } else {
         selectAllCheckbox.checked = false;
         selectAllCheckbox.indeterminate = false;
     }
-}
-
-// Helper functions
-function getVisibleCheckboxes() {
-    return document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox');
-}
-
-function getCheckedVisibleCheckboxes() {
-    return document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox:checked');
 }
 
 // Send Email Modal functionality
@@ -2291,14 +2282,14 @@ function attachModalEvents(tabSelector) {
     });
 }
 
-// Enhanced Select All functionality for paginated tables
+// Enhanced Select All functionality for paginated tables - MODIFIED TO WORK ACROSS ALL PAGES
 function initializeSelectAllPagination() {
     const selectAllCheckbox = document.getElementById('selectAll');
     const scholarCheckboxes = document.querySelectorAll('.scholar-checkbox');
     
     if (!selectAllCheckbox) return;
 
-    // Select All checkbox functionality
+    // Select All checkbox functionality - MODIFIED TO SELECT ALL SCHOLARS ACROSS ALL PAGES
     selectAllCheckbox.addEventListener('change', function() {
         const isChecked = this.checked;
         
@@ -2331,7 +2322,7 @@ function initializeSelectAllPagination() {
     };
 }
 
-// Update select all checkbox state
+// Update select all checkbox state - MODIFIED TO CHECK ALL SCHOLARS ACROSS ALL PAGES
 function updateSelectAllState() {
     const selectAllCheckbox = document.getElementById('selectAll');
     if (!selectAllCheckbox) return;

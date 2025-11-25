@@ -3,7 +3,7 @@ class NotificationRefresher {
     constructor() {
         this.lastCount = 0;
         this.isRefreshing = false;
-        this.refreshInterval = 30000; // 30 seconds
+        this.refreshInterval = 2000; 
         this.init();
     }
 

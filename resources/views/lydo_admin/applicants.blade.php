@@ -1444,7 +1444,7 @@ function setupLydoPagination() {
     };
 }
 
-        // Checkbox setup functions
+        // Checkbox setup functions - FIXED SELECT ALL FUNCTIONALITY
         function setupMayorCheckboxes() {
             const selectAll = document.getElementById('selectAllMayor');
             const checkboxes = document.querySelectorAll('.applicant-checkbox-mayor');
@@ -1452,16 +1452,41 @@ function setupLydoPagination() {
             const emailBtn = document.getElementById('emailSelectedBtnMayor');
             const smsBtn = document.getElementById('smsSelectedBtnMayor');
 
+            // NEW: Select All functionality that works across all pages
             selectAll.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                
+                // Update all checkboxes on current page
                 checkboxes.forEach(checkbox => {
-                    checkbox.checked = e.target.checked;
+                    checkbox.checked = isChecked;
                 });
+                
+                // NEW: Store selection state for all filtered applicants
+                if (isChecked) {
+                    // Select all filtered applicants across all pages
+                    filteredMayorApplicants.forEach(applicant => {
+                        applicant.selected = true;
+                    });
+                } else {
+                    // Deselect all filtered applicants across all pages
+                    filteredMayorApplicants.forEach(applicant => {
+                        applicant.selected = false;
+                    });
+                }
+                
                 updateButtonVisibility('mayor');
             });
 
+            // Update individual checkbox state
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', () => {
+                    const applicantId = checkbox.value;
+                    const applicant = filteredMayorApplicants.find(app => app.applicant_id == applicantId);
+                    if (applicant) {
+                        applicant.selected = checkbox.checked;
+                    }
                     updateButtonVisibility('mayor');
+                    updateSelectAllCheckbox('mayor');
                 });
             });
 
@@ -1477,16 +1502,41 @@ function setupLydoPagination() {
             const emailBtn = document.getElementById('emailSelectedBtnLydo');
             const smsBtn = document.getElementById('smsSelectedBtnLydo');
 
+            // NEW: Select All functionality that works across all pages
             selectAll.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                
+                // Update all checkboxes on current page
                 checkboxes.forEach(checkbox => {
-                    checkbox.checked = e.target.checked;
+                    checkbox.checked = isChecked;
                 });
+                
+                // NEW: Store selection state for all filtered applicants
+                if (isChecked) {
+                    // Select all filtered applicants across all pages
+                    filteredLydoApplicants.forEach(applicant => {
+                        applicant.selected = true;
+                    });
+                } else {
+                    // Deselect all filtered applicants across all pages
+                    filteredLydoApplicants.forEach(applicant => {
+                        applicant.selected = false;
+                    });
+                }
+                
                 updateButtonVisibility('lydo');
             });
 
+            // Update individual checkbox state
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', () => {
+                    const applicantId = checkbox.value;
+                    const applicant = filteredLydoApplicants.find(app => app.applicant_id == applicantId);
+                    if (applicant) {
+                        applicant.selected = checkbox.checked;
+                    }
                     updateButtonVisibility('lydo');
+                    updateSelectAllCheckbox('lydo');
                 });
             });
 
@@ -1495,9 +1545,35 @@ function setupLydoPagination() {
             smsBtn.addEventListener('click', () => openSmsModal('lydo'));
         }
 
+        // NEW: Update Select All checkbox state based on current selections
+        function updateSelectAllCheckbox(tab) {
+            const selectAll = document.getElementById(`selectAll${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
+            
+            if (filteredApplicants.length === 0) {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+                return;
+            }
+            
+            const selectedCount = filteredApplicants.filter(applicant => applicant.selected).length;
+            
+            if (selectedCount === 0) {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            } else if (selectedCount === filteredApplicants.length) {
+                selectAll.checked = true;
+                selectAll.indeterminate = false;
+            } else {
+                selectAll.checked = false;
+                selectAll.indeterminate = true;
+            }
+        }
+
+        // UPDATED: Button visibility function to check across all filtered applicants
         function updateButtonVisibility(tab) {
-            const checkboxes = document.querySelectorAll(`.applicant-checkbox-${tab}`);
-            const hasSelection = Array.from(checkboxes).some(checkbox => checkbox.checked);
+            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
+            const hasSelection = filteredApplicants.some(applicant => applicant.selected);
             
             const copyBtn = document.getElementById(`copyNamesBtn${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
             const emailBtn = document.getElementById(`emailSelectedBtn${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
@@ -1509,6 +1585,256 @@ function setupLydoPagination() {
                     btn.disabled = !hasSelection;
                 }
             });
+        }
+
+        // UPDATED: Copy names function to get all selected applicants across pages
+        function copySelectedNames(tab) {
+            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
+            const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
+            
+            if (selectedApplicants.length === 0) {
+                Swal.fire('Error', 'No applicants selected', 'error');
+                return;
+            }
+
+            const names = selectedApplicants.map(applicant => formatName(applicant));
+
+            if (names.length > 0) {
+                navigator.clipboard.writeText(names.join(', '))
+                    .then(() => {
+                        Swal.fire('Success', `${names.length} names copied to clipboard!`, 'success');
+                    })
+                    .catch(() => {
+                        Swal.fire('Error', 'Failed to copy names', 'error');
+                    });
+            }
+        }
+
+        // UPDATED: Email modal to show all selected applicants across pages
+        function openEmailModal(tab) {
+            const modal = document.getElementById('emailModal');
+            const preview = document.getElementById('recipientsPreview');
+
+            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
+            const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
+            
+            if (selectedApplicants.length === 0) {
+                preview.textContent = 'No recipients selected';
+            } else {
+                const items = selectedApplicants.map(applicant => {
+                    const name = formatName(applicant);
+                    const email = applicant.applicant_email || 'N/A';
+                    return `<div class="mb-1"><strong>${escapeHtml(name)}</strong> — ${escapeHtml(email)}</div>`;
+                }).join('');
+                preview.innerHTML = `<div class="mb-2 text-sm font-semibold">Selected: ${selectedApplicants.length} applicants</div>${items}`;
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        // UPDATED: SMS modal to show all selected applicants across pages
+        function openSmsModal(tab) {
+            const modal = document.getElementById('smsModal');
+            const preview = document.getElementById('smsRecipientsPreview');
+
+            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
+            const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
+            
+            if (selectedApplicants.length === 0) {
+                preview.textContent = 'No recipients selected';
+            } else {
+                const items = selectedApplicants.map(applicant => {
+                    const name = formatName(applicant);
+                    const phone = applicant.applicant_contact_number || 'N/A';
+                    return `<div class="mb-1"><strong>${escapeHtml(name)}</strong> — ${escapeHtml(phone)}</div>`;
+                }).join('');
+                preview.innerHTML = `<div class="mb-2 text-sm font-semibold">Selected: ${selectedApplicants.length} applicants</div>${items}`;
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        // UPDATED: Initialize selection state when loading data
+        async function loadMayorApplicants() {
+            showLoadingOverlay();
+            try {
+                const response = await fetch('/lydo_admin/get-mayor-applicants');
+                const data = await response.json();
+                allMayorApplicants = data.applicants || [];
+                // Initialize selection state
+                allMayorApplicants.forEach(applicant => {
+                    applicant.selected = false;
+                });
+                filteredMayorApplicants = [...allMayorApplicants];
+                currentPageMayor = 1;
+                renderMayorApplicantsTable();
+                setupMayorPagination();
+                setupMayorFilters();
+            } catch (error) {
+                console.error('Error loading mayor applicants:', error);
+            } finally {
+                hideLoadingOverlay();
+            }
+        }
+
+        async function loadLydoReviewedApplicants() {
+            showLoadingOverlay();
+            try {
+                const response = await fetch('/lydo_admin/get-lydo-reviewed-applicants');
+                const data = await response.json();
+                allLydoApplicants = data.applicants || [];
+                // Initialize selection state
+                allLydoApplicants.forEach(applicant => {
+                    applicant.selected = false;
+                });
+                filteredLydoApplicants = [...allLydoApplicants];
+                currentPageLydo = 1;
+                renderLydoApplicantsTable();
+                setupLydoPagination();
+                setupLydoFilters();
+            } catch (error) {
+                console.error('Error loading LYDO reviewed applicants:', error);
+            } finally {
+                hideLoadingOverlay();
+            }
+        }
+
+        // UPDATED: Render functions to maintain checkbox state
+        function renderMayorApplicantsTable() {
+            const tableBody = document.getElementById('mayorApplicantsTable');
+            const startIndex = (currentPageMayor - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentItems = filteredMayorApplicants.slice(startIndex, endIndex);
+
+            if (currentItems.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="px-4 py-2 text-center text-sm text-gray-500">
+                            No applicants found.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = currentItems.map(applicant => `
+                <tr class="hover:bg-gray-50 border-b">
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <input type="checkbox" name="selected_applicants" value="${applicant.applicant_id}" 
+                               ${applicant.selected ? 'checked' : ''}
+                               class="applicant-checkbox-mayor rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm font-medium text-gray-900">
+                            ${formatName(applicant)}
+                        </div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm text-gray-900">${applicant.applicant_brgy || 'N/A'}</div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm text-gray-900">${applicant.applicant_email || 'N/A'}</div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm text-gray-900">${applicant.applicant_contact_number || 'N/A'}</div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm text-gray-900">${applicant.applicant_school_name || 'N/A'}</div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm text-gray-900">${applicant.applicant_acad_year || 'N/A'}</div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="flex gap-2 justify-center">
+                            <button type="button" 
+                                    onclick="viewApplicantDocuments('${applicant.applicant_id}', '${escapeString(formatName(applicant))}', '${applicant.initial_screening}')"
+                                    class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow">
+                                <i class="fas fa-file-alt mr-1"></i> View Documents
+                            </button>
+                        </div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                            ${applicant.initial_screening === 'Approved' ? 'bg-green-100 text-green-800' : 
+                              applicant.initial_screening === 'Rejected' ? 'bg-red-100 text-red-800' : 
+                              'bg-yellow-100 text-yellow-800'}">
+                            ${applicant.initial_screening === 'Approved' ? 'Approved by Mayor' : applicant.initial_screening || 'Pending'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+
+            setupMayorCheckboxes();
+            updateSelectAllCheckbox('mayor');
+        }
+
+        function renderLydoApplicantsTable() {
+            const tableBody = document.getElementById('lydoApplicantsTable');
+            const startIndex = (currentPageLydo - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentItems = filteredLydoApplicants.slice(startIndex, endIndex);
+
+            if (currentItems.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="px-4 py-2 text-center text-sm text-gray-500">
+                            No applicants found.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = currentItems.map(applicant => `
+                <tr class="hover:bg-gray-50 border-b">
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <input type="checkbox" name="selected_applicants" value="${applicant.applicant_id}" 
+                               ${applicant.selected ? 'checked' : ''}
+                               class="applicant-checkbox-lydo rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm font-medium text-gray-900">
+                            ${formatName(applicant)}
+                        </div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm text-gray-900">${applicant.applicant_brgy || 'N/A'}</div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm text-gray-900">${applicant.applicant_email || 'N/A'}</div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm text-gray-900">${applicant.applicant_contact_number || 'N/A'}</div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm text-gray-900">${applicant.applicant_school_name || 'N/A'}</div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="text-sm text-gray-900">${applicant.applicant_acad_year || 'N/A'}</div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <div class="flex gap-2 justify-center">
+                            <button type="button" 
+                                    onclick="viewApplicantIntakeSheet('${applicant.applicant_id}', '${escapeString(formatName(applicant))}', '${applicant.initial_screening}')"
+                                    class="px-3 py-1 text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-lg shadow">
+                                <i class="fas fa-clipboard-list mr-1"></i> View Application
+                            </button>
+                        </div>
+                    </td>
+                    <td class="px-4 border border-gray-200 py-2 text-center">
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                            ${applicant.remarks === 'Poor' ? 'bg-orange-100 text-orange-800' : 
+                              applicant.remarks === 'Non-Poor' ? 'bg-green-100 text-green-800' : 
+                              applicant.remarks === 'Ultra Poor' ? 'bg-red-100 text-red-800' : 
+                              'bg-gray-100 text-gray-800'}">
+                            ${applicant.remarks || 'Not Specified'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+
+            setupLydoCheckboxes();
+            updateSelectAllCheckbox('lydo');
         }
 
         // Helper functions
@@ -1723,65 +2049,6 @@ function setupLydoPagination() {
             }, 300);
         }
 
-        // Email and SMS functionality
-        function copySelectedNames(tab) {
-            const checkboxes = document.querySelectorAll(`.applicant-checkbox-${tab}:checked`);
-            const names = Array.from(checkboxes).map(checkbox => {
-                const row = checkbox.closest('tr');
-                return row.querySelector('td:nth-child(2)').textContent.trim();
-            });
-
-            if (names.length > 0) {
-                navigator.clipboard.writeText(names.join(', '))
-                    .then(() => {
-                        Swal.fire('Success', 'Names copied to clipboard!', 'success');
-                    })
-                    .catch(() => {
-                        Swal.fire('Error', 'Failed to copy names', 'error');
-                    });
-            }
-        }
-
-        function openEmailModal(tab) {
-            const modal = document.getElementById('emailModal');
-            const preview = document.getElementById('recipientsPreview');
-
-            const checkboxes = document.querySelectorAll(`.applicant-checkbox-${tab}:checked`);
-            if (checkboxes.length === 0) {
-                preview.textContent = 'No recipients selected';
-            } else {
-                const items = Array.from(checkboxes).map(cb => {
-                    const row = cb.closest('tr');
-                    const name = row.querySelector('td:nth-child(2)').textContent.trim();
-                    const email = row.querySelector('td:nth-child(4)').textContent.trim();
-                    return `<div class="mb-1"><strong>${escapeHtml(name)}</strong> — ${escapeHtml(email)}</div>`;
-                }).join('');
-                preview.innerHTML = items;
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        function openSmsModal(tab) {
-            const modal = document.getElementById('smsModal');
-            const preview = document.getElementById('smsRecipientsPreview');
-
-            const checkboxes = document.querySelectorAll(`.applicant-checkbox-${tab}:checked`);
-            if (checkboxes.length === 0) {
-                preview.textContent = 'No recipients selected';
-            } else {
-                const items = Array.from(checkboxes).map(cb => {
-                    const row = cb.closest('tr');
-                    const name = row.querySelector('td:nth-child(2)').textContent.trim();
-                    const phone = row.querySelector('td:nth-child(5)').textContent.trim();
-                    return `<div class="mb-1"><strong>${escapeHtml(name)}</strong> — ${escapeHtml(phone)}</div>`;
-                }).join('');
-                preview.innerHTML = items;
-            }
-
-            modal.classList.remove('hidden');
-        }
-
         function escapeHtml(str) {
             const div = document.createElement('div');
             div.textContent = str;
@@ -1831,17 +2098,15 @@ document.getElementById('smsForm').addEventListener('submit', function(e) {
     
     // Get selected applicants based on active tab
     const activeTab = document.querySelector('.tab-button.active').getAttribute('data-tab');
-    const checkboxes = document.querySelectorAll(`.applicant-checkbox-${activeTab === 'mayor-applicants' ? 'mayor' : 'lydo'}:checked`);
+    const filteredApplicants = activeTab === 'mayor-applicants' ? filteredMayorApplicants : filteredLydoApplicants;
+    const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
     
-    if (checkboxes.length === 0) {
+    if (selectedApplicants.length === 0) {
         Swal.fire('Error', 'Please select at least one applicant', 'error');
         return;
     }
 
-    const selectedEmails = Array.from(checkboxes).map(checkbox => {
-        const row = checkbox.closest('tr');
-        return row.querySelector('td:nth-child(4)').textContent.trim();
-    }).join(',');
+    const selectedEmails = selectedApplicants.map(applicant => applicant.applicant_email).join(',');
 
     const formData = new FormData(this);
     formData.append('selected_emails', selectedEmails);
