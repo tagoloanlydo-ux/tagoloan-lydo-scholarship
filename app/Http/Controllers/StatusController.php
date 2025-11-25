@@ -433,160 +433,135 @@ private function parseJsonField($fieldValue, $fieldName)
         return [];
     }
 }
-    public function updateStatus(Request $request, $id)
-    {
-        // Log the start of the update process
-        Log::info("Starting status update for application_personnel_id: {$id}", [
-            'status' => $request->status,
-            'reason' => $request->reason ?? 'N/A'
+public function updateStatus(Request $request, $id)
+{
+    // Log the start of the update process
+    Log::info("Starting status update for application_personnel_id: {$id}", [
+        'status' => $request->status,
+        'reason' => $request->reason ?? 'N/A'
+    ]);
+
+    try {
+        // Validate request
+        $request->validate([
+            'status' => 'required|in:Approved,Rejected',
+            'reason' => 'required_if:status,Rejected|string|max:1000'
         ]);
 
-        try {
-            // Validate request
-            $request->validate([
-                'status' => 'required|in:Approved,Rejected',
-                'reason' => 'required_if:status,Rejected|string|max:1000'
-            ]);
+        // Get the application_id and applicant email from application_personnel and applicant
+        $applicationPersonnel = DB::table('tbl_application_personnel as ap')
+            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+            ->where('ap.application_personnel_id', $id)
+            ->select('a.application_id', 'app.applicant_email', 'app.applicant_fname', 'app.applicant_lname', 'app.applicant_contact_number')
+            ->first();
 
-            // Get the application_id and applicant email from application_personnel and applicant
-            $applicationPersonnel = DB::table('tbl_application_personnel as ap')
-                ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-                ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-                ->where('ap.application_personnel_id', $id)
-                ->select('a.application_id', 'app.applicant_email', 'app.applicant_fname', 'app.applicant_lname', 'app.applicant_contact_number')
-                ->first();
-
-            if (!$applicationPersonnel) {
-                Log::warning("Application not found for application_personnel_id: {$id}");
-                if ($request->ajax()) {
-                    return response()->json(['success' => false, 'message' => 'Application not found.']);
-                }
-                return back()->with('error', 'Application not found.');
-            }
-
-            // Update the status and reason if rejected
-            $updateData = ['status' => $request->status, 'updated_at' => now()];
-            if ($request->status === 'Rejected') {
-                $updateData['rejection_reason'] = $request->reason;
-            }
-
-            DB::table('tbl_application_personnel')
-                ->where('application_personnel_id', $id)
-                ->update($updateData);
-
-            Log::info("Status updated successfully for application_personnel_id: {$id}", [
-                'new_status' => $request->status,
-                'rejection_reason' => $request->reason ?? null
-            ]);
-
-            // If status is Approved, add to tbl_scholar if not already exists and send email
-            if ($request->status === 'Approved') {
-                $existingScholar = Scholar::where('application_id', $applicationPersonnel->application_id)->first();
-
-                if (!$existingScholar) {
-                    $scholar = Scholar::create([
-                        'application_id' => $applicationPersonnel->application_id,
-                        'scholar_username' => $request->username ?? 'default_username',
-                        'scholar_pass' => bcrypt($request->password ?? 'default123'),
-                        'date_activated' => now(),
-                        'scholar_status' => 'Active',
-                    ]);
-                    Log::info("Scholar record created for application_id: {$applicationPersonnel->application_id}");
-                } else {
-                    $scholar = $existingScholar;
-                    Log::info("Scholar record already exists for application_id: {$applicationPersonnel->application_id}");
-                }
-
-                // Send email with registration link
-                try {
-                    $registrationLink = \Illuminate\Support\Facades\URL::signedRoute('scholar.scholar_reg', ['scholar_id' => $scholar->scholar_id]);
-                    $emailData = [
-                        'applicant_fname' => $applicationPersonnel->applicant_fname,
-                        'applicant_lname' => $applicationPersonnel->applicant_lname,
-                        'registration_link' => $registrationLink,
-                    ];
-
-                    Mail::send('emails.scholar-registration-link', $emailData, function ($message) use ($applicationPersonnel) {
-                        $message->to($applicationPersonnel->applicant_email)
-                            ->subject('Scholar Registration - Update Your Account')
-                            ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
-                    });
-                    Log::info("Approval email sent successfully to: " . $applicationPersonnel->applicant_email);
-                } catch (\Exception $e) {
-                    Log::error("Failed to send approval email to: " . $applicationPersonnel->applicant_email . " - " . $e->getMessage());
-                    // Continue processing even if email fails
-                }
-
-                    // Send SMS notification
-                    try {
-                        $mobile = $applicationPersonnel->applicant_contact_number;
-                        Log::info("Original mobile number: " . $mobile);
-                        
-                        // Format the phone number using SmsController's method
-                        $smsController = new SmsController();
-                        $formattedMobile = $smsController->formatPhoneNumber($mobile);
-                        
-                        if (!$formattedMobile) {
-                            Log::warning("Invalid phone number format: " . $mobile);
-                        } else {
-                            Log::info("Formatted mobile number: " . $formattedMobile);
-                            $smsMessage = "Congratulations {$applicationPersonnel->applicant_fname}! Your scholarship application has been approved. Update your username/password: {$registrationLink}";
-                            Log::info("Sending SMS to: " . $formattedMobile . " with message: " . $smsMessage);
-                            
-                            // Use the correct method name: sendRealSms instead of sendSms
-                            $result = $smsController->sendRealSms($formattedMobile, $smsMessage);
-                            Log::info("SMS send result: " . ($result['success'] ? 'Success' : 'Failed - ' . ($result['message'] ?? 'Unknown error')));
-                        }
-                    } catch (\Exception $e) {
-                        Log::error("Failed to send approval SMS to: " . ($mobile ?? 'unknown') . " - " . $e->getMessage());
-                        // Continue processing even if SMS fails
-                    }
-            }
-
-            // If status is Rejected, send rejection email
-            if ($request->status === 'Rejected') {
-                try {
-                    $emailData = [
-                        'applicant_fname' => $applicationPersonnel->applicant_fname,
-                        'applicant_lname' => $applicationPersonnel->applicant_lname,
-                        'reason' => $request->reason,
-                    ];
-
-                    Mail::send('emails.scholar-status-rejection', $emailData, function ($message) use ($applicationPersonnel) {
-                        $message->to($applicationPersonnel->applicant_email)
-                            ->subject('Scholarship Application Update')
-                            ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
-                    });
-                    Log::info("Rejection email sent successfully to: " . $applicationPersonnel->applicant_email);
-                } catch (\Exception $e) {
-                    Log::error("Failed to send rejection email to: " . $applicationPersonnel->applicant_email . " - " . $e->getMessage());
-                    // Continue processing even if email fails
-                }
-            }
-
-            Log::info("Status update process completed successfully for application_personnel_id: {$id}");
-
+        if (!$applicationPersonnel) {
+            Log::warning("Application not found for application_personnel_id: {$id}");
             if ($request->ajax()) {
-                return response()->json(['success' => true, 'message' => 'Status updated successfully!']);
+                return response()->json(['success' => false, 'message' => 'Application not found.']);
             }
-
-            return back()->with('success', 'Status updated successfully!');
-        } catch (\Exception $e) {
-            Log::error("Unexpected error in updateStatus for application_personnel_id: {$id}", [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'An error occurred while updating status.'
-                ]);
-            }
-
-            return back()->with('error', 'An error occurred while updating status.');
+            return back()->with('error', 'Application not found.');
         }
+
+        // Update the status and reason if rejected
+        $updateData = ['status' => $request->status, 'updated_at' => now()];
+        if ($request->status === 'Rejected') {
+            $updateData['rejection_reason'] = $request->reason;
+        }
+
+        DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $id)
+            ->update($updateData);
+
+        Log::info("Status updated successfully for application_personnel_id: {$id}", [
+            'new_status' => $request->status,
+            'rejection_reason' => $request->reason ?? null
+        ]);
+
+        // If status is Approved, add to tbl_scholar if not already exists and send email
+        if ($request->status === 'Approved') {
+            $existingScholar = Scholar::where('application_id', $applicationPersonnel->application_id)->first();
+
+            if (!$existingScholar) {
+                $scholar = Scholar::create([
+                    'application_id' => $applicationPersonnel->application_id,
+                    'scholar_username' => $request->username ?? 'default_username',
+                    'scholar_pass' => bcrypt($request->password ?? 'default123'),
+                    'date_activated' => now(),
+                    'scholar_status' => 'Active',
+                ]);
+                Log::info("Scholar record created for application_id: {$applicationPersonnel->application_id}");
+            } else {
+                $scholar = $existingScholar;
+                Log::info("Scholar record already exists for application_id: {$applicationPersonnel->application_id}");
+            }
+
+            // Send email with registration link
+            try {
+                $registrationLink = \Illuminate\Support\Facades\URL::signedRoute('scholar.scholar_reg', ['scholar_id' => $scholar->scholar_id]);
+                $emailData = [
+                    'applicant_fname' => $applicationPersonnel->applicant_fname,
+                    'applicant_lname' => $applicationPersonnel->applicant_lname,
+                    'registration_link' => $registrationLink,
+                ];
+
+                Mail::send('emails.scholar-registration-link', $emailData, function ($message) use ($applicationPersonnel) {
+                    $message->to($applicationPersonnel->applicant_email)
+                        ->subject('Scholar Registration - Update Your Account')
+                        ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
+                });
+                Log::info("Approval email sent successfully to: " . $applicationPersonnel->applicant_email);
+            } catch (\Exception $e) {
+                Log::error("Failed to send approval email to: " . $applicationPersonnel->applicant_email . " - " . $e->getMessage());
+                // Continue processing even if email fails
+            }
+        }
+
+        // If status is Rejected, send rejection email
+        if ($request->status === 'Rejected') {
+            try {
+                $emailData = [
+                    'applicant_fname' => $applicationPersonnel->applicant_fname,
+                    'applicant_lname' => $applicationPersonnel->applicant_lname,
+                    'reason' => $request->reason,
+                ];
+
+                Mail::send('emails.scholar-status-rejection', $emailData, function ($message) use ($applicationPersonnel) {
+                    $message->to($applicationPersonnel->applicant_email)
+                        ->subject('Scholarship Application Update')
+                        ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
+                });
+                Log::info("Rejection email sent successfully to: " . $applicationPersonnel->applicant_email);
+            } catch (\Exception $e) {
+                Log::error("Failed to send rejection email to: " . $applicationPersonnel->applicant_email . " - " . $e->getMessage());
+                // Continue processing even if email fails
+            }
+        }
+
+        Log::info("Status update process completed successfully for application_personnel_id: {$id}");
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Status updated successfully!']);
+        }
+
+        return back()->with('success', 'Status updated successfully!');
+    } catch (\Exception $e) {
+        Log::error("Unexpected error in updateStatus for application_personnel_id: {$id}", [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while updating status.'
+            ]);
+        }
+
+        return back()->with('error', 'An error occurred while updating status.');
     }
+}
 public function getNotificationCount(Request $request)
 {
     $currentStaffId = session('lydopers')->lydopers_id;
