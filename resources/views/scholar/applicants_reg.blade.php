@@ -13,7 +13,826 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <title>Personal Information Form</title>
-    
+    <style>
+    /* Simple left-aligned back button */
+    .header-simple {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+
+    .back-btn-left {
+        background: transparent;
+        border: none;
+        font-size: 28px;
+        color: rgb(0, 0, 0);
+        cursor: pointer;
+        padding: 5px 15px 5px 0;
+        margin: 0;
+        line-height: 1;
+        align-self: flex-start;
+    }
+
+    .header-content-left {
+        flex: 1;
+        text-align: center;
+    }
+    body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f0f0f5 0%, #d9d9ff 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        overflow-x: hidden;
+    }
+
+    /* Full screen container */
+    .full-screen-container {
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    /* Select2 customization */
+    .select2-container--default .select2-selection--single {
+      border: 1px solid #d1d5db !important;
+      border-radius: 0.5rem !important;
+      height: 42px !important;
+      padding: 8px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+      height: 40px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      line-height: 26px !important;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+      background-color: #7c3aed !important;
+    }
+
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+      border: 1px solid #d1d5db !important;
+      border-radius: 0.375rem !important;
+    }
+
+    .select2-dropdown {
+      border: 1px solid #d1d5db !important;
+      border-radius: 0.5rem !important;
+    }
+
+    /* Error and valid states */
+    .error { 
+      border-color: #ef4444 !important; 
+      background-color: #fef2f2 !important;
+    }
+    .valid { 
+      border-color: #10b981 !important; 
+      background-color: #f0fdf4 !important;
+    }
+    .error-message { 
+      color: #ef4444; 
+      font-size: 12px; 
+      margin-top: 4px; 
+      display: block; 
+    }
+
+    .tab-container {
+        width: 100%;
+        min-height: 100vh; /* change from fixed height to min-height so content doesn't force buttons to bottom */
+        background: transparent;
+        padding: 30px;
+        border-radius: 0;
+        box-shadow: none;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .select2-container--default .select2-selection--single {
+        height: 42px !important;
+        border: 1px solid #000000 !important;
+        border-radius: 8px !important;
+        background-color: #fff !important;
+        padding: 0 !important;
+        font-size: 14px !important;
+        box-sizing: border-box !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #000 !important;
+        line-height: 40px !important;
+        padding-left: 12px !important;
+        padding-right: 20px !important;
+        font-size: 14px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__placeholder {
+        color: #000000 !important;
+        opacity: 1 !important;
+        font-size: 14px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+        right: 8px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow b {
+        border-color: #000 transparent transparent transparent !important;
+        border-width: 5px 4px 0 4px !important;
+    }
+
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #7c3aed !important;
+        box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.25) !important;
+    }
+
+    .select2-container--default .select2-results__option {
+        padding: 10px 12px !important;
+        font-size: 14px !important;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #7c3aed !important;
+    }
+
+    .select2-container--default .select2-results__group {
+        font-weight: 600 !important;
+        color: #3b0066 !important;
+        background-color: #f0f0f5 !important;
+        padding: 8px 12px !important;
+        font-size: 14px !important;
+    }
+    .login-container {
+        width: 100%;
+        max-width: 800px;
+        background: transparent;
+        padding: 30px 30px 10px;
+        border-radius: 16px;
+        box-shadow: 0 15px 30px rgba(102, 51, 153, 0.2);
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        box-sizing: border-box;
+    }
+    .credentials-container {
+        width: 100%;
+        max-width: 500px;
+        background: transparent;
+        padding: 30px 30px 50px;
+        border-radius: 16px;
+        box-shadow: 0 15px 30px rgba(102, 51, 153, 0.2);
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        box-sizing: border-box;
+    }
+
+    /* Headers */
+    .login-container h1,
+    .credentials-container h1,
+    .tab-container h1 {
+        color: #000000;
+        font-size: 30px;
+        margin-bottom: 6px;
+        font-weight: 800;
+        text-align: center;
+    }
+    .login-container p.subtitle,
+    .credentials-container p.subtitle,
+    .tab-container p.subtitle {
+        color: #000000;
+        margin-bottom: 20px;
+        font-size: 15px;
+        text-align: center;
+    }
+
+    /* ===== Form ===== */
+    form {
+        z-index: 3;
+        position: relative;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .input-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 15px;
+    }
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+    .input-group.wide {
+        flex: 2;
+    }
+    .input-group.small {
+        max-width: 120px;
+        flex: 0 0 auto;
+    }
+
+    /* Labels */
+    label {
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #3b0066;
+        font-size: 14px;
+    }
+
+    /* Error / Valid */
+    input.error,
+    select.error {
+        border: 2px solid #dc2626; /* red-600 */
+    }
+    input.valid,
+    select.valid {
+        border: 2px solid #16a34a; /* green-600 */
+    }
+    .error-message {
+        color: red;
+        font-size: 12px;
+        margin-top: 3px;
+        display: block;
+        white-space: nowrap;
+    }
+
+    /* Inputs + Selects */
+    input,
+    select {
+        padding: 10px 12px;
+        border: 1px solid #000000;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        height: 42px;
+        background-color: #fff;
+        width: 100%;
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+    }
+    input:focus,
+    select:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.25);
+    }
+
+    /* Placeholder */
+    input::placeholder {
+        color: #000000;
+        font-size: 14px;
+        opacity: 1;
+    }
+    select:invalid {
+        color: #9ca3af;
+    }
+    select option {
+        color: #111;
+    }
+
+    /* File Inputs */
+    input[type="file"] {
+        border: 1px solid #999;
+        border-radius: 8px;
+        padding: 6px;
+        height: 42px;
+        font-size: 14px;
+        color: #3b0066;
+    }
+    input[type="file"]::file-selector-button {
+        background: #7c3aed;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        margin-right: 10px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    input[type="file"]::file-selector-button:hover {
+        background: #5b21b6;
+    }
+
+    /* Submit Button */
+    .login-btn {
+        padding: 12px 20px;
+        font-weight: 700;
+        font-size: 14px;
+        margin-top: 0;
+        background: linear-gradient(90deg, #4b2b8d 0%, #230061 100%);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        cursor: pointer;
+        box-shadow: 0 10px 20px #5132a6cc;
+        transition: background 0.3s ease;
+        height: 42px;
+    }
+    .login-btn:hover {
+        background: linear-gradient(90deg, #5b21b6 0%, #3b0066 100%);
+    }
+
+    /* Tab Navigation */
+    .tab-nav {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #ddd;
+    }
+
+    .tab-button {
+        padding: 12px 20px;
+        font-weight: 600;
+        font-size: 14px;
+        background: #f0f0f0;
+        color: #666;
+        border: none;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        transition: background 0.3s ease, color 0.3s ease;
+        margin-right: 5px;
+    }
+
+    .tab-button.active {
+        background: linear-gradient(90deg, #4b2b8d 0%, #230061 100%);
+        color: white;
+    }
+
+    .tab-button:hover {
+        background: #ddd;
+    }
+
+    .tab-button.active:hover {
+        background: linear-gradient(90deg, #5b21b6 0%, #3b0066 100%);
+    }
+
+    .tab-content {
+        display: none;
+        flex: 0 1 auto; /* prevent tab content from stretching to full height */
+        overflow-y: auto;
+        margin-bottom: 8px; /* small gap above buttons */
+    }
+
+    .tab-content.active {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .button-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px; /* reduce spacing from fields to buttons */
+        gap: 100px;
+    }
+
+    /* Gamitin ito sa HTML: <button class="nav-btn">Next</button> */
+    .nav-btn {
+        padding: 12px 20px;
+        font-weight: 700;
+        font-size: 14px;
+        background: linear-gradient(90deg, #4b2b8d 0%, #230061 100%);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        cursor: pointer;
+        box-shadow: 0 10px 20px #5132a6cc;
+        transition: background 0.3s ease;
+        height: 42px;
+        /* WALANG MARGIN-TOP DITO */
+    }
+    .nav-btn:hover {
+        background: linear-gradient(90deg, #5b21b6 0%, #3b0066 100%);
+    }
+
+    .nav-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    /* ===== Decorative Elements ===== */
+    .decorative-wave-container {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 180px;
+        z-index: 0;
+        overflow: hidden;
+    }
+    svg {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 200%;
+        height: 100%;
+    }
+    .wave1 {
+        animation: waveMove 10s linear infinite;
+    }
+    .wave2 {
+        animation: waveMove 14s linear infinite;
+    }
+    .wave3 {
+        animation: waveMove 20s linear infinite;
+    }
+    .wave4 {
+        animation: waveMove 25s linear infinite;
+    }
+    .wave5 {
+        animation: waveMove 30s linear infinite;
+    }
+    @keyframes waveMove {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+
+    /* Floating Circles */
+    .floating-circles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+    }
+    .circle {
+        position: absolute;
+        width: 25px;
+        height: 25px;
+        background: rgba(109, 83, 211, 0.25);
+        border-radius: 50%;
+        animation: floatUp 12s infinite ease-in-out;
+    }
+    .circle.small {
+        width: 15px;
+        height: 15px;
+        background: rgba(140, 112, 247, 0.3);
+        animation-duration: 15s;
+    }
+    .square1 {
+        width: 14px;
+        height: 14px;
+        right: 40px;
+        top: 80%;
+        border-radius: 4px;
+        background: rgba(109, 83, 211, 0.3);
+        box-shadow: 0 0 6px rgba(109, 83, 211, 0.5);
+    }
+
+    /* Page Header */
+    .page-header {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 10px;
+        margin-top: 0;
+    }
+    .page-header .logo {
+        width: 80px;
+        height: auto;
+        display: block;
+        margin: 0 auto 10px;
+    }
+    .page-header .title {
+        font-size: 32px;
+        font-weight: 900;
+        color: #3b0066;
+        margin: 0;
+    }
+    .footer-text {
+        margin-top: 5px;
+        text-align: center;
+        font-size: 17px;
+        font-weight: 500;
+        color: #555;
+    }
+
+    .banner-grad {
+            background: linear-gradient(90deg, #4c1d95 0%, #7e22ce 100%);
+        height: 100px;
+        position: relative;
+    }
+    /* Back button */
+    .back-btn {
+        background: transparent;
+        border: none;
+        margin-right: 20px;
+        font-size: 28px;
+        color: rgb(0, 0, 0);
+        font-size: 50px;
+        cursor: pointer;
+    }
+
+    /* ===== Responsive Design ===== */
+
+    /* Large screens (desktops) */
+    @media (min-width: 1200px) {
+        .full-screen-container {
+            padding: 0;
+        }
+
+        .tab-container {
+            max-width: 100%;
+        }
+    }
+
+    /* Medium screens (tablets and small desktops) */
+    @media (max-width: 1024px) {
+        .full-screen-container {
+            padding: 0;
+        }
+
+        .tab-container {
+            max-width: 100%;
+        }
+
+        .tab-container h1 {
+            font-size: 28px;
+        }
+
+        .tab-container p.subtitle {
+            font-size: 14px;
+        }
+
+        .input-row {
+            gap: 15px;
+        }
+    }
+
+    /* Small screens (tablets) */
+    @media (max-width: 768px) {
+        body {
+            padding: 0;
+        }
+
+        .full-screen-container {
+            padding: 0;
+        }
+
+        .tab-container {
+            width: 100%;
+            max-width: none;
+            padding: 20px;
+        }
+
+        .tab-container h1 {
+            font-size: 26px;
+        }
+
+        .tab-container p.subtitle {
+            font-size: 14px;
+        }
+
+        .input-row {
+            gap: 15px;
+        }
+
+        .tab-nav {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tab-button {
+            margin-right: 0;
+            border-radius: 8px;
+            padding: 14px 20px;
+        }
+
+        .back-btn {
+            font-size: 45px;
+        }
+    }
+
+    /* Extra small screens (large phones) */
+    @media (max-width: 640px) {
+        body {
+            padding: 0;
+        }
+
+        .full-screen-container {
+            padding: 0;
+        }
+
+        .tab-container {
+            padding: 15px;
+            border-radius: 0;
+        }
+
+        .tab-container h1 {
+            font-size: 24px;
+        }
+
+        .tab-container p.subtitle {
+            font-size: 13px;
+        }
+
+        .input-row {
+            gap: 12px;
+        }
+
+        .tab-nav {
+            gap: 6px;
+        }
+
+        .tab-button {
+            padding: 12px 18px;
+            font-size: 13px;
+        }
+
+        .back-btn {
+            font-size: 40px;
+        }
+    }
+
+    /* Mobile phones */
+    @media (max-width: 480px) {
+        body {
+            padding: 0;
+        }
+
+        .full-screen-container {
+            padding: 0;
+        }
+
+        .tab-container {
+            padding: 12px;
+            border-radius: 0;
+        }
+
+        .tab-container h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .tab-container p.subtitle {
+            font-size: 12px;
+            margin-bottom: 18px;
+        }
+
+        .input-row {
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .input-group {
+            width: 100%;
+        }
+
+        .input-group[style*="width: 10px"] {
+            width: 100% !important;
+        }
+
+        label {
+            font-size: 13px;
+        }
+
+        input,
+        select {
+            padding: 9px 11px;
+            font-size: 14px;
+            height: 40px;
+        }
+
+        input[type="file"] {
+            padding: 5px;
+            height: 40px;
+            font-size: 14px;
+        }
+
+        input[type="file"]::file-selector-button {
+            padding: 5px 10px;
+            font-size: 13px;
+        }
+
+        .login-btn {
+            padding: 14px 18px;
+            font-size: 16px;
+            height: 44px;
+        }
+
+        .button-row {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 16px;
+            height: 44px;
+        }
+
+        .tab-nav {
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .tab-button {
+            margin-right: 0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            font-size: 38px;
+            margin-right: 8px;
+        }
+
+        .error-message {
+            font-size: 12px;
+        }
+    }
+
+    /* Very small screens */
+    @media (max-width: 360px) {
+        body {
+            padding: 0;
+        }
+
+        .full-screen-container {
+            padding: 0;
+        }
+
+        .tab-container {
+            padding: 10px;
+            border-radius: 0;
+        }
+
+        .tab-container h1 {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .tab-container p.subtitle {
+            font-size: 11px;
+            margin-bottom: 15px;
+        }
+
+        input,
+        select {
+            padding: 8px 10px;
+            font-size: 13px;
+            height: 38px;
+        }
+
+        input[type="file"] {
+            padding: 4px;
+            height: 38px;
+            font-size: 13px;
+        }
+
+        input[type="file"]::file-selector-button {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .login-btn,
+        .nav-btn {
+            padding: 12px 16px;
+            font-size: 15px;
+            height: 42px;
+        }
+
+        .tab-button {
+            padding: 10px 14px;
+            font-size: 13px;
+        }
+
+        .back-btn {
+            font-size: 35px;
+            margin-right: 5px;
+        }
+
+        .error-message {
+            font-size: 11px;
+        }
+    }
+
+    </style>
     </head>
   <body>
     <div class="banner-grad flex flex-col md:flex-row items-center justify-center md:justify-between w-full h-25 px-4 md:px-6 text-white">
@@ -143,7 +962,7 @@
               </div>
               <div class="input-group">
                 <label for="contact">Contact Number</label>
-                <input type="tel" id="contact" name="applicant_contact_number" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required />
+                <input type="tel" id="contact" name="applicant_contact_number" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" required maxlength="12" />
                 <small class="error-message"></small>
               </div>
             </div>
@@ -156,6 +975,9 @@
                 <label for="school_name">School Name</label>
                 <select id="school_name" name="applicant_school_name" class="pl-2 w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 select2" required>
                   <option value=""></option>
+                  <optgroup label="Others">
+                    <option value="Others">Others (Please specify below)</option>
+                  </optgroup>
                   <optgroup label="State Universities">
                     <option value="USTP CDO">University of Science and Technology of Southern Philippines (USTP) – Cagayan de Oro</option>
                     <option value="USTP Claveria">University of Science and Technology of Southern Philippines (USTP) – Claveria</option>
@@ -183,9 +1005,6 @@
                     <option value="St. Peter's College">St. Peter's College of Balingasag</option>
                     <option value="Saint John Vianney Seminary">Saint John Vianney Theological Seminary, CDO</option>
                     <option value="Asian College of science and Technology">Asian College of Science and Technology, CDO</option>
-                  </optgroup>
-                  <optgroup label="Others">
-                    <option value="Others">Others (Please specify below)</option>
                   </optgroup>
                 </select>
                 <input type="text" id="school_name_other" name="applicant_school_name_other" placeholder="Please specify your school" style="display: none; margin-top: 8px; padding: 10px; border: 1px solid black; border-radius: 8px; font-size: 14px; outline: none; width: 100%;"/>
@@ -255,6 +1074,7 @@
                 <small class="error-message"></small>
               </div>
             </div>
+            
           </div>
 
           <!-- Navigation Buttons -->
@@ -298,27 +1118,84 @@ function showTab(index) {
     $('#school_name').select2({
       placeholder: 'Search and select your school...',
       allowClear: true,
-      minimumInputLength: 1,
+      minimumInputLength: 0, // show all options on initial dropdown click
       width: '100%',
-      dropdownParent: $('#education')
+      dropdownParent: $('#education'),
+      // Always match "Others" so it's visible even when search term doesn't match any option
+      matcher: function(params, data) {
+        // If no search term (empty), keep default behaviour
+        if ($.trim(params.term) === '') return data;
+
+        // If this 'data' is a group, apply matching on its children and always keep 'Others'
+        if (data.children && data.children.length) {
+          var filteredChildren = [];
+          data.children.forEach(function(child) {
+            // Always include 'Others' option regardless of search term
+            if (child.id === 'Others' || (child.text && child.text.toLowerCase().indexOf('others') !== -1)) {
+              filteredChildren.push(child);
+              return;
+            }
+            // Keep child if it matches search term
+            if (child.text && child.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+              filteredChildren.push(child);
+            }
+          });
+
+          if (filteredChildren.length > 0) {
+            // return a new copy of the group with filtered children
+            var copy = $.extend(true, {}, data);
+            copy.children = filteredChildren;
+            return copy;
+          }
+          return null;
+        }
+
+        // Single option fallback: always include Others
+        if (data.id === 'Others' || (data.text && data.text.toLowerCase().indexOf('others') !== -1)) {
+          return data;
+        }
+
+        // Default matching
+        if (typeof data.text === 'undefined') return null;
+        if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+          return data;
+        }
+        return null;
+      },
+      // Put 'Others' at the top of the dropdown results
+      sorter: function(data) {
+        return data.sort(function(a, b) {
+          // If 'a' or 'b' is a group, their text might be the optgroup label; check children first
+          if (a.id === 'Others' || (a.text && a.text.toLowerCase().indexOf('others') !== -1)) return -1;
+          if (b.id === 'Others' || (b.text && b.text.toLowerCase().indexOf('others') !== -1)) return 1;
+          return a.text.localeCompare(b.text);
+        });
+      },
+      language: {
+        noResults: function() {
+          return 'No results found. If your school is not listed, select "Others".';
+        }
+      },
+      escapeMarkup: function(markup) { return markup; }
     });
-    
-    // Handle "Others" option
-    $('#school_name').on('change', function() {
-      const schoolOtherInput = document.getElementById("school_name_other");
-      if (this.value === "Others") {
-        schoolOtherInput.style.display = "block";
-        schoolOtherInput.setAttribute("required", "required");
-      } else {
-        schoolOtherInput.style.display = "none";
-        schoolOtherInput.removeAttribute("required");
-        schoolOtherInput.value = "";
-      }
-      validateInput(this);
-    });
-    
-    select2Initialized = true;
-  }
+
+  // Handle "Others" option
+  $('#school_name').on('change', function() {
+    const schoolOtherInput = document.getElementById("school_name_other");
+    if (this.value === "Others") {
+      schoolOtherInput.style.display = "block";
+      schoolOtherInput.setAttribute("required", "required");
+    } else {
+      schoolOtherInput.style.display = "none";
+      schoolOtherInput.removeAttribute("required");
+      schoolOtherInput.value = "";
+    }
+    validateInput(this);
+    toggleButton();
+  });
+
+  select2Initialized = true;
+}
 
   updateButtonStates();
 }
@@ -781,6 +1658,35 @@ document.addEventListener('DOMContentLoaded', function() {
         courseInput.addEventListener('blur', handleInputCapitalization);
     }
 });
+
+// Contact number validation - only numbers and max 12 digits
+document.addEventListener('DOMContentLoaded', function() {
+    const contactInput = document.getElementById('contact');
+    
+    if (contactInput) {
+        // Prevent non-numeric input
+        contactInput.addEventListener('input', function(e) {
+            // Remove any non-numeric characters
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Limit to 12 digits
+            if (this.value.length > 12) {
+                this.value = this.value.slice(0, 12);
+            }
+            
+            // Validate the input
+            validateInput(this);
+        });
+        
+        // Prevent paste of non-numeric content
+        contactInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            const numericText = pastedText.replace(/[^0-9]/g, '');
+            document.execCommand('insertText', false, numericText.slice(0, 12));
+        });
+    }
+});
 </script>
 <style>
 /* Full screen container */
@@ -835,7 +1741,7 @@ document.addEventListener('DOMContentLoaded', function() {
   color: #ef4444; 
   font-size: 12px; 
   margin-top: 4px; 
-  display: block; 
+  display: block;
 }
 </style>
 
