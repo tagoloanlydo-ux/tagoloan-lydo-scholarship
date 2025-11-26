@@ -47,7 +47,8 @@ Route::get('/reset-password/{token}', [LydopersController::class, 'showResetForm
 Route::post('/reset-password', [LydopersController::class, 'resetPassword'])->name('password.update');
 
 Route::middleware(['role:lydo_admin'])->group(function () {
-    
+    Route::get('/lydo_admin/get-scholar-personal-info/{scholar_id}', [AdminScholarController::class, 'getScholarPersonalInfo'])->name('LydoAdmin.getScholarPersonalInfo');
+    Route::get('/lydo_admin/get-application-personnel/{applicantId}', [LydoAdminController::class, 'getApplicationPersonnelId']);
     Route::post('/lydo_admin/send-sms-to-scholars', [AdminScholarController::class, 'sendSmsToScholars'])->name('LydoAdmin.sendSmsToScholars');    Route::get('/lydo_admin/generate-mayor-applicants-pdf', [LydoAdminController::class, 'generateMayorApplicantsPdf']);
     Route::get('/lydo_admin/generate-lydo-applicants-pdf', [LydoAdminController::class, 'generateLydoApplicantsPdf']);
     Route::get('/lydo_admin/get-mayor-applicants', [LydoAdminController::class, 'getMayorApplicants']);
