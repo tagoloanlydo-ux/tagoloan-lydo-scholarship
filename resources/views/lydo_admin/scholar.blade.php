@@ -461,7 +461,7 @@
                     </div>
                     
                     <div class="overflow-x-auto">
-                        <table class="w-full table-auto border-collapse text-[17px] shadow-lg  overflow-hidden border border-gray-200">
+                            <table class="w-full table-auto border-collapse text-[17px] shadow-lg border border-gray-200">
                             <thead class="bg-violet-600 to-teal-600 text-white uppercase text-sm">
                                 <tr>
                                     <th class="px-4 py-3 border border-gray-200 text-center">

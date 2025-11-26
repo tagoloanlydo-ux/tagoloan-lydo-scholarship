@@ -451,42 +451,57 @@ function openModal() {
     }
 
     function updateDocumentFieldsVisibility() {
-        if (renewalExists) {
-            // Show/hide based on bad documents
-            const certContainer = document.getElementById('cert_of_reg_container');
-            const gradeContainer = document.getElementById('grade_slip_container');
-            const brgyContainer = document.getElementById('brgy_indigency_container');
+        // Always show the containers so users can open the file dialog and optionally upload files
+        const certContainer = document.getElementById('cert_of_reg_container');
+        const gradeContainer = document.getElementById('grade_slip_container');
+        const brgyContainer = document.getElementById('brgy_indigency_container');
 
-            if (certContainer) {
-                if (badDocuments.renewal_cert_of_reg) {
-                    certContainer.classList.remove('hidden');
-                } else {
-                    certContainer.classList.add('hidden');
-                }
+        ['cert_of_reg_container', 'grade_slip_container', 'brgy_indigency_container'].forEach(id => {
+            const container = document.getElementById(id);
+            if (container) {
+                container.classList.remove('hidden');
+                container.classList.remove('pointer-events-none'); // ensure clickable
             }
+        });
 
-            if (gradeContainer) {
-                if (badDocuments.renewal_grade_slip) {
-                    gradeContainer.classList.remove('hidden');
-                } else {
-                    gradeContainer.classList.add('hidden');
-                }
-            }
+        // Update required attributes and visual states depending on badDocuments flags
+        const certInput = document.getElementById('renewal_cert_of_reg');
+        const gradeInput = document.getElementById('renewal_grade_slip');
+        const brgyInput = document.getElementById('renewal_brgy_indigency');
 
-            if (brgyContainer) {
-                if (badDocuments.renewal_brgy_indigency) {
-                    brgyContainer.classList.remove('hidden');
-                } else {
-                    brgyContainer.classList.add('hidden');
-                }
+        if (certInput) {
+            if (renewalExists) {
+                certInput.required = !!badDocuments.renewal_cert_of_reg;
+            } else {
+                certInput.required = true;
             }
-        } else {
-            // Show all for new application
-            ['cert_of_reg_container', 'grade_slip_container', 'brgy_indigency_container'].forEach(id => {
-                const container = document.getElementById(id);
-                if (container) container.classList.remove('hidden');
-            });
+            // show red border if needs update
+            certInput.classList.toggle('border-red-300', !!badDocuments.renewal_cert_of_reg);
+            certInput.classList.toggle('bg-red-50', !!badDocuments.renewal_cert_of_reg);
         }
+
+        if (gradeInput) {
+            if (renewalExists) {
+                gradeInput.required = !!badDocuments.renewal_grade_slip;
+            } else {
+                gradeInput.required = true;
+            }
+            gradeInput.classList.toggle('border-red-300', !!badDocuments.renewal_grade_slip);
+            gradeInput.classList.toggle('bg-red-50', !!badDocuments.renewal_grade_slip);
+        }
+
+        if (brgyInput) {
+            if (renewalExists) {
+                brgyInput.required = !!badDocuments.renewal_brgy_indigency;
+            } else {
+                brgyInput.required = true;
+            }
+            brgyInput.classList.toggle('border-red-300', !!badDocuments.renewal_brgy_indigency);
+            brgyInput.classList.toggle('bg-red-50', !!badDocuments.renewal_brgy_indigency);
+        }
+
+        // Update submit button and validation state
+        updateSubmitButton();
     }
 
     function updateSubmitButton() {
