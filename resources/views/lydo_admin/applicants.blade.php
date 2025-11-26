@@ -1891,34 +1891,45 @@ function setupLydoPagination() {
                 });
         }
 
-        function viewApplicantIntakeSheet(applicantId, applicantName, status) {
-            showLoadingOverlay();
-            // First get the application personnel ID
-            fetch(`/lydo_admin/get-application-personnel-id/${applicantId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Then get the intake sheet
-                        return fetch(`/lydo_admin/get-intake-sheet/${data.application_personnel_id}`);
-                    } else {
-                        throw new Error(data.message);
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    hideLoadingOverlay();
-                    if (data.success) {
-                        openIntakeSheetModal(applicantName, data.intakeSheet);
-                    } else {
-                        Swal.fire('Error', data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    hideLoadingOverlay();
-                    console.error('Error:', error);
-                    Swal.fire('Error', 'Failed to load application details', 'error');
-                });
-        }
+  function viewApplicantIntakeSheet(applicantId, applicantName, status) {
+    showLoadingOverlay();
+    
+    // Fix: Use the correct route that matches your web.php
+    fetch(`/lydo_admin/get-application-personnel/${applicantId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Then get the intake sheet using the correct route
+                return fetch(`/lydo_admin/intake-sheet/${data.application_personnel_id}`);
+            } else {
+                throw new Error(data.message || 'Failed to get application personnel ID');
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            hideLoadingOverlay();
+            if (data.success) {
+                openIntakeSheetModal(applicantName, data.intakeSheet);
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoadingOverlay();
+            console.error('Error:', error);
+            Swal.fire('Error', 'Failed to load application details: ' + error.message, 'error');
+        });
+}
 
         function openDocumentsModal(applicantName, documents) {
             const modal = document.getElementById('applicationHistoryModal');
