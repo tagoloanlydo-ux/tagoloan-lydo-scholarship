@@ -13,6 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <style>
+    
         input::placeholder, select::placeholder {
             color: black !important;
         }
@@ -895,32 +896,32 @@
                 </div>
 
                 <!-- Intake Sheet Information (for Reviewed status) -->
-                <div id="intakeSheetInfo" class="hidden space-y-8">
+                <div id="intakeSheetInfo" class="hidden flex flex-col space-y-8 w-full">
                     <!-- Head of Family Section -->
-                    <div class="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-100">
+                    <div class="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-100 w-full">
                         <div class="flex items-center mb-4">
                             <div class="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center mr-3">
                                 <i class="fas fa-home text-white"></i>
                             </div>
                             <h3 class="text-xl font-semibold text-gray-800">Head of Family</h3>
                         </div>
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" id="headOfFamilyInfo">
-                            <!-- Head of family info will be populated here -->
-                        </div>
+                    <div id="headOfFamilyInfo" style="width: 100%;">
+                        <!-- Head of family info will be populated here -->
                     </div>
+                </div>
 
-                    <!-- Household Information Section -->
-                    <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-xl border border-amber-100">
-                        <div class="flex items-center mb-4">
-                            <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center mr-3">
-                                <i class="fas fa-house-user text-white"></i>
-                            </div>
-                            <h3 class="text-xl font-semibold text-gray-800">Household Information</h3>
+                <!-- Household Information Section -->
+                <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-xl border border-amber-100 w-full mt-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-house-user text-white"></i>
                         </div>
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="householdInfo">
-                            <!-- Household info will be populated here -->
-                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800">Household Information</h3>
                     </div>
+                    <div id="householdInfo" style="width: 100%;">
+                        <!-- Household info will be populated here -->
+                    </div>
+                </div>
 
                     <!-- Family Members Section -->
                     <div class="bg-gradient-to-r from-rose-50 to-pink-50 p-6 rounded-xl border border-rose-100">
@@ -1001,13 +1002,11 @@
             </div>
         </div>
     </div>
-
-    <!-- JavaScript -->
+     <!-- JavaScript -->
     <script>
         // Tab functionality
         document.addEventListener('DOMContentLoaded', function() {
             // Tab switching
-            
             const tabButtons = document.querySelectorAll('.tab-button');
             const tabContents = document.querySelectorAll('.tab-content');
             
@@ -1059,602 +1058,21 @@
 
             // Make toggleDropdown global
             window.toggleDropdown = toggleDropdown;
+
+            // Initialize modal close event listeners
+            initializeModalEvents();
         });
 
- // Global variables for pagination and data
-let currentPageMayor = 1;
-let currentPageLydo = 1;
-const itemsPerPage = 15;
-let allMayorApplicants = [];
-let allLydoApplicants = [];
-let filteredMayorApplicants = [];
-let filteredLydoApplicants = [];
+        // Global variables for pagination and data
+        let currentPageMayor = 1;
+        let currentPageLydo = 1;
+        const itemsPerPage = 15;
+        let allMayorApplicants = [];
+        let allLydoApplicants = [];
+        let filteredMayorApplicants = [];
+        let filteredLydoApplicants = [];
 
-// Load Mayor Staff Applicants
-async function loadMayorApplicants() {
-    showLoadingOverlay();
-    try {
-        const response = await fetch('/lydo_admin/get-mayor-applicants');
-        const data = await response.json();
-        allMayorApplicants = data.applicants || [];
-        filteredMayorApplicants = [...allMayorApplicants]; // Initialize filtered data
-        currentPageMayor = 1;
-        renderMayorApplicantsTable();
-        setupMayorPagination();
-        setupMayorFilters();
-    } catch (error) {
-        console.error('Error loading mayor applicants:', error);
-    } finally {
-        hideLoadingOverlay();
-    }
-}
-
-// Load LYDO Reviewed Applicants
-async function loadLydoReviewedApplicants() {
-    showLoadingOverlay();
-    try {
-        const response = await fetch('/lydo_admin/get-lydo-reviewed-applicants');
-        const data = await response.json();
-        allLydoApplicants = data.applicants || [];
-        filteredLydoApplicants = [...allLydoApplicants]; // Initialize filtered data
-        currentPageLydo = 1;
-        renderLydoApplicantsTable();
-        setupLydoPagination();
-        setupLydoFilters();
-    } catch (error) {
-        console.error('Error loading LYDO reviewed applicants:', error);
-    } finally {
-        hideLoadingOverlay();
-    }
-}
-
-// Render Mayor Applicants Table - FIXED
-function renderMayorApplicantsTable() {
-    const tableBody = document.getElementById('mayorApplicantsTable');
-    const startIndex = (currentPageMayor - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentItems = filteredMayorApplicants.slice(startIndex, endIndex); // Use filtered data
-
-    if (currentItems.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="9" class="px-4 py-2 text-center text-sm text-gray-500">
-                    No applicants found.
-                </td>
-            </tr>
-        `;
-        return;
-    }
-
-    tableBody.innerHTML = currentItems.map(applicant => `
-        <tr class="hover:bg-gray-50 border-b">
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <input type="checkbox" name="selected_applicants" value="${applicant.applicant_id}" 
-                       class="applicant-checkbox-mayor rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm font-medium text-gray-900">
-                    ${formatName(applicant)}
-                </div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">${applicant.applicant_brgy || 'N/A'}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">${applicant.applicant_email || 'N/A'}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">${applicant.applicant_contact_number || 'N/A'}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">${applicant.applicant_school_name || 'N/A'}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">${applicant.applicant_acad_year || 'N/A'}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="flex gap-2 justify-center">
-                    <button type="button" 
-                            onclick="viewApplicantDocuments('${applicant.applicant_id}', '${escapeString(formatName(applicant))}', '${applicant.initial_screening}')"
-                            class="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow">
-                        <i class="fas fa-file-alt mr-1"></i> View Documents
-                    </button>
-                </div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <span class="px-2 py-1 rounded-full text-xs font-semibold 
-                    ${applicant.initial_screening === 'Approved' ? 'bg-green-100 text-green-800' : 
-                      applicant.initial_screening === 'Rejected' ? 'bg-red-100 text-red-800' : 
-                      'bg-yellow-100 text-yellow-800'}">
-                    ${applicant.initial_screening === 'Approved' ? 'Approved by Mayor' : applicant.initial_screening || 'Pending'}
-                </span>
-            </td>
-        </tr>
-    `).join('');
-
-    setupMayorCheckboxes();
-}
-
-// Render LYDO Reviewed Applicants Table - FIXED
-function renderLydoApplicantsTable() {
-    const tableBody = document.getElementById('lydoApplicantsTable');
-    const startIndex = (currentPageLydo - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentItems = filteredLydoApplicants.slice(startIndex, endIndex); // Use filtered data
-
-    if (currentItems.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="9" class="px-4 py-2 text-center text-sm text-gray-500">
-                    No applicants found.
-                </td>
-            </tr>
-        `;
-        return;
-    }
-
-    tableBody.innerHTML = currentItems.map(applicant => `
-        <tr class="hover:bg-gray-50 border-b">
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <input type="checkbox" name="selected_applicants" value="${applicant.applicant_id}" 
-                       class="applicant-checkbox-lydo rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm font-medium text-gray-900">
-                    ${formatName(applicant)}
-                </div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">${applicant.applicant_brgy || 'N/A'}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">${applicant.applicant_email || 'N/A'}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">${applicant.applicant_contact_number || 'N/A'}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">${applicant.applicant_school_name || 'N/A'}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="text-sm text-gray-900">${applicant.applicant_acad_year || 'N/A'}</div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <div class="flex gap-2 justify-center">
-                    <button type="button" 
-                            onclick="viewApplicantIntakeSheet('${applicant.applicant_id}', '${escapeString(formatName(applicant))}', '${applicant.initial_screening}')"
-                            class="px-3 py-1 text-sm bg-purple-500 hover:bg-purple-600 text-white rounded-lg shadow">
-                        <i class="fas fa-clipboard-list mr-1"></i> View Application
-                    </button>
-                </div>
-            </td>
-            <td class="px-4 border border-gray-200 py-2 text-center">
-                <span class="px-2 py-1 rounded-full text-xs font-semibold 
-                    ${applicant.remarks === 'Poor' ? 'bg-orange-100 text-orange-800' : 
-                      applicant.remarks === 'Non-Poor' ? 'bg-green-100 text-green-800' : 
-                      applicant.remarks === 'Ultra Poor' ? 'bg-red-100 text-red-800' : 
-                      'bg-gray-100 text-gray-800'}">
-                    ${applicant.remarks || 'Not Specified'}
-                </span>
-            </td>
-        </tr>
-    `).join('');
-
-    setupLydoCheckboxes();
-}
-
-// Filter setup for Mayor Applicants - FIXED
-function setupMayorFilters() {
-    const searchInput = document.getElementById('searchInputMayor');
-    const barangaySelect = document.getElementById('barangaySelectMayor');
-    const academicYearSelect = document.getElementById('academicYearSelectMayor');
-    const initialScreeningSelect = document.getElementById('initialScreeningSelectMayor');
-
-  // In your setupMayorFilters function, enhance the filtering logic:
-const applyFilters = () => {
-    const searchTerm = searchInput.value.toLowerCase();
-    const barangayFilter = barangaySelect.value;
-    const academicYearFilter = academicYearSelect.value;
-    const screeningFilter = initialScreeningSelect.value;
-
-    filteredMayorApplicants = allMayorApplicants.filter(applicant => {
-        const matchesSearch = !searchTerm || 
-            formatName(applicant).toLowerCase().includes(searchTerm) ||
-            (applicant.applicant_email && applicant.applicant_email.toLowerCase().includes(searchTerm)) ||
-            (applicant.applicant_school_name && applicant.applicant_school_name.toLowerCase().includes(searchTerm));
-        
-        const matchesBarangay = !barangayFilter || applicant.applicant_brgy === barangayFilter;
-        const matchesAcademicYear = !academicYearFilter || applicant.applicant_acad_year === academicYearFilter;
-        
-        // Enhanced status filtering
-        let matchesScreening = true;
-        if (screeningFilter === 'Approved') {
-            matchesScreening = applicant.initial_screening === 'Approved';
-        } else if (screeningFilter === 'Rejected') {
-            matchesScreening = applicant.initial_screening === 'Rejected';
-        } else if (screeningFilter === 'Pending') {
-            matchesScreening = !applicant.initial_screening || applicant.initial_screening === 'Pending';
-        }
-        // 'all' returns all applicants
-
-        return matchesSearch && matchesBarangay && matchesAcademicYear && matchesScreening;
-    });
-
-    currentPageMayor = 1;
-    renderMayorApplicantsTable();
-    setupMayorPagination();
-};
-
-function updateApprovedCount() {
-    const approvedCount = allMayorApplicants.filter(applicant => 
-        applicant.initial_screening === 'Approved'
-    ).length;
-    
-    const approvedTabButton = document.querySelector('[data-tab="mayor-applicants"]');
-    if (approvedTabButton) {
-        const existingBadge = approvedTabButton.querySelector('.approved-badge');
-        if (existingBadge) {
-            existingBadge.remove();
-        }
-        
-        if (approvedCount > 0) {
-            const badge = document.createElement('span');
-            badge.className = 'approved-badge ml-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full';
-            badge.textContent = approvedCount;
-            approvedTabButton.appendChild(badge);
-        }
-    }
-}
-
-// Call this after loading mayor applicants
-async function loadMayorApplicants() {
-    showLoadingOverlay();
-    try {
-        const response = await fetch('/lydo_admin/get-mayor-applicants');
-        const data = await response.json();
-        allMayorApplicants = data.applicants || [];
-        filteredMayorApplicants = [...allMayorApplicants];
-        currentPageMayor = 1;
-        renderMayorApplicantsTable();
-        setupMayorPagination();
-        setupMayorFilters();
-        updateApprovedCount(); // Add this line
-    } catch (error) {
-        console.error('Error loading mayor applicants:', error);
-    } finally {
-        hideLoadingOverlay();
-    }
-}
-    searchInput.addEventListener('input', debounce(applyFilters, 300));
-    barangaySelect.addEventListener('change', applyFilters);
-    academicYearSelect.addEventListener('change', applyFilters);
-    initialScreeningSelect.addEventListener('change', applyFilters);
-}
-
-// Filter setup for LYDO Reviewed Applicants - FIXED
-function setupLydoFilters() {
-    const searchInput = document.getElementById('searchInputLydo');
-    const barangaySelect = document.getElementById('barangaySelectLydo');
-    const academicYearSelect = document.getElementById('academicYearSelectLydo');
-    const remarksSelect = document.getElementById('remarksSelectLydo');
-
-    const applyFilters = () => {
-        const searchTerm = searchInput.value.toLowerCase();
-        const barangayFilter = barangaySelect.value;
-        const academicYearFilter = academicYearSelect.value;
-        const remarksFilter = remarksSelect.value;
-
-        filteredLydoApplicants = allLydoApplicants.filter(applicant => {
-            const matchesSearch = !searchTerm || 
-                formatName(applicant).toLowerCase().includes(searchTerm) ||
-                (applicant.applicant_email && applicant.applicant_email.toLowerCase().includes(searchTerm)) ||
-                (applicant.applicant_school_name && applicant.applicant_school_name.toLowerCase().includes(searchTerm));
-            
-            const matchesBarangay = !barangayFilter || applicant.applicant_brgy === barangayFilter;
-            const matchesAcademicYear = !academicYearFilter || applicant.applicant_acad_year === academicYearFilter;
-            const matchesRemarks = !remarksFilter || applicant.remarks === remarksFilter;
-
-            return matchesSearch && matchesBarangay && matchesAcademicYear && matchesRemarks;
-        });
-
-        currentPageLydo = 1;
-        renderLydoApplicantsTable();
-        setupLydoPagination();
-    };
-
-    searchInput.addEventListener('input', debounce(applyFilters, 300));
-    barangaySelect.addEventListener('change', applyFilters);
-    academicYearSelect.addEventListener('change', applyFilters);
-    remarksSelect.addEventListener('change', applyFilters);
-}
-
-// Pagination setup for Mayor Applicants - FIXED
-function setupMayorPagination() {
-    const totalPages = Math.ceil(filteredMayorApplicants.length / itemsPerPage); // Use filtered data
-    document.getElementById('totalPagesMayor').textContent = totalPages;
-    document.getElementById('paginationInfoMayor').textContent = `Showing page ${currentPageMayor} of ${totalPages}`;
-    
-    document.getElementById('prevPageMayor').disabled = currentPageMayor === 1;
-    document.getElementById('nextPageMayor').disabled = currentPageMayor === totalPages || totalPages === 0;
-
-    // Event listeners
-    document.getElementById('prevPageMayor').onclick = () => {
-        if (currentPageMayor > 1) {
-            currentPageMayor--;
-            renderMayorApplicantsTable();
-            setupMayorPagination();
-        }
-    };
-
-    document.getElementById('nextPageMayor').onclick = () => {
-        if (currentPageMayor < totalPages) {
-            currentPageMayor++;
-            renderMayorApplicantsTable();
-            setupMayorPagination();
-        }
-    };
-
-    document.getElementById('currentPageMayor').onchange = (e) => {
-        const page = parseInt(e.target.value);
-        if (page >= 1 && page <= totalPages) {
-            currentPageMayor = page;
-            renderMayorApplicantsTable();
-            setupMayorPagination();
-        } else {
-            e.target.value = currentPageMayor;
-        }
-    };
-}
-
-// Pagination setup for LYDO Reviewed Applicants - FIXED
-function setupLydoPagination() {
-    const totalPages = Math.ceil(filteredLydoApplicants.length / itemsPerPage); // Use filtered data
-    document.getElementById('totalPagesLydo').textContent = totalPages;
-    document.getElementById('paginationInfoLydo').textContent = `Showing page ${currentPageLydo} of ${totalPages}`;
-    
-    document.getElementById('prevPageLydo').disabled = currentPageLydo === 1;
-    document.getElementById('nextPageLydo').disabled = currentPageLydo === totalPages || totalPages === 0;
-
-    // Event listeners
-    document.getElementById('prevPageLydo').onclick = () => {
-        if (currentPageLydo > 1) {
-            currentPageLydo--;
-            renderLydoApplicantsTable();
-            setupLydoPagination();
-        }
-    };
-
-    document.getElementById('nextPageLydo').onclick = () => {
-        if (currentPageLydo < totalPages) {
-            currentPageLydo++;
-            renderLydoApplicantsTable();
-            setupLydoPagination();
-        }
-    };
-
-    document.getElementById('currentPageLydo').onchange = (e) => {
-        const page = parseInt(e.target.value);
-        if (page >= 1 && page <= totalPages) {
-            currentPageLydo = page;
-            renderLydoApplicantsTable();
-            setupLydoPagination();
-        } else {
-            e.target.value = currentPageLydo;
-        }
-    };
-}
-
-        // Checkbox setup functions - FIXED SELECT ALL FUNCTIONALITY
-        function setupMayorCheckboxes() {
-            const selectAll = document.getElementById('selectAllMayor');
-            const checkboxes = document.querySelectorAll('.applicant-checkbox-mayor');
-            const copyBtn = document.getElementById('copyNamesBtnMayor');
-            const emailBtn = document.getElementById('emailSelectedBtnMayor');
-            const smsBtn = document.getElementById('smsSelectedBtnMayor');
-
-            // NEW: Select All functionality that works across all pages
-            selectAll.addEventListener('change', (e) => {
-                const isChecked = e.target.checked;
-                
-                // Update all checkboxes on current page
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                });
-                
-                // NEW: Store selection state for all filtered applicants
-                if (isChecked) {
-                    // Select all filtered applicants across all pages
-                    filteredMayorApplicants.forEach(applicant => {
-                        applicant.selected = true;
-                    });
-                } else {
-                    // Deselect all filtered applicants across all pages
-                    filteredMayorApplicants.forEach(applicant => {
-                        applicant.selected = false;
-                    });
-                }
-                
-                updateButtonVisibility('mayor');
-            });
-
-            // Update individual checkbox state
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', () => {
-                    const applicantId = checkbox.value;
-                    const applicant = filteredMayorApplicants.find(app => app.applicant_id == applicantId);
-                    if (applicant) {
-                        applicant.selected = checkbox.checked;
-                    }
-                    updateButtonVisibility('mayor');
-                    updateSelectAllCheckbox('mayor');
-                });
-            });
-
-            copyBtn.addEventListener('click', () => copySelectedNames('mayor'));
-            emailBtn.addEventListener('click', () => openEmailModal('mayor'));
-            smsBtn.addEventListener('click', () => openSmsModal('mayor'));
-        }
-
-        function setupLydoCheckboxes() {
-            const selectAll = document.getElementById('selectAllLydo');
-            const checkboxes = document.querySelectorAll('.applicant-checkbox-lydo');
-            const copyBtn = document.getElementById('copyNamesBtnLydo');
-            const emailBtn = document.getElementById('emailSelectedBtnLydo');
-            const smsBtn = document.getElementById('smsSelectedBtnLydo');
-
-            // NEW: Select All functionality that works across all pages
-            selectAll.addEventListener('change', (e) => {
-                const isChecked = e.target.checked;
-                
-                // Update all checkboxes on current page
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                });
-                
-                // NEW: Store selection state for all filtered applicants
-                if (isChecked) {
-                    // Select all filtered applicants across all pages
-                    filteredLydoApplicants.forEach(applicant => {
-                        applicant.selected = true;
-                    });
-                } else {
-                    // Deselect all filtered applicants across all pages
-                    filteredLydoApplicants.forEach(applicant => {
-                        applicant.selected = false;
-                    });
-                }
-                
-                updateButtonVisibility('lydo');
-            });
-
-            // Update individual checkbox state
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', () => {
-                    const applicantId = checkbox.value;
-                    const applicant = filteredLydoApplicants.find(app => app.applicant_id == applicantId);
-                    if (applicant) {
-                        applicant.selected = checkbox.checked;
-                    }
-                    updateButtonVisibility('lydo');
-                    updateSelectAllCheckbox('lydo');
-                });
-            });
-
-            copyBtn.addEventListener('click', () => copySelectedNames('lydo'));
-            emailBtn.addEventListener('click', () => openEmailModal('lydo'));
-            smsBtn.addEventListener('click', () => openSmsModal('lydo'));
-        }
-
-        // NEW: Update Select All checkbox state based on current selections
-        function updateSelectAllCheckbox(tab) {
-            const selectAll = document.getElementById(`selectAll${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
-            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
-            
-            if (filteredApplicants.length === 0) {
-                selectAll.checked = false;
-                selectAll.indeterminate = false;
-                return;
-            }
-            
-            const selectedCount = filteredApplicants.filter(applicant => applicant.selected).length;
-            
-            if (selectedCount === 0) {
-                selectAll.checked = false;
-                selectAll.indeterminate = false;
-            } else if (selectedCount === filteredApplicants.length) {
-                selectAll.checked = true;
-                selectAll.indeterminate = false;
-            } else {
-                selectAll.checked = false;
-                selectAll.indeterminate = true;
-            }
-        }
-
-        // UPDATED: Button visibility function to check across all filtered applicants
-        function updateButtonVisibility(tab) {
-            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
-            const hasSelection = filteredApplicants.some(applicant => applicant.selected);
-            
-            const copyBtn = document.getElementById(`copyNamesBtn${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
-            const emailBtn = document.getElementById(`emailSelectedBtn${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
-            const smsBtn = document.getElementById(`smsSelectedBtn${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
-
-            [copyBtn, emailBtn, smsBtn].forEach(btn => {
-                if (btn) {
-                    btn.classList.toggle('hidden', !hasSelection);
-                    btn.disabled = !hasSelection;
-                }
-            });
-        }
-
-        // UPDATED: Copy names function to get all selected applicants across pages
-        function copySelectedNames(tab) {
-            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
-            const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
-            
-            if (selectedApplicants.length === 0) {
-                Swal.fire('Error', 'No applicants selected', 'error');
-                return;
-            }
-
-            const names = selectedApplicants.map(applicant => formatName(applicant));
-
-            if (names.length > 0) {
-                navigator.clipboard.writeText(names.join(', '))
-                    .then(() => {
-                        Swal.fire('Success', `${names.length} names copied to clipboard!`, 'success');
-                    })
-                    .catch(() => {
-                        Swal.fire('Error', 'Failed to copy names', 'error');
-                    });
-            }
-        }
-
-        // UPDATED: Email modal to show all selected applicants across pages
-        function openEmailModal(tab) {
-            const modal = document.getElementById('emailModal');
-            const preview = document.getElementById('recipientsPreview');
-
-            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
-            const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
-            
-            if (selectedApplicants.length === 0) {
-                preview.textContent = 'No recipients selected';
-            } else {
-                const items = selectedApplicants.map(applicant => {
-                    const name = formatName(applicant);
-                    const email = applicant.applicant_email || 'N/A';
-                    return `<div class="mb-1"><strong>${escapeHtml(name)}</strong> — ${escapeHtml(email)}</div>`;
-                }).join('');
-                preview.innerHTML = `<div class="mb-2 text-sm font-semibold">Selected: ${selectedApplicants.length} applicants</div>${items}`;
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        // UPDATED: SMS modal to show all selected applicants across pages
-        function openSmsModal(tab) {
-            const modal = document.getElementById('smsModal');
-            const preview = document.getElementById('smsRecipientsPreview');
-
-            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
-            const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
-            
-            if (selectedApplicants.length === 0) {
-                preview.textContent = 'No recipients selected';
-            } else {
-                const items = selectedApplicants.map(applicant => {
-                    const name = formatName(applicant);
-                    const phone = applicant.applicant_contact_number || 'N/A';
-                    return `<div class="mb-1"><strong>${escapeHtml(name)}</strong> — ${escapeHtml(phone)}</div>`;
-                }).join('');
-                preview.innerHTML = `<div class="mb-2 text-sm font-semibold">Selected: ${selectedApplicants.length} applicants</div>${items}`;
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        // UPDATED: Initialize selection state when loading data
+        // Load Mayor Staff Applicants
         async function loadMayorApplicants() {
             showLoadingOverlay();
             try {
@@ -1670,6 +1088,7 @@ function setupLydoPagination() {
                 renderMayorApplicantsTable();
                 setupMayorPagination();
                 setupMayorFilters();
+                updateApprovedCount();
             } catch (error) {
                 console.error('Error loading mayor applicants:', error);
             } finally {
@@ -1677,6 +1096,7 @@ function setupLydoPagination() {
             }
         }
 
+        // Load LYDO Reviewed Applicants
         async function loadLydoReviewedApplicants() {
             showLoadingOverlay();
             try {
@@ -1699,7 +1119,7 @@ function setupLydoPagination() {
             }
         }
 
-        // UPDATED: Render functions to maintain checkbox state
+        // Render Mayor Applicants Table
         function renderMayorApplicantsTable() {
             const tableBody = document.getElementById('mayorApplicantsTable');
             const startIndex = (currentPageMayor - 1) * itemsPerPage;
@@ -1768,6 +1188,7 @@ function setupLydoPagination() {
             updateSelectAllCheckbox('mayor');
         }
 
+        // Render LYDO Reviewed Applicants Table
         function renderLydoApplicantsTable() {
             const tableBody = document.getElementById('lydoApplicantsTable');
             const startIndex = (currentPageLydo - 1) * itemsPerPage;
@@ -1837,6 +1258,360 @@ function setupLydoPagination() {
             updateSelectAllCheckbox('lydo');
         }
 
+        // Filter setup for Mayor Applicants
+        function setupMayorFilters() {
+            const searchInput = document.getElementById('searchInputMayor');
+            const barangaySelect = document.getElementById('barangaySelectMayor');
+            const academicYearSelect = document.getElementById('academicYearSelectMayor');
+            const initialScreeningSelect = document.getElementById('initialScreeningSelectMayor');
+
+            const applyFilters = () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                const barangayFilter = barangaySelect.value;
+                const academicYearFilter = academicYearSelect.value;
+                const screeningFilter = initialScreeningSelect.value;
+
+                filteredMayorApplicants = allMayorApplicants.filter(applicant => {
+                    const matchesSearch = !searchTerm || 
+                        formatName(applicant).toLowerCase().includes(searchTerm) ||
+                        (applicant.applicant_email && applicant.applicant_email.toLowerCase().includes(searchTerm)) ||
+                        (applicant.applicant_school_name && applicant.applicant_school_name.toLowerCase().includes(searchTerm));
+                    
+                    const matchesBarangay = !barangayFilter || applicant.applicant_brgy === barangayFilter;
+                    const matchesAcademicYear = !academicYearFilter || applicant.applicant_acad_year === academicYearFilter;
+                    
+                    let matchesScreening = true;
+                    if (screeningFilter === 'Approved') {
+                        matchesScreening = applicant.initial_screening === 'Approved';
+                    } else if (screeningFilter === 'Rejected') {
+                        matchesScreening = applicant.initial_screening === 'Rejected';
+                    } else if (screeningFilter === 'Pending') {
+                        matchesScreening = !applicant.initial_screening || applicant.initial_screening === 'Pending';
+                    }
+
+                    return matchesSearch && matchesBarangay && matchesAcademicYear && matchesScreening;
+                });
+
+                currentPageMayor = 1;
+                renderMayorApplicantsTable();
+                setupMayorPagination();
+            };
+
+            searchInput.addEventListener('input', debounce(applyFilters, 300));
+            barangaySelect.addEventListener('change', applyFilters);
+            academicYearSelect.addEventListener('change', applyFilters);
+            initialScreeningSelect.addEventListener('change', applyFilters);
+        }
+
+        // Filter setup for LYDO Reviewed Applicants
+        function setupLydoFilters() {
+            const searchInput = document.getElementById('searchInputLydo');
+            const barangaySelect = document.getElementById('barangaySelectLydo');
+            const academicYearSelect = document.getElementById('academicYearSelectLydo');
+            const remarksSelect = document.getElementById('remarksSelectLydo');
+
+            const applyFilters = () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                const barangayFilter = barangaySelect.value;
+                const academicYearFilter = academicYearSelect.value;
+                const remarksFilter = remarksSelect.value;
+
+                filteredLydoApplicants = allLydoApplicants.filter(applicant => {
+                    const matchesSearch = !searchTerm || 
+                        formatName(applicant).toLowerCase().includes(searchTerm) ||
+                        (applicant.applicant_email && applicant.applicant_email.toLowerCase().includes(searchTerm)) ||
+                        (applicant.applicant_school_name && applicant.applicant_school_name.toLowerCase().includes(searchTerm));
+                    
+                    const matchesBarangay = !barangayFilter || applicant.applicant_brgy === barangayFilter;
+                    const matchesAcademicYear = !academicYearFilter || applicant.applicant_acad_year === academicYearFilter;
+                    const matchesRemarks = !remarksFilter || applicant.remarks === remarksFilter;
+
+                    return matchesSearch && matchesBarangay && matchesAcademicYear && matchesRemarks;
+                });
+
+                currentPageLydo = 1;
+                renderLydoApplicantsTable();
+                setupLydoPagination();
+            };
+
+            searchInput.addEventListener('input', debounce(applyFilters, 300));
+            barangaySelect.addEventListener('change', applyFilters);
+            academicYearSelect.addEventListener('change', applyFilters);
+            remarksSelect.addEventListener('change', applyFilters);
+        }
+
+        // Pagination setup for Mayor Applicants
+        function setupMayorPagination() {
+            const totalPages = Math.ceil(filteredMayorApplicants.length / itemsPerPage);
+            document.getElementById('totalPagesMayor').textContent = totalPages;
+            document.getElementById('paginationInfoMayor').textContent = `Showing page ${currentPageMayor} of ${totalPages}`;
+            
+            document.getElementById('prevPageMayor').disabled = currentPageMayor === 1;
+            document.getElementById('nextPageMayor').disabled = currentPageMayor === totalPages || totalPages === 0;
+
+            document.getElementById('prevPageMayor').onclick = () => {
+                if (currentPageMayor > 1) {
+                    currentPageMayor--;
+                    renderMayorApplicantsTable();
+                    setupMayorPagination();
+                }
+            };
+
+            document.getElementById('nextPageMayor').onclick = () => {
+                if (currentPageMayor < totalPages) {
+                    currentPageMayor++;
+                    renderMayorApplicantsTable();
+                    setupMayorPagination();
+                }
+            };
+
+            document.getElementById('currentPageMayor').onchange = (e) => {
+                const page = parseInt(e.target.value);
+                if (page >= 1 && page <= totalPages) {
+                    currentPageMayor = page;
+                    renderMayorApplicantsTable();
+                    setupMayorPagination();
+                } else {
+                    e.target.value = currentPageMayor;
+                }
+            };
+        }
+
+        // Pagination setup for LYDO Reviewed Applicants
+        function setupLydoPagination() {
+            const totalPages = Math.ceil(filteredLydoApplicants.length / itemsPerPage);
+            document.getElementById('totalPagesLydo').textContent = totalPages;
+            document.getElementById('paginationInfoLydo').textContent = `Showing page ${currentPageLydo} of ${totalPages}`;
+            
+            document.getElementById('prevPageLydo').disabled = currentPageLydo === 1;
+            document.getElementById('nextPageLydo').disabled = currentPageLydo === totalPages || totalPages === 0;
+
+            document.getElementById('prevPageLydo').onclick = () => {
+                if (currentPageLydo > 1) {
+                    currentPageLydo--;
+                    renderLydoApplicantsTable();
+                    setupLydoPagination();
+                }
+            };
+
+            document.getElementById('nextPageLydo').onclick = () => {
+                if (currentPageLydo < totalPages) {
+                    currentPageLydo++;
+                    renderLydoApplicantsTable();
+                    setupLydoPagination();
+                }
+            };
+
+            document.getElementById('currentPageLydo').onchange = (e) => {
+                const page = parseInt(e.target.value);
+                if (page >= 1 && page <= totalPages) {
+                    currentPageLydo = page;
+                    renderLydoApplicantsTable();
+                    setupLydoPagination();
+                } else {
+                    e.target.value = currentPageLydo;
+                }
+            };
+        }
+
+        // Checkbox setup functions
+        function setupMayorCheckboxes() {
+            const selectAll = document.getElementById('selectAllMayor');
+            const checkboxes = document.querySelectorAll('.applicant-checkbox-mayor');
+            const copyBtn = document.getElementById('copyNamesBtnMayor');
+            const emailBtn = document.getElementById('emailSelectedBtnMayor');
+            const smsBtn = document.getElementById('smsSelectedBtnMayor');
+
+            selectAll.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+                
+                if (isChecked) {
+                    filteredMayorApplicants.forEach(applicant => {
+                        applicant.selected = true;
+                    });
+                } else {
+                    filteredMayorApplicants.forEach(applicant => {
+                        applicant.selected = false;
+                    });
+                }
+                
+                updateButtonVisibility('mayor');
+            });
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    const applicantId = checkbox.value;
+                    const applicant = filteredMayorApplicants.find(app => app.applicant_id == applicantId);
+                    if (applicant) {
+                        applicant.selected = checkbox.checked;
+                    }
+                    updateButtonVisibility('mayor');
+                    updateSelectAllCheckbox('mayor');
+                });
+            });
+
+            copyBtn.addEventListener('click', () => copySelectedNames('mayor'));
+            emailBtn.addEventListener('click', () => openEmailModal('mayor'));
+            smsBtn.addEventListener('click', () => openSmsModal('mayor'));
+        }
+
+        function setupLydoCheckboxes() {
+            const selectAll = document.getElementById('selectAllLydo');
+            const checkboxes = document.querySelectorAll('.applicant-checkbox-lydo');
+            const copyBtn = document.getElementById('copyNamesBtnLydo');
+            const emailBtn = document.getElementById('emailSelectedBtnLydo');
+            const smsBtn = document.getElementById('smsSelectedBtnLydo');
+
+            selectAll.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+                
+                if (isChecked) {
+                    filteredLydoApplicants.forEach(applicant => {
+                        applicant.selected = true;
+                    });
+                } else {
+                    filteredLydoApplicants.forEach(applicant => {
+                        applicant.selected = false;
+                    });
+                }
+                
+                updateButtonVisibility('lydo');
+            });
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    const applicantId = checkbox.value;
+                    const applicant = filteredLydoApplicants.find(app => app.applicant_id == applicantId);
+                    if (applicant) {
+                        applicant.selected = checkbox.checked;
+                    }
+                    updateButtonVisibility('lydo');
+                    updateSelectAllCheckbox('lydo');
+                });
+            });
+
+            copyBtn.addEventListener('click', () => copySelectedNames('lydo'));
+            emailBtn.addEventListener('click', () => openEmailModal('lydo'));
+            smsBtn.addEventListener('click', () => openSmsModal('lydo'));
+        }
+
+        // Update Select All checkbox state
+        function updateSelectAllCheckbox(tab) {
+            const selectAll = document.getElementById(`selectAll${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
+            
+            if (filteredApplicants.length === 0) {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+                return;
+            }
+            
+            const selectedCount = filteredApplicants.filter(applicant => applicant.selected).length;
+            
+            if (selectedCount === 0) {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            } else if (selectedCount === filteredApplicants.length) {
+                selectAll.checked = true;
+                selectAll.indeterminate = false;
+            } else {
+                selectAll.checked = false;
+                selectAll.indeterminate = true;
+            }
+        }
+
+        // Button visibility function
+        function updateButtonVisibility(tab) {
+            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
+            const hasSelection = filteredApplicants.some(applicant => applicant.selected);
+            
+            const copyBtn = document.getElementById(`copyNamesBtn${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+            const emailBtn = document.getElementById(`emailSelectedBtn${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+            const smsBtn = document.getElementById(`smsSelectedBtn${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+
+            [copyBtn, emailBtn, smsBtn].forEach(btn => {
+                if (btn) {
+                    btn.classList.toggle('hidden', !hasSelection);
+                    btn.disabled = !hasSelection;
+                }
+            });
+        }
+
+        // Copy names function
+        function copySelectedNames(tab) {
+            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
+            const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
+            
+            if (selectedApplicants.length === 0) {
+                Swal.fire('Error', 'No applicants selected', 'error');
+                return;
+            }
+
+            const names = selectedApplicants.map(applicant => formatName(applicant));
+
+            if (names.length > 0) {
+                navigator.clipboard.writeText(names.join(', '))
+                    .then(() => {
+                        Swal.fire('Success', `${names.length} names copied to clipboard!`, 'success');
+                    })
+                    .catch(() => {
+                        Swal.fire('Error', 'Failed to copy names', 'error');
+                    });
+            }
+        }
+
+        // Email modal
+        function openEmailModal(tab) {
+            const modal = document.getElementById('emailModal');
+            const preview = document.getElementById('recipientsPreview');
+
+            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
+            const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
+            
+            if (selectedApplicants.length === 0) {
+                preview.textContent = 'No recipients selected';
+            } else {
+                const items = selectedApplicants.map(applicant => {
+                    const name = formatName(applicant);
+                    const email = applicant.applicant_email || 'N/A';
+                    return `<div class="mb-1"><strong>${escapeHtml(name)}</strong> — ${escapeHtml(email)}</div>`;
+                }).join('');
+                preview.innerHTML = `<div class="mb-2 text-sm font-semibold">Selected: ${selectedApplicants.length} applicants</div>${items}`;
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        // SMS modal
+        function openSmsModal(tab) {
+            const modal = document.getElementById('smsModal');
+            const preview = document.getElementById('smsRecipientsPreview');
+
+            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
+            const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
+            
+            if (selectedApplicants.length === 0) {
+                preview.textContent = 'No recipients selected';
+            } else {
+                const items = selectedApplicants.map(applicant => {
+                    const name = formatName(applicant);
+                    const phone = applicant.applicant_contact_number || 'N/A';
+                    return `<div class="mb-1"><strong>${escapeHtml(name)}</strong> — ${escapeHtml(phone)}</div>`;
+                }).join('');
+                preview.innerHTML = `<div class="mb-2 text-sm font-semibold">Selected: ${selectedApplicants.length} applicants</div>${items}`;
+            }
+
+            modal.classList.remove('hidden');
+        }
+
         // Helper functions
         function formatName(applicant) {
             let name = '';
@@ -1859,6 +1634,12 @@ function setupLydoPagination() {
             return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
         }
 
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -1871,66 +1652,97 @@ function setupLydoPagination() {
             };
         }
 
-        // Modal functions
+        function updateApprovedCount() {
+            const approvedCount = allMayorApplicants.filter(applicant => 
+                applicant.initial_screening === 'Approved'
+            ).length;
+            
+            const approvedTabButton = document.querySelector('[data-tab="mayor-applicants"]');
+            if (approvedTabButton) {
+                const existingBadge = approvedTabButton.querySelector('.approved-badge');
+                if (existingBadge) {
+                    existingBadge.remove();
+                }
+                
+                if (approvedCount > 0) {
+                    const badge = document.createElement('span');
+                    badge.className = 'approved-badge ml-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full';
+                    badge.textContent = approvedCount;
+                    approvedTabButton.appendChild(badge);
+                }
+            }
+        }
+
+        // FIXED: Modal functions for View Documents and View Application
         function viewApplicantDocuments(applicantId, applicantName, status) {
             showLoadingOverlay();
-            fetch(`/lydo_admin/get-applicant-documents/${applicantId}`)
-                .then(response => response.json())
+            console.log('Loading documents for applicant:', applicantId);
+            
+            fetch(`/lydo_admin/applicant-documents/${applicantId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     hideLoadingOverlay();
+                    console.log('Documents response:', data);
                     if (data.success) {
                         openDocumentsModal(applicantName, data.documents);
                     } else {
-                        Swal.fire('Error', data.message, 'error');
+                        Swal.fire('Error', data.message || 'Failed to load documents', 'error');
                     }
                 })
                 .catch(error => {
                     hideLoadingOverlay();
-                    console.error('Error:', error);
-                    Swal.fire('Error', 'Failed to load documents', 'error');
+                    console.error('Error loading documents:', error);
+                    Swal.fire('Error', 'Failed to load documents: ' + error.message, 'error');
                 });
         }
 
-  function viewApplicantIntakeSheet(applicantId, applicantName, status) {
-    showLoadingOverlay();
-    
-    // Fix: Use the correct route that matches your web.php
-    fetch(`/lydo_admin/get-application-personnel/${applicantId}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Then get the intake sheet using the correct route
-                return fetch(`/lydo_admin/intake-sheet/${data.application_personnel_id}`);
-            } else {
-                throw new Error(data.message || 'Failed to get application personnel ID');
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            hideLoadingOverlay();
-            if (data.success) {
-                openIntakeSheetModal(applicantName, data.intakeSheet);
-            } else {
-                Swal.fire('Error', data.message, 'error');
-            }
-        })
-        .catch(error => {
-            hideLoadingOverlay();
-            console.error('Error:', error);
-            Swal.fire('Error', 'Failed to load application details: ' + error.message, 'error');
-        });
-}
+        function viewApplicantIntakeSheet(applicantId, applicantName, status) {
+            showLoadingOverlay();
+            console.log('Loading intake sheet for applicant:', applicantId);
+            
+            fetch(`/lydo_admin/get-application-personnel/${applicantId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Application personnel response:', data);
+                    if (data.success) {
+                        return fetch(`/lydo_admin/intake-sheet/${data.application_personnel_id}`);
+                    } else {
+                        throw new Error(data.message || 'Failed to get application personnel ID');
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    hideLoadingOverlay();
+                    console.log('Intake sheet response:', data);
+                    if (data.success) {
+                        openIntakeSheetModal(applicantName, data.intakeSheet);
+                    } else {
+                        Swal.fire('Error', data.message || 'Failed to load intake sheet', 'error');
+                    }
+                })
+                .catch(error => {
+                    hideLoadingOverlay();
+                    console.error('Error loading intake sheet:', error);
+                    Swal.fire('Error', 'Failed to load application details: ' + error.message, 'error');
+                });
+        }
 
+        // Modal for View Documents (5 DOCUMENTS ONLY)
         function openDocumentsModal(applicantName, documents) {
             const modal = document.getElementById('applicationHistoryModal');
             const modalTitle = document.getElementById('modalTitle');
@@ -1938,8 +1750,9 @@ function setupLydoPagination() {
             const documentsContainer = document.getElementById('documentsContainer');
             const intakeSheetInfo = document.getElementById('intakeSheetInfo');
 
+            // Set modal content - DOCUMENTS ONLY
             modalTitle.textContent = `Documents - ${applicantName}`;
-            intakeSheetInfo.classList.add('hidden');
+            intakeSheetInfo.classList.add('hidden'); // Hide intake sheet section
 
             // Set basic info
             applicantBasicInfo.innerHTML = `
@@ -1949,63 +1762,94 @@ function setupLydoPagination() {
                 </div>
             `;
 
-            // Set documents
-            documentsContainer.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    ${documents.doc_application_letter ? `
-                        <div class="bg-white p-4 rounded-lg border border-gray-200">
-                            <h4 class="font-semibold text-gray-800 mb-2">Application Letter</h4>
-                            <a href="${documents.doc_application_letter}" target="_blank" 
-                               class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                                <i class="fas fa-eye mr-2"></i> View Document
-                            </a>
-                        </div>
-                    ` : ''}
-                    ${documents.doc_cert_reg ? `
-                        <div class="bg-white p-4 rounded-lg border border-gray-200">
-                            <h4 class="font-semibold text-gray-800 mb-2">Certificate of Registration</h4>
-                            <a href="${documents.doc_cert_reg}" target="_blank" 
-                               class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                                <i class="fas fa-eye mr-2"></i> View Document
-                            </a>
-                        </div>
-                    ` : ''}
-                    ${documents.doc_grade_slip ? `
-                        <div class="bg-white p-4 rounded-lg border border-gray-200">
-                            <h4 class="font-semibold text-gray-800 mb-2">Grade Slip</h4>
-                            <a href="${documents.doc_grade_slip}" target="_blank" 
-                               class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                                <i class="fas fa-eye mr-2"></i> View Document
-                            </a>
-                        </div>
-                    ` : ''}
-                    ${documents.doc_brgy_indigency ? `
-                        <div class="bg-white p-4 rounded-lg border border-gray-200">
-                            <h4 class="font-semibold text-gray-800 mb-2">Barangay Indigency</h4>
-                            <a href="${documents.doc_brgy_indigency}" target="_blank" 
-                               class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                                <i class="fas fa-eye mr-2"></i> View Document
-                            </a>
-                        </div>
-                    ` : ''}
-                    ${documents.doc_student_id ? `
-                        <div class="bg-white p-4 rounded-lg border border-gray-200">
-                            <h4 class="font-semibold text-gray-800 mb-2">Student ID</h4>
-                            <a href="${documents.doc_student_id}" target="_blank" 
-                               class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                                <i class="fas fa-eye mr-2"></i> View Document
-                            </a>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
+            // Set documents - ALL 5 DOCUMENTS
+            let documentsHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
+            
+            // Application Letter
+            if (documents.doc_application_letter) {
+                documentsHTML += `
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-semibold text-gray-800 mb-2">Application Letter</h4>
+                        <a href="${documents.doc_application_letter}" target="_blank" 
+                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-eye mr-2"></i> View Document
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // Certificate of Registration
+            if (documents.doc_cert_reg) {
+                documentsHTML += `
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-semibold text-gray-800 mb-2">Certificate of Registration</h4>
+                        <a href="${documents.doc_cert_reg}" target="_blank" 
+                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-eye mr-2"></i> View Document
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // Grade Slip
+            if (documents.doc_grade_slip) {
+                documentsHTML += `
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-semibold text-gray-800 mb-2">Grade Slip</h4>
+                        <a href="${documents.doc_grade_slip}" target="_blank" 
+                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-eye mr-2"></i> View Document
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // Barangay Indigency
+            if (documents.doc_brgy_indigency) {
+                documentsHTML += `
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-semibold text-gray-800 mb-2">Barangay Indigency</h4>
+                        <a href="${documents.doc_brgy_indigency}" target="_blank" 
+                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-eye mr-2"></i> View Document
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // Student ID
+            if (documents.doc_student_id) {
+                documentsHTML += `
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-semibold text-gray-800 mb-2">Student ID</h4>
+                        <a href="${documents.doc_student_id}" target="_blank" 
+                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-eye mr-2"></i> View Document
+                        </a>
+                    </div>
+                `;
+            }
+            
+            documentsHTML += '</div>';
+            
+            // Check if no documents found
+            if (documentsHTML === '<div class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>') {
+                documentsHTML = '<div class="text-center text-gray-500 py-8">No documents available</div>';
+            }
+            
+            documentsContainer.innerHTML = documentsHTML;
 
+            // Show modal with animation
             modal.classList.remove('hidden');
             setTimeout(() => {
-                document.getElementById('modalContent').classList.remove('scale-95', 'opacity-0');
+                const modalContent = document.getElementById('modalContent');
+                if (modalContent) {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                }
             }, 50);
         }
 
+        // Modal for View Application (INTAKE SHEET + DOCUMENTS)
         function openIntakeSheetModal(applicantName, intakeSheet) {
             const modal = document.getElementById('applicationHistoryModal');
             const modalTitle = document.getElementById('modalTitle');
@@ -2013,8 +1857,9 @@ function setupLydoPagination() {
             const intakeSheetInfo = document.getElementById('intakeSheetInfo');
             const documentsContainer = document.getElementById('documentsContainer');
 
+            // Set modal content - INTAKE SHEET + DOCUMENTS
             modalTitle.textContent = `Application Details - ${applicantName}`;
-            intakeSheetInfo.classList.remove('hidden');
+            intakeSheetInfo.classList.remove('hidden'); // Show intake sheet section
 
             // Set basic info
             applicantBasicInfo.innerHTML = `
@@ -2025,29 +1870,256 @@ function setupLydoPagination() {
                 </div>
             `;
 
-            // Set intake sheet data (simplified for example)
-            // You would populate all the intake sheet sections here
+            // Populate intake sheet sections
+            populateIntakeSheetData(intakeSheet);
 
-            // Set documents
-            documentsContainer.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    ${intakeSheet.doc_application_letter ? `
-                        <div class="bg-white p-4 rounded-lg border border-gray-200">
-                            <h4 class="font-semibold text-gray-800 mb-2">Application Letter</h4>
-                            <a href="${intakeSheet.doc_application_letter}" target="_blank" 
-                               class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                                <i class="fas fa-eye mr-2"></i> View Document
-                            </a>
-                        </div>
-                    ` : ''}
-                    <!-- Add other documents similarly -->
-                </div>
-            `;
+            // Set documents section (still visible at the bottom)
+            let documentsHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
+            
+            // Application Letter
+            if (intakeSheet.doc_application_letter) {
+                documentsHTML += `
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-semibold text-gray-800 mb-2">Application Letter</h4>
+                        <a href="${intakeSheet.doc_application_letter}" target="_blank" 
+                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-eye mr-2"></i> View Document
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // Certificate of Registration
+            if (intakeSheet.doc_cert_reg) {
+                documentsHTML += `
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-semibold text-gray-800 mb-2">Certificate of Registration</h4>
+                        <a href="${intakeSheet.doc_cert_reg}" target="_blank" 
+                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-eye mr-2"></i> View Document
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // Grade Slip
+            if (intakeSheet.doc_grade_slip) {
+                documentsHTML += `
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-semibold text-gray-800 mb-2">Grade Slip</h4>
+                        <a href="${intakeSheet.doc_grade_slip}" target="_blank" 
+                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-eye mr-2"></i> View Document
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // Barangay Indigency
+            if (intakeSheet.doc_brgy_indigency) {
+                documentsHTML += `
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-semibold text-gray-800 mb-2">Barangay Indigency</h4>
+                        <a href="${intakeSheet.doc_brgy_indigency}" target="_blank" 
+                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-eye mr-2"></i> View Document
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // Student ID
+            if (intakeSheet.doc_student_id) {
+                documentsHTML += `
+                    <div class="bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="font-semibold text-gray-800 mb-2">Student ID</h4>
+                        <a href="${intakeSheet.doc_student_id}" target="_blank" 
+                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-eye mr-2"></i> View Document
+                        </a>
+                    </div>
+                `;
+            }
+            
+            documentsHTML += '</div>';
+            documentsContainer.innerHTML = documentsHTML;
 
+            // Show modal with animation
             modal.classList.remove('hidden');
             setTimeout(() => {
-                document.getElementById('modalContent').classList.remove('scale-95', 'opacity-0');
+                const modalContent = document.getElementById('modalContent');
+                if (modalContent) {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                }
             }, 50);
+        }
+
+        // Helper function to populate intake sheet data
+        function populateIntakeSheetData(intakeSheet) {
+            // Head of Family Information
+            const headOfFamilyInfo = document.getElementById('headOfFamilyInfo');
+    if (headOfFamilyInfo) {
+    headOfFamilyInfo.innerHTML = `
+        <div class="bg-white p-4 rounded-lg border border-gray-200 w-full">
+            <h4 class="font-semibold text-gray-800 mb-3">Head of Family Information</h4>
+            <div class="grid grid-cols-2 gap-4 w-full">
+                <div class="space-y-3 w-full">
+                    <div class="flex items-center w-full">
+                        <span class="font-medium text-gray-700 w-24">4PS:</span>
+                        <span class="flex-1">${intakeSheet.head_4ps || 'N/A'}</span>
+                    </div>
+                    <div class="flex items-center w-full">
+                        <span class="font-medium text-gray-700 w-24">IP No:</span>
+                        <span class="flex-1">${intakeSheet.head_ipno || 'N/A'}</span>
+                    </div>
+                    <div class="w-full">
+                        <div class="flex items-center w-full mb-1">
+                            <span class="font-medium text-gray-700 w-24">Address:</span>
+                        </div>
+                        <div class="flex gap-4 w-full">
+                            <div class="flex-1">
+                                <span class="font-medium text-gray-700 text-sm block">Zone:</span>
+                                <span>${intakeSheet.head_zone || 'N/A'}</span>
+                            </div>
+                            <div class="flex-1">
+                                <span class="font-medium text-gray-700 text-sm block">Barangay:</span>
+                                <span>${intakeSheet.head_barangay || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-3 w-full">
+                    <div class="flex items-center w-full">
+                        <span class="font-medium text-gray-700 w-28">Place of Birth:</span>
+                        <span class="flex-1">${intakeSheet.head_pob || 'N/A'}</span>
+                    </div>
+                    <div class="flex items-center w-full">
+                        <span class="font-medium text-gray-700 w-28">Date of Birth:</span>
+                        <span class="flex-1">${intakeSheet.head_dob || 'N/A'}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100 w-full">
+                <div class="w-full">
+                    <span class="font-medium text-gray-700 block">Education:</span>
+                    <span>${intakeSheet.head_educ || 'N/A'}</span>
+                </div>
+                <div class="w-full">
+                    <span class="font-medium text-gray-700 block">Occupation:</span>
+                    <span>${intakeSheet.head_occ || 'N/A'}</span>
+                </div>
+                <div class="w-full">
+                    <span class="font-medium text-gray-700 block">Religion:</span>
+                    <span>${intakeSheet.head_religion || 'N/A'}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Household Information
+const householdInfo = document.getElementById('householdInfo');
+if (householdInfo) {
+    householdInfo.innerHTML = `
+        <div class="bg-white p-4 rounded-lg border border-gray-200 w-full">
+            <h4 class="font-semibold text-gray-800 mb-3">Household Information</h4>
+            <div class="grid grid-cols-2 gap-4 w-full">
+                <div class="space-y-3 w-full">
+                    <div class="flex items-center w-full">
+                        <span class="font-medium text-gray-700 w-32">Serial Number:</span>
+                        <span class="flex-1">${intakeSheet.serial_number || 'N/A'}</span>
+                    </div>
+                    <div class="flex items-center w-full">
+                        <span class="font-medium text-gray-700 w-32">Total Income:</span>
+                        <span class="flex-1">${intakeSheet.house_total_income || 'N/A'}</span>
+                    </div>
+                    <div class="flex items-center w-full">
+                        <span class="font-medium text-gray-700 w-32">Net Income:</span>
+                        <span class="flex-1">${intakeSheet.house_net_income || 'N/A'}</span>
+                    </div>
+                </div>
+                <div class="space-y-3 w-full">
+                    <div class="flex items-center w-full">
+                        <span class="font-medium text-gray-700 w-32">Other Income:</span>
+                        <span class="flex-1">${intakeSheet.other_income || 'N/A'}</span>
+                    </div>
+                    <div class="flex gap-4 w-full">
+                        <div class="flex-1 w-full">
+                            <span class="font-medium text-gray-700 text-sm block">House:</span>
+                            <span>${intakeSheet.house_house || 'N/A'}</span>
+                        </div>
+                        <div class="flex-1 w-full">
+                            <span class="font-medium text-gray-700 text-sm block">Lot:</span>
+                            <span>${intakeSheet.house_lot || 'N/A'}</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 w-full">
+                        <div class="flex-1 w-full">
+                            <span class="font-medium text-gray-700 text-sm block">Electric:</span>
+                            <span>${intakeSheet.house_electric || 'N/A'}</span>
+                        </div>
+                        <div class="flex-1 w-full">
+                            <span class="font-medium text-gray-700 text-sm block">Water:</span>
+                            <span>${intakeSheet.house_water || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+            // Family Members Table
+            const familyMembersTable = document.getElementById('familyMembersTable');
+            if (familyMembersTable && intakeSheet.family_members && intakeSheet.family_members.length > 0) {
+                let familyHTML = '';
+                intakeSheet.family_members.forEach(member => {
+                    familyHTML += `
+                        <tr>
+                            <td class="px-4 py-2 border-b">${member.name || 'N/A'}</td>
+                            <td class="px-4 py-2 border-b">${member.relation || 'N/A'}</td>
+                            <td class="px-4 py-2 border-b">${member.birthdate || 'N/A'}</td>
+                            <td class="px-4 py-2 border-b">${member.age || 'N/A'}</td>
+                            <td class="px-4 py-2 border-b">${member.sex || 'N/A'}</td>
+                            <td class="px-4 py-2 border-b">${member.civil_status || 'N/A'}</td>
+                            <td class="px-4 py-2 border-b">${member.education || 'N/A'}</td>
+                            <td class="px-4 py-2 border-b">${member.occupation || 'N/A'}</td>
+                            <td class="px-4 py-2 border-b">${member.income || 'N/A'}</td>
+                            <td class="px-4 py-2 border-b">${member.remarks || 'N/A'}</td>
+                        </tr>
+                    `;
+                });
+                familyMembersTable.innerHTML = familyHTML;
+            } else if (familyMembersTable) {
+                familyMembersTable.innerHTML = `
+                    <tr>
+                        <td colspan="10" class="px-4 py-4 text-center text-gray-500">No family members data available</td>
+                    </tr>
+                `;
+            }
+
+            // Service Records Table
+            const serviceRecordsTable = document.getElementById('serviceRecordsTable');
+            if (serviceRecordsTable && intakeSheet.social_service_records && intakeSheet.social_service_records.length > 0) {
+                let serviceHTML = '';
+                intakeSheet.social_service_records.forEach(record => {
+                    serviceHTML += `
+                        <tr>
+                            <td class="px-4 py-2 border-b">${record.date || 'N/A'}</td>
+                            <td class="px-4 py-2 border-b">${record.problem_need || 'N/A'}</td>
+                            <td class="px-4 py-2 border-b">${record.action_assistance || 'N/A'}</td>
+                            <td class="px-4 py-2 border-b">${record.remarks || 'N/A'}</td>
+                        </tr>
+                    `;
+                });
+                serviceRecordsTable.innerHTML = serviceHTML;
+            } else if (serviceRecordsTable) {
+                serviceRecordsTable.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-4 py-4 text-center text-gray-500">No service records available</td>
+                    </tr>
+                `;
+            }
         }
 
         function closeApplicationModal() {
@@ -2060,13 +2132,7 @@ function setupLydoPagination() {
             }, 300);
         }
 
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-
-        // Include your existing loading overlay functions and other utilities
+        // Loading overlay functions
         window.addEventListener('load', function () {
             const overlay = document.getElementById('loadingOverlay');
             if (!overlay) return;
@@ -2094,279 +2160,230 @@ function setupLydoPagination() {
             }, 300);
         }
 
+        // Modal close functions
+        function closeEmailModal() {
+            document.getElementById('emailModal').classList.add('hidden');
+        }
+
+        function closeSmsModal() {
+            document.getElementById('smsModal').classList.add('hidden');
+        }
+
+        // Initialize modal events
+        function initializeModalEvents() {
+            // Email modal close
+            const closeEmailModalBtn = document.getElementById('closeEmailModal');
+            const cancelEmailBtn = document.getElementById('cancelEmailBtn');
+            
+            if (closeEmailModalBtn) {
+                closeEmailModalBtn.addEventListener('click', closeEmailModal);
+            }
+            if (cancelEmailBtn) {
+                cancelEmailBtn.addEventListener('click', closeEmailModal);
+            }
+
+            // SMS modal close
+            const closeSmsModalBtn = document.getElementById('closeSmsModal');
+            const cancelSmsBtn = document.getElementById('cancelSmsBtn');
+            
+            if (closeSmsModalBtn) {
+                closeSmsModalBtn.addEventListener('click', closeSmsModal);
+            }
+            if (cancelSmsBtn) {
+                cancelSmsBtn.addEventListener('click', closeSmsModal);
+            }
+
+            // Close modals when clicking outside
+            const emailModal = document.getElementById('emailModal');
+            const smsModal = document.getElementById('smsModal');
+            const applicationHistoryModal = document.getElementById('applicationHistoryModal');
+
+            if (emailModal) {
+                emailModal.addEventListener('click', function(e) {
+                    if (e.target === emailModal) {
+                        closeEmailModal();
+                    }
+                });
+            }
+
+            if (smsModal) {
+                smsModal.addEventListener('click', function(e) {
+                    if (e.target === smsModal) {
+                        closeSmsModal();
+                    }
+                });
+            }
+
+            if (applicationHistoryModal) {
+                applicationHistoryModal.addEventListener('click', function(e) {
+                    if (e.target === applicationHistoryModal) {
+                        closeApplicationModal();
+                    }
+                });
+            }
+
+            // SMS Form Submission
+            document.getElementById('smsForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const sendSmsBtn = document.getElementById('sendSmsBtn');
+                const sendSmsText = document.getElementById('sendSmsText');
+                const sendSmsLoading = document.getElementById('sendSmsLoading');
+                
+                const activeTab = document.querySelector('.tab-button.active').getAttribute('data-tab');
+                const filteredApplicants = activeTab === 'mayor-applicants' ? filteredMayorApplicants : filteredLydoApplicants;
+                const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
+                
+                if (selectedApplicants.length === 0) {
+                    Swal.fire('Error', 'Please select at least one applicant', 'error');
+                    return;
+                }
+
+                const selectedEmails = selectedApplicants.map(applicant => applicant.applicant_email).join(',');
+
+                const formData = new FormData(this);
+                formData.append('selected_emails', selectedEmails);
+                formData.append('sms_type', document.querySelector('input[name="smsType"]:checked').value);
+
+                sendSmsText.classList.add('hidden');
+                sendSmsLoading.classList.remove('hidden');
+                sendSmsBtn.disabled = true;
+
+                fetch('/lydo_admin/send-sms-to-applicants', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Success', data.message, 'success');
+                        document.getElementById('smsModal').classList.add('hidden');
+                        document.getElementById('smsForm').reset();
+                        document.getElementById('scheduleFields').classList.add('hidden');
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire('Error', 'Failed to send SMS', 'error');
+                })
+                .finally(() => {
+                    sendSmsText.classList.remove('hidden');
+                    sendSmsLoading.classList.add('hidden');
+                    sendSmsBtn.disabled = false;
+                });
+            });
+
+            // SMS Type Toggle
+            document.querySelectorAll('.sms-type-radio').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const scheduleFields = document.getElementById('scheduleFields');
+                    const scheduleNote = document.getElementById('scheduleNote');
+                    const smsMessageContainer = document.getElementById('smsMessageContainer');
+                    
+                    if (this.value === 'schedule') {
+                        scheduleFields.classList.remove('hidden');
+                        scheduleNote.classList.remove('hidden');
+                        smsMessageContainer.classList.add('hidden');
+                        document.getElementById('scheduleWhat').required = true;
+                        document.getElementById('smsMessage').required = false;
+                    } else {
+                        scheduleFields.classList.add('hidden');
+                        scheduleNote.classList.add('hidden');
+                        smsMessageContainer.classList.remove('hidden');
+                        document.getElementById('scheduleWhat').required = false;
+                        document.getElementById('smsMessage').required = true;
+                    }
+                });
+            });
+
+            // Character count for SMS
+            document.getElementById('smsMessage').addEventListener('input', function() {
+                const charCount = this.value.length;
+                document.getElementById('smsCharCount').textContent = charCount;
+                
+                if (charCount > 160) {
+                    document.getElementById('smsCharCount').classList.add('text-red-500');
+                } else {
+                    document.getElementById('smsCharCount').classList.remove('text-red-500');
+                }
+            });
+
+            // Print PDF functionality
+            document.getElementById('printPdfBtnMayor').addEventListener('click', function() {
+                printMayorApplicantsPdf();
+            });
+
+            document.getElementById('printPdfBtnLydo').addEventListener('click', function() {
+                printLydoReviewedApplicantsPdf();
+            });
+        }
+
+        // Print PDF functions
+        function printMayorApplicantsPdf() {
+            showLoadingOverlay();
+            
+            const search = document.getElementById('searchInputMayor').value;
+            const barangay = document.getElementById('barangaySelectMayor').value;
+            const academicYear = document.getElementById('academicYearSelectMayor').value;
+            const initialScreening = document.getElementById('initialScreeningSelectMayor').value;
+
+            const params = new URLSearchParams();
+            if (search) params.append('search', search);
+            if (barangay) params.append('barangay', barangay);
+            if (academicYear) params.append('academic_year', academicYear);
+            
+            if (initialScreening && initialScreening !== 'all') {
+                params.append('initial_screening', initialScreening);
+            } else {
+                params.append('initial_screening', 'all');
+            }
+
+            const url = `/lydo_admin/generate-mayor-applicants-pdf?${params.toString()}`;
+            window.open(url, '_blank');
+            
+            setTimeout(() => {
+                hideLoadingOverlay();
+            }, 2000);
+        }
+
+        function printLydoReviewedApplicantsPdf() {
+            showLoadingOverlay();
+            
+            const search = document.getElementById('searchInputLydo').value;
+            const barangay = document.getElementById('barangaySelectLydo').value;
+            const academicYear = document.getElementById('academicYearSelectLydo').value;
+            const remarks = document.getElementById('remarksSelectLydo').value;
+
+            const params = new URLSearchParams();
+            if (search) params.append('search', search);
+            if (barangay) params.append('barangay', barangay);
+            if (academicYear) params.append('academic_year', academicYear);
+            
+            if (remarks) {
+                params.append('remarks', remarks);
+            }
+
+            const url = `/lydo_admin/generate-lydo-applicants-pdf?${params.toString()}`;
+            window.open(url, '_blank');
+            
+            setTimeout(() => {
+                hideLoadingOverlay();
+            }, 2000);
+        }
+
         // Make functions global
         window.viewApplicantDocuments = viewApplicantDocuments;
         window.viewApplicantIntakeSheet = viewApplicantIntakeSheet;
         window.closeApplicationModal = closeApplicationModal;
-
-        // SMS Form Submission
-document.getElementById('smsForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const sendSmsBtn = document.getElementById('sendSmsBtn');
-    const sendSmsText = document.getElementById('sendSmsText');
-    const sendSmsLoading = document.getElementById('sendSmsLoading');
-    
-    // Get selected applicants based on active tab
-    const activeTab = document.querySelector('.tab-button.active').getAttribute('data-tab');
-    const filteredApplicants = activeTab === 'mayor-applicants' ? filteredMayorApplicants : filteredLydoApplicants;
-    const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
-    
-    if (selectedApplicants.length === 0) {
-        Swal.fire('Error', 'Please select at least one applicant', 'error');
-        return;
-    }
-
-    const selectedEmails = selectedApplicants.map(applicant => applicant.applicant_email).join(',');
-
-    const formData = new FormData(this);
-    formData.append('selected_emails', selectedEmails);
-    formData.append('sms_type', document.querySelector('input[name="smsType"]:checked').value);
-
-    // Show loading state
-    sendSmsText.classList.add('hidden');
-    sendSmsLoading.classList.remove('hidden');
-    sendSmsBtn.disabled = true;
-
-    fetch('/lydo_admin/send-sms-to-applicants', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Accept': 'application/json'
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            Swal.fire('Success', data.message, 'success');
-            // Show details if available
-            if (data.details) {
-                console.log('SMS Details:', data.details);
-            }
-            document.getElementById('smsModal').classList.add('hidden');
-            document.getElementById('smsForm').reset();
-            document.getElementById('scheduleFields').classList.add('hidden');
-        } else {
-            Swal.fire('Error', data.message, 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire('Error', 'Failed to send SMS', 'error');
-    })
-    .finally(() => {
-        // Reset loading state
-        sendSmsText.classList.remove('hidden');
-        sendSmsLoading.classList.add('hidden');
-        sendSmsBtn.disabled = false;
-    });
-});
-
-// SMS Type Toggle with Note and Hide SMS Message
-document.querySelectorAll('.sms-type-radio').forEach(radio => {
-    radio.addEventListener('change', function() {
-        const scheduleFields = document.getElementById('scheduleFields');
-        const scheduleNote = document.getElementById('scheduleNote');
-        const smsMessageContainer = document.getElementById('smsMessageContainer');
-        
-        if (this.value === 'schedule') {
-            scheduleFields.classList.remove('hidden');
-            scheduleNote.classList.remove('hidden');
-            smsMessageContainer.classList.add('hidden'); // Hide SMS message
-            // Make schedule what field required
-            document.getElementById('scheduleWhat').required = true;
-            // Remove required from SMS message
-            document.getElementById('smsMessage').required = false;
-        } else {
-            scheduleFields.classList.add('hidden');
-            scheduleNote.classList.add('hidden');
-            smsMessageContainer.classList.remove('hidden'); // Show SMS message
-            // Remove required from schedule fields
-            document.getElementById('scheduleWhat').required = false;
-            // Add required back to SMS message
-            document.getElementById('smsMessage').required = true;
-        }
-    });
-});
-
-// Character count for SMS
-document.getElementById('smsMessage').addEventListener('input', function() {
-    const charCount = this.value.length;
-    document.getElementById('smsCharCount').textContent = charCount;
-    
-    if (charCount > 160) {
-        document.getElementById('smsCharCount').classList.add('text-red-500');
-    } else {
-        document.getElementById('smsCharCount').classList.remove('text-red-500');
-    }
-});
-// Modal close functions
-function closeEmailModal() {
-    document.getElementById('emailModal').classList.add('hidden');
-}
-
-function closeSmsModal() {
-    document.getElementById('smsModal').classList.add('hidden');
-}
-
-function closeApplicationModal() {
-    const modal = document.getElementById('applicationHistoryModal');
-    const modalContent = document.getElementById('modalContent');
-    
-    modalContent.classList.add('scale-95', 'opacity-0');
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 300);
-}
-
-// Make functions global
-window.closeEmailModal = closeEmailModal;
-window.closeSmsModal = closeSmsModal;
-window.closeApplicationModal = closeApplicationModal;
-
-// Add event listeners for modal close buttons
-document.addEventListener('DOMContentLoaded', function() {
-    // Email modal close
-    const closeEmailModalBtn = document.getElementById('closeEmailModal');
-    const cancelEmailBtn = document.getElementById('cancelEmailBtn');
-    
-    if (closeEmailModalBtn) {
-        closeEmailModalBtn.addEventListener('click', closeEmailModal);
-    }
-    if (cancelEmailBtn) {
-        cancelEmailBtn.addEventListener('click', closeEmailModal);
-    }
-
-    // SMS modal close
-    const closeSmsModalBtn = document.getElementById('closeSmsModal');
-    const cancelSmsBtn = document.getElementById('cancelSmsBtn');
-    
-    if (closeSmsModalBtn) {
-        closeSmsModalBtn.addEventListener('click', closeSmsModal);
-    }
-    if (cancelSmsBtn) {
-        cancelSmsBtn.addEventListener('click', closeSmsModal);
-    }
-
-    // Close modals when clicking outside
-    const emailModal = document.getElementById('emailModal');
-    const smsModal = document.getElementById('smsModal');
-    const applicationHistoryModal = document.getElementById('applicationHistoryModal');
-
-    if (emailModal) {
-        emailModal.addEventListener('click', function(e) {
-            if (e.target === emailModal) {
-                closeEmailModal();
-            }
-        });
-    }
-
-    if (smsModal) {
-        smsModal.addEventListener('click', function(e) {
-            if (e.target === smsModal) {
-                closeSmsModal();
-            }
-        });
-    }
-
-    if (applicationHistoryModal) {
-        applicationHistoryModal.addEventListener('click', function(e) {
-            if (e.target === applicationHistoryModal) {
-                closeApplicationModal();
-            }
-        });
-    }
-});
-
-// Print PDF functionality
-document.addEventListener('DOMContentLoaded', function() {
-    // Mayor Staff Applicants Print Button
-    document.getElementById('printPdfBtnMayor').addEventListener('click', function() {
-        printMayorApplicantsPdf();
-    });
-
-    // LYDO Reviewed Applicants Print Button
-    document.getElementById('printPdfBtnLydo').addEventListener('click', function() {
-        printLydoReviewedApplicantsPdf();
-    });
-});
-
-// Function to print Mayor Staff Applicants PDF
-function printMayorApplicantsPdf() {
-    showLoadingOverlay();
-    
-    // Get current filter values for Mayor Staff
-    const search = document.getElementById('searchInputMayor').value;
-    const barangay = document.getElementById('barangaySelectMayor').value;
-    const academicYear = document.getElementById('academicYearSelectMayor').value;
-    const initialScreening = document.getElementById('initialScreeningSelectMayor').value;
-
-    // Build query parameters for Mayor Staff
-    const params = new URLSearchParams();
-    if (search) params.append('search', search);
-    if (barangay) params.append('barangay', barangay);
-    if (academicYear) params.append('academic_year', academicYear);
-    
-    // For Mayor Staff: Approved, Rejected, Reviewed, or all
-    if (initialScreening && initialScreening !== 'all') {
-        params.append('initial_screening', initialScreening);
-    } else {
-        // If "All Applicants" is selected, don't send any initial_screening parameter
-        // This will show Approved, Rejected, AND Reviewed
-        params.append('initial_screening', 'all');
-    }
-
-    // Open PDF in new tab with Mayor Staff specific endpoint
-    const url = `/lydo_admin/generate-mayor-applicants-pdf?${params.toString()}`;
-    
-    // Debug log
-    console.log('Mayor PDF URL:', url);
-    
-    window.open(url, '_blank');
-    
-    // Hide loading after a delay to ensure PDF opens
-    setTimeout(() => {
-        hideLoadingOverlay();
-    }, 2000);
-}
-
-// Function to print LYDO Reviewed Applicants PDF
-function printLydoReviewedApplicantsPdf() {
-    showLoadingOverlay();
-    
-    // Get current filter values for LYDO Reviewed
-    const search = document.getElementById('searchInputLydo').value;
-    const barangay = document.getElementById('barangaySelectLydo').value;
-    const academicYear = document.getElementById('academicYearSelectLydo').value;
-    const remarks = document.getElementById('remarksSelectLydo').value;
-
-    // Build query parameters for LYDO Reviewed
-    const params = new URLSearchParams();
-    if (search) params.append('search', search);
-    if (barangay) params.append('barangay', barangay);
-    if (academicYear) params.append('academic_year', academicYear);
-    
-    // Add remarks filter if selected
-    if (remarks) {
-        params.append('remarks', remarks);
-    }
-
-    // Note: We don't send initial_screening for LYDO since it's hardcoded to 'Reviewed'
-    
-    // Open PDF in new tab with LYDO specific endpoint
-    const url = `/lydo_admin/generate-lydo-applicants-pdf?${params.toString()}`;
-    
-    // Debug log
-    console.log('LYDO PDF URL:', url);
-    
-    window.open(url, '_blank');
-    
-    // Hide loading after a delay to ensure PDF opens
-    setTimeout(() => {
-        hideLoadingOverlay();
-    }, 2000);
-}
+        window.closeEmailModal = closeEmailModal;
+        window.closeSmsModal = closeSmsModal;
+        window.toggleDropdown = toggleDropdown;
     </script>
 </body>
 </html>

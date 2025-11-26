@@ -1,33 +1,32 @@
-# TODO: Fix "Select All" to work across all pages/filters in /lydo_admin/applicants
+# TODO - Improve Modal CSS Appearance to be Clean, Modern, and Professional
 
-## Current Work
-Fix the "Select All" functionality in resources/views/lydo_admin/applicants.blade.php so it selects ALL applicants across ALL pages and filters (not just visible current page). Use Sets to track selected applicant_ids globally. Update renders, checkboxes, actions (copy/email/sms) to use full selections. No backend changes.
+## Information Gathered
+- The existing modal and related CSS styles are distributed across `status-modal.css` and `staff.css`.
+- The `applicants.blade.php` contains modal HTML structure and the related JavaScript logic.
+- Current modal styling includes basic fading animations, overlays, and responsiveness.
+- The user requested improved modal CSS styling to look clean, modern, and professional.
 
-## Steps (Approved Plan Breakdown)
+## Plan
+- Revise and consolidate modal CSS styles focusing on:
+  - Clean layout with sufficient spacing and alignment
+  - Modern color palette consistent with the existing theme
+  - Improved typography and button styles
+  - Smooth and subtle animations for modal appearance/disappearance
+  - Responsive design to look good on mobile and desktop
+- Apply utility CSS classes to maintain consistency with Tailwind and existing code (if applicable)
+- Ensure contrast and accessibility best practices for modal text and controls
+- Remove redundant or conflicting styles from modal styling in `status-modal.css` and potentially `staff.css`
+- Test modal appearance on the applicants page to verify improvements visually and functionally
 
-### Phase 1: Add Globals & Helper Functions
-- [ ] 1. Add global variables: `let selectedMayorIds = new Set(); let selectedLydoIds = new Set(); let currentSelectedTab = null;`
-- [ ] 2. Add `updateSelectAllState(tab)` function: Compute filtered selected count, set selectAll.checked/indeterminate.
+## Dependent Files to Edit
+- `public/css/status-modal.css`
+- Possibly `public/css/staff.css` (pending review)
+- Verify markup in `resources/views/lydo_admin/applicants.blade.php` matches updated CSS selectors
 
-### Phase 2: Update Render & Checkbox Logic
-- [ ] 3. Update `renderMayorApplicantsTable()` & `renderLydoApplicantsTable()`: Checkbox `checked="${selectedXXX.has(applicant.applicant_id) ? 'checked' : ''}"`
-- [ ] 4. Update `setupMayorCheckboxes()` & `setupLydoCheckboxes()`:
-  - Select All: Toggle ALL filtered ids in Set, then renderTable().
-  - Individual: Toggle id in Set, updateSelectAllState(tab).
-- [ ] 5. Update `updateButtonVisibility(tab)`: Use `selectedXXX.size > 0`
+## Followup Steps
+- Make edits to CSS files as per plan
+- Test on local development environment by running project and opening the applicants page
+- Confirm the modal styling improvements with the user
 
-### Phase 3: Update Actions & Modals
-- [ ] 6. Update `copySelectedNames(tab)`: Filter allXXX by Set, map formatName.
-- [ ] 7. Update `openEmailModal(tab)` & `openSmsModal(tab)`: Set `currentSelectedTab = tab`, preview from all selectedApps (name — email/phone).
-- [ ] 8. Add `openEmailModal` submit handler for `#emailForm` (similar to SMS): Collect selectedEmails from allXXX via Set.
-
-### Phase 4: Integrate with Load/Filter/Pagination
-- [ ] 9. Update `loadMayorApplicants()` & `loadLydoReviewedApplicants()`: `selectedXXX.clear()`, call `updateSelectAllState(tab)` after setup.
-- [ ] 10. Update `setupMayorFilters()`/`setupLydoFilters()` `applyFilters()`: After render/pagination, `setupXXXCheckboxes(); updateSelectAllState(tab);`
-
-## Followup/Testing
-- [ ] Verify: Select All selects all filtered (multi-page), page/filter change preserves/reflects, previews/actions use full list.
-- [ ] No breakage: Filters, pagination, PDF, modals.
-- [ ] Mark complete, attempt_completion.
-
-**Next Step:** Implement Phase 1.
+# Next Step
+- Proceed to edit `public/css/status-modal.css` to implement clean, modern, and professional modal styling as planned.

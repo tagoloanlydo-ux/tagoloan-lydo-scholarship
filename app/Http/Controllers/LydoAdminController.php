@@ -2137,9 +2137,26 @@ public function getIntakeSheet($applicationPersonnelId)
             ($applicantData->applicant_suffix ? ', ' . $applicantData->applicant_suffix : '')
         );
 
-        // Parse JSON fields
-        $familyMembers = $intakeSheet->family_members ? json_decode($intakeSheet->family_members, true) : [];
-        $socialServiceRecords = $intakeSheet->social_service_records ? json_decode($intakeSheet->social_service_records, true) : [];
+        // FIX: Check if fields are already arrays or need decoding
+        $familyMembers = $intakeSheet->family_members;
+        $socialServiceRecords = $intakeSheet->social_service_records;
+
+        // If they are strings, decode them. If they're already arrays, use as-is.
+        if (is_string($familyMembers)) {
+            $familyMembers = json_decode($familyMembers, true) ?? [];
+        } elseif (!is_array($familyMembers)) {
+            $familyMembers = [];
+        }
+
+        if (is_string($socialServiceRecords)) {
+            $socialServiceRecords = json_decode($socialServiceRecords, true) ?? [];
+        } elseif (!is_array($socialServiceRecords)) {
+            $socialServiceRecords = [];
+        }
+
+        // Ensure we have arrays
+        $familyMembers = is_array($familyMembers) ? $familyMembers : [];
+        $socialServiceRecords = is_array($socialServiceRecords) ? $socialServiceRecords : [];
 
         $data = [
             'applicant_name' => $fullName,
