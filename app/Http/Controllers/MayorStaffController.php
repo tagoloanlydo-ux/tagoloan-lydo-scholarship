@@ -1764,6 +1764,7 @@ public function sendDocumentEmail(Request $request)
         return response()->json(['success' => false, 'message' => 'Failed to send email: ' . $e->getMessage()], 500);
     }
 }
+
 public function showIntakeSheet($application_personnel_id, Request $request)
 {
     // Verify token
@@ -1780,6 +1781,17 @@ public function showIntakeSheet($application_personnel_id, Request $request)
 
     if (!$applicationPersonnel) {
         abort(403, 'Invalid token or application not found.');
+    }
+
+    // CHECK IF INTAKE SHEET ALREADY SUBMITTED
+    $existingIntakeSheet = FamilyIntakeSheet::where('application_personnel_id', $application_personnel_id)->first();
+    if ($existingIntakeSheet) {
+        abort(403, 'Intake sheet has already been submitted and cannot be modified.');
+    }
+
+    // CHECK IF APPLICATION IS ALREADY APPROVED/REJECTED
+    if ($applicationPersonnel->status !== 'Waiting' && $applicationPersonnel->status !== 'Pending') {
+        abort(403, 'Application has already been processed. Intake sheet cannot be accessed.');
     }
 
     // Get applicant data
@@ -2052,7 +2064,7 @@ public function submitIntakeSheet(Request $request)
     // Generate serial number
     $serialNumber = 'FIS-' . now()->format('Ymd-His');
 
-    // Prepare data for insertion
+    // Prepare data for insertion - FIXED FIELD NAMES
     $data = [
         'application_personnel_id' => $request->application_personnel_id,
         'head_4ps' => $request->head['_4ps'] ?? null,
@@ -2074,13 +2086,17 @@ public function submitIntakeSheet(Request $request)
         'house_house_value' => $request->house['house_value'] ?? null,
         'house_lot' => $request->house['lot'] ?? null,
         'house_lot_value' => $request->house['lot_value'] ?? null,
-        'house_house_rent' => $request->house['house_rent'] ?? null,
-        'house_lot_rent' => $request->house['lot_rent'] ?? null,
+        // FIXED: Use the correct database field names
+        'house_rent' => $request->house['house_rent'] ?? null,  // This should match your database
+        'lot_rent' => $request->house['lot_rent'] ?? null,      // This should match your database
         'house_water' => $request->house['water'] ?? null,
         'house_electric' => $request->house['electric'] ?? null,
         'family_members' => json_encode($request->family),
         'date_entry' => now(),
     ];
+
+    // Debug the data before insertion
+    \Log::info('Intake Sheet Data to be inserted:', $data);
 
     // Create the intake sheet
     $intakeSheet = FamilyIntakeSheet::create($data);

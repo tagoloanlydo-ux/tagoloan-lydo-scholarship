@@ -13,6 +13,17 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
+    /* Add this to your CSS in intakesheet.blade.php */
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5 !important;
+  background-color: #9ca3af !important;
+}
+
+#nextBtn:disabled {
+  background-color: #9ca3af !important;
+  cursor: not-allowed;
+}
       /* Floating Label Input Style */
       .form-group {
         position: relative;
@@ -635,14 +646,14 @@
                     class="form-input"
                   /><label class="form-label">House Value</label>
                 </div>
-                <div class="form-group hidden" id="house_rent_group">
-                  <input
-                    id="house_rent"
-                    placeholder=""
-                    type="number"
-                    class="form-input"
-                  /><label class="form-label">House Rent Monthly Amount <span style="color: red;">*</span></label>
-                </div>
+<div class="form-group hidden" id="house_rent_group">
+  <input
+    id="house_rent"
+    placeholder=""
+    type="number"
+    class="form-input"
+  /><label class="form-label">House Rent Monthly Amount <span style="color: red;">*</span></label>
+</div>
               </div>
               <div>
                 <div class="form-group">
@@ -661,14 +672,14 @@
                     class="form-input"
                   /><label class="form-label">Lot Value</label>
                 </div>
-                <div class="form-group hidden" id="lot_rent_group">
-                  <input
-                    id="lot_rent"
-                    placeholder=""
-                    type="number"
-                    class="form-input"
-                  /><label class="form-label">Lot Rent Monthly Amount <span style="color: red;">*</span></label>
-                </div>
+<div class="form-group hidden" id="lot_rent_group">
+  <input
+    id="lot_rent"
+    placeholder=""
+    type="number"
+    class="form-input"
+  /><label class="form-label">Lot Rent Monthly Amount <span style="color: red;">*</span></label>
+</div>
               </div>
               <div class="form-group">
                 <input

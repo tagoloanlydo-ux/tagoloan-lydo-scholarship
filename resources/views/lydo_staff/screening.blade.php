@@ -833,76 +833,141 @@
                 </div>
             </div>
 
-            <!-- Final Remarks Tab -->
-            <div id="tab-remarks-content" class="tab-content hidden">
-                <!-- Final Remarks Section -->
-                <div class="mb-8">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
-                        <i class="fas fa-tags mr-2 text-violet-600"></i>
-                        Final Remarks
-                    </h3>
-                    
-                    <div class="mb-6 p-4 bg-green-50 rounded-xl border border-green-200">
-                        <h4 class="font-semibold text-green-800 mb-3 flex items-center">
-                            <i class="fas fa-calculator mr-2"></i>
-                            Financial Summary
-                        </h4>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Total Family Income</label>
-                                <input type="number" step="0.01" name="house_total_income" id="house_total_income_final" class="w-full border border-gray-300 rounded-xl p-3 bg-gray-100 text-gray-600" readonly>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Total Expenses</label>
-                                <input type="number" step="0.01" id="total_expenses_final" class="w-full border border-gray-300 rounded-xl p-3 bg-gray-100 text-gray-600" readonly>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Net Income</label>
-                                <input type="number" step="0.01" name="house_net_income" id="house_net_income_final" class="w-full border border-gray-300 rounded-xl p-3 bg-gray-100 text-gray-600" readonly>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Remarks Selection -->
-                    <div class="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                        <h4 class="font-semibold text-blue-800 mb-3 flex items-center">
-                            <i class="fas fa-tags mr-2"></i>
-                            Final Assessment
-                        </h4>
-                        
-                        <div class="grid grid-cols-1 gap-6">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Remarks <span class="text-red-500">*</span></label>
-                                <select name="remarks" id="remarks" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" required onchange="validateRemarks()">
-                                    <option value="">Select Remarks</option>
-                                    <option value="Poor">Poor</option>
-                                    <option value="Non Poor">Non Poor</option>
-                                    <option value="Ultra Poor">Ultra Poor</option>
-                                </select>
-                                <p class="text-xs text-gray-500 mt-2">Please select a remark based on the financial assessment</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <div class="flex justify-between mt-6 pt-4 border-t border-gray-200">
-                        <button type="button" onclick="showTab('health')" class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-xl font-medium transition-all duration-200 flex items-center">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Previous
-                        </button>
-                        <div class="flex gap-3">
-                            <button type="button" onclick="saveAsDraft()" class="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-xl font-medium transition-all duration-200">
-                                Save as Draft
-                            </button>
-                            <button type="button" id="submitFormBtn" onclick="confirmSubmitForm()" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center" disabled>
-                                <i class="fas fa-check mr-2"></i>
-                                Submit Form
-                            </button>
-                        </div>
-                    </div>
+   <!-- Final Remarks Tab -->
+<div id="tab-remarks-content" class="tab-content hidden">
+    <!-- Final Remarks Section -->
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+            <i class="fas fa-tags mr-2 text-violet-600"></i>
+            Final Remarks
+        </h3>
+        
+        <div class="mb-6 p-4 bg-green-50 rounded-xl border border-green-200">
+            <h4 class="font-semibold text-green-800 mb-3 flex items-center">
+                <i class="fas fa-calculator mr-2"></i>
+                Financial Summary
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Total Family Income</label>
+                    <input type="number" step="0.01" name="house_total_income" id="house_total_income_final" class="w-full border border-gray-300 rounded-xl p-3 bg-gray-100 text-gray-600" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Total Expenses</label>
+                    <input type="number" step="0.01" id="total_expenses_final" class="w-full border border-gray-300 rounded-xl p-3 bg-gray-100 text-gray-600" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Net Income</label>
+                    <input type="number" step="0.01" name="house_net_income" id="house_net_income_final" class="w-full border border-gray-300 rounded-xl p-3 bg-gray-100 text-gray-600" readonly>
                 </div>
             </div>
+        </div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Number of Family Members</label>
+        <input type="number" id="number_of_family_members" class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 text-gray-600" readonly>
+    </div>
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Per CapitaL Income</label>
+        <input type="number" step="0.01" id="per_capita_income" class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 text-gray-600" readonly>
+    </div>
+</div>
+
+<!-- Optional: Hidden fields for form submission -->
+<input type="hidden" name="number_of_family_members" id="number_of_family_members_hidden">
+<input type="hidden" name="per_capita_income" id="per_capita_income_hidden">
+
+        <!-- Remarks Selection -->
+        <div class="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <h4 class="font-semibold text-blue-800 mb-3 flex items-center">
+                <i class="fas fa-tags mr-2"></i>
+                Final Assessment
+            </h4>
+            
+            <div class="grid grid-cols-1 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Remarks <span class="text-red-500">*</span></label>
+                    <select name="remarks" id="remarks" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" required onchange="validateRemarks()">
+                        <option value="">Select Remarks</option>
+                        <option value="Poor">Poor</option>
+                        <option value="Non Poor">Non Poor</option>
+                        <option value="Ultra Poor">Ultra Poor</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-2">Please select a remark based on the financial assessment</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compact Version -->
+<div class="mb-6 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+        <i class="fas fa-scale-balanced mr-2 text-purple-600"></i>
+        Income Classification Guidelines
+    </h4>
+    
+    <table class="w-full border-collapse text-sm">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="px-3 py-2 text-left font-semibold text-gray-700 border-b">Category</th>
+                <th class="px-3 py-2 text-center font-semibold text-gray-700 border-b">Monthly Income</th>
+                <th class="px-3 py-2 text-left font-semibold text-gray-700 border-b">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="border-b">
+                <td class="px-3 py-2">
+                    <span class="inline-flex items-center">
+                        <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                        <span class="font-medium text-red-700">Ultra Poor</span>
+                    </span>
+                </td>
+                <td class="px-3 py-2 text-center font-mono text-red-600">Below ₱1,910</td>
+                <td class="px-3 py-2 text-gray-600 text-xs">Cannot meet basic food needs</td>
+            </tr>
+            <tr class="border-b">
+                <td class="px-3 py-2">
+                    <span class="inline-flex items-center">
+                        <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                        <span class="font-medium text-yellow-700">Poor</span>
+                    </span>
+                </td>
+                <td class="px-3 py-2 text-center font-mono text-yellow-600">₱1,910 – ₱2,759</td>
+                <td class="px-3 py-2 text-gray-600 text-xs">Can meet food but not non-food needs</td>
+            </tr>
+            <tr>
+                <td class="px-3 py-2">
+                    <span class="inline-flex items-center">
+                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                        <span class="font-medium text-green-700">Non-Poor</span>
+                    </span>
+                </td>
+                <td class="px-3 py-2 text-center font-mono text-green-600">Above ₱2,759</td>
+                <td class="px-3 py-2 text-gray-600 text-xs">Can meet both food and non-food needs</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-between mt-6 pt-4 border-t border-gray-200">
+            <button type="button" onclick="showTab('health')" class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-xl font-medium transition-all duration-200 flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Previous
+            </button>
+            <div class="flex gap-3">
+                <button type="button" onclick="saveAsDraft()" class="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-xl font-medium transition-all duration-200">
+                    Save as Draft
+                </button>
+                <button type="button" id="submitFormBtn" onclick="confirmSubmitForm()" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center" disabled>
+                    <i class="fas fa-check mr-2"></i>
+                    Submit Form
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
         </form>
     </div>
 </div>
@@ -1127,7 +1192,223 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     @endif
 });
+
 </script>
+<script>
+// Per Capita Income Calculation Functions
+function calculatePerCapitaIncome() {
+    // Get total net income
+    const netIncome = parseFloat(document.getElementById('house_net_income').value) || 0;
+    
+    // Count number of family members (including head of family)
+    const familyRows = document.querySelectorAll('#family_members_tbody tr');
+    const numberOfFamilyMembers = familyRows.length + 1; // +1 for head of family
+    
+    // Calculate per capita income
+    const perCapitaIncome = numberOfFamilyMembers > 0 ? (netIncome / numberOfFamilyMembers) : 0;
+    
+    // Update the readonly fields
+    const numMembersField = document.getElementById('number_of_family_members');
+    const perCapitaField = document.getElementById('per_capita_income');
+    
+    if (numMembersField) numMembersField.value = numberOfFamilyMembers;
+    if (perCapitaField) perCapitaField.value = perCapitaIncome.toFixed(2);
+    
+    // Update hidden fields for form submission (if they exist)
+    const numMembersHidden = document.getElementById('number_of_family_members_hidden');
+    const perCapitaHidden = document.getElementById('per_capita_income_hidden');
+    
+    if (numMembersHidden) numMembersHidden.value = numberOfFamilyMembers;
+    if (perCapitaHidden) perCapitaHidden.value = perCapitaIncome.toFixed(2);
+}
+
+// Modified calculateIncomes function to include per capita calculation
+function calculateIncomes() {
+    console.log('Calculating incomes...');
+    
+    // 1. Calculate Total Family Income from Family Members
+    let totalFamilyIncome = 0;
+    const incomeInputs = document.querySelectorAll('input[name="family_member_income[]"]');
+    incomeInputs.forEach(input => {
+        const incomeValue = parseFloat(input.value) || 0;
+        totalFamilyIncome += incomeValue;
+    });
+
+    // 2. Get Other Income and add to Total Income
+    const otherIncome = parseFloat(document.getElementById('other_income').value) || 0;
+    
+    // 3. Calculate Total Income (Family Members Income + Other Income)
+    const houseTotalIncome = totalFamilyIncome + otherIncome;
+    
+    // Set total income
+    document.getElementById('house_total_income').value = houseTotalIncome.toFixed(2);
+
+    // 4. Calculate Total Expenses
+    const houseRent = parseFloat(document.getElementById('house_rent').value) || 0;
+    const lotRent = parseFloat(document.getElementById('lot_rent').value) || 0;
+    const houseWater = parseFloat(document.getElementById('house_water').value) || 0;
+    const houseElectric = parseFloat(document.getElementById('house_electric').value) || 0;
+    
+    // Total expenses (house rent + lot rent + water + electric)
+    const totalExpenses = houseRent + lotRent + houseWater + houseElectric;
+    
+    // 5. Calculate Net Income (Total Income - Total Expenses)
+    const netIncome = houseTotalIncome - totalExpenses;
+    
+    document.getElementById('house_net_income').value = netIncome.toFixed(2);
+
+    // 6. Calculate Per Capita Income
+    calculatePerCapitaIncome();
+
+    // 7. Enable the Next button (removed disabled attribute)
+    const additionalNextBtn = document.getElementById('additional-next-btn');
+    if (additionalNextBtn) {
+        additionalNextBtn.disabled = false;
+    }
+}
+
+// Modified addFamilyMemberRow function to trigger income calculation when adding members
+function addFamilyMemberRow() {
+    const tbody = document.getElementById('family_members_tbody');
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td class="border px-2 py-1">
+            <input type="text" name="family_member_name[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" placeholder="Full Name" oninput="calculateIncomes()">
+        </td>
+        <td class="border px-2 py-1">
+            <select name="family_member_relation[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
+          <option value="">Select</option>
+          <option value="Spouse">Spouse</option>
+          <option value="Son">Son</option>
+          <option value="Daughter">Daughter</option>
+          <option value="Father">Father</option>
+          <option value="Mother">Mother</option>
+          <option value="Brother">Brother</option>
+          <option value="Sister">Sister</option>
+          <option value="Grandchild">Grandchild</option>
+          <option value="Other">Other</option>
+            </select>
+        </td>
+        <td class="border px-2 py-1">
+            <input type="date" name="family_member_birthdate[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" onchange="calculateAge(this)">
+        </td>
+        <td class="border px-2 py-1">
+            <input type="number" name="family_member_age[]" class="w-full border border-gray-300 rounded px-2 py-1 bg-gray-50 text-gray-600" placeholder="Age" readonly>
+        </td>
+        <td class="border px-2 py-1">
+            <select name="family_member_sex[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
+                <option value="">Select Sex</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+        </td>
+        <td class="border px-2 py-1">
+            <select name="family_member_civil_status[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
+          <option value="">Select</option>
+          <option value="Single">Single</option>
+          <option value="Married">Married</option>
+          <option value="Widowed">Widowed</option>
+          <option value="Divorced">Divorced</option>
+          <option value="Separated">Separated</option>
+            </select>
+        </td>
+        <td class="border px-2 py-1">
+            <select name="family_member_education[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
+          <option value="">Select</option>
+          <option value="None">None</option>
+          <option value="Elementary">Elementary</option>
+          <option value="High School">High School</option>
+          <option value="College">College</option>
+          <option value="Vocational">Vocational</option>
+          <option value="Graduate">Graduate</option>
+            </select>
+        </td>
+        <td class="border px-2 py-1">
+            <input type="text" name="family_member_occupation[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" placeholder="Occupation">
+        </td>
+        <td class="border px-2 py-1">
+            <input type="number" step="0.01" name="family_member_income[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200" placeholder="0.00" oninput="calculateIncomes()">
+        </td>
+        <td class="border px-2 py-1">
+            <select name="family_member_remarks[]" class="w-full border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all duration-200">
+                                     <option value="">Select</option>
+          <option value="CIC">CIC</option>
+          <option value="OSY">OSY</option>
+          <option value="SP">SP</option>
+          <option value="PWD">PWD</option>
+          <option value="SC">SC</option>
+          <option value="None">None</option>
+          <option value="Lactating Mother">Lactating Mother</option>
+          <option value="Pregnant Mother">Pregnant Mother</option>
+            </select>
+        </td>
+        <td class="border px-2 py-1 text-center">
+            <button type="button" onclick="this.parentElement.parentElement.remove(); calculateIncomes();" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors duration-200">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(row);
+    
+    // Trigger calculation after adding new row
+    calculateIncomes();
+}
+
+// Function to calculate age from birthdate
+function calculateAge(birthdateInput) {
+    const birthdate = new Date(birthdateInput.value);
+    const today = new Date();
+
+    if (isNaN(birthdate)) {
+        return;
+    }
+
+    let age = today.getFullYear() - birthdate.getFullYear();
+    const monthDiff = today.getMonth() - birthdate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthdate.getDate())) {
+        age--;
+    }
+
+    // Find the age input in the same row
+    const row = birthdateInput.closest('tr');
+    const ageInput = row.querySelector('input[name="family_member_age[]"]');
+    if (ageInput) {
+        ageInput.value = age;
+    }
+}
+
+// Initialize per capita calculation when modal opens
+function initializePerCapitaCalculation() {
+    // Recalculate when modal opens
+    setTimeout(calculateIncomes, 100);
+}
+
+// Add event listeners for income-related fields
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to existing income fields
+    const incomeFields = [
+        'other_income', 'house_rent', 'lot_rent', 'house_water', 'house_electric'
+    ];
+    
+    incomeFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', calculateIncomes);
+        }
+    });
+    
+    // Also add to house and lot selection changes
+    const houseSelect = document.getElementById('house_house');
+    const lotSelect = document.getElementById('house_lot');
+    
+    if (houseSelect) houseSelect.addEventListener('change', calculateIncomes);
+    if (lotSelect) lotSelect.addEventListener('change', calculateIncomes);
+});
+</script>
+
 <script src="{{ asset('js/screening_refresh.js') }}"></script>
+<script src="{{ asset('js/remarks-classification.js') }}"></script>
 </body>
 </html>
