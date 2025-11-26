@@ -734,4 +734,51 @@ private function sendScholarSmsAlternative($mobile, $message)
         return ['success' => false, 'message' => 'SMS exception: ' . $e->getMessage()];
     }
 }
+public function getScholarPersonalInfo($scholar_id)
+{
+    try {
+        $scholar = DB::table('tbl_scholar as s')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->where('s.scholar_id', $scholar_id)
+            ->select(
+                's.scholar_id',
+                's.scholar_status',
+                's.date_activated',
+                'a.applicant_id',
+                'a.applicant_fname',
+                'a.applicant_mname',
+                'a.applicant_lname',
+                'a.applicant_suffix',
+                'a.applicant_gender',
+                'a.applicant_bdate',
+                'a.applicant_civil_status',
+                'a.applicant_brgy',
+                'a.applicant_email',
+                'a.applicant_contact_number',
+                'a.applicant_school_name',
+                'a.applicant_year_level',
+                'a.applicant_course',
+                'a.applicant_acad_year'
+            )
+            ->first();
+
+        if (!$scholar) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Scholar not found.'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'scholar' => $scholar
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching scholar information: ' . $e->getMessage()
+        ], 500);
+    }
+}
 }

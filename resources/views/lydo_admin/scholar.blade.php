@@ -15,6 +15,7 @@
 </head>
 
 <style>
+
 /* Pagination Styles */
 .pagination-container {
     display: flex;
@@ -395,8 +396,7 @@
                                 <p>This section displays all scholars currently enrolled in the scholarship program. You can view scholar information, track their academic progress, and manage their scholarship status. Use the filters to find specific scholars by name, barangay, academic year, or status.</p>
                                 <p class="mt-2 text-amber-600 font-medium">
                                     <i class="fas fa-exclamation-triangle mr-1"></i>
-                                    <strong>Note:</strong> Scholars are categorized by status: Active, Inactive, or Graduated. Make sure to update scholar status regularly to maintain accurate records.
-                                </p>
+                                    <strong>Note:</strong> Scholars are categorized by status: Active, Inactive, or Graduated. Use the status filter to view scholars based on their current standing in the program.
                             </div>                <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
                     <form method="GET" action="{{ route('LydoAdmin.scholar') }}" id="filterForm">
                         <div class="flex flex-col md:flex-row gap-4">
@@ -473,8 +473,9 @@
                                     <th class="px-4 py-3 border border-gray-200 text-center">School</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Course</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Academic Year</th>
-                                    <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Personal Info</th>
                                     <th class="px-4 py-3 border border-gray-200 text-center">Document</th>
+                                    <th class="px-4 py-3 border border-gray-200 text-center">Status</th>
                                 </tr>
                             </thead>
                            <tbody>
@@ -506,17 +507,23 @@
                                             <div class="text-sm text-gray-900">{{ $scholar->applicant_acad_year ?? 'N/A' }}</div>
                                         </td>
                                         <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <button class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors" 
+                                                    onclick="openPersonalInfoModal({{ $scholar->scholar_id }})">
+                                                View Info
+                                            </button>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
+                                            <button class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors" onclick="openDocumentModal({{ $scholar->scholar_id }})">
+                                                Renewal History
+                                            </button>
+                                        </td>
+                                        <td class="px-4 border border-gray-200 py-2 text-center">
                                             <span class="px-2 py-1 text-xs font-semibold rounded-full 
                                                 {{ $scholar->scholar_status == 'active' ? 'bg-green-100 text-green-800' : 
                                                 ($scholar->scholar_status == 'rejected' ? 'bg-red-100 text-red-800' : 
                                                 ($scholar->scholar_status == 'graduated' ? 'bg-violet-100 text-violet-800' : 'bg-gray-100 text-gray-800')) }}">
                                                 {{ ucfirst($scholar->scholar_status) }}
                                             </span>
-                                        </td>
-                                        <td class="px-4 border border-gray-200 py-2 text-center">
-                                            <button class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors" onclick="openDocumentModal({{ $scholar->scholar_id }})">
-                                                Renewal History
-                                            </button>
                                         </td>
                                    </tr>
                                 @empty
@@ -820,6 +827,102 @@
     </div>
 </div>
 
+<!-- Add this modal after the existing modals -->
+<!-- Personal Information Modal -->
+<div id="personalInfoModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-1 mx-auto p-4 md:p-6 border w-full max-w-4xl shadow-2xl rounded-xl bg-white max-h-[98vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+            <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                <i class="fas fa-user-circle text-blue-600 mr-3"></i>
+                Scholar Personal Information
+            </h3>
+            <button type="button" id="closePersonalInfoModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Personal Information -->
+            <div class="bg-white border border-gray-200 rounded-lg p-6">
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">Personal Details</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <p id="infoFullName" class="text-sm text-gray-900 bg-gray-50 p-2 rounded">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                        <p id="infoGender" class="text-sm text-gray-900 bg-gray-50 p-2 rounded">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Birth Date</label>
+                        <p id="infoBirthDate" class="text-sm text-gray-900 bg-gray-50 p-2 rounded">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Civil Status</label>
+                        <p id="infoCivilStatus" class="text-sm text-gray-900 bg-gray-50 p-2 rounded">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Barangay</label>
+                        <p id="infoBarangay" class="text-sm text-gray-900 bg-gray-50 p-2 rounded">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+                        <p id="infoContact" class="text-sm text-gray-900 bg-gray-50 p-2 rounded">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Academic Information -->
+            <div class="bg-white border border-gray-200 rounded-lg p-6">
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">Academic Information</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">School</label>
+                        <p id="infoSchool" class="text-sm text-gray-900 bg-gray-50 p-2 rounded">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Course</label>
+                        <p id="infoCourse" class="text-sm text-gray-900 bg-gray-50 p-2 rounded">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Year Level</label>
+                        <p id="infoYearLevel" class="text-sm text-gray-900 bg-gray-50 p-2 rounded">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Academic Year</label>
+                        <p id="infoAcadYear" class="text-sm text-gray-900 bg-gray-50 p-2 rounded">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scholarship Information -->
+            <div class="bg-white border border-gray-200 rounded-lg p-6">
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">Scholarship Information</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Scholar ID</label>
+                        <p id="infoScholarId" class="text-sm text-gray-900 bg-gray-50 p-2 rounded">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <p id="infoScholarStatus" class="text-sm text-gray-900 bg-gray-50 p-2 rounded">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date Activated</label>
+                        <p id="infoDateActivated" class="text-sm text-gray-900 bg-gray-50 p-2 rounded">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end pt-6 border-t border-gray-200 mt-6">
+            <button type="button" id="closePersonalInfo" class="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
 <script>
 // Global variables for checkbox management
 let selectAllCheckbox = null;
@@ -2473,6 +2576,92 @@ function updateSmsModalSelection() {
         });
     }
 }
+// Personal Information Modal functionality
+function openPersonalInfoModal(scholarId) {
+    const modal = document.getElementById('personalInfoModal');
+    
+    // Show loading state
+    modal.classList.remove('hidden');
+    document.getElementById('infoFullName').textContent = 'Loading...';
+    
+    // Fetch scholar personal information
+    fetch(`/lydo_admin/get-scholar-personal-info/${scholarId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const scholar = data.scholar;
+                
+                // Personal Information
+                document.getElementById('infoFullName').textContent = 
+                    `${scholar.applicant_lname}${scholar.applicant_suffix ? ' ' + scholar.applicant_suffix : ''}, ${scholar.applicant_fname} ${scholar.applicant_mname || ''}`;
+                document.getElementById('infoGender').textContent = scholar.applicant_gender || 'N/A';
+                document.getElementById('infoBirthDate').textContent = scholar.applicant_bdate ? new Date(scholar.applicant_bdate).toLocaleDateString() : 'N/A';
+                document.getElementById('infoCivilStatus').textContent = scholar.applicant_civil_status || 'N/A';
+                document.getElementById('infoBarangay').textContent = scholar.applicant_brgy || 'N/A';
+                document.getElementById('infoContact').textContent = scholar.applicant_contact_number || 'N/A';
+                
+                // Academic Information
+                document.getElementById('infoSchool').textContent = scholar.applicant_school_name || 'N/A';
+                document.getElementById('infoCourse').textContent = scholar.applicant_course || 'N/A';
+                document.getElementById('infoYearLevel').textContent = scholar.applicant_year_level || 'N/A';
+                document.getElementById('infoAcadYear').textContent = scholar.applicant_acad_year || 'N/A';
+                
+                // Scholarship Information
+                document.getElementById('infoScholarId').textContent = scholar.scholar_id || 'N/A';
+                document.getElementById('infoScholarStatus').textContent = scholar.scholar_status ? scholar.scholar_status.charAt(0).toUpperCase() + scholar.scholar_status.slice(1) : 'N/A';
+                document.getElementById('infoDateActivated').textContent = scholar.date_activated ? new Date(scholar.date_activated).toLocaleDateString() : 'N/A';
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.message || 'Failed to load scholar information.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                modal.classList.add('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching scholar info:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'Failed to load scholar information.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            modal.classList.add('hidden');
+        });
+}
+
+// Add modal close functionality
+function initializePersonalInfoModalClose() {
+    const closePersonalInfoModal = document.getElementById('closePersonalInfoModal');
+    const closePersonalInfo = document.getElementById('closePersonalInfo');
+    const modal = document.getElementById('personalInfoModal');
+
+    if (closePersonalInfoModal) {
+        closePersonalInfoModal.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+    }
+
+    if (closePersonalInfo) {
+        closePersonalInfo.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+        }
+    });
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializePersonalInfoModalClose();
+});
 </script>
 
 <script src="{{ asset('js/filter_paginate.js') }}"></script>
