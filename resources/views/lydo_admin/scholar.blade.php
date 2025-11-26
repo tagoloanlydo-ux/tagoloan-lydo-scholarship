@@ -1424,7 +1424,19 @@ const paginationState = {
 function getFullNameForSorting(row) {
     const nameCell = row.cells[1];
     if (!nameCell) return '';
+    
+    const nameDiv = nameCell.querySelector('div');
+    if (nameDiv) {
+        return nameDiv.textContent.trim().toLowerCase();
+    }
+    
     return nameCell.textContent.trim().toLowerCase();
+}
+
+// Helper function to capitalize first letter
+function capitalizeFirst(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
 // Function to sort rows alphabetically by last name
@@ -1559,7 +1571,6 @@ function goToScholarPage(page) {
     state.currentPage = page;
     updateScholarPagination();
 }
-
 // Initialize filtering functionality
 function initializeScholarFiltering() {
     const searchInput = document.getElementById('searchInput');
@@ -1573,25 +1584,44 @@ function initializeScholarFiltering() {
         const selectedAcademicYear = academicYearSelect.value;
         const selectedStatus = statusSelect.value.toLowerCase();
 
+        console.log('Filtering with:', {
+            searchTerm,
+            selectedBarangay,
+            selectedAcademicYear,
+            selectedStatus
+        });
+
         const filteredRows = paginationState.allRows.filter(row => {
             const nameCell = row.cells[1];
             const barangayCell = row.cells[2];
             const academicYearCell = row.cells[6];
-            const statusCell = row.cells[7];
+            const statusCell = row.cells[9]; // Fixed: Status is in column 9 (0-based index)
 
-            if (!nameCell || !barangayCell || !academicYearCell || !statusCell) return false;
+            if (!nameCell || !barangayCell || !academicYearCell || !statusCell) {
+                console.log('Missing cells in row:', row);
+                return false;
+            }
 
             const name = nameCell.textContent.toLowerCase();
             const barangay = barangayCell.textContent.trim();
             const academicYear = academicYearCell.textContent.trim();
-            const status = statusCell.textContent.trim().toLowerCase();
+            const statusSpan = statusCell.querySelector('span');
+            const status = statusSpan ? statusSpan.textContent.trim().toLowerCase() : '';
 
-            const nameMatch = name.includes(searchTerm);
+            console.log('Row data:', { name, barangay, academicYear, status });
+
+            const nameMatch = !searchTerm || name.includes(searchTerm);
             const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
             const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
             const statusMatch = selectedStatus === 'all' || status === selectedStatus;
 
-            return nameMatch && barangayMatch && academicYearMatch && statusMatch;
+            const shouldShow = nameMatch && barangayMatch && academicYearMatch && statusMatch;
+            
+            if (shouldShow) {
+                console.log('Showing row:', name);
+            }
+
+            return shouldShow;
         });
 
         // Sort filtered results alphabetically
@@ -1602,9 +1632,14 @@ function initializeScholarFiltering() {
         paginationState.currentPage = 1;
         updateScholarPagination();
         
+        console.log('Filtered results:', filteredRows.length);
+        
         // Reset select all checkbox
-        document.getElementById('selectAll').checked = false;
-        document.getElementById('selectAll').indeterminate = false;
+        const selectAllCheckbox = document.getElementById('selectAll');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        }
         
         // Update button states
         updateButtonStates();
@@ -1613,32 +1648,25 @@ function initializeScholarFiltering() {
     // Add event listeners with debouncing
     if (searchInput) {
         searchInput.addEventListener('input', debounce(filterScholarTable, 300));
+        console.log('Search input listener added');
     }
     if (barangaySelect) {
         barangaySelect.addEventListener('change', filterScholarTable);
+        console.log('Barangay select listener added');
     }
     if (academicYearSelect) {
         academicYearSelect.addEventListener('change', filterScholarTable);
+        console.log('Academic year select listener added');
     }
     if (statusSelect) {
         statusSelect.addEventListener('change', filterScholarTable);
+        console.log('Status select listener added');
     }
-}
 
-// Debounce function for search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
+    // Initial filter application
+    setTimeout(filterScholarTable, 100);
 }
-
-// Document Modal functionality
+/// Document Modal functionality
 function openDocumentModal(scholarId) {
     const modal = document.getElementById('documentModal');
     const scholarName = document.getElementById('docScholarName');

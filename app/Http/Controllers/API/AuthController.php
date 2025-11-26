@@ -155,6 +155,10 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
+        if ($user === null) {
+            return $this->errorResponse('Unauthenticated', 401);
+        }
+
         // Check if it's a scholar
         if ($user instanceof Scholar) {
             $user->load('applicant');
