@@ -475,9 +475,10 @@ function openModal() {
             } else {
                 certInput.required = true;
             }
-            // show red border if needs update
             certInput.classList.toggle('border-red-300', !!badDocuments.renewal_cert_of_reg);
             certInput.classList.toggle('bg-red-50', !!badDocuments.renewal_cert_of_reg);
+            certInput.style.pointerEvents = 'auto';
+            certInput.style.zIndex = 10;
         }
 
         if (gradeInput) {
@@ -488,6 +489,8 @@ function openModal() {
             }
             gradeInput.classList.toggle('border-red-300', !!badDocuments.renewal_grade_slip);
             gradeInput.classList.toggle('bg-red-50', !!badDocuments.renewal_grade_slip);
+            gradeInput.style.pointerEvents = 'auto';
+            gradeInput.style.zIndex = 10;
         }
 
         if (brgyInput) {
@@ -498,156 +501,53 @@ function openModal() {
             }
             brgyInput.classList.toggle('border-red-300', !!badDocuments.renewal_brgy_indigency);
             brgyInput.classList.toggle('bg-red-50', !!badDocuments.renewal_brgy_indigency);
+            brgyInput.style.pointerEvents = 'auto';
+            brgyInput.style.zIndex = 10;
         }
+
+        // Ensure the container click delegates to the file input so any click opens the picker
+        ensureFileContainersClickable();
 
         // Update submit button and validation state
         updateSubmitButton();
     }
 
-    function updateSubmitButton() {
-        const submitButton = document.getElementById('submitButton');
-        
-        if (renewalExists && hasBadDocuments) {
-            // Red button for bad documents
-            submitButton.classList.remove('bg-violet-600', 'hover:bg-violet-700', 'bg-gray-400', 'cursor-not-allowed');
-            submitButton.classList.add('bg-red-600', 'hover:bg-red-700');
-            submitButton.innerHTML = 'Update Required Documents';
-            submitButton.disabled = false;
-        } else if (renewalExists && !hasBadDocuments) {
-            // Gray button - DISABLED when all documents are good
-            submitButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'bg-violet-600', 'hover:bg-violet-700');
-            submitButton.classList.add('bg-gray-400', 'cursor-not-allowed');
-            submitButton.innerHTML = 'All Documents are Good';
-            submitButton.disabled = true;
-        } else {
-            // Violet button for new applications
-            submitButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'bg-gray-400', 'cursor-not-allowed');
-            submitButton.classList.add('bg-violet-600', 'hover:bg-violet-700');
-            submitButton.innerHTML = 'Submit Application';
-            submitButton.disabled = false;
-        }
-    }
+    // Delegates container clicks to file inputs and ensures pointer-events enabled
+    function ensureFileContainersClickable() {
+        const mappings = [
+            { containerId: 'cert_of_reg_container', inputId: 'renewal_cert_of_reg' },
+            { containerId: 'grade_slip_container', inputId: 'renewal_grade_slip' },
+            { containerId: 'brgy_indigency_container', inputId: 'renewal_brgy_indigency' }
+        ];
 
-    function resetFormValidation() {
-        const errorDivs = document.querySelectorAll('[id$="_error"]');
-        errorDivs.forEach(div => {
-            div.classList.add('hidden');
-        });
-    }
+        mappings.forEach(({ containerId, inputId }) => {
+            const container = document.getElementById(containerId);
+            const input = document.getElementById(inputId);
+            if (!container || !input) return;
 
-    // Set current academic year and year level
-    function setCurrentAcademicYearAndYearLevel() {
-        const now = new Date();
-        const currentYear = now.getFullYear();
+            // Make sure the container is interactive
+            container.classList.remove('pointer-events-none');
+            container.style.pointerEvents = 'auto';
+            container.style.cursor = 'pointer';
 
-        // cutoff is July 10 of currentYear
-        const july10 = new Date(currentYear, 6, 10, 23, 59, 59); // month is 0-based: 6 = July
-        let academicYear;
+            // Ensure input is interactive and above any overlay
+            input.style.pointerEvents = 'auto';
+            input.style.zIndex = 10;
 
-        if (now > july10) {
-            academicYear = currentYear + '-' + (currentYear + 1);
-        } else {
-            academicYear = (currentYear - 1) + '-' + currentYear;
-        }
-
-        document.getElementById('renewal_acad_year').value = academicYear;
-        calculateYearLevel(academicYear);
-    }
-
-    function calculateYearLevel(currentAcademicYear) {
-        const startingAcademicYear = "{{ session('scholar')->applicant->applicant_acad_year ?? '2024-2025' }}";
-        const startingYearLevel = "{{ session('scholar')->applicant->applicant_year_level ?? '1st Year' }}";
-        
-        const startYear = parseInt(startingAcademicYear.split('-')[0]);
-        const currentYear = parseInt(currentAcademicYear.split('-')[0]);
-        
-        const yearDifference = currentYear - startYear;
-        
-        const yearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
-        const startIndex = yearLevels.indexOf(startingYearLevel);
-        
-        if (startIndex !== -1) {
-            const newIndex = startIndex + yearDifference;
-            if (newIndex < yearLevels.length) {
-                document.getElementById('applicant_year_level').value = yearLevels[newIndex];
-            } else {
-                document.getElementById('applicant_year_level').value = '5th Year';
-            }
-        } else {
-            document.getElementById('applicant_year_level').value = yearLevels[yearDifference] || '2nd Year';
-        }
-    }
-
-    // File validation
-    function validateFileSize(fileInput, errorDivId) {
-        const file = fileInput.files[0];
-        const errorDiv = document.getElementById(errorDivId);
-        const maxSize = 5 * 1024 * 1024;
-
-        if (file && file.size > maxSize) {
-            errorDiv.classList.remove('hidden');
-            return false;
-        } else {
-            errorDiv.classList.add('hidden');
-            return true;
-        }
-    }
-
-    // Add event listeners to file inputs
-    document.getElementById('renewal_cert_of_reg')?.addEventListener('change', function() {
-        validateFileSize(this, 'cert_of_reg_error');
-    });
-
-    document.getElementById('renewal_grade_slip')?.addEventListener('change', function() {
-        validateFileSize(this, 'grade_slip_error');
-    });
-
-    document.getElementById('renewal_brgy_indigency')?.addEventListener('change', function() {
-        validateFileSize(this, 'brgy_indigency_error');
-    });
-
-    // Form submission with confirmation
-    document.getElementById('renewalForm')?.addEventListener('submit', function(e) {
-        // Prevent submission if renewal exists but no bad documents
-        if (renewalExists && !hasBadDocuments) {
-            e.preventDefault();
-            Swal.fire({
-                title: 'No Updates Needed',
-                text: 'All your documents are currently marked as good. No need to update.',
-                icon: 'info',
-                confirmButtonColor: '#7c3aed'
-            });
-            return;
-        }
-
-        e.preventDefault();
-        const isUpdate = renewalExists;
-        const confirmTitle = isUpdate ? 'Update Renewal Application?' : 'Submit Renewal Application?';
-        const confirmText = isUpdate
-            ? 'Are you sure you want to update your renewal application? This will replace any existing files you upload.'
-            : 'Are you sure you want to submit your renewal application? Please ensure all information is correct.';
-
-        Swal.fire({
-            title: confirmTitle,
-            text: confirmText,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#7c3aed',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: isUpdate ? 'Yes, Update' : 'Yes, Submit',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const submitButton = document.querySelector('button[type="submit"]');
-                const originalText = submitButton.textContent;
-                submitButton.textContent = 'Processing...';
-                submitButton.disabled = true;
-                this.submit();
+            // Attach one click listener on the container to open file picker
+            if (!input.dataset.clickAttached) {
+                container.addEventListener('click', function (e) {
+                    // If clicking the input directly, do nothing (native behavior)
+                    if (e.target === input) return;
+                    // Open the file picker
+                    input.click();
+                });
+                input.dataset.clickAttached = '1';
             }
         });
-    });
+    }
 
-    // Close modal handlers
+    // ...existing code...
     document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('renewalModal');
         
@@ -662,6 +562,9 @@ function openModal() {
                 closeModal();
             }
         });
+
+        // Ensure file containers are clickable on load
+        ensureFileContainersClickable();
     });
 
     // Logout confirmation
