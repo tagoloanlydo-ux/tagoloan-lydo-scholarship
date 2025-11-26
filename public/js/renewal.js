@@ -45,7 +45,7 @@ function initializeDocumentUpdateTracker() {
     });
 }
 
-// Fixed openRenewalDocumentViewer function with proper document path handling
+// Open document viewer with rating controls
 function openRenewalDocumentViewer(documentUrl, title, documentType, renewalId) {
     // IMPORTANT: Ensure renewalId is passed and set
     if (!renewalId) {
@@ -61,27 +61,11 @@ function openRenewalDocumentViewer(documentUrl, title, documentType, renewalId) 
     console.log('Opening document viewer:', {
         documentType: documentType,
         renewalId: renewalId,
-        currentRenewalId: currentRenewalId,
-        documentUrl: documentUrl
+        currentRenewalId: currentRenewalId
     });
     
-    // FIX: Properly construct the document URL
-    let fullDocumentUrl = documentUrl;
-    
-    // If the URL doesn't start with http or /, prepend the storage path
-    if (!documentUrl.startsWith('http') && !documentUrl.startsWith('/')) {
-        fullDocumentUrl = '/storage/' + documentUrl;
-    }
-    
-    // If it's already a storage path but missing the leading slash, add it
-    if (documentUrl.startsWith('storage/')) {
-        fullDocumentUrl = '/' + documentUrl;
-    }
-    
-    console.log('Final document URL:', fullDocumentUrl);
-    
     document.getElementById('documentTitle').textContent = title;
-    document.getElementById('documentViewer').src = fullDocumentUrl;
+    document.getElementById('documentViewer').src = documentUrl;
     document.getElementById('documentLoading').style.display = 'flex';
     document.getElementById('documentViewerModal').classList.remove('hidden');
 
@@ -179,21 +163,6 @@ function openRenewalDocumentViewer(documentUrl, title, documentType, renewalId) 
         document.getElementById('documentLoading').style.display = 'none';
         document.getElementById('documentViewer').style.display = 'block';
     };
-    
-    // Handle iframe loading errors
-    document.getElementById('documentViewer').onerror = function() {
-        console.error('Failed to load document:', fullDocumentUrl);
-        document.getElementById('documentLoading').style.display = 'none';
-        document.getElementById('documentViewer').style.display = 'none';
-        
-        // Show error message
-        Swal.fire({
-            title: 'Document Load Error',
-            text: 'Failed to load the document. It may be missing or the path is incorrect.',
-            icon: 'error',
-            confirmButtonText: 'OK'
-        });
-    };
 }
 
 // Close document viewer modal
@@ -216,6 +185,8 @@ function clearRenewalRatingsFromStorage(renewalId) {
     const storageKey = `renewal_ratings_${renewalId}`;
     localStorage.removeItem(storageKey);
 }
+
+
 
 // Fallback function using only localStorage
 function fallbackToLocalStorage(renewalId) {
@@ -290,7 +261,7 @@ function openRenewalModal(scholarId) {
                     <h4 class="text-gray-800 font-semibold mb-3">Submitted Documents</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="document-item-wrapper">
-                            <button onclick="openRenewalDocumentViewer('${r.renewal_cert_of_reg}', 'Certificate of Registration', 'cert_of_reg', ${r.renewal_id})"
+                            <button onclick="openRenewalDocumentViewer('/storage/${r.renewal_cert_of_reg}', 'Certificate of Registration', 'cert_of_reg', ${r.renewal_id})"
                                    class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-blue-50 transition w-full">
                                 <i class="fas fa-file-alt text-violet-600 text-2xl mb-2" id="icon-cert_of_reg"></i>
                                 <span class="text-sm font-medium text-gray-700 text-center">Certificate of Reg.</span>
@@ -298,7 +269,7 @@ function openRenewalModal(scholarId) {
                             <div class="document-status-badge hidden" id="badge-cert_of_reg"></div>
                         </div>
                         <div class="document-item-wrapper">
-                            <button onclick="openRenewalDocumentViewer('${r.renewal_grade_slip}', 'Grade Slip', 'grade_slip', ${r.renewal_id})"
+                            <button onclick="openRenewalDocumentViewer('/storage/${r.renewal_grade_slip}', 'Grade Slip', 'grade_slip', ${r.renewal_id})"
                                    class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-green-50 transition w-full">
                                 <i class="fas fa-file-alt text-violet-600 text-2xl mb-2" id="icon-grade_slip"></i>
                                 <span class="text-sm font-medium text-gray-700 text-center">Grade Slip</span>
@@ -306,7 +277,7 @@ function openRenewalModal(scholarId) {
                             <div class="document-status-badge hidden" id="badge-grade_slip"></div>
                         </div>
                         <div class="document-item-wrapper">
-                            <button onclick="openRenewalDocumentViewer('${r.renewal_brgy_indigency}', 'Barangay Indigency', 'brgy_indigency', ${r.renewal_id})"
+                            <button onclick="openRenewalDocumentViewer('/storage/${r.renewal_brgy_indigency}', 'Barangay Indigency', 'brgy_indigency', ${r.renewal_id})"
                                    class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-purple-50 transition w-full">
                                 <i class="fas fa-file-alt text-violet-600 text-2xl mb-2" id="icon-brgy_indigency"></i>
                                 <span class="text-sm font-medium text-gray-700 text-center">Barangay Indigency</span>
@@ -329,7 +300,6 @@ function openRenewalModal(scholarId) {
 
     document.getElementById('openRenewalModal').classList.remove('hidden');
 }
-
 // Enhanced update document badge based on status
 function updateRenewalDocumentBadge(documentType, status) {
     const badge = document.getElementById(`badge-${documentType}`);
@@ -495,7 +465,6 @@ function refreshDocumentStatuses(renewalId) {
     // Reload from database
     loadRenewalDocumentStatuses(renewalId);
 }
-
 function checkAllRenewalDocumentsRated() {
     const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
 
@@ -529,6 +498,7 @@ function checkAllRenewalDocumentsRated() {
         console.log('Hiding buttons - No bad documents and not all rated');
     }
 }
+
 
 function updateRenewalActionButtons(goodCount, badCount, newCount = 0) {
     console.log(`Good: ${goodCount}, Bad: ${badCount}, New: ${newCount}`);
@@ -807,6 +777,7 @@ function getCsrfToken() {
     return '';
 }
 
+
 // Fixed markRenewalDocumentAsGood function - success message stays until OK is clicked
 function markRenewalDocumentAsGood(documentType) {
     Swal.fire({
@@ -1056,6 +1027,14 @@ function saveRenewalDocumentStatus(documentType, status, reason = '') {
         });
     });
 }
+// add helper to get CSRF token from meta
+function getCsrfToken() {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) return meta.getAttribute('content');
+    // fallback: try to read existing form token if present
+    const input = document.querySelector('input[name="_token"]');
+    return input ? input.value : '';
+}
 
 // In saveRenewalDocumentComment function - UPDATE THIS:
 function saveRenewalDocumentComment(documentType, comment) {
@@ -1156,6 +1135,49 @@ function loadRenewalDocumentComment(documentType) {
         });
 }
 
+
+function updateRenewalActionButtons(goodCount, badCount, newCount = 0) {
+    console.log(`Good: ${goodCount}, Bad: ${badCount}, New: ${newCount}`);
+
+    const actionButtons = document.getElementById('actionButtons');
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
+    const approveBtn = document.getElementById('approveBtn');
+    const rejectBtn = document.getElementById('rejectBtn');
+
+    actionButtons.style.display = 'flex';
+
+    const totalDocuments = 3;
+    const allGood = goodCount === totalDocuments;
+    const hasBadDocuments = badCount > 0;
+    const hasNewDocuments = newCount > 0;
+    
+    if (allGood) {
+        // ALL DOCUMENTS ARE GOOD - Show ONLY APPROVE button
+        sendEmailBtn.style.display = 'none';
+        approveBtn.style.display = 'flex';
+        rejectBtn.style.display = 'none';
+        console.log('All documents good - showing ONLY Approve button');
+    } else if (hasBadDocuments) {
+        // HAS BAD DOCUMENTS - Show Send Email and Reject buttons
+        sendEmailBtn.style.display = 'flex';
+        approveBtn.style.display = 'none';
+        rejectBtn.style.display = 'flex';
+        console.log('Bad documents found - showing Send Email and Reject buttons');
+    } else if (hasNewDocuments) {
+        // HAS NEW DOCUMENTS - Show both buttons but Approve might be disabled
+        sendEmailBtn.style.display = 'none';
+        approveBtn.style.display = 'flex';
+        rejectBtn.style.display = 'flex';
+        console.log('New documents found - showing both buttons');
+    } else {
+        // MIXED or NOT ALL RATED - Show both Approve and Reject buttons
+        sendEmailBtn.style.display = 'none';
+        approveBtn.style.display = 'flex';
+        rejectBtn.style.display = 'flex';
+        console.log('Mixed status - showing both Approve and Reject buttons');
+    }
+}
+// Update document modal UI based on current status
 function updateRenewalDocumentModalUI(documentType) {
     const status = renewalDocumentStatuses[documentType];
     
@@ -1495,7 +1517,7 @@ function openViewRenewalModal(renewalId, renewalStatus) {
                     <h4 class="text-gray-800 font-semibold mb-3">Submitted Documents</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="document-item-wrapper">
-                            <button onclick="openRenewalDocumentViewer('${r.renewal_cert_of_reg}', 'Certificate of Registration - ${r.renewal_acad_year} ${r.renewal_semester}', 'cert_of_reg', ${r.renewal_id})"
+                            <button onclick="openRenewalDocumentViewer('/storage/${r.renewal_cert_of_reg}', 'Certificate of Registration - ${r.renewal_acad_year} ${r.renewal_semester}', 'cert_of_reg', ${r.renewal_id})"
                                    class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-blue-50 transition w-full relative">
                                 <i class="fas fa-file-alt text-violet-600 text-2xl mb-2" id="view-icon-cert_of_reg"></i>
                                 <span class="text-sm font-medium text-gray-700 text-center">Certificate of Reg.</span>
@@ -1503,7 +1525,7 @@ function openViewRenewalModal(renewalId, renewalStatus) {
                             </button>
                         </div>
                         <div class="document-item-wrapper">
-                            <button onclick="openRenewalDocumentViewer('${r.renewal_grade_slip}', 'Grade Slip - ${r.renewal_acad_year} ${r.renewal_semester}', 'grade_slip', ${r.renewal_id})"
+                            <button onclick="openRenewalDocumentViewer('/storage/${r.renewal_grade_slip}', 'Grade Slip - ${r.renewal_acad_year} ${r.renewal_semester}', 'grade_slip', ${r.renewal_id})"
                                    class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-green-50 transition w-full relative">
                                 <i class="fas fa-file-alt text-violet-600 text-2xl mb-2" id="view-icon-grade_slip"></i>
                                 <span class="text-sm font-medium text-gray-700 text-center">Grade Slip</span>
@@ -1511,7 +1533,7 @@ function openViewRenewalModal(renewalId, renewalStatus) {
                             </button>
                         </div>
                         <div class="document-item-wrapper">
-                            <button onclick="openRenewalDocumentViewer('${r.renewal_brgy_indigency}', 'Barangay Indigency - ${r.renewal_acad_year} ${r.renewal_semester}', 'brgy_indigency', ${r.renewal_id})"
+                            <button onclick="openRenewalDocumentViewer('/storage/${r.renewal_brgy_indigency}', 'Barangay Indigency - ${r.renewal_acad_year} ${r.renewal_semester}', 'brgy_indigency', ${r.renewal_id})"
                                    class="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50 hover:bg-purple-50 transition w-full relative">
                                 <i class="fas fa-file-alt text-violet-600 text-2xl mb-2" id="view-icon-brgy_indigency"></i>
                                 <span class="text-sm font-medium text-gray-700 text-center">Barangay Indigency</span>
@@ -1598,14 +1620,8 @@ function updateViewRenewalDocumentBadges(statuses) {
         }
     });
 }
-
 function closeViewRenewalModal() {
     document.getElementById('viewRenewalModal').classList.add('hidden');
-}
-
-// Close application modal
-function closeApplicationModal() {
-    document.getElementById('openRenewalModal').classList.add('hidden');
 }
 
 // Notification dropdown
@@ -1624,10 +1640,4 @@ document.addEventListener('DOMContentLoaded', function() {
             notifDropdown.classList.add('hidden');
         });
     }
-});
-
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    initializeDocumentUpdateTracker();
-    initializePersistentRatings();
 });
