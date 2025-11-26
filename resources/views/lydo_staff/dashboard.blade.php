@@ -172,7 +172,7 @@
 
 <body class="bg-gray-50">
     <div class="dashboard-grid">
-        <header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
+          <header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
             <div class="flex items-center">
                 <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg">
                 <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
@@ -434,50 +434,7 @@
 
                     </div>
                 </div>
-                @if($notifications->where('initial_screening', 'Approved')->count() > 0 && $pendingRenewals > 0)
-                <script>
-                    if (localStorage.getItem('notificationsViewed') !== 'true') {
-                        const audio = new Audio('/notification/blade.wav');
-                        audio.play().catch(e => console.log('Audio play failed', e));
-                    }
-                </script>
-                @endif
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        if (localStorage.getItem('notificationsViewed') === 'true') {
-                            let notifCount = document.getElementById("notifCount");
-                            if (notifCount) {
-                                notifCount.style.display = 'none';
-                            }
-                        }
-                    });
-                </script>
 
-                <script>
-                    // Welcome modal using SweetAlert2 with user name and role, auto-dismiss after 4 seconds
-                    @if(session('show_welcome'))
-                        console.log('Showing welcome modal after login');
-                        Swal.fire({
-                            title: '👋 Welcome back, {{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} (Lydo Staff)!',
-                            icon: 'success',
-                            timer: 4000,
-                            timerProgressBar: true,
-                            showConfirmButton: false,
-                            width: '600px',
-                            didOpen: (modal) => {
-                                modal.addEventListener('mouseenter', Swal.stopTimer)
-                                modal.addEventListener('mouseleave', Swal.resumeTimer)
-                            },
-                            position: 'center',
-                            background: '#f3e8ff',
-                            color: '#5b21b6'
-                        });
-                        // Clear the session flag after showing
-                        @php
-                            session()->forget('show_welcome');
-                        @endphp
-                    @endif
-                </script>
                 <script>
                     document.addEventListener('DOMContentLoaded', function () {
                         const searchInput = document.getElementById('searchInput');
@@ -555,66 +512,6 @@
                     });
                 </script>
                 <script src="{{ asset('js/logout.js') }}"></script>
-<script>
-// Real-time updates using Laravel Echo and Pusher
-document.addEventListener('DOMContentLoaded', function() {
-    window.Echo.channel('lydo-staff-updates')
-        .listen('.applicant.updated', (e) => {
-            if (e.type === 'pending_initial') {
-                document.getElementById('pendingInitialCount').textContent = e.count;
-                // Update sidebar badge
-                const badge = document.getElementById('pendingScreeningBadge');
-                if (badge) {
-                    badge.textContent = e.count;
-                    if (e.count > 0) {
-                        badge.style.display = 'inline-block';
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                }
-                approvedInitialCount = e.count;
-                updateNotifBadge();
-            }
-        })
-        .listen('.renewal.updated', (e) => {
-            if (e.type === 'approved_renewals') {
-                document.getElementById('approvedRenewalsCount').textContent = e.count;
-            } else if (e.type === 'pending_renewals') {
-                document.getElementById('pendingRenewalsCount').textContent = e.count;
-                // Update sidebar badge
-                const badge = document.getElementById('pendingRenewalsBadge');
-                if (badge) {
-                    badge.textContent = e.count;
-                    if (e.count > 0) {
-                        badge.style.display = 'inline-block';
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                }
-                pendingRenewalsCount = e.count;
-                updateNotifBadge();
-            }
-        });
-});
-
-let approvedInitialCount = {{ $notifications->where('initial_screening', 'Approved')->count() }};
-let pendingRenewalsCount = {{ $pendingRenewals }};
-
-function updateNotifBadge() {
-    const badgeCount = (approvedInitialCount > 0 && pendingRenewalsCount > 0) ? approvedInitialCount : 0;
-    const notifCount = document.getElementById('notifCount');
-    if (notifCount) {
-        if (badgeCount > 0) {
-            notifCount.textContent = badgeCount;
-            notifCount.style.display = 'flex';
-        } else {
-            notifCount.style.display = 'none';
-        }
-    }
-}
-
-updateNotifBadge();
-</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

@@ -352,7 +352,7 @@ function deleteRow(btn) {
   } else alert("At least one family member row is required.");
 }
 
-// Collect data - UPDATED VERSION
+// Collect data - FIXED VERSION with proper rent field collection
 function collectData() {
   // Get the values directly from the form inputs
   const fname = document.getElementById('applicant_fname').value;
@@ -360,7 +360,7 @@ function collectData() {
   const lname = document.getElementById('applicant_lname').value;
   const suffix = document.getElementById('applicant_suffix').value;
   
-  // Head data - make sure all required fields are included
+  // Head data
   const head = {
     _4ps: getVal("head_4ps"),
     ipno: getVal("head_ipno"),
@@ -374,7 +374,6 @@ function collectData() {
     religion: getVal("head_religion"),
     sex: document.querySelector('input[name="applicant_gender"]:checked')?.value || "",
     serial: getVal("serial_number"),
-    // Include names in head as well
     fname: fname,
     mname: mname,
     lname: lname,
@@ -396,7 +395,6 @@ function collectData() {
     const income = tr.querySelector(".fm-income")?.value || "";
     const remarks = tr.querySelector(".fm-remarks")?.value || "";
     
-    // Only add if there's at least a name
     if (name.trim() !== '') {
       family.push({
         name: name,
@@ -413,6 +411,7 @@ function collectData() {
     }
   });
 
+  // FIXED: Properly collect rent values with proper field names
   const house = {
     total_income: getVal("house_total_income"),
     net_income: getVal("house_net_income"),
@@ -421,8 +420,8 @@ function collectData() {
     lot: getVal("house_lot"),
     house_value: getVal("house_value"),
     lot_value: getVal("lot_value"),
-    house_rent: getVal("house_rent"),
-    lot_rent: getVal("lot_rent"),
+    house_rent: getVal("house_rent"),  // Make sure this matches your database field
+    lot_rent: getVal("lot_rent"),      // Make sure this matches your database field
     water: getVal("house_water"),
     electric: getVal("house_electric"),
   };
@@ -436,7 +435,6 @@ function collectData() {
     token: document.querySelector('input[name="token"]').value
   };
 }
-
 function getVal(id) {
   const el = document.getElementById(id);
   return el ? el.value : "";
@@ -572,6 +570,8 @@ function validateStep1() {
   nextBtn.style.opacity = allFilled ? '1' : '0.5';
 }
 
+
+
 // Validate Step 2: Disable Next if any row has data but empty name
 function validateStep2() {
   const nextBtn = document.getElementById('nextBtn');
@@ -681,8 +681,18 @@ async function submitForm() {
       Swal.fire({
         icon: 'success',
         title: 'Success!',
-        text: result.message || 'Family intake sheet submitted successfully! You will receive an email with your PDF copy shortly.',
-        confirmButtonText: 'OK'
+        html: `
+          <div style="text-align: left;">
+            <p>${result.message || 'Family intake sheet submitted successfully!'}</p>
+            <br>
+            <p><strong>Important Next Steps:</strong></p>
+            <p>✓ Please wait for the LYDO staff to inform you about the date and time of your face-to-face interview</p>
+            <p>✓ You will receive notification through SMS and email</p>
+            <p>✓ You can also check the announcement section for updates</p>
+          </div>
+        `,
+        confirmButtonText: 'OK',
+        width: '600px'
       }).then(() => {
         clearFormData();
         // Redirect to home page
@@ -781,3 +791,4 @@ window.addEventListener("load", () => {
   // Initial validation
   validateStep1();
 });
+

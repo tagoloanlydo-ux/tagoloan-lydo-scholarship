@@ -112,9 +112,9 @@
             font-size: 14px !important;
             margin-bottom: 8px;
             text-align: center;
-            background: #e8e8e8;
+            background: #ffffffff;
             padding: 6px;
-            border: 1px solid #000;
+          
         }
         
         .social-services-section {
@@ -644,6 +644,7 @@
                                     <tr>
                                         <td style="width: 48%;">
                                             <div class="signature-line"></div>
+                                            <div><strong> {{ $head['fname'] ?? '' }} {{ $head['lname'] ?? '' }}</strong></div>
                                             <div><strong>Signature/Thumbmark of Family Head / Client</strong></div>
                                         </td>
                                         <td style="width: 4%;"></td>
@@ -654,15 +655,17 @@
                                             <div><strong>Date of Entry (MM/DD/YYYY)</strong></div>
                                         </td>
                                     </tr>
+                                          <!-- Second Row - Worker and Officer -->
                                         <tr>
                                             <td style="width: 48%; padding-top: 15px;">
                                                 <div class="signature-line"></div>
-                                                <div><strong>Worker: {{ $head['fname'] ?? '' }} {{ $head['lname'] ?? '' }}</strong></div>
+                                                <div><strong>Worker: {{ $worker_info['worker_name'] ?? '' }}</strong></div>
                                                 <div style="font-size: 15px; margin-top: 2px;">Program Staff Position/Designation</div>
                                             </td>
                                             <td style="width: 4%;"></td>
                                             <td style="width: 48%; padding-top: 15px;">
                                                 <div class="signature-line"></div>
+                                                <div><strong>Worker: {{ $worker_info['officer_name'] ?? '' }}</strong></div>
                                                 <div><strong>Verified: MSWO Officer</strong></div>
                                             </td>
                                         </tr>
@@ -671,78 +674,65 @@
                         </tr>
                     </table>
                 </td>
-            <!-- RIGHT COLUMN - SOCIAL SERVICES (LARGER) -->
-            <td class="right-column">
-                <div class="social-services-section">
-                    <div class="social-services-title">SOCIAL SERVICES RECORD</div>
-                    
-                    <!-- Social Services Table -->
-                    <table class="services-table" style="font-size: 15px;">
-                        <thead>
-                            <tr>
-                                <th style="width: 20%; text-align: center; vertical-align: middle;">Date</th>
-                                <th style="width: 35%; text-align: center; vertical-align: middle;">Problem/Need</th>
-                                <th style="width: 30%; text-align: center; vertical-align: middle;">Action/Assistance</th>
-                                <th style="width: 15%; text-align: center; vertical-align: middle;">Remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                // Debug: Check what's in rvServiceRecords
-                                // Remove this after testing
-                                // {{-- var_dump($rvServiceRecords) --}}
-                            @endphp
-
-                            @if(!empty($rvServiceRecords) && is_array($rvServiceRecords) && count($rvServiceRecords) > 0)
-                                @foreach($rvServiceRecords as $service)
-                                    <tr>
-                                        <td style="height: 60px; text-align: center; vertical-align: middle;">
-                                            @if(!empty($service['date']))
-                                                {{ \Carbon\Carbon::parse($service['date'])->format('F d Y') }}
-                                            @else
-                                                {{ $service['date'] ?? '' }}
-                                            @endif
-                                        </td>
-                                        <td style="height: 60px; text-align: center; vertical-align: middle;">{{ $service['problem'] ?? '' }}</td>
-                                        <td style="height: 60px; text-align: center; vertical-align: middle;">{{ $service['action'] ?? '' }}</td>
-                                        <td style="height: 60px; text-align: center; vertical-align: middle;">{{ $service['remarks'] ?? '' }}</td>
-                                    </tr>
-                                @endforeach
-                                
-                                @php
-                                    $totalServiceRows = count($rvServiceRecords);
-                                    $emptyServiceRowsNeeded = max(5 - $totalServiceRows, 0);
-                                @endphp
-                                
-                                <!-- Fill remaining rows if less than 5 -->
-                                @for($r = $totalServiceRows; $r < $totalServiceRows + $emptyServiceRowsNeeded; $r++)
-                                    <tr>
-                                        <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                        <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                        <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                        <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                    </tr>
-                                @endfor
-                            @else
-                                <!-- Show the sample data from your JSON string -->
+                <!-- RIGHT COLUMN - SOCIAL SERVICES (LARGER) -->
+                <td class="right-column">
+                    <div class="social-services-section">
+                        <div class="social-services-title">SOCIAL SERVICES RECORD</div>
+                        
+                        <!-- Social Services Table -->
+                        <table class="services-table" style="font-size: 15px;">
+                            <thead>
                                 <tr>
-                                    <td style="height: 60px; text-align: center; vertical-align: middle;">November 11 2025</td>
-                                    <td style="height: 60px; text-align: center; vertical-align: middle;">Mark</td>
-                                    <td style="height: 60px; text-align: center; vertical-align: middle;">lk</td>
-                                    <td style="height: 60px; text-align: center; vertical-align: middle;">A. DEAD</td>
+                                    <th style="width: 20%; text-align: center; vertical-align: middle;">Date</th>
+                                    <th style="width: 35%; text-align: center; vertical-align: middle;">Problem/Need</th>
+                                    <th style="width: 30%; text-align: center; vertical-align: middle;">Action/Assistance</th>
+                                    <th style="width: 15%; text-align: center; vertical-align: middle;">Remarks</th>
                                 </tr>
-                                <!-- Empty rows for the rest - total of 5 rows -->
-                                @for($r = 1; $r < 5; $r++)
-                                    <tr>
-                                        <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                        <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                        <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                        <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                    </tr>
-                                @endfor
-                            @endif
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @if(!empty($rv_service_records) && is_array($rv_service_records) && count($rv_service_records) > 0)
+                                    @foreach($rv_service_records as $service)
+                                        <tr>
+                                            <td style="height: 60px; text-align: center; vertical-align: middle;">
+                                                @if(!empty($service['date']))
+                                                    {{ \Carbon\Carbon::parse($service['date'])->format('F d Y') }}
+                                                @else
+                                                    {{ $service['date'] ?? '' }}
+                                                @endif
+                                            </td>
+                                            <td style="height: 60px; text-align: center; vertical-align: middle;">{{ $service['problem'] ?? '' }}</td>
+                                            <td style="height: 60px; text-align: center; vertical-align: middle;">{{ $service['action'] ?? '' }}</td>
+                                            <td style="height: 60px; text-align: center; vertical-align: middle;">{{ $service['remarks'] ?? '' }}</td>
+                                        </tr>
+                                    @endforeach
+                                    
+                                    @php
+                                        $totalServiceRows = count($rv_service_records);
+                                        $emptyServiceRowsNeeded = max(5 - $totalServiceRows, 0);
+                                    @endphp
+                                    
+                                    <!-- Fill remaining rows if less than 5 -->
+                                    @for($r = $totalServiceRows; $r < $totalServiceRows + $emptyServiceRowsNeeded; $r++)
+                                        <tr>
+                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
+                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
+                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
+                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
+                                        </tr>
+                                    @endfor
+                                @else
+                                    <!-- Empty rows when no data -->
+                                    @for($r = 1; $r <= 5; $r++)
+                                        <tr>
+                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
+                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
+                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
+                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
+                                        </tr>
+                                    @endfor
+                                @endif
+                            </tbody>
+                        </table>
 
                         <!-- CLASSIFICATION CODES -->
                         <div style="margin-top: 12px;">
