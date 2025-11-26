@@ -47,6 +47,9 @@ Route::get('/reset-password/{token}', [LydopersController::class, 'showResetForm
 Route::post('/reset-password', [LydopersController::class, 'resetPassword'])->name('password.update');
 
 Route::middleware(['role:lydo_admin'])->group(function () {
+    
+    Route::get('/lydo_admin/print-application-history/{applicationPersonnelId}', [LydoAdminController::class, 'printApplicationHistory'])->name('LydoAdmin.printApplicationHistory');
+    
     // Add these routes inside your lydo_admin middleware group
 Route::get('/lydo_admin/get-application-personnel/{applicantId}', [LydoAdminController::class, 'getApplicationPersonnelId']);
 Route::get('/lydo_admin/applicant-documents/{applicantId}', [LydoAdminController::class, 'getApplicantDocuments']);

@@ -13,46 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <style>
-    /* Add to your existing CSS */
-.document-preview-container {
-    position: relative;
-    background: #f8fafc;
-    border-radius: 0.5rem;
-    overflow: hidden;
-}
-
-.document-preview-container iframe {
-    transition: opacity 0.3s ease;
-    background: white;
-}
-
-.document-preview-container::before {
-    content: 'Loading document...';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #6b7280;
-    font-size: 0.875rem;
-    z-index: 1;
-    opacity: 0.7;
-}
-
-.document-preview-container iframe[src] ~ ::before {
-    display: none;
-}
-
-/* Improve modal scrolling for documents */
-.modal-content {
-    max-height: 95vh;
-    overflow-y: auto;
-}
-
-/* Ensure iframes are properly contained */
-.document-preview-container iframe {
-    min-height: 200px;
-    border: 1px solid #e5e7eb;
-}
+    
         input::placeholder, select::placeholder {
             color: black !important;
         }
@@ -283,331 +244,411 @@
                 height: 60px;
             }
         }
-/* A4 Portrait Modal Styles */
-.modal-content {
-    position: relative;
-    background: white;
-    margin: 1% auto;
-    padding: 0;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    width: 210mm; /* A4 width */
-    min-height: 297mm; /* A4 height */
-    max-height: 95vh;
-    overflow-y: auto;
-    transform: scale(0.95);
-    transition: transform 0.3s ease;
-}
 
-.modal-content.scaled {
-    transform: scale(1);
-}
+        /* A4 Portrait Modal Styles */
+        .modal-content {
+            position: relative;
+            background: white;
+            margin: 1% auto;
+            padding: 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            width: 210mm; /* A4 width */
+            min-height: 297mm; /* A4 height */
+            max-height: 95vh;
+            overflow-y: auto;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
 
-.modal-header {
-    background: linear-gradient(135deg, #4c1d95 0%, #7e22ce 100%);
-    color: white;
-    padding: 1.5rem;
-    border-radius: 8px 8px 0 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
+        .modal-content.scaled {
+            transform: scale(1);
+        }
 
-.modal-close {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
+        .modal-header {
+            background: linear-gradient(135deg, #4c1d95 0%, #7e22ce 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px 8px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
 
-.modal-close:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: rotate(90deg);
-}
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
 
-/* Review Columns for A4 */
-.review-columns {
-    padding: 2rem;
-    max-height: calc(297mm - 120px);
-    overflow-y: auto;
-}
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
 
-/* Improved Section Styles */
-.intake-section {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e5e7eb;
-    page-break-inside: avoid;
-}
+        /* Review Columns for A4 */
+        .review-columns {
+            padding: 2rem;
+            max-height: calc(297mm - 120px);
+            overflow-y: auto;
+        }
 
-.intake-section-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 3px solid #7c3aed;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    padding: 1rem;
-    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
-    border-radius: 8px 8px 0 0;
-}
+        /* Improved Section Styles */
+        .intake-section {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            page-break-inside: avoid;
+        }
 
-/* Improved Table Styles */
-.intake-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-    font-size: 0.875rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
+        .intake-section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 3px solid #7c3aed;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 1rem;
+            margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+            border-radius: 8px 8px 0 0;
+        }
 
-.intake-table th {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-    color: white;
-    font-weight: 600;
-    padding: 0.75rem;
-    text-align: left;
-    border: 1px solid #e5e7eb;
-}
+        /* Improved Table Styles */
+        .intake-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
 
-.intake-table td {
-    padding: 0.75rem;
-    border: 1px solid #e5e7eb;
-    background: white;
-}
+        .intake-table th {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #e5e7eb;
+        }
 
-.intake-table tbody tr:nth-child(even) {
-    background-color: #f8fafc;
-}
+        .intake-table td {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            background: white;
+        }
 
-.intake-table tbody tr:hover {
-    background-color: #f1f5f9;
-}
+        .intake-table tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
 
-/* Document Section Improvements */
-.bg-white.rounded-lg.shadow-lg.mb-6 {
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-}
+        .intake-table tbody tr:hover {
+            background-color: #f1f5f9;
+        }
 
-.bg-purple-600 {
-    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
-}
+        /* Document Section Improvements */
+        .bg-white.rounded-lg.shadow-lg.mb-6 {
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        }
 
-/* Document Cards Improvements */
-.document-status-card {
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-}
+        .bg-purple-600 {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+        }
 
-.document-status-card:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
-}
+        /* Document Cards Improvements */
+        .document-status-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
 
-.document-status-card .bg-gray-50 {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
-    padding: 1.25rem;
-    border-bottom: 1px solid #e5e7eb;
-}
+        .document-status-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
 
-.document-preview {
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    margin-top: 1rem;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+        .document-status-card .bg-gray-50 {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+            padding: 1.25rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
 
-/* Status Badges */
-.status-badge {
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-}
+        .document-preview {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            margin-top: 1rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
 
-.status-green {
-    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-    color: #166534;
-    border: 1px solid #bbf7d0;
-}
+        /* Status Badges */
+        .status-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
 
-.status-red {
-    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-    color: #991b1b;
-    border: 1px solid #fecaca;
-}
+        .status-green {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
 
-.status-gray {
-    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-    color: #6b7280;
-    border: 1px solid #e5e7eb;
-}
+        .status-red {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
 
-/* Button Improvements */
-.btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.875rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+        .status-gray {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+        }
 
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
+        /* Button Improvements */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.875rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-.btn-danger {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
-}
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
 
-.btn-danger:hover {
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-}
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
 
-/* Responsive Design for A4 Modal */
-@media (max-width: 1200px) {
-    .modal-content {
-        width: 90%;
-        min-height: auto;
-        max-height: 90vh;
-        margin: 2% auto;
-    }
-}
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
 
-@media (max-width: 992px) {
-    .modal-content {
-        width: 95%;
-        margin: 2% auto;
-    }
-}
+        /* Responsive Design for A4 Modal */
+        @media (max-width: 1200px) {
+            .modal-content {
+                width: 90%;
+                min-height: auto;
+                max-height: 90vh;
+                margin: 2% auto;
+            }
+        }
 
-@media (max-width: 768px) {
-    .modal-content {
-        width: 98%;
-        margin: 1% auto;
-        transform: none;
-    }
-    
-    .review-columns {
-        padding: 1rem;
-    }
-    
-    .intake-section {
-        padding: 1rem;
-    }
-    
-    .intake-table {
-        font-size: 0.75rem;
-    }
-    
-    .intake-table th,
-    .intake-table td {
-        padding: 0.5rem;
-    }
-}
+        @media (max-width: 992px) {
+            .modal-content {
+                width: 95%;
+                margin: 2% auto;
+            }
+        }
 
-@media (max-width: 480px) {
-    .modal-content {
-        width: 100%;
-        margin: 0;
-        border-radius: 0;
-        max-height: 100vh;
-    }
-    
-    .review-columns {
-        padding: 0.5rem;
-    }
-    
-    .intake-section {
-        padding: 0.75rem;
-        margin-bottom: 1rem;
-    }
-    
-    .intake-table {
-        font-size: 0.7rem;
-    }
-}
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 98%;
+                margin: 1% auto;
+                transform: none;
+            }
+            
+            .review-columns {
+                padding: 1rem;
+            }
+            
+            .intake-section {
+                padding: 1rem;
+            }
+            
+            .intake-table {
+                font-size: 0.75rem;
+            }
+            
+            .intake-table th,
+            .intake-table td {
+                padding: 0.5rem;
+            }
+        }
 
-/* Print Styles for A4 */
-@media print {
-    .modal-content {
-        width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-        transform: none !important;
-    }
-    
-    .modal-header {
-        position: static !important;
-    }
-    
-    .btn {
-        display: none !important;
-    }
-    
-    .review-columns {
-        max-height: none !important;
-        overflow: visible !important;
-    }
-}
+        @media (max-width: 480px) {
+            .modal-content {
+                width: 100%;
+                margin: 0;
+                border-radius: 0;
+                max-height: 100vh;
+            }
+            
+            .review-columns {
+                padding: 0.5rem;
+            }
+            
+            .intake-section {
+                padding: 0.75rem;
+                margin-bottom: 1rem;
+            }
+            
+            .intake-table {
+                font-size: 0.7rem;
+            }
+        }
 
-/* Smooth scrolling */
-.review-columns {
-    scroll-behavior: smooth;
-}
+        /* Print Styles for A4 */
+        @media print {
+            .modal-content {
+                width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                transform: none !important;
+            }
+            
+            .modal-header {
+                position: static !important;
+            }
+            
+            .btn {
+                display: none !important;
+            }
+            
+            .review-columns {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+        }
 
-/* Loading state for iframes */
-.document-preview iframe {
-    background: #f8fafc;
-    transition: opacity 0.3s ease;
-}
+        /* Smooth scrolling */
+        .review-columns {
+            scroll-behavior: smooth;
+        }
 
-.document-preview iframe[src] {
-    background: white;
-}
+        /* Loading state for iframes */
+        .document-preview iframe {
+            background: #f8fafc;
+            transition: opacity 0.3s ease;
+        }
 
-/* Additional width adjustments for different screen sizes */
-@media (min-width: 1400px) {
-    .modal-content {
-        width: 210mm;
-        margin: 1% auto;
-    }
-}
+        .document-preview iframe[src] {
+            background: white;
+        }
 
-@media (min-width: 1201px) and (max-width: 1399px) {
-    .modal-content {
-        width: 85%;
-        margin: 1.5% auto;
-    }
-}
+        /* Additional width adjustments for different screen sizes */
+        @media (min-width: 1400px) {
+            .modal-content {
+                width: 210mm;
+                margin: 1% auto;
+            }
+        }
+
+        @media (min-width: 1201px) and (max-width: 1399px) {
+            .modal-content {
+                width: 85%;
+                margin: 1.5% auto;
+            }
+        }
+
+        /* Document Preview Styles */
+        .document-preview-container {
+            position: relative;
+            background: #f8fafc;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+
+        .document-preview-container iframe {
+            transition: opacity 0.3s ease;
+            background: white;
+            min-height: 300px;
+        }
+
+        .document-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #6b7280;
+            font-size: 0.875rem;
+            z-index: 1;
+        }
+
+        .document-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        /* Document Grid Layout */
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .document-card {
+            background: white;
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .document-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .document-card-header {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .document-card-body {
+            padding: 1.5rem;
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
     </style>
 </head>
 
@@ -774,7 +815,6 @@
                 <!-- Mayor Staff Applicants Tab -->
                 <div class="tab-content active" id="mayor-applicants">
                     <div class="note-box">
-                      
                         <p>This tab displays applicants who have been processed by Mayor Staff. You can view applications that are either <strong>Approved</strong> or <strong>Rejected</strong> by the Mayor's office. Use this section to review decisions made by Mayor Staff and communicate with applicants about their status.</p>
                         <p class="mt-2 text-amber-600 font-medium">
                             <i class="fas fa-exclamation-triangle mr-1"></i>
@@ -907,7 +947,6 @@
                 <!-- LYDO Reviewed Applicants Tab -->
                 <div class="tab-content" id="lydo-reviewed">
                     <div class="note-box">
-                        
                         <p>This tab displays applicants who have been <strong>reviewed by LYDO Staff</strong>. These applications have undergone final evaluation and have been categorized based on economic status (Poor, Non-Poor, Ultra Poor). Use this section to manage finalized applications and communicate with reviewed applicants.</p>
                     </div>
 
@@ -1231,7 +1270,7 @@
                             <p class="text-sm text-gray-600">Basic details of the scholarship applicant</p>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="applicantBasicInfo">
+                    <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-xl border border-amber-100 w-full mt-6" id="applicantBasicInfo">
                         <!-- Basic info will be populated here -->
                     </div>
                 </div>
@@ -1335,15 +1374,26 @@
                 </div>
             </div>
 
-            <!-- Footer -->
-            <div class="flex justify-end mt-6 pt-4 border-t border-gray-100">
-                <button onclick="closeApplicationModal()" class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm font-medium">
-                    <i class="fas fa-times mr-2"></i>Close
-                </button>
+            <!-- ADDED: Footer with Print Button -->
+            <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-200 bg-white sticky bottom-0 z-10">
+                <div class="text-sm text-gray-500">
+                    <span id="applicantStatusInfo">LYDO Reviewed Application</span>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="printApplicationHistory()" 
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-sm font-medium flex items-center">
+                        <i class="fas fa-print mr-2"></i> Print Application
+                    </button>
+                    <button onclick="closeApplicationModal()" 
+                            class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-sm font-medium flex items-center">
+                        <i class="fas fa-times mr-2"></i> Close
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-     <!-- JavaScript -->
+
+    <!-- JavaScript -->
     <script>
         // Tab functionality
         document.addEventListener('DOMContentLoaded', function() {
@@ -1967,7 +2017,8 @@
             }
             if (applicant.applicant_mname) {
                 name += ' ' + applicant.applicant_mname.charAt(0).toUpperCase() + '.';
-            }
+
+                            }
             return name;
         }
 
@@ -2005,13 +2056,80 @@
                     existingBadge.remove();
                 }
                 
-                if (approvedCount > 0) {
-                    const badge = document.createElement('span');
-                    badge.className = 'approved-badge ml-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full';
-                    badge.textContent = approvedCount;
-                    approvedTabButton.appendChild(badge);
+
+            }
+        }
+
+        // Print Application History function
+        function printApplicationHistory() {
+            // Get the currently viewed applicant from the modal
+            const modalTitle = document.getElementById('modalTitle').textContent;
+            let applicantName = '';
+            let applicantId = null;
+
+            // Extract applicant name from modal title
+            if (modalTitle.includes('Application Details - ')) {
+                applicantName = modalTitle.replace('Application Details - ', '');
+            } else if (modalTitle.includes('Documents - ')) {
+                applicantName = modalTitle.replace('Documents - ', '');
+            }
+
+            // Find the applicant ID from the current data
+            const activeTab = document.querySelector('.tab-button.active').getAttribute('data-tab');
+            
+            if (activeTab === 'lydo-reviewed') {
+                // Search for the applicant in the LYDO reviewed list
+                const applicant = allLydoApplicants.find(app => 
+                    formatName(app) === applicantName
+                );
+                
+                if (applicant) {
+                    applicantId = applicant.applicant_id;
+                }
+            } else if (activeTab === 'mayor-applicants') {
+                // Search for the applicant in the Mayor applicants list
+                const applicant = allMayorApplicants.find(app => 
+                    formatName(app) === applicantName
+                );
+                
+                if (applicant) {
+                    applicantId = applicant.applicant_id;
                 }
             }
+
+            if (!applicantId) {
+                Swal.fire('Error', 'Could not find applicant data. Please try reopening the application details.', 'error');
+                return;
+            }
+
+            showLoadingOverlay();
+            
+            console.log('Printing application for:', applicantName, 'ID:', applicantId);
+
+            // Get the application personnel ID first
+            fetch(`/lydo_admin/get-application-personnel/${applicantId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Open the print view in a new window
+                        const printUrl = `/lydo_admin/print-application-history/${data.application_personnel_id}`;
+                        console.log('Opening print URL:', printUrl);
+                        window.open(printUrl, '_blank');
+                        hideLoadingOverlay();
+                    } else {
+                        throw new Error(data.message || 'Failed to get application data');
+                    }
+                })
+                .catch(error => {
+                    hideLoadingOverlay();
+                    console.error('Error:', error);
+                    Swal.fire('Error', 'Failed to load application for printing: ' + error.message, 'error');
+                });
         }
 
         // FIXED: Modal functions for View Documents and View Application
@@ -2083,8 +2201,155 @@
                 });
         }
 
-        // Modal for View Documents (5 DOCUMENTS ONLY)
- // Modal for View Documents (5 DOCUMENTS ONLY)
+function openIntakeSheetModal(applicantName, data) {
+    const modal = document.getElementById('applicationHistoryModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const applicantBasicInfo = document.getElementById('applicantBasicInfo');
+    const intakeSheetInfo = document.getElementById('intakeSheetInfo');
+    const documentsContainer = document.getElementById('documentsContainer');
+
+    // Set modal content - INTAKE SHEET + DOCUMENTS
+    modalTitle.textContent = `Application Details - ${applicantName}`;
+    intakeSheetInfo.classList.remove('hidden'); // Show intake sheet section
+
+    // SAFE ACCESS: Check if intakeSheet exists
+    const intakeSheet = data.intakeSheet || data || {};
+    const applicantGender = intakeSheet.applicant_gender || 'N/A';
+    const remarks = intakeSheet.remarks || 'Not Specified';
+
+    // Set basic info - use safe data access
+    applicantBasicInfo.innerHTML = `
+        <div class="bg-white p-4 rounded-lg border border-gray-200">
+            <h4 class="font-semibold text-gray-800 mb-2">Applicant: ${applicantName}</h4>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="font-medium text-gray-700">Gender:</span>
+                    <span class="ml-2">${applicantGender}</span>
+                </div>
+                <div>
+                    <span class="font-medium text-gray-700">Remarks:</span>
+                    <span class="ml-2 px-2 py-1 rounded-full text-xs font-semibold 
+                        ${remarks === 'Poor' ? 'bg-orange-100 text-orange-800' : 
+                          remarks === 'Non-Poor' ? 'bg-green-100 text-green-800' : 
+                          remarks === 'Ultra Poor' ? 'bg-red-100 text-red-800' : 
+                          'bg-gray-100 text-gray-800'}">
+                        ${remarks}
+                    </span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Pass the ENTIRE data object to populateIntakeSheetData with safe access
+    populateIntakeSheetData(data);
+
+    // SET DOCUMENTS SECTION USING THE SAME STYLE AS OPEN DOCUMENTS MODAL
+    let documentsHTML = `
+        <div class="mt-8 pt-6 border-t border-gray-200">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Supporting Documents</h3>
+            <div class="documents-grid">
+    `;
+    
+    // Define document types with icons and labels - SAME AS IN OPEN DOCUMENTS MODAL
+    const documentTypes = [
+        {
+            key: 'doc_application_letter',
+            label: 'Application Letter',
+            icon: 'fas fa-file-alt'
+        },
+        {
+            key: 'doc_cert_reg', 
+            label: 'Certificate of Registration',
+            icon: 'fas fa-certificate'
+        },
+        {
+            key: 'doc_grade_slip',
+            label: 'Grade Slip',
+            icon: 'fas fa-chart-line'
+        },
+        {
+            key: 'doc_brgy_indigency',
+            label: 'Barangay Indigency',
+            icon: 'fas fa-home'
+        },
+        {
+            key: 'doc_student_id',
+            label: 'Student ID',
+            icon: 'fas fa-id-card'
+        }
+    ];
+
+    // Create document cards for each type - SAME FORMAT AS OPEN DOCUMENTS MODAL
+    documentTypes.forEach(docType => {
+        const documentUrl = intakeSheet[docType.key]; // Use the safe intakeSheet object
+        
+        documentsHTML += `
+            <div class="document-card">
+                <div class="document-card-header">
+                    <i class="${docType.icon} text-white"></i>
+                    <h4 class="font-semibold">${docType.label}</h4>
+                </div>
+                <div class="document-card-body">
+                    ${documentUrl ? `
+                        <div class="document-preview-container">
+                            <div class="document-loading" id="loading-${docType.key}">
+                                <i class="fas fa-spinner fa-spin mr-2"></i>Loading document...
+                            </div>
+                            <iframe 
+                                src="${documentUrl}" 
+                                class="w-full h-64"  <!-- SAME HEIGHT AS DOCUMENTS MODAL -->
+                                frameborder="0"
+                                loading="lazy"
+                                onload="document.getElementById('loading-${docType.key}').style.display = 'none'"
+                                onerror="document.getElementById('loading-${docType.key}').innerHTML = '<i class=\\'fas fa-exclamation-triangle mr-2\\'></i>Failed to load document'">
+                            </iframe>
+                        </div>
+                        <div class="document-actions">
+                            <a href="${documentUrl}" 
+                               target="_blank" 
+                               class="btn-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-external-link-alt mr-1"></i> Open
+                            </a>
+                            <a href="${documentUrl}" 
+                               download 
+                               class="btn-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-download mr-1"></i> Download
+                            </a>
+                        </div>
+                    ` : `
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-file-exclamation text-3xl mb-3 text-gray-400"></i>
+                            <p class="font-medium">No ${docType.label} available</p>
+                            <p class="text-sm mt-1">This document has not been uploaded by the applicant.</p>
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
+    });
+    
+    documentsHTML += '</div></div>';
+    documentsContainer.innerHTML = documentsHTML;
+
+    // Update status info
+    document.getElementById('applicantStatusInfo').textContent = 'LYDO Reviewed Application - Complete Intake Sheet';
+
+    // SHOW PRINT BUTTON FOR REVIEW APPLICATION
+    const printButton = modal.querySelector('button[onclick="printApplicationHistory()"]');
+    if (printButton) {
+        printButton.style.display = 'flex';
+    }
+
+    // Show modal with animation
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        const modalContent = document.getElementById('modalContent');
+        if (modalContent) {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scaled');
+        }
+    }, 50);
+}
 function openDocumentsModal(applicantName, documents) {
     const modal = document.getElementById('applicationHistoryModal');
     const modalTitle = document.getElementById('modalTitle');
@@ -2105,7 +2370,7 @@ function openDocumentsModal(applicantName, documents) {
     `;
 
     // Set documents - ALL 5 DOCUMENTS WITH PREVIEW
-    let documentsHTML = '<div class="space-y-6">';
+    let documentsHTML = '<div class="documents-grid">';
     
     // Define document types with icons and labels
     const documentTypes = [
@@ -2141,39 +2406,37 @@ function openDocumentsModal(applicantName, documents) {
         const documentUrl = documents[docType.key];
         
         documentsHTML += `
-            <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="bg-gradient-to-r from-purple-50 to-blue-50 px-4 py-3 border-b border-gray-200">
-                    <div class="flex items-center">
-                        <i class="${docType.icon} text-purple-600 mr-3"></i>
-                        <h4 class="font-semibold text-gray-800 text-lg">${docType.label}</h4>
-                    </div>
+            <div class="document-card">
+                <div class="document-card-header">
+                    <i class="${docType.icon} text-white"></i>
+                    <h4 class="font-semibold">${docType.label}</h4>
                 </div>
-                <div class="p-4">
+                <div class="document-card-body">
                     ${documentUrl ? `
-                        <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                            <div class="flex-1">
-                                <p class="text-sm text-gray-600 mb-2">Document is available for viewing</p>
-                                <div class="document-preview-container bg-gray-50 rounded-lg border border-gray-200 p-4">
-                                    <iframe 
-                                        src="${documentUrl}" 
-                                        class="w-full h-64 md:h-80 rounded border border-gray-300"
-                                        frameborder="0"
-                                        loading="lazy">
-                                    </iframe>
-                                </div>
+                        <div class="document-preview-container">
+                            <div class="document-loading" id="loading-${docType.key}">
+                                <i class="fas fa-spinner fa-spin mr-2"></i>Loading document...
                             </div>
-                            <div class="flex flex-col gap-2 md:ml-4">
-                                <a href="${documentUrl}" 
-                                   target="_blank" 
-                                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                                    <i class="fas fa-external-link-alt mr-2"></i> Open in New Tab
-                                </a>
-                                <a href="${documentUrl}" 
-                                   download 
-                                   class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
-                                    <i class="fas fa-download mr-2"></i> Download
-                                </a>
-                            </div>
+                            <iframe 
+                                src="${documentUrl}" 
+                                class="w-full h-64"
+                                frameborder="0"
+                                loading="lazy"
+                                onload="document.getElementById('loading-${docType.key}').style.display = 'none'"
+                                onerror="document.getElementById('loading-${docType.key}').innerHTML = '<i class=\\'fas fa-exclamation-triangle mr-2\\'></i>Failed to load document'">
+                            </iframe>
+                        </div>
+                        <div class="document-actions">
+                            <a href="${documentUrl}" 
+                               target="_blank" 
+                               class="btn-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-external-link-alt mr-1"></i> Open
+                            </a>
+                            <a href="${documentUrl}" 
+                               download 
+                               class="btn-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-download mr-1"></i> Download
+                            </a>
                         </div>
                     ` : `
                         <div class="text-center py-8 text-gray-500">
@@ -2191,173 +2454,14 @@ function openDocumentsModal(applicantName, documents) {
     
     documentsContainer.innerHTML = documentsHTML;
 
-    // Show modal with animation
-    modal.classList.remove('hidden');
-    setTimeout(() => {
-        const modalContent = document.getElementById('modalContent');
-        if (modalContent) {
-            modalContent.classList.remove('scale-95', 'opacity-0');
-            modalContent.classList.add('scaled');
-        }
-    }, 50);
-
-    // Add loading handlers for iframes
-    setupDocumentIframeLoaders();
-}
-
-// Setup iframe loading indicators
-function setupDocumentIframeLoaders() {
-    const iframes = document.querySelectorAll('.document-preview-container iframe');
+    // Update status info - HIDE PRINT BUTTON FOR DOCUMENTS
+    document.getElementById('applicantStatusInfo').textContent = 'Application Documents';
     
-    iframes.forEach(iframe => {
-        iframe.onload = function() {
-            this.style.opacity = '1';
-        };
-        
-        iframe.onerror = function() {
-            const container = this.parentElement;
-            container.innerHTML = `
-                <div class="text-center py-8 text-red-500">
-                    <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                    <p>Failed to load document preview</p>
-                    <p class="text-sm mt-1 text-gray-600">The document may be in an unsupported format or corrupted.</p>
-                    <a href="${this.src}" 
-                       target="_blank" 
-                       class="inline-flex items-center px-3 py-1 bg-red-600 text-white rounded mt-2 text-sm">
-                        <i class="fas fa-external-link-alt mr-1"></i> Try Opening Directly
-                    </a>
-                </div>
-            `;
-        };
-        
-        // Initial loading state
-        iframe.style.opacity = '0.5';
-        iframe.style.transition = 'opacity 0.3s ease';
-    });
-}
-
-// Modal for View Application (INTAKE SHEET + DOCUMENTS)
-function openIntakeSheetModal(applicantName, intakeSheet) {
-    const modal = document.getElementById('applicationHistoryModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const applicantBasicInfo = document.getElementById('applicantBasicInfo');
-    const intakeSheetInfo = document.getElementById('intakeSheetInfo');
-    const documentsContainer = document.getElementById('documentsContainer');
-
-    // Set modal content - INTAKE SHEET + DOCUMENTS
-    modalTitle.textContent = `Application Details - ${applicantName}`;
-    intakeSheetInfo.classList.remove('hidden'); // Show intake sheet section
-
-    // Set basic info
-    applicantBasicInfo.innerHTML = `
-        <div class="bg-white p-4 rounded-lg border border-gray-200">
-            <h4 class="font-semibold text-gray-800 mb-2">Applicant: ${applicantName}</h4>
-            <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                    <span class="font-medium text-gray-700">Gender:</span>
-                    <span class="ml-2">${intakeSheet.applicant_gender || 'N/A'}</span>
-                </div>
-                <div>
-                    <span class="font-medium text-gray-700">Remarks:</span>
-                    <span class="ml-2 px-2 py-1 rounded-full text-xs font-semibold 
-                        ${intakeSheet.remarks === 'Poor' ? 'bg-orange-100 text-orange-800' : 
-                          intakeSheet.remarks === 'Non-Poor' ? 'bg-green-100 text-green-800' : 
-                          intakeSheet.remarks === 'Ultra Poor' ? 'bg-red-100 text-red-800' : 
-                          'bg-gray-100 text-gray-800'}">
-                        ${intakeSheet.remarks || 'Not Specified'}
-                    </span>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Populate intake sheet sections
-    populateIntakeSheetData(intakeSheet);
-
-    // Set documents section (still visible at the bottom)
-    let documentsHTML = `
-        <div class="mt-8 pt-6 border-t border-gray-200">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Supporting Documents</h3>
-            <div class="grid grid-cols-1 gap-4">
-    `;
-    
-    // Define document types with icons and labels
-    const documentTypes = [
-        {
-            key: 'doc_application_letter',
-            label: 'Application Letter',
-            icon: 'fas fa-file-alt'
-        },
-        {
-            key: 'doc_cert_reg', 
-            label: 'Certificate of Registration',
-            icon: 'fas fa-certificate'
-        },
-        {
-            key: 'doc_grade_slip',
-            label: 'Grade Slip',
-            icon: 'fas fa-chart-line'
-        },
-        {
-            key: 'doc_brgy_indigency',
-            label: 'Barangay Indigency',
-            icon: 'fas fa-home'
-        },
-        {
-            key: 'doc_student_id',
-            label: 'Student ID',
-            icon: 'fas fa-id-card'
-        }
-    ];
-
-    // Create document cards for each type
-    documentTypes.forEach(docType => {
-        const documentUrl = intakeSheet[docType.key];
-        
-        documentsHTML += `
-            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <i class="${docType.icon} text-gray-600 mr-3"></i>
-                            <h4 class="font-semibold text-gray-800">${docType.label}</h4>
-                        </div>
-                        ${documentUrl ? `
-                            <div class="flex gap-2">
-                                <a href="${documentUrl}" 
-                                   target="_blank" 
-                                   class="inline-flex items-center px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
-                                    <i class="fas fa-eye mr-1"></i> View
-                                </a>
-                                <a href="${documentUrl}" 
-                                   download 
-                                   class="inline-flex items-center px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors">
-                                    <i class="fas fa-download mr-1"></i> Download
-                                </a>
-                            </div>
-                        ` : `
-                            <span class="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">Not Available</span>
-                        `}
-                    </div>
-                </div>
-                ${documentUrl ? `
-                    <div class="p-4">
-                        <div class="document-preview-container bg-gray-50 rounded border border-gray-200">
-                            <iframe 
-                                src="${documentUrl}" 
-                                class="w-full h-48 rounded"
-                                frameborder="0"
-                                loading="lazy">
-                            </iframe>
-                        </div>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-    });
-    
-    documentsHTML += '</div></div>';
-    documentsContainer.innerHTML = documentsHTML;
+    // HIDE PRINT BUTTON FOR DOCUMENTS VIEW
+    const printButton = modal.querySelector('button[onclick="printApplicationHistory()"]');
+    if (printButton) {
+        printButton.style.display = 'none';
+    }
 
     // Show modal with animation
     modal.classList.remove('hidden');
@@ -2368,120 +2472,20 @@ function openIntakeSheetModal(applicantName, intakeSheet) {
             modalContent.classList.add('scaled');
         }
     }, 50);
-
-    // Add loading handlers for iframes
-    setupDocumentIframeLoaders();
 }
-        // Modal for View Application (INTAKE SHEET + DOCUMENTS)
-        function openIntakeSheetModal(applicantName, intakeSheet) {
-            const modal = document.getElementById('applicationHistoryModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const applicantBasicInfo = document.getElementById('applicantBasicInfo');
-            const intakeSheetInfo = document.getElementById('intakeSheetInfo');
-            const documentsContainer = document.getElementById('documentsContainer');
+// CORRECTED: Helper function to populate intake sheet data
+function populateIntakeSheetData(data) {
+    console.log('=== POPULATING INTAKE SHEET DATA ===');
+    console.log('Full data object:', data);
+    
+    // SAFE ACCESS: Extract the main data with fallbacks
+    const intakeData = data.intakeSheet || data || {};
+    const familyMembers = data.family_members || [];
+    const serviceRecords = data.rv_service_records || [];
 
-            // Set modal content - INTAKE SHEET + DOCUMENTS
-            modalTitle.textContent = `Application Details - ${applicantName}`;
-            intakeSheetInfo.classList.remove('hidden'); // Show intake sheet section
-
-            // Set basic info
-            applicantBasicInfo.innerHTML = `
-                <div class="bg-white p-4 rounded-lg border border-gray-200">
-                    <h4 class="font-semibold text-gray-800 mb-2">Applicant: ${applicantName}</h4>
-                    <p class="text-sm text-gray-600">Gender: ${intakeSheet.applicant_gender || 'N/A'}</p>
-                    <p class="text-sm text-gray-600">Remarks: ${intakeSheet.remarks || 'N/A'}</p>
-                </div>
-            `;
-
-            // Populate intake sheet sections
-            populateIntakeSheetData(intakeSheet);
-
-            // Set documents section (still visible at the bottom)
-            let documentsHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
-            
-            // Application Letter
-            if (intakeSheet.doc_application_letter) {
-                documentsHTML += `
-                    <div class="bg-white p-4 rounded-lg border border-gray-200">
-                        <h4 class="font-semibold text-gray-800 mb-2">Application Letter</h4>
-                        <a href="${intakeSheet.doc_application_letter}" target="_blank" 
-                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-eye mr-2"></i> View Document
-                        </a>
-                    </div>
-                `;
-            }
-            
-            // Certificate of Registration
-            if (intakeSheet.doc_cert_reg) {
-                documentsHTML += `
-                    <div class="bg-white p-4 rounded-lg border border-gray-200">
-                        <h4 class="font-semibold text-gray-800 mb-2">Certificate of Registration</h4>
-                        <a href="${intakeSheet.doc_cert_reg}" target="_blank" 
-                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-eye mr-2"></i> View Document
-                        </a>
-                    </div>
-                `;
-            }
-            
-            // Grade Slip
-            if (intakeSheet.doc_grade_slip) {
-                documentsHTML += `
-                    <div class="bg-white p-4 rounded-lg border border-gray-200">
-                        <h4 class="font-semibold text-gray-800 mb-2">Grade Slip</h4>
-                        <a href="${intakeSheet.doc_grade_slip}" target="_blank" 
-                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-eye mr-2"></i> View Document
-                        </a>
-                    </div>
-                `;
-            }
-            
-            // Barangay Indigency
-            if (intakeSheet.doc_brgy_indigency) {
-                documentsHTML += `
-                    <div class="bg-white p-4 rounded-lg border border-gray-200">
-                        <h4 class="font-semibold text-gray-800 mb-2">Barangay Indigency</h4>
-                        <a href="${intakeSheet.doc_brgy_indigency}" target="_blank" 
-                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-eye mr-2"></i> View Document
-                        </a>
-                    </div>
-                `;
-            }
-            
-            // Student ID
-            if (intakeSheet.doc_student_id) {
-                documentsHTML += `
-                    <div class="bg-white p-4 rounded-lg border border-gray-200">
-                        <h4 class="font-semibold text-gray-800 mb-2">Student ID</h4>
-                        <a href="${intakeSheet.doc_student_id}" target="_blank" 
-                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-eye mr-2"></i> View Document
-                        </a>
-                    </div>
-                `;
-            }
-            
-            documentsHTML += '</div>';
-            documentsContainer.innerHTML = documentsHTML;
-
-            // Show modal with animation
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                const modalContent = document.getElementById('modalContent');
-                if (modalContent) {
-                    modalContent.classList.remove('scale-95', 'opacity-0');
-                }
-            }, 50);
-        }
-
-        // Helper function to populate intake sheet data
-        function populateIntakeSheetData(intakeSheet) {
-            // Head of Family Information
-            const headOfFamilyInfo = document.getElementById('headOfFamilyInfo');
-    if (headOfFamilyInfo) {
+// Head of Family Information - use intakeData with safe access
+const headOfFamilyInfo = document.getElementById('headOfFamilyInfo');
+if (headOfFamilyInfo) {
     headOfFamilyInfo.innerHTML = `
         <div class="bg-white p-4 rounded-lg border border-gray-200 w-full">
             <h4 class="font-semibold text-gray-800 mb-3">Head of Family Information</h4>
@@ -2489,11 +2493,11 @@ function openIntakeSheetModal(applicantName, intakeSheet) {
                 <div class="space-y-3 w-full">
                     <div class="flex items-center w-full">
                         <span class="font-medium text-gray-700 w-24">4PS:</span>
-                        <span class="flex-1">${intakeSheet.head_4ps || 'N/A'}</span>
+                        <span class="flex-1">${intakeData.head_4ps || 'N/A'}</span>
                     </div>
                     <div class="flex items-center w-full">
                         <span class="font-medium text-gray-700 w-24">IP No:</span>
-                        <span class="flex-1">${intakeSheet.head_ipno || 'N/A'}</span>
+                        <span class="flex-1">${intakeData.head_ipno || 'N/A'}</span>
                     </div>
                     <div class="w-full">
                         <div class="flex items-center w-full mb-1">
@@ -2502,11 +2506,11 @@ function openIntakeSheetModal(applicantName, intakeSheet) {
                         <div class="flex gap-4 w-full">
                             <div class="flex-1">
                                 <span class="font-medium text-gray-700 text-sm block">Zone:</span>
-                                <span>${intakeSheet.head_zone || 'N/A'}</span>
+                                <span>${intakeData.head_zone || 'N/A'}</span>
                             </div>
                             <div class="flex-1">
                                 <span class="font-medium text-gray-700 text-sm block">Barangay:</span>
-                                <span>${intakeSheet.head_barangay || 'N/A'}</span>
+                                <span>${intakeData.head_barangay || 'N/A'}</span>
                             </div>
                         </div>
                     </div>
@@ -2514,137 +2518,197 @@ function openIntakeSheetModal(applicantName, intakeSheet) {
                 <div class="space-y-3 w-full">
                     <div class="flex items-center w-full">
                         <span class="font-medium text-gray-700 w-28">Place of Birth:</span>
-                        <span class="flex-1">${intakeSheet.head_pob || 'N/A'}</span>
+                        <span class="flex-1">${intakeData.head_pob || 'N/A'}</span>
                     </div>
                     <div class="flex items-center w-full">
                         <span class="font-medium text-gray-700 w-28">Date of Birth:</span>
-                        <span class="flex-1">${intakeSheet.head_dob || 'N/A'}</span>
+                        <span class="flex-1">${formatBirthdate(intakeData.head_dob)}</span> <!-- FORMATTED DATE -->
                     </div>
                 </div>
             </div>
             <div class="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100 w-full">
                 <div class="w-full">
                     <span class="font-medium text-gray-700 block">Education:</span>
-                    <span>${intakeSheet.head_educ || 'N/A'}</span>
+                    <span>${intakeData.head_educ || 'N/A'}</span>
                 </div>
                 <div class="w-full">
                     <span class="font-medium text-gray-700 block">Occupation:</span>
-                    <span>${intakeSheet.head_occ || 'N/A'}</span>
+                    <span>${intakeData.head_occ || 'N/A'}</span>
                 </div>
                 <div class="w-full">
                     <span class="font-medium text-gray-700 block">Religion:</span>
-                    <span>${intakeSheet.head_religion || 'N/A'}</span>
+                    <span>${intakeData.head_religion || 'N/A'}</span>
                 </div>
             </div>
         </div>
     `;
 }
-
-// Household Information
-const householdInfo = document.getElementById('householdInfo');
-if (householdInfo) {
-    householdInfo.innerHTML = `
-        <div class="bg-white p-4 rounded-lg border border-gray-200 w-full">
-            <h4 class="font-semibold text-gray-800 mb-3">Household Information</h4>
-            <div class="grid grid-cols-2 gap-4 w-full">
-                <div class="space-y-3 w-full">
-                    <div class="flex items-center w-full">
-                        <span class="font-medium text-gray-700 w-32">Serial Number:</span>
-                        <span class="flex-1">${intakeSheet.serial_number || 'N/A'}</span>
-                    </div>
-                    <div class="flex items-center w-full">
-                        <span class="font-medium text-gray-700 w-32">Total Income:</span>
-                        <span class="flex-1">${intakeSheet.house_total_income || 'N/A'}</span>
-                    </div>
-                    <div class="flex items-center w-full">
-                        <span class="font-medium text-gray-700 w-32">Net Income:</span>
-                        <span class="flex-1">${intakeSheet.house_net_income || 'N/A'}</span>
-                    </div>
-                </div>
-                <div class="space-y-3 w-full">
-                    <div class="flex items-center w-full">
-                        <span class="font-medium text-gray-700 w-32">Other Income:</span>
-                        <span class="flex-1">${intakeSheet.other_income || 'N/A'}</span>
-                    </div>
-                    <div class="flex gap-4 w-full">
-                        <div class="flex-1 w-full">
-                            <span class="font-medium text-gray-700 text-sm block">House:</span>
-                            <span>${intakeSheet.house_house || 'N/A'}</span>
+    // Household Information - use intakeData
+    const householdInfo = document.getElementById('householdInfo');
+    if (householdInfo) {
+        householdInfo.innerHTML = `
+            <div class="bg-white p-4 rounded-lg border border-gray-200 w-full">
+                <h4 class="font-semibold text-gray-800 mb-3">Household Information</h4>
+                <div class="grid grid-cols-2 gap-4 w-full">
+                    <div class="space-y-3 w-full">
+                        <div class="flex items-center w-full">
+                            <span class="font-medium text-gray-700 w-32">Serial Number:</span>
+                            <span class="flex-1">${intakeData.serial_number || 'N/A'}</span>
                         </div>
-                        <div class="flex-1 w-full">
-                            <span class="font-medium text-gray-700 text-sm block">Lot:</span>
-                            <span>${intakeSheet.house_lot || 'N/A'}</span>
+                        <div class="flex items-center w-full">
+                            <span class="font-medium text-gray-700 w-32">Total Income:</span>
+                            <span class="flex-1">${intakeData.house_total_income || 'N/A'}</span>
+                        </div>
+                        <div class="flex items-center w-full">
+                            <span class="font-medium text-gray-700 w-32">Net Income:</span>
+                            <span class="flex-1">${intakeData.house_net_income || 'N/A'}</span>
                         </div>
                     </div>
-                    <div class="flex gap-4 w-full">
-                        <div class="flex-1 w-full">
-                            <span class="font-medium text-gray-700 text-sm block">Electric:</span>
-                            <span>${intakeSheet.house_electric || 'N/A'}</span>
+                    <div class="space-y-3 w-full">
+                        <div class="flex items-center w-full">
+                            <span class="font-medium text-gray-700 w-32">Other Income:</span>
+                            <span class="flex-1">${intakeData.other_income || 'N/A'}</span>
                         </div>
-                        <div class="flex-1 w-full">
-                            <span class="font-medium text-gray-700 text-sm block">Water:</span>
-                            <span>${intakeSheet.house_water || 'N/A'}</span>
+                        <div class="flex gap-4 w-full">
+                            <div class="flex-1 w-full">
+                                <span class="font-medium text-gray-700 text-sm block">House:</span>
+                                <span>${intakeData.house_house || 'N/A'}</span>
+                            </div>
+                            <div class="flex-1 w-full">
+                                <span class="font-medium text-gray-700 text-sm block">Lot:</span>
+                                <span>${intakeData.house_lot || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 w-full">
+                            <div class="flex-1 w-full">
+                                <span class="font-medium text-gray-700 text-sm block">Electric:</span>
+                                <span>${intakeData.house_electric || 'N/A'}</span>
+                            </div>
+                            <div class="flex-1 w-full">
+                                <span class="font-medium text-gray-700 text-sm block">Water:</span>
+                                <span>${intakeData.house_water || 'N/A'}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    `;
+        `;
+    }
+
+// Family Members Table - use the family_members from root
+const familyMembersTable = document.getElementById('familyMembersTable');
+if (familyMembersTable) {
+    console.log('=== FAMILY MEMBERS DATA ANALYSIS ===');
+    console.log('Family Members Data:', familyMembers);
+    console.log('Family Members Count:', familyMembers.length);
+    
+    let familyHTML = '';
+    
+    if (familyMembers.length > 0) {
+        console.log('First Family Member Full Object:', familyMembers[0]);
+        console.log('First Family Member Keys:', Object.keys(familyMembers[0]));
+        
+        familyMembers.forEach((member, index) => {
+            console.log(`Processing family member ${index}:`, member);
+            
+            // Use the exact field names from your debug output
+            const name = member.name || '-';
+            const relation = member.relationship || '-';
+            const birthdate = formatBirthdate(member.birthdate); // FORMATTED DATE
+            const age = member.age || '-';
+            const sex = member.sex || '-';
+            const civilStatus = member.civil_status || '-';
+            const education = member.education || '-';
+            const occupation = member.occupation || '-';
+            const income = member.monthly_income || '-';
+            const remarks = member.remarks || '-';
+            
+            console.log(`Member ${index} mapped values:`, {
+                name, relation, birthdate, age, sex, civilStatus, education, occupation, income, remarks
+            });
+            
+            familyHTML += `
+                <tr>
+                    <td class="px-4 py-2 border-b">${name}</td>
+                    <td class="px-4 py-2 border-b">${relation}</td>
+                    <td class="px-4 py-2 border-b">${birthdate}</td>
+                    <td class="px-4 py-2 border-b">${age}</td>
+                    <td class="px-4 py-2 border-b">${sex}</td>
+                    <td class="px-4 py-2 border-b">${civilStatus}</td>
+                    <td class="px-4 py-2 border-b">${education}</td>
+                    <td class="px-4 py-2 border-b">${occupation}</td>
+                    <td class="px-4 py-2 border-b">${income}</td>
+                    <td class="px-4 py-2 border-b">${remarks}</td>
+                </tr>
+            `;
+        });
+    } else {
+        familyHTML = `
+            <tr>
+                <td colspan="10" class="px-4 py-4 text-center text-gray-500">
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-users text-2xl text-gray-300 mb-2"></i>
+                        <span>No family members data available</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+    
+    familyMembersTable.innerHTML = familyHTML;
 }
 
-            // Family Members Table
-            const familyMembersTable = document.getElementById('familyMembersTable');
-            if (familyMembersTable && intakeSheet.family_members && intakeSheet.family_members.length > 0) {
-                let familyHTML = '';
-                intakeSheet.family_members.forEach(member => {
-                    familyHTML += `
-                        <tr>
-                            <td class="px-4 py-2 border-b">${member.name || 'N/A'}</td>
-                            <td class="px-4 py-2 border-b">${member.relation || 'N/A'}</td>
-                            <td class="px-4 py-2 border-b">${member.birthdate || 'N/A'}</td>
-                            <td class="px-4 py-2 border-b">${member.age || 'N/A'}</td>
-                            <td class="px-4 py-2 border-b">${member.sex || 'N/A'}</td>
-                            <td class="px-4 py-2 border-b">${member.civil_status || 'N/A'}</td>
-                            <td class="px-4 py-2 border-b">${member.education || 'N/A'}</td>
-                            <td class="px-4 py-2 border-b">${member.occupation || 'N/A'}</td>
-                            <td class="px-4 py-2 border-b">${member.income || 'N/A'}</td>
-                            <td class="px-4 py-2 border-b">${member.remarks || 'N/A'}</td>
-                        </tr>
-                    `;
-                });
-                familyMembersTable.innerHTML = familyHTML;
-            } else if (familyMembersTable) {
-                familyMembersTable.innerHTML = `
-                    <tr>
-                        <td colspan="10" class="px-4 py-4 text-center text-gray-500">No family members data available</td>
-                    </tr>
-                `;
-            }
-
-            // Service Records Table
-            const serviceRecordsTable = document.getElementById('serviceRecordsTable');
-            if (serviceRecordsTable && intakeSheet.social_service_records && intakeSheet.social_service_records.length > 0) {
-                let serviceHTML = '';
-                intakeSheet.social_service_records.forEach(record => {
-                    serviceHTML += `
-                        <tr>
-                            <td class="px-4 py-2 border-b">${record.date || 'N/A'}</td>
-                            <td class="px-4 py-2 border-b">${record.problem_need || 'N/A'}</td>
-                            <td class="px-4 py-2 border-b">${record.action_assistance || 'N/A'}</td>
-                            <td class="px-4 py-2 border-b">${record.remarks || 'N/A'}</td>
-                        </tr>
-                    `;
-                });
-                serviceRecordsTable.innerHTML = serviceHTML;
-            } else if (serviceRecordsTable) {
-                serviceRecordsTable.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="px-4 py-4 text-center text-gray-500">No service records available</td>
-                    </tr>
-                `;
-            }
-        }
-
+ // Service Records Table - use rv_service_records from root
+const serviceRecordsTable = document.getElementById('serviceRecordsTable');
+if (serviceRecordsTable) {
+    console.log('=== SERVICE RECORDS DATA ANALYSIS ===');
+    console.log('Service Records Data:', serviceRecords);
+    console.log('Service Records Count:', serviceRecords.length);
+    
+    let serviceHTML = '';
+    
+    if (serviceRecords.length > 0) {
+        console.log('First Service Record Full Object:', serviceRecords[0]);
+        console.log('First Service Record Keys:', Object.keys(serviceRecords[0]));
+        
+        serviceRecords.forEach((record, index) => {
+            console.log(`Processing service record ${index}:`, record);
+            
+            // Use the exact field names from your debug output
+            const date = record.date || '-';
+            const problem = record.problem || '-';
+            const action = record.action || '-';
+            const remarks = record.remarks || '-';
+            
+            console.log(`Record ${index} mapped values:`, {
+                date, problem, action, remarks
+            });
+            
+            serviceHTML += `
+                <tr>
+                    <td class="px-4 py-2 border-b">${date}</td>
+                    <td class="px-4 py-2 border-b">${problem}</td>
+                    <td class="px-4 py-2 border-b">${action}</td>
+                    <td class="px-4 py-2 border-b">${remarks}</td>
+                </tr>
+            `;
+        });
+    } else {
+        serviceHTML = `
+            <tr>
+                <td colspan="4" class="px-4 py-4 text-center text-gray-500">
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-clipboard-list text-2xl text-gray-300 mb-2"></i>
+                        <span>No service records available</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+    
+    serviceRecordsTable.innerHTML = serviceHTML;
+}
+}
         function closeApplicationModal() {
             const modal = document.getElementById('applicationHistoryModal');
             const modalContent = document.getElementById('modalContent');
@@ -2901,12 +2965,37 @@ if (householdInfo) {
         }
 
         // Make functions global
+        window.printApplicationHistory = printApplicationHistory;
         window.viewApplicantDocuments = viewApplicantDocuments;
         window.viewApplicantIntakeSheet = viewApplicantIntakeSheet;
         window.closeApplicationModal = closeApplicationModal;
         window.closeEmailModal = closeEmailModal;
         window.closeSmsModal = closeSmsModal;
         window.toggleDropdown = toggleDropdown;
+
+        // Add this helper function to format dates
+function formatBirthdate(dateString) {
+    if (!dateString || dateString === '-' || dateString === 'N/A') {
+        return 'N/A';
+    }
+    
+    try {
+        // Handle different date formats
+        const date = new Date(dateString);
+        
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+            return dateString; // Return original if invalid
+        }
+        
+        // Format as "Month Day, Year" (e.g., "October 23, 2003")
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
+    } catch (error) {
+        console.error('Error formatting date:', error);
+        return dateString; // Return original if error
+    }
+}
     </script>
 </body>
 </html>

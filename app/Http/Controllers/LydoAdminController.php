@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Models\FamilyIntakeSheet;
+use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Announce;
 use App\Models\Disburse;
@@ -2104,131 +2106,327 @@ public function getApplicationPersonnelId($applicantId)
     }
 }
 
-public function getIntakeSheet($applicationPersonnelId)
-{
-    try {
-        // Use the same logic from your MayorStaffController but return consistent structure
-        $intakeSheet = \App\Models\FamilyIntakeSheet::where('application_personnel_id', $applicationPersonnelId)->first();
-
-        if (!$intakeSheet) {
-            return response()->json(['success' => false, 'message' => 'Intake sheet not found.'], 404);
-        }
-
-        // Get applicant data
-        $applicantData = DB::table('tbl_application_personnel as ap')
-            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-            ->where('ap.application_personnel_id', $applicationPersonnelId)
-            ->select(
-                'app.applicant_fname',
-                'app.applicant_mname',
-                'app.applicant_lname',
-                'app.applicant_suffix',
-                'app.applicant_gender',
-                'app.applicant_brgy',
-                'ap.remarks',
-                'a.application_letter',
-                'a.cert_of_reg',
-                'a.grade_slip',
-                'a.brgy_indigency',
-                'a.student_id'
-            )
-            ->first();
-
-        $fullName = trim(
-            ($applicantData->applicant_fname ?? '') .
-            ' ' . ($applicantData->applicant_mname ? $applicantData->applicant_mname . ' ' : '') .
-            ($applicantData->applicant_lname ?? '') .
-            ($applicantData->applicant_suffix ? ', ' . $applicantData->applicant_suffix : '')
-        );
-
-        // FIX: Check if fields are already arrays or need decoding
-        $familyMembers = $intakeSheet->family_members;
-        $socialServiceRecords = $intakeSheet->social_service_records;
-
-        // If they are strings, decode them. If they're already arrays, use as-is.
-        if (is_string($familyMembers)) {
-            $familyMembers = json_decode($familyMembers, true) ?? [];
-        } elseif (!is_array($familyMembers)) {
-            $familyMembers = [];
-        }
-
-        if (is_string($socialServiceRecords)) {
-            $socialServiceRecords = json_decode($socialServiceRecords, true) ?? [];
-        } elseif (!is_array($socialServiceRecords)) {
-            $socialServiceRecords = [];
-        }
-
-        // Ensure we have arrays
-        $familyMembers = is_array($familyMembers) ? $familyMembers : [];
-        $socialServiceRecords = is_array($socialServiceRecords) ? $socialServiceRecords : [];
-
-        $data = [
-            'applicant_name' => $fullName,
-            'applicant_gender' => $applicantData->applicant_gender ?? null,
-            'remarks' => $applicantData->remarks ?? null,
-            
-            // Head of Family Information
-            'head_4ps' => $intakeSheet->head_4ps ?? null,
-            'head_ipno' => $intakeSheet->head_ipno ?? null,
-            'head_address' => $intakeSheet->head_address ?? null,
-            'head_zone' => $intakeSheet->head_zone ?? null,
-            'head_barangay' => $intakeSheet->head_barangay ?? $applicantData->applicant_brgy ?? null,
-            'head_pob' => $intakeSheet->head_pob ?? null,
-            'head_dob' => $intakeSheet->head_dob ? (string)$intakeSheet->head_dob : null,
-            'head_educ' => $intakeSheet->head_educ ?? null,
-            'head_occ' => $intakeSheet->head_occ ?? null,
-            'head_religion' => $intakeSheet->head_religion ?? null,
-            
-            // Household Information
-            'serial_number' => $intakeSheet->serial_number ?? null,
-            'house_total_income' => $intakeSheet->house_total_income ?? null,
-            'house_net_income' => $intakeSheet->house_net_income ?? null,
-            'other_income' => $intakeSheet->other_income ?? null,
-            'house_house' => $intakeSheet->house_house ?? null,
-            'house_lot' => $intakeSheet->house_lot ?? null,
-            'house_electric' => $intakeSheet->house_electric ?? null,
-            'house_water' => $intakeSheet->house_water ?? null,
-            
-            // Family Members and Service Records
-            'family_members' => $familyMembers,
-            'social_service_records' => $socialServiceRecords,
-            
-            // Documents
-            'doc_application_letter' => $applicantData->application_letter ? asset('storage/' . $applicantData->application_letter) : null,
-            'doc_cert_reg' => $applicantData->cert_of_reg ? asset('storage/' . $applicantData->cert_of_reg) : null,
-            'doc_grade_slip' => $applicantData->grade_slip ? asset('storage/' . $applicantData->grade_slip) : null,
-            'doc_brgy_indigency' => $applicantData->brgy_indigency ? asset('storage/' . $applicantData->brgy_indigency) : null,
-            'doc_student_id' => $applicantData->student_id ? asset('storage/' . $applicantData->student_id) : null,
-        ];
-
-        return response()->json([
-            'success' => true,
-            'intakeSheet' => $data
-        ]);
-
-    } catch (\Exception $e) {
-        \Log::error('Error in getIntakeSheet: ' . $e->getMessage());
-        return response()->json(['success' => false, 'message' => 'Error loading intake sheet.'], 500);
-    }
-}
-
-    public function checkEmailDuplicate(Request $request)
+  public function getIntakeSheet($applicationPersonnelId)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'exclude_id' => 'nullable|integer'
-        ]);
+        try {
+            \Log::info("=== START INTAKE SHEET DEBUG ===");
+            \Log::info("Application Personnel ID: " . $applicationPersonnelId);
 
-        $exists = DB::table('tbl_lydopers')
-            ->where('lydopers_email', $request->email)
-            ->when($request->exclude_id, function($query) use ($request) {
-                return $query->where('lydopers_id', '!=', $request->exclude_id);
-            })
-            ->exists();
+            // Get basic applicant data
+            $appRow = DB::table('tbl_application_personnel as ap')
+                ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+                ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+                ->where('ap.application_personnel_id', $applicationPersonnelId)
+                ->select(
+                    'app.applicant_id',
+                    'app.applicant_fname',
+                    'app.applicant_mname',
+                    'app.applicant_lname',
+                    'app.applicant_suffix',
+                    'app.applicant_gender',
+                    'app.applicant_brgy',
+                    'ap.remarks',
+                    'a.application_letter',
+                    'a.cert_of_reg',
+                    'a.grade_slip',
+                    'a.brgy_indigency',
+                    'a.student_id'
+                )
+                ->first();
 
-        return response()->json(['duplicate' => $exists]);
+            if (!$appRow) {
+                \Log::warning("No application/applicant found for application_personnel_id: {$applicationPersonnelId}");
+                return response()->json(['success' => false, 'message' => 'Application not found.'], 404);
+            }
+
+            $fullName = trim(
+                ($appRow->applicant_fname ?? '') .
+                ' ' . ($appRow->applicant_mname ? $appRow->applicant_mname . ' ' : '') .
+                ($appRow->applicant_lname ?? '') .
+                ($appRow->applicant_suffix ? ', ' . $appRow->applicant_suffix : '')
+            );
+
+            $documentStatuses = [
+                'application_letter' => $this->evaluateDocumentStatus($appRow->application_letter),
+                'cert_reg' => $this->evaluateDocumentStatus($appRow->cert_of_reg),
+                'grade_slip' => $this->evaluateDocumentStatus($appRow->grade_slip),
+                'brgy_indigency' => $this->evaluateDocumentStatus($appRow->brgy_indigency),
+                'student_id' => $this->evaluateDocumentStatus($appRow->student_id),
+            ];
+
+            // Check if intake sheet exists
+            $intakeSheet = FamilyIntakeSheet::where('application_personnel_id', $applicationPersonnelId)->first();
+
+            \Log::info("Intake Sheet Found: " . ($intakeSheet ? 'Yes' : 'No'));
+
+            if (!$intakeSheet) {
+                \Log::info("No intake sheet found for ID: " . $applicationPersonnelId);
+                
+                $data = [
+                    'applicant_name' => $fullName,
+                    'applicant_gender' => $appRow->applicant_gender ?? null,
+                    'remarks' => $appRow->remarks ?? null,
+                    'head_barangay' => $appRow->applicant_brgy ?? null,
+                    
+                    // Document paths
+                    'doc_application_letter' => $appRow->application_letter ? asset('storage/' . $appRow->application_letter) : null,
+                    'doc_cert_reg' => $appRow->cert_of_reg ? asset('storage/' . $appRow->cert_of_reg) : null,
+                    'doc_grade_slip' => $appRow->grade_slip ? asset('storage/' . $appRow->grade_slip) : null,
+                    'doc_brgy_indigency' => $appRow->brgy_indigency ? asset('storage/' . $appRow->brgy_indigency) : null,
+                    'doc_student_id' => $appRow->student_id ? asset('storage/' . $appRow->student_id) : null,
+                    
+                    // Empty arrays - using frontend expected field names
+                    'family_members' => [],
+                    'rv_service_records' => [],
+                ];
+
+                return response()->json([
+                    'success' => true, 
+                    'intakeSheet' => $data,
+                    'family_members' => [],
+                    'rv_service_records' => []
+                ], 200);
+            }
+
+            // DEBUG: Check the actual database values
+            \Log::info("=== DATABASE VALUES DEBUG ===");
+            \Log::info("Family Members DB Value: " . ($intakeSheet->family_members ?? 'NULL'));
+            \Log::info("Social Service Records DB Value: " . ($intakeSheet->social_service_records ?? 'NULL'));
+            \Log::info("RV Service Records DB Value: " . ($intakeSheet->rv_service_records ?? 'NULL'));
+
+            // Enhanced JSON parsing with better NULL handling
+            $familyMembers = $this->parseJsonField($intakeSheet->family_members, 'family_members');
+            
+            // Use rv_service_records instead of social_service_records
+            $socialServiceRecords = $this->parseJsonField($intakeSheet->rv_service_records, 'rv_service_records');
+
+            // CORRECTED TRANSFORMATION: Use lowercase field names that match frontend expectations
+            $transformedFamilyMembers = [];
+            foreach ($familyMembers as $member) {
+                $transformedFamilyMembers[] = [
+                    'name' => $member['name'] ?? $member['NAME'] ?? '-',
+                    'relationship' => $member['relationship'] ?? $member['relation'] ?? $member['RELATION'] ?? '-',
+                    'birthdate' => $member['birthdate'] ?? $member['BIRTHDATE'] ?? $member['birth_date'] ?? '-',
+                    'age' => $member['age'] ?? $member['AGE'] ?? '-',
+                    'sex' => $member['sex'] ?? $member['gender'] ?? $member['SEX'] ?? '-',
+                    'civil_status' => $member['civil_status'] ?? $member['CIVIL STATUS'] ?? $member['civilStatus'] ?? '-',
+                    'education' => $member['education'] ?? $member['EDUCATIONAL ATTAINMENT'] ?? $member['educational_attainment'] ?? '-',
+                    'occupation' => $member['occupation'] ?? $member['OCCUPATION'] ?? '-',
+                    'monthly_income' => $member['monthly_income'] ?? $member['income'] ?? $member['INCOME'] ?? '-',
+                    'remarks' => $member['remarks'] ?? $member['REMARKS'] ?? '-'
+                ];
+            }
+
+            $transformedServiceRecords = [];
+            foreach ($socialServiceRecords as $record) {
+                $transformedServiceRecords[] = [
+                    'date' => $record['date'] ?? $record['DATE'] ?? '-',
+                    'problem' => $record['problem'] ?? $record['PROBLEM/NEED'] ?? $record['problem_need'] ?? '-',
+                    'action' => $record['action'] ?? $record['ACTION/ASSISTANCE GIVEN'] ?? $record['action_assistance'] ?? '-',
+                    'remarks' => $record['remarks'] ?? $record['REMARKS'] ?? '-'
+                ];
+            }
+
+            \Log::info("Final Counts - Family Members: " . count($transformedFamilyMembers) . ", Social Service Records: " . count($transformedServiceRecords));
+
+            // FORMAT HOUSE AND LOT INFORMATION WITH RENT AMOUNTS
+            $houseDisplay = $intakeSheet->house_house ?? null;
+            $lotDisplay = $intakeSheet->house_lot ?? null;
+
+            // If house is rented, combine with house_rent amount
+            if ($houseDisplay === 'Rent' && !empty($intakeSheet->house_rent)) {
+                $houseDisplay = 'Rent - ₱' . number_format($intakeSheet->house_rent, 2);
+            }
+
+            // If lot is rented, combine with lot_rent amount
+            if ($lotDisplay === 'Rent' && !empty($intakeSheet->lot_rent)) {
+                $lotDisplay = 'Rent - ₱' . number_format($intakeSheet->lot_rent, 2);
+            }
+
+            // Prepare response data - CORRECTED STRUCTURE
+            $data = [
+                // Applicant Information
+                'applicant_name' => $fullName,
+                'applicant_gender' => $appRow->applicant_gender ?? null,
+                'remarks' => $appRow->remarks ?? null,
+                
+                // Head of Family Information
+                'head_4ps' => $intakeSheet->head_4ps ?? null,
+                'head_ipno' => $intakeSheet->head_ipno ?? null,
+                'head_address' => $intakeSheet->head_address ?? null,
+                'head_zone' => $intakeSheet->head_zone ?? null,
+                'head_barangay' => $intakeSheet->head_barangay ?? $appRow->applicant_brgy ?? null,
+                'head_pob' => $intakeSheet->head_pob ?? null,
+                'head_dob' => $intakeSheet->head_dob ? (string)$intakeSheet->head_dob : null,
+                'head_educ' => $intakeSheet->head_educ ?? null,
+                'head_occ' => $intakeSheet->head_occ ?? null,
+                'head_religion' => $intakeSheet->head_religion ?? null,
+                
+                // Household Information
+                'serial_number' => $intakeSheet->serial_number ?? null,
+                'house_total_income' => $intakeSheet->house_total_income ?? null,
+                'house_net_income' => $intakeSheet->house_net_income ?? null,
+                'other_income' => $intakeSheet->other_income ?? null,
+                'house_house' => $houseDisplay,
+                'house_lot' => $lotDisplay,
+                'house_electric' => $intakeSheet->house_electric ?? null,
+                'house_water' => $intakeSheet->house_water ?? null,
+                
+                // CORRECTED: Use the exact field names expected by frontend
+                'family_members' => $transformedFamilyMembers,
+                'rv_service_records' => $transformedServiceRecords,
+                
+                // Signatures
+                'worker_name' => $intakeSheet->worker_name ?? null,
+                'officer_name' => $intakeSheet->officer_name ?? null,
+                'date_entry' => $intakeSheet->date_entry ? (string)$intakeSheet->date_entry : null,
+               
+                // Document paths
+                'doc_application_letter' => $appRow->application_letter ? asset('storage/' . $appRow->application_letter) : null,
+                'doc_cert_reg' => $appRow->cert_of_reg ? asset('storage/' . $appRow->cert_of_reg) : null,
+                'doc_grade_slip' => $appRow->grade_slip ? asset('storage/' . $appRow->grade_slip) : null,
+                'doc_brgy_indigency' => $appRow->brgy_indigency ? asset('storage/' . $appRow->brgy_indigency) : null,
+                'doc_student_id' => $appRow->student_id ? asset('storage/' . $appRow->student_id) : null,
+
+                // Raw values for reference
+                'house_rent' => $intakeSheet->house_rent ?? null,
+                'lot_rent' => $intakeSheet->lot_rent ?? null,
+            ];
+
+            \Log::info("=== END INTAKE SHEET DEBUG ===");
+
+            return response()->json([
+                'success' => true, 
+                'intakeSheet' => $data,
+                // ADD THESE FIELDS FOR FRONTEND COMPATIBILITY
+                'family_members' => $transformedFamilyMembers,
+                'rv_service_records' => $transformedServiceRecords,
+                'debug_info' => [
+                    'family_members_count' => count($transformedFamilyMembers),
+                    'social_service_records_count' => count($transformedServiceRecords),
+                    'has_intake_sheet' => true,
+                    'family_members_original' => $familyMembers,
+                    'social_service_records_original' => $socialServiceRecords
+                ]
+            ], 200);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in getIntakeSheet: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false, 
+                'message' => 'Error loading intake sheet data.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+
+    /**
+     * Evaluate document status based on your criteria
+     */
+    private function evaluateDocumentStatus($documentPath)
+    {
+        if (!$documentPath) {
+            return 'Missing';
+        }
+        
+        // Add your evaluation logic here
+        // This is a placeholder - replace with your actual evaluation criteria
+        $fileExists = Storage::exists($documentPath);
+        
+        if (!$fileExists) {
+            return 'Bad';
+        }
+        
+        // You can add more sophisticated checks here
+        // For example: file size, format, content validation, etc.
+        
+        return 'Good';
+    }
+
+    /**
+     * Helper method to parse JSON fields with comprehensive error handling
+     * FIXED: Handles double/triple escaped JSON strings
+     */
+    private function parseJsonField($fieldValue, $fieldName)
+    {
+        if ($fieldValue === null) {
+            \Log::info("Field '{$fieldName}' is NULL, returning empty array");
+            return [];
+        }
+
+        if (empty(trim($fieldValue))) {
+            \Log::info("Field '{$fieldName}' is empty string, returning empty array");
+            return [];
+        }
+
+        if ($fieldValue === 'null' || $fieldValue === 'NULL') {
+            \Log::info("Field '{$fieldName}' is string 'null', returning empty array");
+            return [];
+        }
+
+        try {
+            // FIX: Remove extra backslashes from escaped JSON
+            $cleanedValue = $fieldValue;
+            
+            // Handle double/triple escaped JSON (common when storing JSON in databases)
+            if (str_contains($cleanedValue, '\\"')) {
+                // Remove extra backslashes - this fixes the "\\"issue
+                $cleanedValue = stripslashes($cleanedValue);
+                
+                // If still has backslashes, do one more pass
+                if (str_contains($cleanedValue, '\\"')) {
+                    $cleanedValue = stripslashes($cleanedValue);
+                }
+            }
+
+            // Debug the cleaning process
+            \Log::info("Field '{$fieldName}' cleaning:", [
+                'original' => $fieldValue,
+                'cleaned' => $cleanedValue,
+                'original_length' => strlen($fieldValue),
+                'cleaned_length' => strlen($cleanedValue)
+            ]);
+
+            $decoded = json_decode($cleanedValue, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                \Log::warning("JSON decode error for {$fieldName}: " . json_last_error_msg());
+                \Log::warning("Raw value that failed to decode: " . $fieldValue);
+                \Log::warning("Cleaned value that failed: " . $cleanedValue);
+                
+                // FIX: Try one more approach - manual cleanup for stubborn cases
+                if (str_contains($cleanedValue, '\\"')) {
+                    $cleanedValue = str_replace('\\"', '"', $cleanedValue);
+                    $decoded = json_decode($cleanedValue, true);
+                    
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        \Log::warning("Second attempt also failed for {$fieldName}");
+                        return [];
+                    }
+                } else {
+                    return [];
+                }
+            }
+
+            if (!is_array($decoded)) {
+                \Log::warning("Decoded {$fieldName} is not an array, type: " . gettype($decoded));
+                return [];
+            }
+
+            \Log::info("Successfully decoded {$fieldName}, count: " . count($decoded));
+            return $decoded;
+
+        } catch (\Exception $e) {
+            \Log::error("Exception decoding {$fieldName}: " . $e->getMessage());
+            \Log::error("Field value that caused exception: " . $fieldValue);
+            return [];
+        }
+    }
+
+
+
 public function deleteStaff($id)
 {
     try {
@@ -2247,6 +2445,203 @@ public function deleteStaff($id)
         return response()->json(['success' => false, 'message' => 'Failed to delete staff member.'], 500);
     }
 }
+public function printApplicationHistory($application_personnel_id)
+{
+    try {
+        \Log::info("Generating PDF for application_personnel_id: {$application_personnel_id}");
+        
+        // Get intake sheet data with ALL fields
+        $intakeSheet = \App\Models\FamilyIntakeSheet::where('application_personnel_id', $application_personnel_id)->first();
 
+        if (!$intakeSheet) {
+            \Log::error("Intake sheet not found for ID: {$application_personnel_id}");
+            return response()->json(['error' => 'Intake sheet not found'], 404);
+        }
+
+        // Get applicant data with ALL fields INCLUDING REMARKS
+        $applicantData = DB::table('tbl_application_personnel')
+            ->join('tbl_application', 'tbl_application_personnel.application_id', '=', 'tbl_application.application_id')
+            ->join('tbl_applicant', 'tbl_application.applicant_id', '=', 'tbl_applicant.applicant_id')
+            ->where('tbl_application_personnel.application_personnel_id', $application_personnel_id)
+            ->select(
+                'tbl_applicant.applicant_fname',
+                'tbl_applicant.applicant_mname',
+                'tbl_applicant.applicant_lname',
+                'tbl_applicant.applicant_suffix',
+                'tbl_applicant.applicant_contact_number',
+                'tbl_applicant.applicant_gender',
+                'tbl_applicant.applicant_bdate',
+                'tbl_applicant.applicant_brgy',
+                'tbl_applicant.applicant_civil_status',
+                'tbl_applicant.applicant_email',
+                'tbl_applicant.applicant_contact_number',
+                'tbl_application_personnel.remarks' // THIS IS THE REMARKS FIELD
+            )
+            ->first();
+
+        if (!$applicantData) {
+            \Log::error("Applicant data not found for application_personnel_id: {$application_personnel_id}");
+            return response()->json(['error' => 'Applicant data not found'], 404);
+        }
+
+        // Parse family members
+        $familyMembers = [];
+        if ($intakeSheet->family_members) {
+            try {
+                $familyMembers = json_decode($intakeSheet->family_members, true) ?: [];
+            } catch (\Exception $e) {
+                \Log::error("Error parsing family members: " . $e->getMessage());
+                $familyMembers = [];
+            }
+        }
+
+        // Parse social service records
+        $socialServiceRecords = [];
+        if ($intakeSheet->social_service_records) {
+            try {
+                $socialServiceRecords = json_decode($intakeSheet->social_service_records, true) ?: [];
+            } catch (\Exception $e) {
+                \Log::error("Error parsing social service records: " . $e->getMessage());
+                $socialServiceRecords = [];
+            }
+        }
+
+        $rvServiceRecords = [];
+        if ($intakeSheet->rv_service_records) {
+            try {
+                $rvServiceRecords = json_decode($intakeSheet->rv_service_records, true) ?: [];
+            } catch (\Exception $e) {
+                \Log::error("Error parsing RV service records: " . $e->getMessage());
+                $rvServiceRecords = [];
+            }
+        }
+
+        // Calculate age
+        $age = '';
+        if ($applicantData->applicant_bdate) {
+            try {
+                $birthdate = \Carbon\Carbon::parse($applicantData->applicant_bdate);
+                $age = $birthdate->age;
+            } catch (\Exception $e) {
+                $age = '';
+            }
+        }
+
+        // Prepare COMPLETE data for PDF - matching showIntakeSheet structure
+        $data = [
+            'serialNumber' => $intakeSheet->serial_number ?? 'N/A',
+            'head' => [
+                'within_tagoloan' => true, // Default values
+                'outside_tagoloan' => false,
+                '_4ps' => $intakeSheet->head_4ps ?? 'No',
+                'ipno' => $intakeSheet->head_ipno ?? '',
+                'lname' => $applicantData->applicant_lname ?? '',
+                'fname' => $applicantData->applicant_fname ?? '',
+                'mname' => $applicantData->applicant_mname ?? '',
+                'suffix' => $applicantData->applicant_suffix ?? '',
+                'contact' => $applicantData->applicant_contact_number ?? '',
+                'sex' => $applicantData->applicant_gender ?? '',
+                'age' => $age,
+                'address' => $intakeSheet->head_address ?? '',
+                'zone' => $intakeSheet->head_zone ?? '',
+                'barangay' => $intakeSheet->head_barangay ?? $applicantData->applicant_brgy ?? '',
+                'dob' => $applicantData->applicant_bdate ?? '',
+                'pob' => $intakeSheet->head_pob ?? '',
+                'civil' => $applicantData->applicant_civil_status ?? '',
+                'educ' => $intakeSheet->head_educ ?? '',
+                'occ' => $intakeSheet->head_occ ?? '',
+                'religion' => $intakeSheet->head_religion ?? '',
+                'remarks' => $applicantData->remarks ?? '', // REMARKS FROM APPLICATION_PERSONNEL
+            ],
+            'family' => $familyMembers,
+            'house' => [
+                'total_income' => $intakeSheet->house_total_income ?? 0,
+                'net_income' => $intakeSheet->house_net_income ?? 0,
+                'other_income' => $intakeSheet->other_income ?? 0,
+                'house' => $intakeSheet->house_house ?? '',
+                'lot' => $intakeSheet->house_lot ?? '',
+                'house_rent' => $intakeSheet->house_rent ?? 0,
+                'lot_rent' => $intakeSheet->lot_rent ?? 0,
+                'water' => $intakeSheet->house_water ?? 0,
+                'electric' => $intakeSheet->house_electric ?? 0,
+                'remarks' => $applicantData->remarks ?? '', // ALSO ADD TO HOUSE SECTION IF NEEDED
+            ],
+            'rv_service_records' => $rvServiceRecords,
+            'worker_info' => [
+                'worker_name' => $intakeSheet->worker_name ?? '',
+                'officer_name' => $intakeSheet->officer_name ?? '',
+               'date_entry' => $intakeSheet->date_entry ? \Carbon\Carbon::parse($intakeSheet->date_entry)->format('F d Y') : now()->format('F d Y'),            ],
+                 'application_remarks' => $applicantData->remarks ?? '', // SEPARATE FIELD FOR REMARKS
+        ];
+
+        // Debug log to check data including remarks
+        \Log::info('PDF Data prepared:', [
+            'family_members_count' => count($familyMembers),
+            'social_records_count' => count($socialServiceRecords),
+            'rv_records_count' => count($rvServiceRecords),
+            'remarks' => $applicantData->remarks ?? 'No remarks'
+        ]);
+
+        // Generate PDF
+        $pdf = PDF::loadView('pdf.intake-sheet-print', $data)
+                  ->setPaper('legal', 'landscape')
+                  ->setOptions([
+                      'dpi' => 150,
+                      'defaultFont' => 'Arial',
+                      'isHtml5ParserEnabled' => true
+                  ]);
+
+        return $pdf->stream('family-intake-sheet-' . $application_personnel_id . '.pdf');
+
+    } catch (\Exception $e) {
+        \Log::error('PDF Generation Error: ' . $e->getMessage());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        return response()->json(['error' => 'PDF generation failed: ' . $e->getMessage()], 500);
+    }
+}
+
+// ENHANCED HELPER METHODS
+private function safeNumberFormat($value)
+{
+    if (empty($value) || $value === '' || $value === null) {
+        return '';
+    }
+    
+    // If it's already a formatted string with commas, return as is
+    if (is_string($value) && preg_match('/^\d{1,3}(,\d{3})*(\.\d{2})?$/', $value)) {
+        return $value;
+    }
+    
+    // If it's numeric, format it
+    if (is_numeric($value)) {
+        return number_format(floatval($value), 2);
+    }
+    
+    // If it's a string that can be converted to number
+    $cleanValue = str_replace(',', '', $value);
+    if (is_numeric($cleanValue)) {
+        return number_format(floatval($cleanValue), 2);
+    }
+    
+    return $value; // Return as-is if not numeric
+}
+
+private function safeConvertToFloat($value)
+{
+    if (empty($value) || $value === '' || $value === null) {
+        return 0;
+    }
+    
+    if (is_numeric($value)) {
+        return floatval($value);
+    }
+    
+    $cleanValue = str_replace(',', '', $value);
+    if (is_numeric($cleanValue)) {
+        return floatval($cleanValue);
+    }
+    
+    return 0;
+}
 }
 

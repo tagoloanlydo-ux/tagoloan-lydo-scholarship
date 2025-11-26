@@ -15,6 +15,7 @@
 </head>
 
 <style>
+
 /* Pagination Styles */
 .pagination-container {
     display: flex;
@@ -1802,6 +1803,371 @@
 
         console.log('Scholar page fully initialized');
     });
+
+  // Document Modal functionality - UPDATED VERSION
+function openDocumentModal(scholarId) {
+    const modal = document.getElementById('documentModal');
+    
+    // Show loading state
+    modal.classList.remove('hidden');
+    document.getElementById('docScholarName').textContent = 'Loading...';
+    document.getElementById('docScholarEmail').textContent = 'Loading...';
+    
+    // Clear previous content
+    document.getElementById('academicPeriodTabs').innerHTML = '';
+    document.getElementById('documentsSection').innerHTML = '';
+    document.getElementById('noDocumentsMessage').classList.add('hidden');
+    closeDocumentViewer(); // Close any open document viewer
+
+    // Fetch scholar documents
+    fetch(`/lydo_admin/get-scholar-documents/${scholarId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const scholar = data.scholar;
+                const academicPeriods = data.academicPeriods || [];
+                const documents = data.documents || [];
+                
+                // Update scholar information
+                document.getElementById('docScholarName').textContent = 
+                    `${scholar.applicant_lname}${scholar.applicant_suffix ? ' ' + scholar.applicant_suffix : ''}, ${scholar.applicant_fname} ${scholar.applicant_mname || ''}`;
+                document.getElementById('docScholarEmail').textContent = scholar.applicant_email || 'N/A';
+                
+                // Create academic period tabs
+                createAcademicPeriodTabs(academicPeriods, documents);
+                
+                // Load documents for the first period if available
+                if (academicPeriods.length > 0) {
+                    loadDocumentsForPeriod(academicPeriods[0], documents);
+                } else {
+                    document.getElementById('noDocumentsMessage').classList.remove('hidden');
+                }
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.message || 'Failed to load documents.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                modal.classList.add('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching documents:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'Failed to load documents.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            modal.classList.add('hidden');
+        });
+}
+
+// Create academic period tabs - UPDATED VERSION
+function createAcademicPeriodTabs(academicPeriods, documents) {
+    const tabsContainer = document.getElementById('academicPeriodTabs');
+    tabsContainer.innerHTML = '';
+
+    academicPeriods.forEach((period, index) => {
+        const periodData = documents.find(doc => doc.academic_period === period);
+        const hasDocuments = periodData && periodData.documents && periodData.documents.length > 0;
+        
+        const tab = document.createElement('button');
+        tab.type = 'button';
+        tab.className = `px-4 py-2 rounded-lg border transition-colors ${
+            index === 0 
+                ? 'bg-blue-600 text-white border-blue-600' 
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+        }`;
+        tab.textContent = period;
+        tab.dataset.period = period;
+        
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs
+            document.querySelectorAll('#academicPeriodTabs button').forEach(btn => {
+                btn.className = btn.className.replace('bg-blue-600 text-white border-blue-600', 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50');
+            });
+            
+            // Add active class to clicked tab
+            this.className = 'px-4 py-2 rounded-lg border bg-blue-600 text-white border-blue-600 transition-colors';
+            
+            // Load documents for this period
+            loadDocumentsForPeriod(period, documents);
+        });
+        
+        tabsContainer.appendChild(tab);
+    });
+}
+
+// Load documents for a specific academic period - UPDATED VERSION
+function loadDocumentsForPeriod(period, allDocuments) {
+    const documentsSection = document.getElementById('documentsSection');
+    const noDocumentsMessage = document.getElementById('noDocumentsMessage');
+    
+    const periodData = allDocuments.find(doc => doc.academic_period === period);
+    const periodDocuments = periodData ? periodData.documents : [];
+    
+    if (periodDocuments.length === 0) {
+        documentsSection.innerHTML = '';
+        noDocumentsMessage.classList.remove('hidden');
+        return;
+    }
+    
+    noDocumentsMessage.classList.add('hidden');
+    
+    let documentsHTML = `
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h4 class="text-lg font-semibold text-gray-800">Documents for ${period}</h4>
+                <div class="text-sm text-gray-600">
+                    <span class="px-2 py-1 rounded-full ${
+                        periodData.renewal_status === 'approved' ? 'bg-green-100 text-green-800' :
+                        periodData.renewal_status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        periodData.renewal_status === 'rejected' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                    }">
+                        ${periodData.renewal_status ? periodData.renewal_status.charAt(0).toUpperCase() + periodData.renewal_status.slice(1) : 'Unknown'}
+                    </span>
+                    <span class="ml-2">Submitted: ${periodData.date_submitted ? new Date(periodData.date_submitted).toLocaleDateString() : 'N/A'}</span>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    `;
+    
+    periodDocuments.forEach(doc => {
+        const fileExtension = doc.document_path ? doc.document_path.split('.').pop().toLowerCase() : '';
+        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension);
+        const isPdf = fileExtension === 'pdf';
+        
+        let icon = 'fas fa-file';
+        let previewText = 'View Document';
+        
+        if (isImage) {
+            icon = 'fas fa-image';
+            previewText = 'View Image';
+        } else if (isPdf) {
+            icon = 'fas fa-file-pdf';
+            previewText = 'View PDF';
+        }
+        
+        const hasFile = doc.document_path && doc.document_path !== 'null' && doc.document_path !== '';
+        
+        documentsHTML += `
+            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center">
+                        <i class="${icon} ${hasFile ? 'text-blue-600' : 'text-gray-400'} mr-2"></i>
+                        <span class="text-sm font-medium text-gray-700">${doc.document_type || 'Document'}</span>
+                    </div>
+                    <span class="px-2 py-1 text-xs ${
+                        doc.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        doc.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        doc.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                    } rounded-full">
+                        ${doc.status ? doc.status.charAt(0).toUpperCase() + doc.status.slice(1) : 'Unknown'}
+                    </span>
+                </div>
+                
+                <div class="text-xs text-gray-500 mb-3">
+                    Submitted: ${doc.date_submitted ? new Date(doc.date_submitted).toLocaleDateString() : 'N/A'}
+                </div>
+                
+                <div class="flex space-x-2">
+                    ${hasFile ? `
+                    <button type="button" 
+                            onclick="viewDocument('${doc.document_path}', '${doc.document_type || 'Document'}')"
+                            class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors flex items-center justify-center">
+                        <i class="fas fa-eye mr-1"></i> ${previewText}
+                    </button>
+                    <a href="${doc.document_path}" 
+                       target="_blank"
+                       class="px-3 py-2 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors flex items-center justify-center">
+                        <i class="fas fa-download mr-1"></i>
+                    </a>
+                    ` : `
+                    <button type="button" 
+                            disabled
+                            class="flex-1 px-3 py-2 bg-gray-400 text-white text-sm rounded flex items-center justify-center cursor-not-allowed">
+                        <i class="fas fa-times mr-1"></i> No File
+                    </button>
+                    `}
+                </div>
+            </div>
+        `;
+    });
+    
+    documentsHTML += `
+            </div>
+        </div>
+    `;
+    
+    documentsSection.innerHTML = documentsHTML;
+}
+
+// View document in modal - UPDATED VERSION
+function viewDocument(documentPath, documentName) {
+    if (!documentPath || documentPath === 'null') {
+        Swal.fire({
+            title: 'Document Not Available',
+            text: 'The document file is not available.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+    
+    const fullPath = documentPath;
+    const fileExtension = documentPath.split('.').pop().toLowerCase();
+    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension);
+    const isPdf = fileExtension === 'pdf';
+    
+    // Update current document indicator
+    document.getElementById('currentDocName').textContent = documentName;
+    document.getElementById('currentDocIndicator').classList.remove('hidden');
+    
+    let viewerHTML = '';
+    
+    if (isImage) {
+        viewerHTML = `
+            <div class="flex justify-center">
+                <img src="${fullPath}" 
+                     alt="${documentName}" 
+                     class="max-w-full max-h-96 rounded-lg shadow-lg"
+                     onerror="this.style.display='none'; document.getElementById('documentError').style.display='block';">
+            </div>
+            <div id="documentError" class="hidden text-center text-red-600 mt-4">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Failed to load image. The file may be corrupted or unavailable.
+            </div>
+        `;
+    } else if (isPdf) {
+        viewerHTML = `
+            <div class="h-96">
+                <iframe src="${fullPath}" 
+                        class="w-full h-full rounded-lg border border-gray-200"
+                        onerror="document.getElementById('pdfError').style.display='block';">
+                </iframe>
+            </div>
+            <div id="pdfError" class="hidden text-center text-red-600 mt-4">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Failed to load PDF. The file may be corrupted or unavailable.
+            </div>
+        `;
+    } else {
+        viewerHTML = `
+            <div class="text-center py-8">
+                <i class="fas fa-file text-6xl text-gray-400 mb-4"></i>
+                <h4 class="text-lg font-semibold text-gray-700 mb-2">Document Preview Not Available</h4>
+                <p class="text-gray-500 mb-4">This file type cannot be previewed in the browser.</p>
+                <a href="${fullPath}" 
+                   target="_blank"
+                   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center">
+                    <i class="fas fa-download mr-2"></i> Download Document
+                </a>
+            </div>
+        `;
+    }
+    
+    // Create or update document viewer
+    let documentViewer = document.getElementById('documentViewer');
+    if (!documentViewer) {
+        documentViewer = document.createElement('div');
+        documentViewer.id = 'documentViewer';
+        document.getElementById('documentsSection').prepend(documentViewer);
+    }
+    
+    documentViewer.innerHTML = `
+        <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h5 class="text-md font-semibold text-gray-800">Document Preview: ${documentName}</h5>
+                <button type="button" onclick="closeDocumentViewer()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            ${viewerHTML}
+        </div>
+    `;
+    
+    // Scroll to viewer
+    documentViewer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Close document viewer
+function closeDocumentViewer() {
+    const documentViewer = document.getElementById('documentViewer');
+    if (documentViewer) {
+        documentViewer.remove();
+    }
+    document.getElementById('currentDocIndicator').classList.add('hidden');
+}
+
+// Initialize document modal close functionality
+function initializeDocumentModalClose() {
+    const closeDocumentModal = document.getElementById('closeDocumentModal');
+    const closeDocument = document.getElementById('closeDocument');
+    const modal = document.getElementById('documentModal');
+
+    if (closeDocumentModal) {
+        closeDocumentModal.addEventListener('click', function() {
+            modal.classList.add('hidden');
+            closeDocumentViewer();
+        });
+    }
+
+    if (closeDocument) {
+        closeDocument.addEventListener('click', function() {
+            modal.classList.add('hidden');
+            closeDocumentViewer();
+        });
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+            closeDocumentViewer();
+        }
+    });
+
+    // Fullscreen functionality
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', function() {
+            const modalContent = modal.querySelector('div');
+            if (!document.fullscreenElement) {
+                if (modalContent.requestFullscreen) {
+                    modalContent.requestFullscreen();
+                } else if (modalContent.webkitRequestFullscreen) {
+                    modalContent.webkitRequestFullscreen();
+                } else if (modalContent.msRequestFullscreen) {
+                    modalContent.msRequestFullscreen();
+                }
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress text-lg"></i>';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand text-lg"></i>';
+            }
+        });
+    }
+}
+
+// Add this to your DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', function() {
+    // ... your existing initialization code ...
+    
+    // Initialize document modal close functionality
+    initializeDocumentModalClose();
+    
+    console.log('Document modal functionality initialized');
+});
     </script>
 
     <script src="{{ asset('js/filter_paginate.js') }}"></script>

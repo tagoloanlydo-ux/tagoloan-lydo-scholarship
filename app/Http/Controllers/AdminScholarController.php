@@ -82,6 +82,28 @@ public function scholar(Request $request)
 public function getScholarDocuments($scholar_id)
 {
     try {
+        // First, get scholar information
+        $scholar = DB::table('tbl_scholar as s')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->where('s.scholar_id', $scholar_id)
+            ->select(
+                'a.applicant_fname',
+                'a.applicant_mname',
+                'a.applicant_lname',
+                'a.applicant_suffix',
+                'a.applicant_email'
+            )
+            ->first();
+
+        if (!$scholar) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Scholar not found.'
+            ], 404);
+        }
+
+        // Get renewal documents
         $documents = DB::table('tbl_renewal')
             ->where('scholar_id', $scholar_id)
             ->select(
@@ -93,26 +115,52 @@ public function getScholarDocuments($scholar_id)
                 'date_submitted',
                 'renewal_status'
             )
+            ->orderBy('renewal_acad_year', 'desc')
+            ->orderBy('renewal_semester', 'desc')
             ->get();
 
-        // Process documents to generate proper URLs
+        // Process documents to generate proper URLs and academic periods
         $processedDocuments = $documents->map(function ($doc) {
+            $academicPeriod = $doc->renewal_acad_year . ' - ' . ucfirst($doc->renewal_semester);
+            
             return [
-                'renewal_cert_of_reg' => $this->getDocumentUrl($doc->renewal_cert_of_reg),
-                'renewal_grade_slip' => $this->getDocumentUrl($doc->renewal_grade_slip),
-                'renewal_brgy_indigency' => $this->getDocumentUrl($doc->renewal_brgy_indigency),
-                'renewal_semester' => $doc->renewal_semester,
-                'renewal_acad_year' => $doc->renewal_acad_year,
-                'date_submitted' => $doc->date_submitted,
+                'academic_period' => $academicPeriod,
+                'documents' => [
+                    [
+                        'document_type' => 'Certificate of Registration',
+                        'document_path' => $this->getDocumentUrl($doc->renewal_cert_of_reg),
+                        'status' => $doc->renewal_status,
+                        'date_submitted' => $doc->date_submitted
+                    ],
+                    [
+                        'document_type' => 'Grade Slip',
+                        'document_path' => $this->getDocumentUrl($doc->renewal_grade_slip),
+                        'status' => $doc->renewal_status,
+                        'date_submitted' => $doc->date_submitted
+                    ],
+                    [
+                        'document_type' => 'Barangay Indigency',
+                        'document_path' => $this->getDocumentUrl($doc->renewal_brgy_indigency),
+                        'status' => $doc->renewal_status,
+                        'date_submitted' => $doc->date_submitted
+                    ]
+                ],
                 'renewal_status' => $doc->renewal_status,
+                'date_submitted' => $doc->date_submitted
             ];
         });
 
+        // Get unique academic periods for tabs
+        $academicPeriods = $processedDocuments->pluck('academic_period')->unique()->values();
+
         return response()->json([
             'success' => true,
-            'documents' => $processedDocuments
+            'scholar' => $scholar,
+            'documents' => $processedDocuments,
+            'academicPeriods' => $academicPeriods
         ]);
     } catch (\Exception $e) {
+        \Log::error('Error fetching scholar documents: ' . $e->getMessage());
         return response()->json([
             'success' => false,
             'message' => 'Error fetching documents: ' . $e->getMessage()
@@ -781,4 +829,5 @@ public function getScholarPersonalInfo($scholar_id)
         ], 500);
     }
 }
+
 }
