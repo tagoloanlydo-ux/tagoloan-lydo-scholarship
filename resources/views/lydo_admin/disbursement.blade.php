@@ -391,19 +391,21 @@
     <!-- Create Disbursement Form -->
     <div class="bg-white p-6 rounded-lg shadow-md mb-6">
         <h3 class="text-xl font-semibold mb-4 text-gray-800">Create New Disbursement</h3>
-        <form method="POST" action="{{ route('LydoAdmin.createDisbursement') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            @csrf
-            <!-- Barangay Filter for Scholars -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Filter Scholars by Barangay</label>
-                <select id="barangayFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500">
-                    <option value="">All Barangays</option>
-                    @foreach($barangays as $barangay)
-                        <option value="{{ $barangay }}">{{ $barangay }}</option>
-                    @endforeach
-                </select>
-                <p class="text-xs text-gray-500 mt-1">Select a barangay to filter scholars</p>
-            </div>
+            <form method="POST" action="{{ route('LydoAdmin.createDisbursement') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="disbursementForm">
+                @csrf
+                <!-- Barangay Filter for Scholars -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter Scholars by Barangay</label>
+                    <select id="barangayFilter" name="barangayFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500">
+                        <option value="">All Barangays</option>
+                        @foreach($barangays as $barangay)
+                            <option value="{{ $barangay }}">{{ $barangay }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Select a barangay to filter scholars</p>
+                </div>
+                
+                <!-- Academic Year Filter -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Filter Scholars by Academic Year</label>
                     <select id="academicYearFilter" name="scholar_academic_year" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500">
@@ -911,8 +913,8 @@
         const recordsContent = document.getElementById('tab-content-records');
         const signedContent = document.getElementById('tab-content-signed');
 
-  // Replace the existing form submission code with this:
-const disbursementForm = document.querySelector('form[method="POST"]');
+// Palitan ang existing na form submission code
+const disbursementForm = document.getElementById('disbursementForm');
 if (disbursementForm) {
     disbursementForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -924,6 +926,8 @@ if (disbursementForm) {
         const disbursementDate = document.querySelector('input[name="disbursement_date"]').value;
         const location = document.querySelector('input[name="disbursement_location"]').value;
         const time = document.querySelector('input[name="disbursement_time"]').value;
+        const barangayFilter = document.querySelector('select[name="barangayFilter"]').value;
+        const scholarAcademicYear = document.querySelector('select[name="scholar_academic_year"]').value;
 
         // Validate required fields
         if (!location || !time) {
@@ -960,6 +964,23 @@ if (disbursementForm) {
             hour12: true
         });
 
+        // Build confirmation message with barangay info
+        let barangayInfo = '';
+        if (barangayFilter) {
+            barangayInfo = `<div class="flex justify-between">
+                <span class="font-medium">Barangay:</span>
+                <span class="text-gray-700">${barangayFilter}</span>
+            </div>`;
+        }
+
+        let scholarYearInfo = '';
+        if (scholarAcademicYear && scholarAcademicYear !== academicYear) {
+            scholarYearInfo = `<div class="flex justify-between">
+                <span class="font-medium">Filtered Academic Year:</span>
+                <span class="text-gray-700">${scholarAcademicYear}</span>
+            </div>`;
+        }
+
         // Simple confirmation first
         Swal.fire({
             title: 'Are you sure you want to submit?',
@@ -992,6 +1013,8 @@ if (disbursementForm) {
                                     <span class="font-medium">Total Amount:</span>
                                     <span class="text-green-600 font-bold">₱${(parseFloat(amount) * selectedCount).toLocaleString()}</span>
                                 </div>
+                                ${barangayInfo}
+                                ${scholarYearInfo}
                                 <div class="flex justify-between">
                                     <span class="font-medium">Semester:</span>
                                     <span class="text-gray-700">${semester}</span>
@@ -1087,6 +1110,7 @@ if (disbursementForm) {
             }
         }
 
+
         // Add click event listeners to tabs
         createTab.addEventListener('click', () => switchTab('create'));
         recordsTab.addEventListener('click', () => switchTab('records'));
@@ -1175,6 +1199,8 @@ function loadScholarsWithoutDuplicates() {
             });
     }
 }
+
+
 
 function updateScholarTable(scholars) {
     const tableBody = document.getElementById('scholarTableBody');

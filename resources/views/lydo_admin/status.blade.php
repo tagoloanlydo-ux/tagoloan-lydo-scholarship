@@ -509,6 +509,39 @@
 
                 <!-- Tab Content: Without Renewal Applications -->
                 <div id="withoutRenewalContent" class="tab-content">
+                   <div class="note-box mb-4">
+        <h4>📋 Scholars Without Renewal Applications</h4>
+        <p class="text-sm text-black-600 mb-3">
+            This section displays active scholars who haven't submitted their renewal applications for the current academic period.
+        </p>
+        
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
+            <h5 class="font-semibold text-amber-800 mb-2">⚠️ Required Actions:</h5>
+            <ul class="text-sm text-amber-700 space-y-1">
+                <li>• Send reminder emails to scholars about pending renewal applications</li>
+                <li>• Update status to inactive for scholars who fail to renew</li>
+                <li>• Copy names for reporting or follow-up purposes</li>
+            </ul>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <h5 class="font-semibold text-blue-800 mb-2">📝 Quick Steps:</h5>
+            <ol class="text-sm text-blue-700 space-y-2">
+                <li class="flex items-start">
+                    <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">1</span>
+                    <span>Select scholars using checkboxes</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">2</span>
+                    <span>Use "Email" to send renewal reminders</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">3</span>
+                    <span>Use "Update Status" to set as inactive if needed</span>
+                </li>
+            </ol>
+        </div>
+    </div>
                     <!-- Scholars without renewal applications -->
                     <div class="p-4 bg-white rounded-lg shadow-sm"> <!-- Reduced padding -->
                         <div class="flex justify-between items-center mb-3"> <!-- Reduced margin -->
@@ -596,6 +629,40 @@
 
                 <!-- Tab Content: Graduating Scholars -->
                 <div id="graduatingContent" class="tab-content hidden">
+                    <div class="note-box mb-4">
+        <h4>🎓 Graduating Scholars Management</h4>
+        <p class="text-sm text-black-600 mb-3">
+            This section displays scholars who are in their final year or semester and approaching graduation.
+        </p>
+        
+        <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+            <h5 class="font-semibold text-green-800 mb-2">✅ Graduation Process:</h5>
+            <ul class="text-sm text-green-700 space-y-1">
+                <li>• Verify completion of all academic requirements</li>
+                <li>• Mark scholars as graduated once they complete their programs</li>
+                <li>• Generate graduation certificates for completed scholars</li>
+                <li>• Send congratulatory emails or notifications</li>
+            </ul>
+        </div>
+
+        <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+            <h5 class="font-semibold text-purple-800 mb-2">📝 Quick Steps:</h5>
+            <ol class="text-sm text-purple-700 space-y-2">
+                <li class="flex items-start">
+                    <span class="bg-purple-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">1</span>
+                    <span>Select graduating scholars using checkboxes</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="bg-purple-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">2</span>
+                    <span>Use "Mark as Graduated" to update their status</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="bg-purple-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">3</span>
+                    <span>Generate certificates and send congratulatory messages</span>
+                </li>
+            </ol>
+        </div>
+    </div>
                     <!-- Graduating Scholars -->
                     <div class="p-4 bg-white rounded-lg shadow-sm"> <!-- Reduced padding -->
                         <div class="flex justify-between items-center mb-3"> <!-- Reduced margin -->

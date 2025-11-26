@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use App\Models\Announce;
 
 class SmsController extends Controller
@@ -47,8 +48,10 @@ class SmsController extends Controller
                 return response()->json(['success' => false, 'message' => 'No valid applicants found for the selected emails.']);
             }
 
-            $sentCount = 0;
-            $failedCount = 0;
+            $sentSmsCount = 0;
+            $sentEmailCount = 0;
+            $failedSmsCount = 0;
+            $failedEmailCount = 0;
             $results = [];
 
             // Create announcement if it's a schedule type
@@ -57,50 +60,134 @@ class SmsController extends Controller
             }
 
             foreach ($applicants as $applicant) {
-                $mobile = $this->formatPhoneNumber($applicant->applicant_contact_number);
+                $fullName = $applicant->applicant_fname . ' ' . $applicant->applicant_lname;
                 
-                if (!$mobile) {
-                    $results[] = "Invalid phone number for {$applicant->applicant_fname} {$applicant->applicant_lname} ({$applicant->applicant_contact_number})";
-                    $failedCount++;
-                    continue;
+                // Send SMS
+                $smsResult = $this->sendApplicantSms($applicant, $message, $request);
+                if ($smsResult['success']) {
+                    $sentSmsCount++;
+                    $results[] = "✓ SMS sent to {$fullName} ({$smsResult['mobile']}) - Status: {$applicant->initial_screening}";
+                } else {
+                    $failedSmsCount++;
+                    $results[] = "✗ Failed to send SMS to {$fullName}: {$smsResult['message']}";
                 }
 
-                $personalizedMessage = $this->buildSmsMessage($message, $applicant, $request);
-                $fullName = $applicant->applicant_fname . ' ' . $applicant->applicant_lname;
-
-                // Send real SMS
-                $smsResult = $this->sendRealSms($mobile, $personalizedMessage);
-
-                if ($smsResult['success']) {
-                    $sentCount++;
-                    $results[] = "✓ SMS sent to {$fullName} ({$mobile}) - Status: {$applicant->initial_screening}";
-                    Log::info("SMS Success: {$fullName} - {$mobile} - {$applicant->initial_screening}");
-                } else {
-                    $failedCount++;
-                    $results[] = "✗ Failed to send SMS to {$fullName}: {$smsResult['message']}";
-                    Log::error("SMS Failed: {$fullName} - {$mobile} - Error: {$smsResult['message']}");
+                // Send Email (only for schedule type)
+                if ($smsType === 'schedule') {
+                    $emailResult = $this->sendScheduleEmail($applicant, $message, $request);
+                    if ($emailResult['success']) {
+                        $sentEmailCount++;
+                        $results[] = "✓ Email sent to {$fullName} ({$applicant->applicant_email})";
+                    } else {
+                        $failedEmailCount++;
+                        $results[] = "✗ Failed to send email to {$fullName}: {$emailResult['message']}";
+                    }
                 }
 
                 // Add small delay between messages to avoid rate limiting
                 usleep(500000); // 0.5 second delay
             }
 
-            $summary = "SMS sending completed.";
+            $summary = "SMS sending completed. ";
+            $summary .= "SMS: {$sentSmsCount} sent, {$failedSmsCount} failed. ";
             
-            Log::info("Applicant SMS Summary: " . $summary);
+            if ($smsType === 'schedule') {
+                $summary .= "Emails: {$sentEmailCount} sent, {$failedEmailCount} failed.";
+            }
+            
+            Log::info("Applicant Notification Summary: " . $summary);
             
             return response()->json([
                 'success' => true, 
                 'message' => $summary,
-                'details' => $results
+                'details' => $results,
+                'stats' => [
+                    'sms_sent' => $sentSmsCount,
+                    'sms_failed' => $failedSmsCount,
+                    'email_sent' => $sentEmailCount,
+                    'email_failed' => $failedEmailCount
+                ]
             ]);
 
         } catch (\Exception $e) {
-            Log::error("Applicant SMS sending error: " . $e->getMessage());
+            Log::error("Applicant notification sending error: " . $e->getMessage());
             return response()->json([
                 'success' => false, 
-                'message' => 'Failed to send SMS: ' . $e->getMessage()
+                'message' => 'Failed to send notifications: ' . $e->getMessage()
             ]);
+        }
+    }
+
+    /**
+     * Send SMS to applicant
+     */
+    private function sendApplicantSms($applicant, $message, Request $request)
+    {
+        $mobile = $this->formatPhoneNumber($applicant->applicant_contact_number);
+        
+        if (!$mobile) {
+            return [
+                'success' => false,
+                'message' => 'Invalid phone number format'
+            ];
+        }
+
+        $personalizedMessage = $this->buildSmsMessage($message, $applicant, $request);
+
+        // Send real SMS
+        $smsResult = $this->sendRealSms($mobile, $personalizedMessage);
+
+        if ($smsResult['success']) {
+            Log::info("SMS Success: {$applicant->applicant_fname} {$applicant->applicant_lname} - {$mobile} - {$applicant->initial_screening}");
+            return [
+                'success' => true,
+                'mobile' => $mobile,
+                'message' => 'SMS sent successfully'
+            ];
+        } else {
+            Log::error("SMS Failed: {$applicant->applicant_fname} {$applicant->applicant_lname} - {$mobile} - Error: {$smsResult['message']}");
+            return [
+                'success' => false,
+                'message' => $smsResult['message']
+            ];
+        }
+    }
+
+    /**
+     * Send schedule email to applicant
+     */
+    private function sendScheduleEmail($applicant, $message, Request $request)
+    {
+        try {
+            $fullName = $applicant->applicant_fname . ' ' . $applicant->applicant_lname;
+            $email = $applicant->applicant_email;
+
+            // Build email content
+            $emailData = [
+                'applicant_name' => $fullName,
+                'base_message' => $message,
+                'schedule_what' => $request->schedule_what,
+                'schedule_where' => $request->schedule_where,
+                'schedule_date' => $request->schedule_date ? \Carbon\Carbon::parse($request->schedule_date)->format('F d, Y') : null,
+                'schedule_time' => $request->schedule_time ? \Carbon\Carbon::parse($request->schedule_time)->format('h:i A') : null,
+            ];
+
+            $subject = "Schedule Notification: " . ($request->schedule_what ?: 'Important Update');
+
+            Mail::send('emails.schedule-notification', $emailData, function ($mail) use ($email, $subject, $fullName) {
+                $mail->to($email)
+                     ->subject($subject);
+            });
+
+            Log::info("Schedule email sent to: {$fullName} ({$email})");
+            return ['success' => true];
+
+        } catch (\Exception $e) {
+            Log::error("Failed to send schedule email to {$applicant->applicant_email}: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
         }
     }
 
@@ -116,33 +203,39 @@ class SmsController extends Controller
             $scheduleTime = $request->schedule_time;
 
             // Build announcement content
-            $announcementContent = "Schedule Announcement:\n\n";
-            $announcementContent .= "What: {$scheduleWhat}\n";
+            $announcementContent = "<p><strong>Schedule Announcement:</strong></p>";
+            $announcementContent .= "<p><strong>What:</strong> {$scheduleWhat}</p>";
             
             if ($scheduleWhere) {
-                $announcementContent .= "Where: {$scheduleWhere}\n";
+                $announcementContent .= "<p><strong>Where:</strong> {$scheduleWhere}</p>";
             }
             
             if ($scheduleDate) {
                 $formattedDate = \Carbon\Carbon::parse($scheduleDate)->format('F d, Y');
-                $announcementContent .= "Date: {$formattedDate}\n";
+                $announcementContent .= "<p><strong>Date:</strong> {$formattedDate}</p>";
             }
             
             if ($scheduleTime) {
                 $formattedTime = \Carbon\Carbon::parse($scheduleTime)->format('h:i A');
-                $announcementContent .= "Time: {$formattedTime}\n";
+                $announcementContent .= "<p><strong>Time:</strong> {$formattedTime}</p>";
+            }
+
+            // Add the base message if provided
+            if ($request->message) {
+                $announcementContent .= "<p><strong>Additional Information:</strong></p>";
+                $announcementContent .= "<p>{$request->message}</p>";
             }
 
             // Create announcement
             Announce::create([
                 'lydopers_id' => session('lydopers')->lydopers_id,
-                'announce_title' => $scheduleWhat,
+                'announce_title' => $scheduleWhat ?: 'Schedule Announcement',
                 'announce_content' => $announcementContent,
                 'announce_type' => 'applicants',
                 'date_posted' => now(),
             ]);
 
-            Log::info("Schedule announcement created: {$scheduleWhat}");
+            Log::info("Schedule announcement created: " . ($scheduleWhat ?: 'Schedule Announcement'));
 
         } catch (\Exception $e) {
             Log::error("Failed to create schedule announcement: " . $e->getMessage());
@@ -191,7 +284,8 @@ class SmsController extends Controller
     /**
      * Real SMS function using iProgSMS API
      */
-public function sendRealSms($mobile, $message)    {
+    public function sendRealSms($mobile, $message)
+    {
         try {
             $apiKey = config('services.iprogsms.api_key');
             $apiUrl = config('services.iprogsms.api_url');
@@ -300,54 +394,6 @@ public function sendRealSms($mobile, $message)    {
         Log::warning("Invalid phone number format: " . $phone);
         return false;
     }
-    /**
-     * Alternative method using query parameters
-     */
-    private function sendRealSmsQueryParams($mobile, $message)
-    {
-        try {
-            $apiKey = config('services.iprogsms.api_key');
-            $apiUrl = config('services.iprogsms.api_url');
-
-            // Build URL with query parameters
-            $url = $apiUrl . '?' . http_build_query([
-                'api_token' => $apiKey,
-                'phone_number' => $mobile,
-                'message' => $message
-            ]);
-
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Accept' => 'application/json',
-                ])
-                ->post($url);
-
-            Log::info("SMS API Query Request: " . $url);
-            Log::info("SMS API Response: " . $response->body());
-
-            if ($response->successful()) {
-                $responseData = $response->json();
-                return [
-                    'success' => true,
-                    'message' => 'SMS sent successfully',
-                    'data' => $responseData
-                ];
-            } else {
-                return [
-                    'success' => false,
-                    'message' => 'SMS API error: ' . $response->body()
-                ];
-            }
-
-        } catch (\Exception $e) {
-            Log::error("SMS sending error: " . $e->getMessage());
-            return [
-                'success' => false,
-                'message' => 'SMS service error: ' . $e->getMessage()
-            ];
-        }
-    }
-
 
     public function testSms(Request $request)
     {
@@ -407,5 +453,4 @@ public function sendRealSms($mobile, $message)    {
             ]);
         }
     }
-
 }

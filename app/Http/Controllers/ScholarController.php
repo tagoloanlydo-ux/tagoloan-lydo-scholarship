@@ -326,13 +326,16 @@ public function updateSettings(Request $request)
         return response()->json(['valid' => true]);
     }
 
-    public function announcements()
-    {
-      $announcements = Announce::orderBy('created_at', 'desc')
-    ->orderBy('announce_id', 'desc')
-    ->get();
-        return view('scholar.scholar_announce', compact('announcements'));
-    }
+public function announcements()
+{
+    // Kunin lamang ang announcements na may type na "Applicants"
+    $announcements = Announce::where('announce_type', 'Applicants')
+        ->orderBy('created_at', 'desc')
+        ->orderBy('announce_id', 'desc')
+        ->get();
+    
+    return view('scholar.scholar_announce', compact('announcements'));
+}
 
     public function dashboard()
     {

@@ -437,7 +437,7 @@
                             
                             <!-- Print to PDF Button -->
                             <div class="flex-1">
-                                <button type="button" id="printPdfBtn" class="w-full px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center">
+                                <button type="button" id="printPdfBtn" class="w-full px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center">
                                     <i class="fas fa-file-pdf mr-2"></i>Print to PDF
                                 </button>
                             </div>
@@ -668,7 +668,7 @@
                                 </div>
 
                                 <!-- Send Options -->
-                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                <div class="bg-gray-50 border hidden border-gray-200 rounded-lg p-4">
                                     <h4 class="text-lg font-semibold text-gray-800 mb-3">Send Options</h4>
                                     <div class="space-y-2">
                                         <label class="flex items-center">
@@ -737,6 +737,19 @@
                     </div>
                 </div>
 
+                <!-- Schedule Note (Hidden by Default) -->
+                <div id="scheduleNote" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                        <div>
+                            <h4 class="text-sm font-semibold text-blue-800 mb-1">Schedule Notification</h4>
+                            <p class="text-sm text-blue-700">
+                                When you send a schedule SMS, the same schedule information will also be sent to scholars via email for their reference.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- SMS Message -->
                 <div id="smsMessageContainer">
                     <label for="smsMessage" class="block text-sm font-medium text-gray-700 mb-2">SMS Message</label>
@@ -780,7 +793,7 @@
                 </div>
 
                 <!-- SMS Options -->
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div class="bg-gray-50 border border-gray-200 hidden rounded-lg p-4">
                     <h4 class="text-lg font-semibold text-gray-800 mb-3">SMS Options</h4>
                     <div class="space-y-2">
                         <label class="flex items-center">
@@ -836,10 +849,10 @@ function initializeCheckboxSystem() {
     updateSelectAllState();
 }
 
-// Handle select all checkbox change
+// Handle select all checkbox change - MODIFIED TO SELECT ALL SCHOLARS ACROSS ALL PAGES
 function handleSelectAllChange() {
-    const visibleCheckboxes = getVisibleCheckboxes();
-    visibleCheckboxes.forEach(checkbox => {
+    const allScholarCheckboxes = document.querySelectorAll('.scholar-checkbox');
+    allScholarCheckboxes.forEach(checkbox => {
         checkbox.checked = this.checked;
     });
     updateButtonStates();
@@ -879,35 +892,26 @@ function updateButtonStates() {
     }
 }
 
-// Update select all checkbox state
+// Update select all checkbox state - MODIFIED TO CHECK ALL SCHOLARS ACROSS ALL PAGES
 function updateSelectAllState() {
     if (!selectAllCheckbox) return;
 
-    const visibleCheckboxes = getVisibleCheckboxes();
-    const checkedVisibleCheckboxes = getCheckedVisibleCheckboxes();
+    const allScholarCheckboxes = document.querySelectorAll('.scholar-checkbox');
+    const allCheckedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
 
-    if (visibleCheckboxes.length === 0) {
+    if (allScholarCheckboxes.length === 0) {
         selectAllCheckbox.checked = false;
         selectAllCheckbox.indeterminate = false;
-    } else if (checkedVisibleCheckboxes.length === visibleCheckboxes.length) {
+    } else if (allCheckedCheckboxes.length === allScholarCheckboxes.length) {
         selectAllCheckbox.checked = true;
         selectAllCheckbox.indeterminate = false;
-    } else if (checkedVisibleCheckboxes.length > 0) {
+    } else if (allCheckedCheckboxes.length > 0) {
         selectAllCheckbox.checked = false;
         selectAllCheckbox.indeterminate = true;
     } else {
         selectAllCheckbox.checked = false;
         selectAllCheckbox.indeterminate = false;
     }
-}
-
-// Helper functions
-function getVisibleCheckboxes() {
-    return document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox');
-}
-
-function getCheckedVisibleCheckboxes() {
-    return document.querySelectorAll('.scholar-row:not([style*="display: none"]) .scholar-checkbox:checked');
 }
 
 // Send Email Modal functionality
@@ -1170,9 +1174,16 @@ function initializeSmsForm() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    let successMessage = data.message;
+                    
+                    // Add additional info for schedule type
+                    if (smsType === 'schedule') {
+                        successMessage += '\n\nEmail notifications have also been sent to all selected scholars.';
+                    }
+                    
                     Swal.fire({
                         title: 'SMS Sent Successfully!',
-                        text: data.message,
+                        text: successMessage,
                         icon: 'success',
                         confirmButtonText: 'OK'
                     });
@@ -1193,6 +1204,13 @@ function initializeSmsForm() {
                     // Reset form
                     this.reset();
                     document.getElementById('smsCharCount').textContent = '0';
+                    
+                    // Reset schedule fields visibility
+                    document.getElementById('scheduleFields').classList.add('hidden');
+                    document.getElementById('smsMessageContainer').classList.remove('hidden');
+                    
+                    // Reset radio to plain type
+                    document.querySelector('input[name="sms_type"][value="plain"]').checked = true;
                 } else {
                     Swal.fire({
                         title: 'Error',
@@ -1222,15 +1240,18 @@ function initializeSmsForm() {
 function initializeSmsTypeToggle() {
     const smsTypeRadios = document.querySelectorAll('.sms-type-radio');
     const scheduleFields = document.getElementById('scheduleFields');
+    const scheduleNote = document.getElementById('scheduleNote');
     const smsMessageContainer = document.getElementById('smsMessageContainer');
     
     smsTypeRadios.forEach(radio => {
         radio.addEventListener('change', function() {
             if (this.value === 'schedule') {
                 scheduleFields.classList.remove('hidden');
+                scheduleNote.classList.remove('hidden');
                 if (smsMessageContainer) smsMessageContainer.classList.add('hidden');
             } else {
                 scheduleFields.classList.add('hidden');
+                scheduleNote.classList.add('hidden');
                 if (smsMessageContainer) smsMessageContainer.classList.remove('hidden');
             }
         });
@@ -1241,9 +1262,11 @@ function initializeSmsTypeToggle() {
     if (selected) {
         if (selected.value === 'schedule') {
             scheduleFields.classList.remove('hidden');
+            scheduleNote.classList.remove('hidden');
             if (smsMessageContainer) smsMessageContainer.classList.add('hidden');
         } else {
             scheduleFields.classList.add('hidden');
+            scheduleNote.classList.add('hidden');
             if (smsMessageContainer) smsMessageContainer.classList.remove('hidden');
         }
     }
@@ -2257,6 +2280,198 @@ function attachModalEvents(tabSelector) {
             });
         });
     });
+}
+
+// Enhanced Select All functionality for paginated tables - MODIFIED TO WORK ACROSS ALL PAGES
+function initializeSelectAllPagination() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const scholarCheckboxes = document.querySelectorAll('.scholar-checkbox');
+    
+    if (!selectAllCheckbox) return;
+
+    // Select All checkbox functionality - MODIFIED TO SELECT ALL SCHOLARS ACROSS ALL PAGES
+    selectAllCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        
+        // Get ALL scholar checkboxes (including those on other pages)
+        const allScholarCheckboxes = document.querySelectorAll('.scholar-checkbox');
+        
+        // Update all checkboxes
+        allScholarCheckboxes.forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+        
+        // Update button states
+        updateButtonStates();
+    });
+
+    // Individual checkbox functionality
+    scholarCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectAllState();
+            updateButtonStates();
+        });
+    });
+
+    // Update select all state when pagination changes
+    const originalUpdateScholarPagination = updateScholarPagination;
+    updateScholarPagination = function() {
+        originalUpdateScholarPagination();
+        updateSelectAllState();
+        updateButtonStates();
+    };
+}
+
+// Update select all checkbox state - MODIFIED TO CHECK ALL SCHOLARS ACROSS ALL PAGES
+function updateSelectAllState() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    if (!selectAllCheckbox) return;
+
+    // Get ALL scholar checkboxes
+    const allCheckboxes = document.querySelectorAll('.scholar-checkbox');
+    const allCheckedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+    
+    if (allCheckboxes.length === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    } else if (allCheckedCheckboxes.length === allCheckboxes.length) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else if (allCheckedCheckboxes.length > 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    }
+}
+
+// Update button states based on selected checkboxes
+function updateButtonStates() {
+    const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+    const hasSelection = selectedCheckboxes.length > 0;
+
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
+    const sendSmsBtn = document.getElementById('sendSmsBtn');
+
+    // Update Email Button
+    if (sendEmailBtn) {
+        sendEmailBtn.disabled = !hasSelection;
+        if (hasSelection) {
+            sendEmailBtn.classList.remove('hidden');
+        } else {
+            sendEmailBtn.classList.add('hidden');
+        }
+    }
+
+    // Update SMS Button
+    if (sendSmsBtn) {
+        sendSmsBtn.disabled = !hasSelection;
+        if (hasSelection) {
+            sendSmsBtn.classList.remove('hidden');
+        } else {
+            sendSmsBtn.classList.add('hidden');
+        }
+    }
+}
+
+// Get selected scholar emails (across all pages)
+function getSelectedScholarEmails() {
+    const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+    const emails = [];
+    
+    selectedCheckboxes.forEach(checkbox => {
+        emails.push(checkbox.value);
+    });
+    
+    return emails;
+}
+
+// Get selected scholar names (across all pages)
+function getSelectedScholarNames() {
+    const selectedCheckboxes = document.querySelectorAll('.scholar-checkbox:checked');
+    const names = [];
+    
+    selectedCheckboxes.forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        const name = row.querySelector('td:nth-child(2) div').textContent.trim();
+        names.push(name);
+    });
+    
+    return names;
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSelectAllPagination();
+    
+    // Also update the existing modal functions to use the new selection functions
+    updateEmailModalSelection();
+    updateSmsModalSelection();
+});
+
+// Update email modal to show selection from all pages
+function updateEmailModalSelection() {
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
+    if (sendEmailBtn) {
+        sendEmailBtn.addEventListener('click', function() {
+            const selectedEmails = getSelectedScholarEmails();
+            const selectedNames = getSelectedScholarNames();
+            
+            if (selectedEmails.length === 0) {
+                Swal.fire({
+                    title: 'No Scholars Selected',
+                    text: 'Please select at least one scholar to send an email.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            // Populate modal
+            const scholarsList = document.getElementById('selectedScholarsList');
+            scholarsList.innerHTML = selectedNames.map(name => `<div class="mb-1">• ${name}</div>`).join('');
+
+            document.getElementById('selectedEmailsInput').value = selectedEmails.join(',');
+
+            // Show modal
+            document.getElementById('sendEmailModal').classList.remove('hidden');
+        });
+    }
+}
+
+// Update SMS modal to show selection from all pages
+function updateSmsModalSelection() {
+    const sendSmsBtn = document.getElementById('sendSmsBtn');
+    if (sendSmsBtn) {
+        sendSmsBtn.addEventListener('click', function() {
+            const selectedEmails = getSelectedScholarEmails();
+            const selectedNames = getSelectedScholarNames();
+            
+            if (selectedEmails.length === 0) {
+                Swal.fire({
+                    title: 'No Scholars Selected',
+                    text: 'Please select at least one scholar to send an SMS.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            // Populate modal
+            const scholarsList = document.getElementById('selectedSmsScholarsList');
+            scholarsList.innerHTML = selectedNames.map(name => `<div class="mb-1">• ${name}</div>`).join('');
+
+            document.getElementById('selectedSmsEmailsInput').value = selectedEmails.join(',');
+            
+            // Reset form
+            document.getElementById('smsMessage').value = '';
+            document.getElementById('smsCharCount').textContent = '0';
+            
+            // Show modal
+            document.getElementById('sendSmsModal').classList.remove('hidden');
+        });
+    }
 }
 </script>
 
