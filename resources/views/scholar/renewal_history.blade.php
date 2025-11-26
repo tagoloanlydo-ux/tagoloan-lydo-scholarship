@@ -492,5 +492,7 @@
             });
         @endif
     </script>
+        <script src="{{ asset('js/renewal.js') }}"></script>
+
 </body>
 </html>
