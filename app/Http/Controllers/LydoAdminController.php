@@ -2080,22 +2080,27 @@ public function getApplicationPersonnelId($applicantId)
         $applicationPersonnel = DB::table('tbl_application as a')
             ->join('tbl_application_personnel as ap', 'a.application_id', '=', 'ap.application_id')
             ->where('a.applicant_id', $applicantId)
-            ->select('ap.application_personnel_id', 'ap.remarks')
+            ->select('ap.application_personnel_id')
             ->first();
 
         if (!$applicationPersonnel) {
-            return response()->json(['success' => false, 'message' => 'Application personnel record not found.'], 404);
+            return response()->json([
+                'success' => false, 
+                'message' => 'Application personnel record not found.'
+            ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'application_personnel_id' => $applicationPersonnel->application_personnel_id,
-            'remarks' => $applicationPersonnel->remarks
+            'application_personnel_id' => $applicationPersonnel->application_personnel_id
         ]);
 
     } catch (\Exception $e) {
         \Log::error('Error getting application personnel ID: ' . $e->getMessage());
-        return response()->json(['success' => false, 'message' => 'Error loading application data.'], 500);
+        return response()->json([
+            'success' => false, 
+            'message' => 'Error loading application data.'
+        ], 500);
     }
 }
 

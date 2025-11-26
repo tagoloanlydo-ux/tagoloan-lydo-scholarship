@@ -13,7 +13,46 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <style>
-    
+    /* Add to your existing CSS */
+.document-preview-container {
+    position: relative;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.document-preview-container iframe {
+    transition: opacity 0.3s ease;
+    background: white;
+}
+
+.document-preview-container::before {
+    content: 'Loading document...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #6b7280;
+    font-size: 0.875rem;
+    z-index: 1;
+    opacity: 0.7;
+}
+
+.document-preview-container iframe[src] ~ ::before {
+    display: none;
+}
+
+/* Improve modal scrolling for documents */
+.modal-content {
+    max-height: 95vh;
+    overflow-y: auto;
+}
+
+/* Ensure iframes are properly contained */
+.document-preview-container iframe {
+    min-height: 200px;
+    border: 1px solid #e5e7eb;
+}
         input::placeholder, select::placeholder {
             color: black !important;
         }
@@ -244,29 +283,331 @@
                 height: 60px;
             }
         }
+/* A4 Portrait Modal Styles */
+.modal-content {
+    position: relative;
+    background: white;
+    margin: 1% auto;
+    padding: 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    width: 210mm; /* A4 width */
+    min-height: 297mm; /* A4 height */
+    max-height: 95vh;
+    overflow-y: auto;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
 
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-        }
+.modal-content.scaled {
+    transform: scale(1);
+}
 
-        .modal-content {
-            position: relative;
-            background: white;
-            margin: 2% auto;
-            padding: 20px;
-            border-radius: 8px;
-            max-width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
+.modal-header {
+    background: linear-gradient(135deg, #4c1d95 0%, #7e22ce 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 8px 8px 0 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Review Columns for A4 */
+.review-columns {
+    padding: 2rem;
+    max-height: calc(297mm - 120px);
+    overflow-y: auto;
+}
+
+/* Improved Section Styles */
+.intake-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    page-break-inside: avoid;
+}
+
+.intake-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 3px solid #7c3aed;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    padding: 1rem;
+    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    border-radius: 8px 8px 0 0;
+}
+
+/* Improved Table Styles */
+.intake-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.intake-table th {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+    text-align: left;
+    border: 1px solid #e5e7eb;
+}
+
+.intake-table td {
+    padding: 0.75rem;
+    border: 1px solid #e5e7eb;
+    background: white;
+}
+
+.intake-table tbody tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+.intake-table tbody tr:hover {
+    background-color: #f1f5f9;
+}
+
+/* Document Section Improvements */
+.bg-white.rounded-lg.shadow-lg.mb-6 {
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.bg-purple-600 {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+}
+
+/* Document Cards Improvements */
+.document-status-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.document-status-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+.document-status-card .bg-gray-50 {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    padding: 1.25rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.document-preview {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-top: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Status Badges */
+.status-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+}
+
+.status-green {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.status-red {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.status-gray {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+}
+
+/* Button Improvements */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+/* Responsive Design for A4 Modal */
+@media (max-width: 1200px) {
+    .modal-content {
+        width: 90%;
+        min-height: auto;
+        max-height: 90vh;
+        margin: 2% auto;
+    }
+}
+
+@media (max-width: 992px) {
+    .modal-content {
+        width: 95%;
+        margin: 2% auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 98%;
+        margin: 1% auto;
+        transform: none;
+    }
+    
+    .review-columns {
+        padding: 1rem;
+    }
+    
+    .intake-section {
+        padding: 1rem;
+    }
+    
+    .intake-table {
+        font-size: 0.75rem;
+    }
+    
+    .intake-table th,
+    .intake-table td {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        max-height: 100vh;
+    }
+    
+    .review-columns {
+        padding: 0.5rem;
+    }
+    
+    .intake-section {
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .intake-table {
+        font-size: 0.7rem;
+    }
+}
+
+/* Print Styles for A4 */
+@media print {
+    .modal-content {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        transform: none !important;
+    }
+    
+    .modal-header {
+        position: static !important;
+    }
+    
+    .btn {
+        display: none !important;
+    }
+    
+    .review-columns {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+}
+
+/* Smooth scrolling */
+.review-columns {
+    scroll-behavior: smooth;
+}
+
+/* Loading state for iframes */
+.document-preview iframe {
+    background: #f8fafc;
+    transition: opacity 0.3s ease;
+}
+
+.document-preview iframe[src] {
+    background: white;
+}
+
+/* Additional width adjustments for different screen sizes */
+@media (min-width: 1400px) {
+    .modal-content {
+        width: 210mm;
+        margin: 1% auto;
+    }
+}
+
+@media (min-width: 1201px) and (max-width: 1399px) {
+    .modal-content {
+        width: 85%;
+        margin: 1.5% auto;
+    }
+}
     </style>
 </head>
 
@@ -1743,112 +2084,294 @@
         }
 
         // Modal for View Documents (5 DOCUMENTS ONLY)
-        function openDocumentsModal(applicantName, documents) {
-            const modal = document.getElementById('applicationHistoryModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const applicantBasicInfo = document.getElementById('applicantBasicInfo');
-            const documentsContainer = document.getElementById('documentsContainer');
-            const intakeSheetInfo = document.getElementById('intakeSheetInfo');
+ // Modal for View Documents (5 DOCUMENTS ONLY)
+function openDocumentsModal(applicantName, documents) {
+    const modal = document.getElementById('applicationHistoryModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const applicantBasicInfo = document.getElementById('applicantBasicInfo');
+    const documentsContainer = document.getElementById('documentsContainer');
+    const intakeSheetInfo = document.getElementById('intakeSheetInfo');
 
-            // Set modal content - DOCUMENTS ONLY
-            modalTitle.textContent = `Documents - ${applicantName}`;
-            intakeSheetInfo.classList.add('hidden'); // Hide intake sheet section
+    // Set modal content - DOCUMENTS ONLY
+    modalTitle.textContent = `Documents - ${applicantName}`;
+    intakeSheetInfo.classList.add('hidden'); // Hide intake sheet section
 
-            // Set basic info
-            applicantBasicInfo.innerHTML = `
-                <div class="bg-white p-4 rounded-lg border border-gray-200">
-                    <h4 class="font-semibold text-gray-800 mb-2">Applicant: ${applicantName}</h4>
-                    <p class="text-sm text-gray-600">View supporting documents submitted by the applicant.</p>
+    // Set basic info
+    applicantBasicInfo.innerHTML = `
+        <div class="bg-white p-4 rounded-lg border border-gray-200 w-full">
+            <h4 class="font-semibold text-gray-800 mb-2">Applicant: ${applicantName}</h4>
+            <p class="text-sm text-gray-600">View supporting documents submitted by the applicant.</p>
+        </div>
+    `;
+
+    // Set documents - ALL 5 DOCUMENTS WITH PREVIEW
+    let documentsHTML = '<div class="space-y-6">';
+    
+    // Define document types with icons and labels
+    const documentTypes = [
+        {
+            key: 'doc_application_letter',
+            label: 'Application Letter',
+            icon: 'fas fa-file-alt'
+        },
+        {
+            key: 'doc_cert_reg', 
+            label: 'Certificate of Registration',
+            icon: 'fas fa-certificate'
+        },
+        {
+            key: 'doc_grade_slip',
+            label: 'Grade Slip',
+            icon: 'fas fa-chart-line'
+        },
+        {
+            key: 'doc_brgy_indigency',
+            label: 'Barangay Indigency',
+            icon: 'fas fa-home'
+        },
+        {
+            key: 'doc_student_id',
+            label: 'Student ID',
+            icon: 'fas fa-id-card'
+        }
+    ];
+
+    // Create document cards for each type
+    documentTypes.forEach(docType => {
+        const documentUrl = documents[docType.key];
+        
+        documentsHTML += `
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-50 to-blue-50 px-4 py-3 border-b border-gray-200">
+                    <div class="flex items-center">
+                        <i class="${docType.icon} text-purple-600 mr-3"></i>
+                        <h4 class="font-semibold text-gray-800 text-lg">${docType.label}</h4>
+                    </div>
+                </div>
+                <div class="p-4">
+                    ${documentUrl ? `
+                        <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-600 mb-2">Document is available for viewing</p>
+                                <div class="document-preview-container bg-gray-50 rounded-lg border border-gray-200 p-4">
+                                    <iframe 
+                                        src="${documentUrl}" 
+                                        class="w-full h-64 md:h-80 rounded border border-gray-300"
+                                        frameborder="0"
+                                        loading="lazy">
+                                    </iframe>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2 md:ml-4">
+                                <a href="${documentUrl}" 
+                                   target="_blank" 
+                                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                                    <i class="fas fa-external-link-alt mr-2"></i> Open in New Tab
+                                </a>
+                                <a href="${documentUrl}" 
+                                   download 
+                                   class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+                                    <i class="fas fa-download mr-2"></i> Download
+                                </a>
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-file-exclamation text-3xl mb-3 text-gray-400"></i>
+                            <p class="font-medium">No ${docType.label} available</p>
+                            <p class="text-sm mt-1">This document has not been uploaded by the applicant.</p>
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
+    });
+    
+    documentsHTML += '</div>';
+    
+    documentsContainer.innerHTML = documentsHTML;
+
+    // Show modal with animation
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        const modalContent = document.getElementById('modalContent');
+        if (modalContent) {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scaled');
+        }
+    }, 50);
+
+    // Add loading handlers for iframes
+    setupDocumentIframeLoaders();
+}
+
+// Setup iframe loading indicators
+function setupDocumentIframeLoaders() {
+    const iframes = document.querySelectorAll('.document-preview-container iframe');
+    
+    iframes.forEach(iframe => {
+        iframe.onload = function() {
+            this.style.opacity = '1';
+        };
+        
+        iframe.onerror = function() {
+            const container = this.parentElement;
+            container.innerHTML = `
+                <div class="text-center py-8 text-red-500">
+                    <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                    <p>Failed to load document preview</p>
+                    <p class="text-sm mt-1 text-gray-600">The document may be in an unsupported format or corrupted.</p>
+                    <a href="${this.src}" 
+                       target="_blank" 
+                       class="inline-flex items-center px-3 py-1 bg-red-600 text-white rounded mt-2 text-sm">
+                        <i class="fas fa-external-link-alt mr-1"></i> Try Opening Directly
+                    </a>
                 </div>
             `;
+        };
+        
+        // Initial loading state
+        iframe.style.opacity = '0.5';
+        iframe.style.transition = 'opacity 0.3s ease';
+    });
+}
 
-            // Set documents - ALL 5 DOCUMENTS
-            let documentsHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
-            
-            // Application Letter
-            if (documents.doc_application_letter) {
-                documentsHTML += `
-                    <div class="bg-white p-4 rounded-lg border border-gray-200">
-                        <h4 class="font-semibold text-gray-800 mb-2">Application Letter</h4>
-                        <a href="${documents.doc_application_letter}" target="_blank" 
-                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-eye mr-2"></i> View Document
-                        </a>
-                    </div>
-                `;
-            }
-            
-            // Certificate of Registration
-            if (documents.doc_cert_reg) {
-                documentsHTML += `
-                    <div class="bg-white p-4 rounded-lg border border-gray-200">
-                        <h4 class="font-semibold text-gray-800 mb-2">Certificate of Registration</h4>
-                        <a href="${documents.doc_cert_reg}" target="_blank" 
-                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-eye mr-2"></i> View Document
-                        </a>
-                    </div>
-                `;
-            }
-            
-            // Grade Slip
-            if (documents.doc_grade_slip) {
-                documentsHTML += `
-                    <div class="bg-white p-4 rounded-lg border border-gray-200">
-                        <h4 class="font-semibold text-gray-800 mb-2">Grade Slip</h4>
-                        <a href="${documents.doc_grade_slip}" target="_blank" 
-                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-eye mr-2"></i> View Document
-                        </a>
-                    </div>
-                `;
-            }
-            
-            // Barangay Indigency
-            if (documents.doc_brgy_indigency) {
-                documentsHTML += `
-                    <div class="bg-white p-4 rounded-lg border border-gray-200">
-                        <h4 class="font-semibold text-gray-800 mb-2">Barangay Indigency</h4>
-                        <a href="${documents.doc_brgy_indigency}" target="_blank" 
-                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-eye mr-2"></i> View Document
-                        </a>
-                    </div>
-                `;
-            }
-            
-            // Student ID
-            if (documents.doc_student_id) {
-                documentsHTML += `
-                    <div class="bg-white p-4 rounded-lg border border-gray-200">
-                        <h4 class="font-semibold text-gray-800 mb-2">Student ID</h4>
-                        <a href="${documents.doc_student_id}" target="_blank" 
-                           class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-eye mr-2"></i> View Document
-                        </a>
-                    </div>
-                `;
-            }
-            
-            documentsHTML += '</div>';
-            
-            // Check if no documents found
-            if (documentsHTML === '<div class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>') {
-                documentsHTML = '<div class="text-center text-gray-500 py-8">No documents available</div>';
-            }
-            
-            documentsContainer.innerHTML = documentsHTML;
+// Modal for View Application (INTAKE SHEET + DOCUMENTS)
+function openIntakeSheetModal(applicantName, intakeSheet) {
+    const modal = document.getElementById('applicationHistoryModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const applicantBasicInfo = document.getElementById('applicantBasicInfo');
+    const intakeSheetInfo = document.getElementById('intakeSheetInfo');
+    const documentsContainer = document.getElementById('documentsContainer');
 
-            // Show modal with animation
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                const modalContent = document.getElementById('modalContent');
-                if (modalContent) {
-                    modalContent.classList.remove('scale-95', 'opacity-0');
-                }
-            }, 50);
+    // Set modal content - INTAKE SHEET + DOCUMENTS
+    modalTitle.textContent = `Application Details - ${applicantName}`;
+    intakeSheetInfo.classList.remove('hidden'); // Show intake sheet section
+
+    // Set basic info
+    applicantBasicInfo.innerHTML = `
+        <div class="bg-white p-4 rounded-lg border border-gray-200">
+            <h4 class="font-semibold text-gray-800 mb-2">Applicant: ${applicantName}</h4>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="font-medium text-gray-700">Gender:</span>
+                    <span class="ml-2">${intakeSheet.applicant_gender || 'N/A'}</span>
+                </div>
+                <div>
+                    <span class="font-medium text-gray-700">Remarks:</span>
+                    <span class="ml-2 px-2 py-1 rounded-full text-xs font-semibold 
+                        ${intakeSheet.remarks === 'Poor' ? 'bg-orange-100 text-orange-800' : 
+                          intakeSheet.remarks === 'Non-Poor' ? 'bg-green-100 text-green-800' : 
+                          intakeSheet.remarks === 'Ultra Poor' ? 'bg-red-100 text-red-800' : 
+                          'bg-gray-100 text-gray-800'}">
+                        ${intakeSheet.remarks || 'Not Specified'}
+                    </span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Populate intake sheet sections
+    populateIntakeSheetData(intakeSheet);
+
+    // Set documents section (still visible at the bottom)
+    let documentsHTML = `
+        <div class="mt-8 pt-6 border-t border-gray-200">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Supporting Documents</h3>
+            <div class="grid grid-cols-1 gap-4">
+    `;
+    
+    // Define document types with icons and labels
+    const documentTypes = [
+        {
+            key: 'doc_application_letter',
+            label: 'Application Letter',
+            icon: 'fas fa-file-alt'
+        },
+        {
+            key: 'doc_cert_reg', 
+            label: 'Certificate of Registration',
+            icon: 'fas fa-certificate'
+        },
+        {
+            key: 'doc_grade_slip',
+            label: 'Grade Slip',
+            icon: 'fas fa-chart-line'
+        },
+        {
+            key: 'doc_brgy_indigency',
+            label: 'Barangay Indigency',
+            icon: 'fas fa-home'
+        },
+        {
+            key: 'doc_student_id',
+            label: 'Student ID',
+            icon: 'fas fa-id-card'
         }
+    ];
 
+    // Create document cards for each type
+    documentTypes.forEach(docType => {
+        const documentUrl = intakeSheet[docType.key];
+        
+        documentsHTML += `
+            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="${docType.icon} text-gray-600 mr-3"></i>
+                            <h4 class="font-semibold text-gray-800">${docType.label}</h4>
+                        </div>
+                        ${documentUrl ? `
+                            <div class="flex gap-2">
+                                <a href="${documentUrl}" 
+                                   target="_blank" 
+                                   class="inline-flex items-center px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors">
+                                    <i class="fas fa-eye mr-1"></i> View
+                                </a>
+                                <a href="${documentUrl}" 
+                                   download 
+                                   class="inline-flex items-center px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors">
+                                    <i class="fas fa-download mr-1"></i> Download
+                                </a>
+                            </div>
+                        ` : `
+                            <span class="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">Not Available</span>
+                        `}
+                    </div>
+                </div>
+                ${documentUrl ? `
+                    <div class="p-4">
+                        <div class="document-preview-container bg-gray-50 rounded border border-gray-200">
+                            <iframe 
+                                src="${documentUrl}" 
+                                class="w-full h-48 rounded"
+                                frameborder="0"
+                                loading="lazy">
+                            </iframe>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+    
+    documentsHTML += '</div></div>';
+    documentsContainer.innerHTML = documentsHTML;
+
+    // Show modal with animation
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        const modalContent = document.getElementById('modalContent');
+        if (modalContent) {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scaled');
+        }
+    }, 50);
+
+    // Add loading handlers for iframes
+    setupDocumentIframeLoaders();
+}
         // Modal for View Application (INTAKE SHEET + DOCUMENTS)
         function openIntakeSheetModal(applicantName, intakeSheet) {
             const modal = document.getElementById('applicationHistoryModal');

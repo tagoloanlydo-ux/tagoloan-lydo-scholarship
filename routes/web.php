@@ -47,8 +47,11 @@ Route::get('/reset-password/{token}', [LydopersController::class, 'showResetForm
 Route::post('/reset-password', [LydopersController::class, 'resetPassword'])->name('password.update');
 
 Route::middleware(['role:lydo_admin'])->group(function () {
+    // Add these routes inside your lydo_admin middleware group
+Route::get('/lydo_admin/get-application-personnel/{applicantId}', [LydoAdminController::class, 'getApplicationPersonnelId']);
+Route::get('/lydo_admin/applicant-documents/{applicantId}', [LydoAdminController::class, 'getApplicantDocuments']);
+Route::get('/lydo_admin/intake-sheet/{applicationPersonnelId}', [LydoAdminController::class, 'getIntakeSheet']);
     Route::get('/lydo_admin/get-scholar-personal-info/{scholar_id}', [AdminScholarController::class, 'getScholarPersonalInfo'])->name('LydoAdmin.getScholarPersonalInfo');
-    Route::get('/lydo_admin/get-application-personnel/{applicantId}', [LydoAdminController::class, 'getApplicationPersonnelId']);
     Route::post('/lydo_admin/send-sms-to-scholars', [AdminScholarController::class, 'sendSmsToScholars'])->name('LydoAdmin.sendSmsToScholars');    Route::get('/lydo_admin/generate-mayor-applicants-pdf', [LydoAdminController::class, 'generateMayorApplicantsPdf']);
     Route::get('/lydo_admin/generate-lydo-applicants-pdf', [LydoAdminController::class, 'generateLydoApplicantsPdf']);
     Route::get('/lydo_admin/get-mayor-applicants', [LydoAdminController::class, 'getMayorApplicants']);
@@ -96,10 +99,7 @@ Route::middleware(['role:lydo_admin'])->group(function () {
     Route::get('/lydo_admin/generate-signed-disbursement-pdf', [LydoAdminController::class, 'generateSignedDisbursementPdf'])->name('LydoAdmin.generateSignedDisbursementPdf');
     Route::get('/lydo_admin/generate-signed-disbursement-pdf', [LydoAdminController::class, 'generateSignedDisbursementPdf'])->name('LydoAdmin.generateSignedDisbursementPdf');
     Route::get('/lydo_admin/get-scholars-without-disbursement', [LydoAdminController::class, 'getScholarsWithoutDisbursement'])->name('LydoAdmin.getScholarsWithoutDisbursement');
-    Route::get('/lydo_admin/generate-scholars-pdf', [AdminScholarController::class, 'generateScholarsPdf'])->name('LydoAdmin.generateScholarsPdf');
-    Route::get('/lydo_admin/applicant-documents/{applicantId}', [LydoAdminController::class, 'getApplicantDocuments']);
-    Route::get('/lydo_admin/get-application-personnel/{applicantId}', [LydoAdminController::class, 'getApplicationPersonnelId']);
-    Route::get('/lydo_admin/intake-sheet/{applicationPersonnelId}', [LydoAdminController::class, 'getIntakeSheet']);
+    Route::get('/lydo_admin/generate-scholars-pdf', [AdminScholarController::class, 'generateScholarsPdf'])->name('LydoAdmin.generateScholarsPdf');    Route::get('/lydo_admin/intake-sheet/{applicationPersonnelId}', [LydoAdminController::class, 'getIntakeSheet']);
     Route::put('/lydo_admin/settings/{id}', [LydoAdminController::class, 'updatePersonalInfo'])->name('LydoAdmin.updatePersonalInfo');
     Route::put('/lydo_admin/settings/password/update', [LydoAdminController::class, 'updatePassword'])->name('LydoAdmin.updatePassword');
     Route::delete('/lydo_admin/lydo/delete/{id}', [LydoAdminController::class, 'deleteStaff'])->name('lydo_admin.delete_staff');
