@@ -314,7 +314,7 @@
                                 <th class="px-4 py-3 border border-gray-200 text-center">Application</th>
                                 <th class="px-4 py-3 border border-gray-200 text-center">Scholar Status</th>
                                 <th class="px-4 py-3 border border-gray-200 text-center">Remarks</th>
-                            </tr
+                            </tr>
                         </thead>
 
                         <!-- In the Approved/Rejected table body -->
@@ -688,4 +688,4 @@ document.head.appendChild(style);
 <script src="{{ asset('js/spinner.js') }}"></script>
 
 </body>
-</html>           
+</html>
