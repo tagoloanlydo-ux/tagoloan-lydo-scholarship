@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+// ✅ API Controllers
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\ApplicantController;
 use App\Http\Controllers\API\ApplicationController;
@@ -14,10 +16,11 @@ use App\Http\Controllers\API\ScholarRenewalController;
 use App\Http\Controllers\API\AnnouncementController;
 use App\Http\Controllers\API\ApplicationPersonnelController;
 use App\Http\Controllers\MayorStaffController;
+use App\Http\Controllers\RenewalController;
 
 // Wrap all routes in staging prefix to match Flutter app expectations
 Route::prefix('staging')->group(function () {
-    // Public auth routes
+    // ✅ PUBLIC routes - NO middleware group
     Route::prefix('auth')->group(function () {
         Route::post('/login', [AuthController::class, 'login']);
         Route::post('/register', [AuthController::class, 'register']);
@@ -28,10 +31,15 @@ Route::prefix('staging')->group(function () {
 
     // Public routes (no authentication required)
     Route::post('/applicants', [ApplicantController::class, 'store']);
-    Route::get('/applicants', [ApplicantController::class, 'index']); // ✅ This is now truly public
+    Route::get('/applicants', [ApplicantController::class, 'indexPublic']);
 
-    // Protected routes with Sanctum
-    Route::middleware('auth:sanctum')->group(function () {
+    // ✅ PUBLIC renewal route - NO authentication
+    Route::prefix('scholar')->group(function () {
+        Route::post('/submit_renewal', [RenewalController::class, 'submitScholarRenewal']);
+    });
+
+    // ✅ PROTECTED routes - WITH authentication
+    Route::middleware('api')->group(function () {
         // Auth routes
         Route::prefix('auth')->group(function () {
             Route::get('/profile', [AuthController::class, 'profile']);
@@ -46,13 +54,12 @@ Route::prefix('staging')->group(function () {
             Route::get('/announcements', [AnnouncementController::class, 'getScholarAnnouncements']);
             Route::get('/renewal_app', [ScholarRenewalController::class, 'getScholarRenewals']);
             Route::get('/renewals', [ScholarRenewalController::class, 'getScholarRenewals']);
-            Route::post('/submit_renewal', [ScholarRenewalController::class, 'submitScholarRenewal']);
             Route::get('/renewal-history', [ScholarRenewalController::class, 'getRenewalHistory']);
             Route::get('/renewal/{renewalId}/details', [ScholarRenewalController::class, 'getRenewalDetails']);
         });
 
-        // API Resources - EXCLUDE 'index' and 'store' from applicants since they're public
-        Route::apiResource('/applicants', ApplicantController::class)->except(['index', 'store']); // ✅ Fixed
+        // API Resources
+        Route::apiResource('/applicants', ApplicantController::class)->except(['store']);
         Route::apiResource('/applications', ApplicationController::class);
         Route::apiResource('/scholars', ScholarController::class);
         Route::apiResource('/renewals', ScholarRenewalController::class);
@@ -67,7 +74,7 @@ Route::prefix('staging')->group(function () {
         Route::get('/settings', [AdminController::class, 'getSettings']);
     });
 
-    // Debug route (optional)
+    // Debug route (public)
     Route::get('/debug/applicants', function () {
         $allApplicants = DB::table('tbl_applicant')->get();
         $allApplications = DB::table('tbl_application')->get();

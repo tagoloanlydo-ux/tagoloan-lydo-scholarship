@@ -22,6 +22,14 @@ class ApplicantController extends Controller
             // Use 'application' (singular) if one-to-one relationship
             $applicants = Applicant::with('application')->get();
 
+            // Transform file paths to full URLs for Flutter
+            $applicants->transform(function ($applicant) {
+                if ($applicant->application) {
+                    $applicant->application = $this->addFileUrlsToApplication($applicant->application);
+                }
+                return $applicant;
+            });
+
             return response()->json([
                 'success' => true,
                 'message' => 'Applicants retrieved successfully.',
@@ -36,6 +44,76 @@ class ApplicantController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Display a specific applicant with application.
+     */
+    public function show($id)
+    {
+        try {
+            $applicant = Applicant::with('application')->find($id);
+
+            if (!$applicant) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Applicant not found.'
+                ], 404);
+            }
+
+            // Transform file paths to full URLs for Flutter
+            if ($applicant->application) {
+                $applicant->application = $this->addFileUrlsToApplication($applicant->application);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $applicant
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving applicant: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve applicant.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Add full file URLs to application data for Flutter
+     */
+    private function addFileUrlsToApplication($application)
+    {
+        $fileFields = [
+            'application_letter',
+            'cert_of_reg', 
+            'grade_slip',
+            'brgy_indigency',
+            'student_id'
+        ];
+
+        // Create a copy of the application as array to modify
+        $appData = $application->toArray();
+        
+        foreach ($fileFields as $field) {
+            if (!empty($appData[$field])) {
+                $filename = basename($appData[$field]);
+                // Generate full URL for Flutter app
+                $appData[$field . '_url'] = 'https://srv1278-files.hstgr.io/3d66eae9e48136e2/files/public_html/storage/documents/' . $filename;
+                
+                // Keep the original path for backend reference
+                $appData[$field . '_path'] = $appData[$field];
+                
+                // ALSO override the original field with full URL for backward compatibility
+                $appData[$field] = 'https://srv1278-files.hstgr.io/3d66eae9e48136e2/files/public_html/storage/documents/' . $filename;
+            } else {
+                $appData[$field . '_url'] = null;
+                $appData[$field . '_path'] = null;
+            }
+        }
+
+        return $appData;
     }
 
     /**
@@ -84,7 +162,7 @@ class ApplicantController extends Controller
 
             Log::info('Processing document files...');
 
-            // Handle document file paths
+            // ✅ FIXED: Store files in PRODUCTION public_html/storage/documents/
             $fileFields = [
                 'application_letter',
                 'cert_of_reg',
@@ -94,11 +172,37 @@ class ApplicantController extends Controller
             ];
 
             foreach ($fileFields as $field) {
-                if ($request->has($field) && !empty($request->$field)) {
-                    $applicationData[$field] = $request->$field;
-                    Log::info("Document added to application: $field");
+                if ($request->hasFile($field)) {
+                    $file = $request->file($field);
+                    Log::info("Processing file upload: $field", [
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_size' => $file->getSize()
+                    ]);
+                    
+                    // Generate unique filename
+                    $filename = time() . '_' . uniqid() . '_' . $field . '.' . $file->getClientOriginalExtension();
+                    
+                    // ✅ ABSOLUTE PATH to PRODUCTION storage/documents
+                    $destinationPath = base_path('../../public_html/storage/documents');
+                    
+                    // Create directory if it doesn't exist
+                    if (!file_exists($destinationPath)) {
+                        mkdir($destinationPath, 0755, true);
+                        Log::info("Created PRODUCTION directory: $destinationPath");
+                    }
+                    
+                    // Move file to destination
+                    if ($file->move($destinationPath, $filename)) {
+                        Log::info("✅ File saved to PRODUCTION: $destinationPath/$filename");
+                        // 🔥 CRITICAL FIX: Store consistent path without 'storage/' prefix
+                        $applicationData[$field] = 'documents/' . $filename;
+                    } else {
+                        Log::error("❌ Failed to save file to production: $filename");
+                        $applicationData[$field] = '';
+                    }
                 } else {
-                    Log::info("Document field empty or missing: $field");
+                    Log::warning("No file uploaded for: $field");
+                    $applicationData[$field] = '';
                 }
             }
 
@@ -152,7 +256,7 @@ class ApplicantController extends Controller
                 'message' => 'Application submitted successfully!',
                 'data' => [
                     'applicant' => $applicant,
-                    'application' => $application,
+                    'application' => $this->addFileUrlsToApplication($application),
                     'application_personnel' => $applicationPersonnel,
                     'submission_date' => $application->date_submitted
                 ]
@@ -165,35 +269,6 @@ class ApplicantController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Application submission failed.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Display a specific applicant with application.
-     */
-    public function show($id)
-    {
-        try {
-            $applicant = Applicant::with('application')->find($id);
-
-            if (!$applicant) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Applicant not found.'
-                ], 404);
-            }
-
-            return response()->json([
-                'success' => true,
-                'data' => $applicant
-            ], 200);
-        } catch (\Exception $e) {
-            Log::error('Error retrieving applicant: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve applicant.',
                 'error' => $e->getMessage()
             ], 500);
         }
