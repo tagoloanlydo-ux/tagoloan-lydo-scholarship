@@ -39,33 +39,78 @@ function initializeScholarPagination() {
     updateScholarPagination();
 }
 
-// Update pagination display - FIXED VERSION
+// Helper: Ensure there is a no-results row in the table body
+function getNoResultsRow() {
+    const tbody = document.querySelector('table tbody');
+    if (!tbody) return null;
+
+    // Prefer an existing server-side no-results row (td[colspan]) if present
+    let existing = tbody.querySelector('tr td[colspan]')?.parentElement;
+    if (existing) return existing;
+
+    // Otherwise, look for our custom marker row
+    let marker = tbody.querySelector('tr[data-no-results]');
+    if (marker) return marker;
+
+    // Create a new no-results row (colspan based on table header length)
+    const colCount = document.querySelectorAll('table thead th').length || 10;
+    const row = document.createElement('tr');
+    row.setAttribute('data-no-results', 'true');
+
+    const td = document.createElement('td');
+    td.setAttribute('colspan', String(colCount));
+    td.className = 'text-center py-4 border border-gray-200 text-gray-500';
+    td.textContent = 'No scholars found.';
+
+    row.appendChild(td);
+    tbody.appendChild(row);
+    return row;
+}
+
+// Update pagination display - FIXED VERSION (with no results row handling)
 function updateScholarPagination() {
     const state = paginationState;
     const container = document.getElementById('paginationContainer');
-    
+
     if (!container) return;
-    
-    // Hide all rows first
+
+    // Ensure no-results row exists
+    const noResultsRow = getNoResultsRow();
+
+    // Hide all selectable rows first
     state.allRows.forEach(row => {
         row.style.display = 'none';
     });
-    
+
     // Calculate pagination for filtered rows
     const totalPages = Math.max(1, Math.ceil(state.filteredRows.length / state.rowsPerPage));
     const startIndex = (state.currentPage - 1) * state.rowsPerPage;
     const endIndex = startIndex + state.rowsPerPage;
     const pageRows = state.filteredRows.slice(startIndex, endIndex);
-    
+
     // Show only rows for current page
     pageRows.forEach(row => {
         row.style.display = '';
     });
-    
+
+    // Show or hide the no-results row
+    if (state.filteredRows.length === 0) {
+        if (noResultsRow) {
+            noResultsRow.style.display = '';
+            // update text to be clear for users when filtering
+            const td = noResultsRow.querySelector('td[colspan]') || noResultsRow.querySelector('td');
+            if (td) td.textContent = 'No scholars found.';
+        }
+    } else {
+        if (noResultsRow) {
+            noResultsRow.style.display = 'none';
+        }
+    }
+
     // Calculate display range - FIXED: Handle 0 results case
     const startItem = state.filteredRows.length === 0 ? 0 : Math.min((state.currentPage - 1) * state.rowsPerPage + 1, state.filteredRows.length);
     const endItem = state.filteredRows.length === 0 ? 0 : Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
-    
+
     container.innerHTML = `
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="text-sm text-gray-600">
@@ -132,6 +177,9 @@ function updateScholarPagination() {
             </div>
         </div>
     `;
+
+    // Reinitialize checkbox/listener states and buttons
+    updateCheckboxStates();
 }
 
 // Change page

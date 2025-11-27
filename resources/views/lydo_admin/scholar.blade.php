@@ -984,9 +984,40 @@
         updateScholarPagination();
     }
 
+    // Helper: Ensure there is a no-results row in the table body
+function getNoResultsRow() {
+    const tbody = document.querySelector('table tbody');
+    if (!tbody) return null;
+
+    // Prefer an existing server-side no-results row (td[colspan]) if present
+    let existing = tbody.querySelector('tr td[colspan]')?.parentElement;
+    if (existing) return existing;
+
+    // Otherwise, look for our custom marker row
+    let marker = tbody.querySelector('tr[data-no-results]');
+    if (marker) return marker;
+
+    // Create a new no-results row (colspan based on table header length)
+    const colCount = document.querySelectorAll('table thead th').length || 10;
+    const row = document.createElement('tr');
+    row.setAttribute('data-no-results', 'true');
+
+    const td = document.createElement('td');
+    td.setAttribute('colspan', String(colCount));
+    td.className = 'text-center py-4 border border-gray-200 text-gray-500';
+    td.textContent = 'No scholars found.';
+
+    row.appendChild(td);
+    tbody.appendChild(row);
+    return row;
+}
+
     function updateScholarPagination() {
         const state = paginationState;
         
+        // Ensure no-results row exists
+        const noResultsRow = getNoResultsRow();
+
         // Hide all rows first
         state.allRows.forEach(row => {
             row.style.display = 'none';
@@ -1001,11 +1032,22 @@
         pageRows.forEach(row => {
             row.style.display = '';
         });
+
+        // Show or hide the no-results row
+        if (state.filteredRows.length === 0) {
+            if (noResultsRow) {
+                noResultsRow.style.display = '';
+                const td = noResultsRow.querySelector('td[colspan]') || noResultsRow.querySelector('td');
+                if (td) td.textContent = 'No scholars found.';
+            }
+        } else if (noResultsRow) {
+            noResultsRow.style.display = 'none';
+        }
         
         // Update pagination controls
         const totalPages = Math.max(1, Math.ceil(state.filteredRows.length / state.rowsPerPage));
         const startItem = state.filteredRows.length === 0 ? 0 : Math.min((state.currentPage - 1) * state.rowsPerPage + 1, state.filteredRows.length);
-        const endItem = Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
+        const endItem = state.filteredRows.length === 0 ? 0 : Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
         
         // Update pagination info
         const paginationInfo = document.getElementById('paginationInfo');
@@ -1015,12 +1057,13 @@
         const nextPageBtn = document.getElementById('nextPage');
         
         if (paginationInfo) {
-            paginationInfo.textContent = `Showing page ${state.currentPage} of ${totalPages}`;
+            paginationInfo.textContent = `Showing ${startItem}-${endItem} of ${state.filteredRows.length} scholars`;
         }
         
         if (currentPageInput) {
             currentPageInput.value = state.currentPage;
             currentPageInput.max = totalPages;
+            currentPageInput.disabled = state.filteredRows.length === 0;
         }
         
         if (totalPagesSpan) {
@@ -1028,11 +1071,11 @@
         }
         
         if (prevPageBtn) {
-            prevPageBtn.disabled = state.currentPage === 1;
+            prevPageBtn.disabled = state.currentPage === 1 || state.filteredRows.length === 0;
         }
         
         if (nextPageBtn) {
-            nextPageBtn.disabled = state.currentPage === totalPages || totalPages === 0;
+            nextPageBtn.disabled = state.currentPage === totalPages || state.filteredRows.length === 0;
         }
         
         // Reinitialize checkbox listeners and update button/select-all states
