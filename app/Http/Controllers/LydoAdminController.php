@@ -324,7 +324,6 @@ public function mayor()
             return response()->json(['success' => false, 'message' => 'Failed to send email: ' . $e->getMessage()]);
         }
     }
-
 public function status()
 {
     // Get current renewal settings
@@ -342,6 +341,16 @@ public function status()
         'is_grace_period' => false,
         'is_after_grace_period' => false
     ];
+    
+    // Get current academic year from applicants
+    $currentAcademicYear = DB::table('tbl_applicant')
+        ->select('applicant_acad_year')
+        ->orderBy('applicant_acad_year', 'desc')
+        ->value('applicant_acad_year');
+
+    if (!$currentAcademicYear) {
+        $currentAcademicYear = date('Y') . '-' . (date('Y') + 1);
+    }
     
     // Check if we're within renewal period or grace period
     if ($settings && $settings->renewal_start_date && $settings->renewal_deadline) {
@@ -363,6 +372,7 @@ public function status()
             $showRenewalSection = true;
             
             // Fetch active scholars without renewal applications for current semester
+            // EXCLUDING scholars from the current academic year (new scholars)
             $scholarsWithoutRenewal = DB::table('tbl_scholar as s')
                 ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
                 ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
@@ -383,6 +393,7 @@ public function status()
                     'a.applicant_course',
                     'a.applicant_year_level',
                     'a.applicant_brgy',
+                    'a.applicant_acad_year', // Include academic year for debugging
                     DB::raw("CONCAT(
                         UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)), 
                         ', ', 
@@ -393,13 +404,15 @@ public function status()
                 )
                 ->where('s.scholar_status', 'active')
                 ->whereNull('r.renewal_id')
+                // EXCLUDE scholars from the current academic year - they don't need renewal yet
+                ->where('a.applicant_acad_year', '!=', $currentAcademicYear)
                 ->orderBy('a.applicant_lname', 'asc')
                 ->orderBy('a.applicant_fname', 'asc')
                 ->paginate(15);
             
             // Auto-update status for scholars who missed the deadline + grace period
             if ($currentDate->greaterThan($gracePeriodEnd)) {
-                $updatedCount = $this->autoUpdateInactiveScholars($settings->renewal_semester);
+                $updatedCount = $this->autoUpdateInactiveScholars($settings->renewal_semester, $currentAcademicYear);
                 session()->flash('auto_update_info', "Automatically updated {$updatedCount} scholars to inactive status for missing renewal deadline.");
             }
         }
@@ -422,6 +435,7 @@ public function status()
             'a.applicant_course',
             'a.applicant_year_level',
             'a.applicant_brgy',
+            'a.applicant_acad_year',
             DB::raw("CONCAT(
                 UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)), 
                 ', ', 
@@ -449,14 +463,15 @@ public function status()
         'barangays',
         'showRenewalSection',
         'settings',
-        'renewalInfo'
+        'renewalInfo',
+        'currentAcademicYear' // Pass for debugging if needed
     ));
 }
 
 /**
  * Automatically update scholar status to inactive for those who missed renewal deadline
  */
-private function autoUpdateInactiveScholars($renewalSemester)
+private function autoUpdateInactiveScholars($renewalSemester, $currentAcademicYear)
 {
     try {
         $scholarsToUpdate = DB::table('tbl_scholar as s')
@@ -468,6 +483,8 @@ private function autoUpdateInactiveScholars($renewalSemester)
             })
             ->where('s.scholar_status', 'active')
             ->whereNull('r.renewal_id')
+            // EXCLUDE current academic year scholars from auto-update
+            ->where('a.applicant_acad_year', '!=', $currentAcademicYear)
             ->pluck('s.scholar_id')
             ->toArray();
 
@@ -481,7 +498,7 @@ private function autoUpdateInactiveScholars($renewalSemester)
                     'updated_at' => now()
                 ]);
 
-            \Log::info("Automatically updated {$updatedCount} scholars to inactive status for missing renewal deadline for {$renewalSemester}.");
+            \Log::info("Automatically updated {$updatedCount} scholars to inactive status for missing renewal deadline for {$renewalSemester}. Excluded current academic year: {$currentAcademicYear}");
         }
 
         return $updatedCount;
