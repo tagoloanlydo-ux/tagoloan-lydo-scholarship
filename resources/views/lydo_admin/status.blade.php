@@ -291,473 +291,470 @@
     });
 </script>
 @endif
- 
-    <div class="dashboard-grid">
-        <!-- Header -->
-<header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
-            <div class="flex items-center">
-                <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
-                <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
-            </div>
-            <div class="flex items-center space-x-4">
-                <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} Lydo Admin</span>  
-        </header>
-        <!-- Main Content -->
-      <div class="flex flex-1">
-            <!-- Sidebar -->
-            <div class="w-16 md:w-72 bg-white shadow-md flex flex-col transition-all duration-300">
-                <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
-                    <ul class="side-menu top space-y-4">
-        <li>
-          <a href="/lydo_admin/dashboard" class="idebar-item flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
-            <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Dashboard</span>
-          </a>
-        </li>
-<!-- Staff Dropdown -->
-<li class="relative">
-    <button onclick="toggleDropdown('staffMenu')"
-        class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-        <div class="flex items-center">
-            <i class="bx bxs-user-detail text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Staff</span>
-        </div>
-<i class="bx bx-chevron-down ml-2"></i>
-</button>
-
-<!-- Dropdown Menu -->
-<ul id="staffMenu" class="ml-10 mt-2 space-y-2 hidden">
-    <li>
-        <a href="/lydo_admin/lydo" 
-           class="flex items-center p-2 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
-           <i class="bx bx-user mr-2"></i> LYDO Staff
-        </a>
-    </li>
-    <li>
-        <a href="/lydo_admin/mayor" 
-           class="flex items-center p-2 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
-           <i class="bx bx-building-house mr-2"></i> Mayor Staff
-        </a>
-    </li>
-</ul>
-
-
-<script>
-    function toggleDropdown(id) {
-        const menu = document.getElementById(id);
-        menu.classList.toggle("hidden");
-    }
-</script>
-
-<li>
-    <a href="/lydo_admin/applicants" 
-     class=" flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
-         <div class="flex items-center">
-            <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Applicants</span>
-        </div>
-    </a>
-</li>
-
-<!-- Scholar Dropdown -->
-<li class="relative">
-    <button onclick="toggleDropdown('scholarMenu')"
-        class="w-full flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-        <div class="flex items-center">
-            <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Scholar</span>
-        </div>
-        <i class="bx bx-chevron-down ml-2"></i>
-    </button>
-
-    <!-- Dropdown Menu -->
-<ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
-    <li>
-        <a href="/lydo_admin/scholar" 
-           class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
-           <i class="bx bx-list-ul mr-2"></i> List of Scholars
-        </a>
-    </li>
-    <li>
-        <a href="/lydo_admin/status" 
-           class="flex items-center p-2 rounded-lg text-black-700 bg-violet-600 text-white">
-           <i class="bx bx-check-circle mr-2"></i> Status
-        </a>
-    </li>
-    <li>
-        <a href="/lydo_admin/disbursement" 
-           class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
-           <i class="bx bx-wallet mr-2"></i> Disbursement
-        </a>
-    </li>
-</ul>
-
-</li>
-
-<script>
-    // Toggle dropdown and save state
-    function toggleDropdown(id) {
-        const menu = document.getElementById(id);
-        const isHidden = menu.classList.contains("hidden");
-
-        if (isHidden) {
-            menu.classList.remove("hidden");
-            localStorage.setItem(id, "open");
-        } else {
-            menu.classList.add("hidden");
-            localStorage.setItem(id, "closed");
-        }
-    }
-
-    // Restore dropdown state on page load
-    window.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll("ul[id]").forEach(menu => {
-            const state = localStorage.getItem(menu.id);
-            if (state === "open") {
-                menu.classList.remove("hidden");
-            }
-        });
-    });
-
-</script>
-
-<li>
-    <a href="/lydo_admin/announcement"
-       class=" flex items-center justify-between p-3 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
-        <div class="flex items-center">
-            <i class="bx bxs-megaphone text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-lg">Announcement</span>
-        </div>
-    </a>
-</li>
-      </ul>
-
-      <ul class="side-menu space-y-1">
-        <li>
-          <a href="/lydo_admin/settings" class=" flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
-            <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl"></i>
-            <span class="ml-4 hidden md:block text-base">Settings</span>
-          </a>
-        </li>
-      </ul>
-                </nav>
-  <div class="p-2 md:p-4 border-t">
-<form method="POST" action="{{ route('logout') }}" id="logoutForm"> @csrf <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
-                            <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
-                            <span class="hidden md:block text-red-600">Logout</span>
-                        </button>
-                    </form>
-
-<script>
-    document.getElementById('logoutForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        Swal.fire({
-            title: 'Are you sure you want to logout?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, logout',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                e.target.submit();
-            }
-        });
-    });
-</script>
-</div>
-            </div>
-            <div class="flex-1 overflow-auto p-4 md:p-5 text-[16px]">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Scholar Status Management</h2> <!-- Smaller text -->
-                </div>
-
-                <!-- Tabs Navigation -->
-                <div class="bg-white p-3 rounded-lg shadow-sm mb-4"> <!-- Reduced padding and margin -->
-                    <div class="border-b border-gray-200">
-                        <nav class="-mb-px flex space-x-8">
-                            <button id="withoutRenewalTab" class="tab-button py-2 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600" data-tab="withoutRenewal">
-                                Without Renewal Applications
-                            </button>
-                            <button id="graduatingTab" class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="graduating">
-                                Graduating Scholars
-                            </button>
-                        </nav>
+            
+                <div class="dashboard-grid">
+                    <!-- Header -->
+            <header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
+                        <div class="flex items-center">
+                            <img src="{{ asset('images/LYDO.png') }}" alt="Logo" class="h-10 w-auto rounded-lg ">
+                            <h1 class="text-lg font-bold text-white ml-4">Lydo Scholarship</h1>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} Lydo Admin</span>  
+                    </header>
+                    <!-- Main Content -->
+                <div class="flex flex-1">
+                        <!-- Sidebar -->
+                        <div class="w-16 md:w-72 bg-white shadow-md flex flex-col transition-all duration-300">
+                            <nav class="flex-1 p-2 md:p-4 space-y-1 overflow-y-auto">
+                                <ul class="side-menu top space-y-4">
+                    <li>
+                    <a href="/lydo_admin/dashboard" class="idebar-item flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
+                        <i class="bx bxs-dashboard text-center mx-auto md:mx-0 text-xl"></i>
+                        <span class="ml-4 hidden md:block text-lg">Dashboard</span>
+                    </a>
+                    </li>
+            <!-- Staff Dropdown -->
+            <li class="relative">
+                <button onclick="toggleDropdown('staffMenu')"
+                    class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+                    <div class="flex items-center">
+                        <i class="bx bxs-user-detail text-center mx-auto md:mx-0 text-xl"></i>
+                        <span class="ml-4 hidden md:block text-lg">Staff</span>
                     </div>
-                </div>
+            <i class="bx bx-chevron-down ml-2"></i>
+            </button>
 
-        <!-- Tab Content: Without Renewal Applications -->
-        <div id="withoutRenewalContent" class="tab-content">
-            @if($showRenewalSection)
-                <div class="note-box mb-4">
-                    <h4>📋 Scholars Without Renewal Applications</h4>
-                    <p class="text-sm text-black-600 mb-3">
-                        This section displays active scholars who haven't submitted their renewal applications for 
-                        <strong>{{ $renewalInfo['semester'] }}</strong>. 
-                        Renewal period: 
-                        <strong>{{ $renewalInfo['start_date']->format('M d, Y') }}</strong> to 
-                        <strong>{{ $renewalInfo['deadline']->format('M d, Y') }}</strong>.
-                    </p>
-                    
-                    @if($renewalInfo['is_after_grace_period'])
-                        <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
-                            <h5 class="font-semibold text-red-800 mb-2">✅ Automatic Status Update Completed</h5>
-                            <p class="text-sm text-red-700">
-                                The grace period ended on <strong>{{ $renewalInfo['grace_period_end']->format('M d, Y') }}</strong>. 
-                                Scholars who haven't submitted renewal applications have been automatically set to inactive status.
-                            </p>
-                            @if(session('auto_update_info'))
-                                <p class="text-sm text-green-700 mt-2">
-                                    <i class="fas fa-check-circle"></i> {{ session('auto_update_info') }}
+            <!-- Dropdown Menu -->
+            <ul id="staffMenu" class="ml-10 mt-2 space-y-2 hidden">
+                <li>
+                    <a href="/lydo_admin/lydo" 
+                    class="flex items-center p-2 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
+                    <i class="bx bx-user mr-2"></i> LYDO Staff
+                    </a>
+                </li>
+                <li>
+                    <a href="/lydo_admin/mayor" 
+                    class="flex items-center p-2 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
+                    <i class="bx bx-building-house mr-2"></i> Mayor Staff
+                    </a>
+                </li>
+            </ul>
+
+
+            <script>
+                function toggleDropdown(id) {
+                    const menu = document.getElementById(id);
+                    menu.classList.toggle("hidden");
+                }
+            </script>
+
+            <li>
+                <a href="/lydo_admin/applicants" 
+                class=" flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white">
+                    <div class="flex items-center">
+                        <i class="bx bxs-user text-center mx-auto md:mx-0 text-xl"></i>
+                        <span class="ml-4 hidden md:block text-lg">Applicants</span>
+                    </div>
+                </a>
+            </li>
+
+            <!-- Scholar Dropdown -->
+            <li class="relative">
+                <button onclick="toggleDropdown('scholarMenu')"
+                    class="w-full flex items-center justify-between p-3 rounded-lg text-white-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+                    <div class="flex items-center">
+                        <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
+                        <span class="ml-4 hidden md:block text-lg">Scholar</span>
+                    </div>
+                    <i class="bx bx-chevron-down ml-2"></i>
+                </button>
+
+                <!-- Dropdown Menu -->
+            <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
+                <li>
+                    <a href="/lydo_admin/scholar" 
+                    class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
+                    <i class="bx bx-list-ul mr-2"></i> List of Scholars
+                    </a>
+                </li>
+                <li>
+                    <a href="/lydo_admin/status" 
+                    class="flex items-center p-2 rounded-lg text-black-700 bg-violet-600 text-white">
+                    <i class="bx bx-check-circle mr-2"></i> Status
+                    </a>
+                </li>
+                <li>
+                    <a href="/lydo_admin/disbursement" 
+                    class="flex items-center p-2 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
+                    <i class="bx bx-wallet mr-2"></i> Disbursement
+                    </a>
+                </li>
+            </ul>
+
+            </li>
+
+            <script>
+                // Toggle dropdown and save state
+                function toggleDropdown(id) {
+                    const menu = document.getElementById(id);
+                    const isHidden = menu.classList.contains("hidden");
+
+                    if (isHidden) {
+                        menu.classList.remove("hidden");
+                        localStorage.setItem(id, "open");
+                    } else {
+                        menu.classList.add("hidden");
+                        localStorage.setItem(id, "closed");
+                    }
+                }
+
+                // Restore dropdown state on page load
+                window.addEventListener("DOMContentLoaded", () => {
+                    document.querySelectorAll("ul[id]").forEach(menu => {
+                        const state = localStorage.getItem(menu.id);
+                        if (state === "open") {
+                            menu.classList.remove("hidden");
+                        }
+                    });
+                });
+
+            </script>
+
+            <li>
+                <a href="/lydo_admin/announcement"
+                class=" flex items-center justify-between p-3 rounded-lg text-black-700 hover:bg-violet-600 hover:text-white">
+                    <div class="flex items-center">
+                        <i class="bx bxs-megaphone text-center mx-auto md:mx-0 text-xl"></i>
+                        <span class="ml-4 hidden md:block text-lg">Announcement</span>
+                    </div>
+                </a>
+            </li>
+                </ul>
+
+                <ul class="side-menu space-y-1">
+                    <li>
+                    <a href="/lydo_admin/settings" class=" flex items-center p-3 rounded-lg text-black-600 hover:bg-violet-600 hover:text-white">
+                        <i class="bx bxs-cog text-center mx-auto md:mx-0 text-xl"></i>
+                        <span class="ml-4 hidden md:block text-base">Settings</span>
+                    </a>
+                    </li>
+                </ul>
+                            </nav>
+            <div class="p-2 md:p-4 border-t">
+            <form method="POST" action="{{ route('logout') }}" id="logoutForm"> @csrf <button type="submit" class="flex items-center p-2 text-red-600 text-lg hover:bg-violet-600 hover:text-white rounded-lg w-full text-left">
+                                        <i class="fas fa-sign-out-alt mx-auto md:mx-0 mr-2 text-red-600"></i>
+                                        <span class="hidden md:block text-red-600">Logout</span>
+                                    </button>
+                                </form>
+
+            <script>
+                document.getElementById('logoutForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Are you sure you want to logout?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Yes, logout',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            e.target.submit();
+                        }
+                    });
+                });
+            </script>
+            </div>
+                        </div>
+                        <div class="flex-1 overflow-auto p-4 md:p-5 text-[16px]">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-2xl font-bold text-gray-800">Scholar Status Management</h2> <!-- Smaller text -->
+                            </div>
+
+                            <!-- Tabs Navigation -->
+                            <div class="bg-white p-3 rounded-lg shadow-sm mb-4"> <!-- Reduced padding and margin -->
+                                <div class="border-b border-gray-200">
+                                    <nav class="-mb-px flex space-x-8">
+                                        <button id="withoutRenewalTab" class="tab-button py-2 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600" data-tab="withoutRenewal">
+                                            Without Renewal Applications
+                                        </button>
+                                        <button id="graduatingTab" class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="graduating">
+                                            Graduating Scholars
+                                        </button>
+                                    </nav>
+                                </div>
+                            </div>
+
+                    <!-- Tab Content: Without Renewal Applications -->
+                    <div id="withoutRenewalContent" class="tab-content">
+                        @if($showRenewalSection)
+                            <div class="note-box mb-4">
+                                <h4>📋 Scholars Without Renewal Applications</h4>
+                                <p class="text-sm text-black-600 mb-3">
+                                    This section displays active scholars who haven't submitted their renewal applications for 
+                                    <strong>{{ $renewalInfo['semester'] }}</strong>. 
+                                    Renewal period: 
+                                    <strong>{{ $renewalInfo['start_date']->format('M d, Y') }}</strong> to 
+                                    <strong>{{ $renewalInfo['deadline']->format('M d, Y') }}</strong>.
                                 </p>
+                                
+                                @if($renewalInfo['is_after_grace_period'])
+                                    <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                                        <h5 class="font-semibold text-red-800 mb-2">✅ Automatic Status Update Completed</h5>
+                                        <p class="text-sm text-red-700">
+                                            The grace period ended on <strong>{{ $renewalInfo['grace_period_end']->format('M d, Y') }}</strong>. 
+                                            Scholars who haven't submitted renewal applications have been automatically set to inactive status.
+                                        </p>
+                                        @if(session('auto_update_info'))
+                                            <p class="text-sm text-green-700 mt-2">
+                                                <i class="fas fa-check-circle"></i> {{ session('auto_update_info') }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                @elseif($renewalInfo['is_grace_period'])
+                                    @php
+                                        $daysRemaining = now()->diffInDays($renewalInfo['grace_period_end'], false);
+                                    @endphp
+                                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
+                                        <h5 class="font-semibold text-orange-800 mb-2">⏰ Grace Period Active</h5>
+                                        <p class="text-sm text-orange-700">
+                                            Renewal deadline has passed. Scholars have 
+                                            <strong>{{ $daysRemaining }} {{ str_plural('day', $daysRemaining) }}</strong> 
+                                            remaining in the grace period (until {{ $renewalInfo['grace_period_end']->format('M d, Y') }}) 
+                                            before automatic status update to inactive.
+                                        </p>
+                                    </div>
+                                @else
+                                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
+                                        <h5 class="font-semibold text-amber-800 mb-2">⚠️ Required Actions:</h5>
+                                        <ul class="text-sm text-amber-700 space-y-1">
+                                            <li>• Send reminder emails to scholars about pending renewal applications</li>
+                                            <li>• Update status to inactive for scholars who fail to renew</li>
+                                            <li>• Copy names for reporting or follow-up purposes</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                        <h5 class="font-semibold text-blue-800 mb-2">📝 Quick Steps:</h5>
+                                        <ol class="text-sm text-blue-700 space-y-2">
+                                            <li class="flex items-start">
+                                                <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">1</span>
+                                                <span>Select scholars using checkboxes</span>
+                                            </li>
+                                            <li class="flex items-start">
+                                                <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">2</span>
+                                                <span>Use "Email" to send renewal reminders</span>
+                                            </li>
+                                            <li class="flex items-start">
+                                                <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">3</span>
+                                                <span>Use "Update Status" to set as inactive if needed</span>
+                                            </li>
+                                        </ol>
+                                    </div>
+                                @endif
+                            </div>
+                            <!-- Without Renewal Tab - Filter Section -->
+                            <div class="bg-white p-3 rounded-lg shadow-sm mb-4">
+                                <div class="flex flex-col md:flex-row gap-3">
+                                    <div class="flex-1">
+                                        <input type="text" id="withoutRenewalSearch" placeholder="Search by name..." 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-sm">
+                                    </div>
+                                    <div class="flex-1">
+                                        <select id="withoutRenewalBarangay" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                            <option value="">All Barangays</option>
+                                            @foreach($barangays as $barangay)
+                                                <option value="{{ $barangay }}">{{ $barangay }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                    <!-- Scholars without renewal applications -->
+                    <div class="p-4 bg-white rounded-lg shadow-sm">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-md font-semibold">
+                                Active Scholars Without Renewal Applications
+                                @if($scholarsWithoutRenewal->count() > 0)
+                                    <span class="text-sm font-normal text-gray-500">({{ $scholarsWithoutRenewal->total() }} total)</span>
+                                @endif
+                            </h3>
+                            <div class="flex space-x-2">
+                                <button type="button" id="copyNamesBtn" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm">
+                                    Copy Names
+                                </button>
+                                <button type="button" id="sendEmailBtn" class="bg-violet-600 text-white px-3 py-1 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm">
+                                    Email
+                                </button>
+                                <button type="button" id="updateStatusBtn" class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm">
+                                    Update Status
+                                </button>
+                            </div>
+                        </div>
+
+                        @if($scholarsWithoutRenewal->count() > 0)
+                        <form id="scholarForm" action="{{ route('LydoAdmin.updateScholarStatus') }}" method="POST">
+                            @csrf
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full table-auto border-collapse text-[15px] shadow-lg overflow-hidden border border-gray-200">
+                                    <thead class="bg-violet-600 to-teal-600 text-white uppercase text-sm">
+                                        <tr>
+                                            <th class="px-3 py-2 border border-gray-200 text-center">
+                                                <input type="checkbox" id="selectAll" class="rounded border-gray-300">
+                                            </th>
+                                            <th class="px-3 py-2 border align-middle border-gray-200 text-center">Full Name</th>
+                                            <th class="px-3 py-2 border border-gray-200 align-middle text-center">Barangay</th>
+                                            <th class="px-3 py-2 border border-gray-200 align-middle text-center">Email</th>
+                                            <th class="px-3 py-2 border border-gray-200 align-middle text-center">School</th>
+                                            <th class="px-3 py-2 border border-gray-200 align-middle text-center">Year Level</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="withoutRenewalTableBody">
+                                        @foreach($scholarsWithoutRenewal as $scholar)
+                                        <tr class="scholar-row hover:bg-gray-50 border-b">
+                                            <td class="px-3 border border-gray-200 py-1 text-center">
+                                                <input type="checkbox" name="selected_scholars[]" value="{{ $scholar->scholar_id }}" data-scholar-id="{{ $scholar->scholar_id }}" class="scholar-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                            </td>
+                                            <td class="px-3 border border-gray-200 py-1 text-center">
+                                                {{ $scholar->full_name }}
+                                            </td>
+                                            <td class="px-3 border border-gray-200 py-1 text-center barangay-cell">{{ $scholar->applicant_brgy }}</td>
+                                            <td class="px-3 border border-gray-200 py-1 text-center">{{ $scholar->applicant_email }}</td>
+                                            <td class="px-3 border border-gray-200 py-1 text-center">{{ $scholar->applicant_school_name }}</td>
+                                            <td class="px-3 border border-gray-200 py-1 text-center">{{ $scholar->applicant_year_level }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="px-4 py-3 bg-white border-t border-gray-200 ">
+                                <div class="flex justify-center">
+                                    <div class="pagination-container">
+                                        <div class="pagination-info" id="paginationInfo">
+                                            Showing page {{ $scholarsWithoutRenewal->currentPage() }} of {{ $scholarsWithoutRenewal->lastPage() }}
+                                        </div>
+                                        <div class="pagination-buttons">
+                                            @if($scholarsWithoutRenewal->onFirstPage())
+                                                <button class="pagination-btn" id="prevPage" disabled>
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </button>
+                                            @else
+                                                <a href="{{ $scholarsWithoutRenewal->previousPageUrl() }}" class="pagination-btn">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </a>
+                                            @endif
+                                            
+                                            <div class="pagination-page-info">
+                                                Page 
+                                                <input type="number" class="pagination-page-input" id="currentPage" value="{{ $scholarsWithoutRenewal->currentPage() }}" min="1" max="{{ $scholarsWithoutRenewal->lastPage() }}">
+                                                of <span id="totalPages">{{ $scholarsWithoutRenewal->lastPage() }}</span>
+                                            </div>
+                                            
+                                            @if($scholarsWithoutRenewal->hasMorePages())
+                                                <a href="{{ $scholarsWithoutRenewal->nextPageUrl() }}" class="pagination-btn">
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </a>
+                                            @else
+                                                <button class="pagination-btn" id="nextPage" disabled>
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        @else
+                        <div class="text-center py-6 text-gray-500">
+                            @if($renewalInfo['is_after_grace_period'])
+                                <p>All scholars without renewal applications have been automatically set to inactive status.</p>
+                            @else
+                                <p>No active scholars found without renewal applications for {{ $renewalInfo['semester'] }}.</p>
                             @endif
                         </div>
-                    @elseif($renewalInfo['is_grace_period'])
-                        @php
-                            $daysRemaining = now()->diffInDays($renewalInfo['grace_period_end'], false);
-                        @endphp
-                        <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
-                            <h5 class="font-semibold text-orange-800 mb-2">⏰ Grace Period Active</h5>
-                            <p class="text-sm text-orange-700">
-                                Renewal deadline has passed. Scholars have 
-                                <strong>{{ $daysRemaining }} {{ str_plural('day', $daysRemaining) }}</strong> 
-                                remaining in the grace period (until {{ $renewalInfo['grace_period_end']->format('M d, Y') }}) 
-                                before automatic status update to inactive.
-                            </p>
-                        </div>
-                    @else
-                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
-                            <h5 class="font-semibold text-amber-800 mb-2">⚠️ Required Actions:</h5>
-                            <ul class="text-sm text-amber-700 space-y-1">
-                                <li>• Send reminder emails to scholars about pending renewal applications</li>
-                                <li>• Update status to inactive for scholars who fail to renew</li>
-                                <li>• Copy names for reporting or follow-up purposes</li>
-                            </ul>
-                        </div>
-
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                            <h5 class="font-semibold text-blue-800 mb-2">📝 Quick Steps:</h5>
-                            <ol class="text-sm text-blue-700 space-y-2">
-                                <li class="flex items-start">
-                                    <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">1</span>
-                                    <span>Select scholars using checkboxes</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">2</span>
-                                    <span>Use "Email" to send renewal reminders</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">3</span>
-                                    <span>Use "Update Status" to set as inactive if needed</span>
-                                </li>
-                            </ol>
-                        </div>
-                    @endif
-                </div>
-                <!-- Filter Section -->
-                <div class="bg-white p-3 rounded-lg shadow-sm mb-4"> <!-- Reduced padding and margin -->
-                    <div class="flex flex-col md:flex-row gap-3" id="filterForm"> <!-- Reduced gap -->
-                        <div class="flex-1">
-                            <input type="text" id="searchInput" placeholder="Search by name..." 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-sm"> <!-- Smaller text -->
-                        </div>
-                        <div class="flex-1">
-                            <select id="barangaySelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"> <!-- Smaller text -->
-                                <option value="">All Barangays</option>
-                                @foreach($barangays as $barangay)
-                                    <option value="{{ $barangay }}">
-                                        {{ $barangay }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        @endif
                     </div>
-                </div>
-                
-        <!-- Scholars without renewal applications -->
-        <div class="p-4 bg-white rounded-lg shadow-sm">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="text-md font-semibold">
-                    Active Scholars Without Renewal Applications
-                    @if($scholarsWithoutRenewal->count() > 0)
-                        <span class="text-sm font-normal text-gray-500">({{ $scholarsWithoutRenewal->total() }} total)</span>
-                    @endif
-                </h3>
-                <div class="flex space-x-2">
-                    <button type="button" id="copyNamesBtn" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm">
-                        Copy Names
-                    </button>
-                    <button type="button" id="sendEmailBtn" class="bg-violet-600 text-white px-3 py-1 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm">
-                        Email
-                    </button>
-                    <button type="button" id="updateStatusBtn" class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm">
-                        Update Status
-                    </button>
-                </div>
-            </div>
-
-            @if($scholarsWithoutRenewal->count() > 0)
-            <form id="scholarForm" action="{{ route('LydoAdmin.updateScholarStatus') }}" method="POST">
-                @csrf
-
-                <div class="overflow-x-auto">
-                    <table class="w-full table-auto border-collapse text-[15px] shadow-lg overflow-hidden border border-gray-200">
-                        <thead class="bg-gradient-to-r from-violet-600 to-teal-600 text-white uppercase text-sm">
-                            <tr>
-                                <th class="px-3 py-2 border border-gray-200 text-center">
-                                    <input type="checkbox" id="selectAll" class="rounded border-gray-300">
-                                </th>
-                                <th class="px-3 py-2 border align-middle border-gray-200 text-center">Full Name</th>
-                                <th class="px-3 py-2 border border-gray-200 align-middle text-center">Barangay</th>
-                                <th class="px-3 py-2 border border-gray-200 align-middle text-center">Email</th>
-                                <th class="px-3 py-2 border border-gray-200 align-middle text-center">School</th>
-                                <th class="px-3 py-2 border border-gray-200 align-middle text-center">Year Level</th>
-                            </tr>
-                        </thead>
-                        <tbody id="withoutRenewalTableBody">
-                            @foreach($scholarsWithoutRenewal as $scholar)
-                            <tr class="scholar-row hover:bg-gray-50 border-b">
-                                <td class="px-3 border border-gray-200 py-1 text-center">
-                                    <input type="checkbox" name="selected_scholars[]" value="{{ $scholar->scholar_id }}" data-scholar-id="{{ $scholar->scholar_id }}" class="scholar-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                </td>
-                                <td class="px-3 border border-gray-200 py-1 text-center">
-                                    {{ $scholar->full_name }}
-                                </td>
-                                <td class="px-3 border border-gray-200 py-1 text-center barangay-cell">{{ $scholar->applicant_brgy }}</td>
-                                <td class="px-3 border border-gray-200 py-1 text-center">{{ $scholar->applicant_email }}</td>
-                                <td class="px-3 border border-gray-200 py-1 text-center">{{ $scholar->applicant_school_name }}</td>
-                                <td class="px-3 border border-gray-200 py-1 text-center">{{ $scholar->applicant_year_level }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="px-4 py-3 bg-white border-t border-gray-200 ">
-                    <div class="flex justify-center">
-                        <div class="pagination-container">
-                            <div class="pagination-info" id="paginationInfo">
-                                Showing page {{ $scholarsWithoutRenewal->currentPage() }} of {{ $scholarsWithoutRenewal->lastPage() }}
-                            </div>
-                            <div class="pagination-buttons">
-                                @if($scholarsWithoutRenewal->onFirstPage())
-                                    <button class="pagination-btn" id="prevPage" disabled>
-                                        <i class="fas fa-chevron-left"></i>
-                                    </button>
-                                @else
-                                    <a href="{{ $scholarsWithoutRenewal->previousPageUrl() }}" class="pagination-btn">
-                                        <i class="fas fa-chevron-left"></i>
-                                    </a>
-                                @endif
-                                
-                                <div class="pagination-page-info">
-                                    Page 
-                                    <input type="number" class="pagination-page-input" id="currentPage" value="{{ $scholarsWithoutRenewal->currentPage() }}" min="1" max="{{ $scholarsWithoutRenewal->lastPage() }}">
-                                    of <span id="totalPages">{{ $scholarsWithoutRenewal->lastPage() }}</span>
-                                </div>
-                                
-                                @if($scholarsWithoutRenewal->hasMorePages())
-                                    <a href="{{ $scholarsWithoutRenewal->nextPageUrl() }}" class="pagination-btn">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </a>
-                                @else
-                                    <button class="pagination-btn" id="nextPage" disabled>
-                                        <i class="fas fa-chevron-right"></i>
-                                    </button>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </form>
-            @else
-            <div class="text-center py-6 text-gray-500">
-                @if($renewalInfo['is_after_grace_period'])
-                    <p>All scholars without renewal applications have been automatically set to inactive status.</p>
                 @else
-                    <p>No active scholars found without renewal applications for {{ $renewalInfo['semester'] }}.</p>
+                    <div class="text-center py-8 bg-white rounded-lg shadow-sm">
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 max-w-md mx-auto">
+                            <i class="fas fa-calendar-times text-gray-400 text-4xl mb-4"></i>
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">No Active Renewal Period</h3>
+                            <p class="text-sm text-gray-500 mb-4">
+                                @if($settings && $settings->renewal_start_date)
+                                    The renewal period for {{ $settings->renewal_semester }} starts on 
+                                    <strong>{{ \Carbon\Carbon::parse($settings->renewal_start_date)->format('M d, Y') }}</strong>.
+                                @else
+                                    No renewal dates are currently set in the system settings.
+                                @endif
+                            </p>
+                            <a href="/lydo_admin/settings" class="inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-sm">
+                                <i class="fas fa-cog mr-2"></i>
+                                Configure Renewal Settings
+                            </a>
+                        </div>
+                    </div>
                 @endif
             </div>
-            @endif
-        </div>
-    @else
-        <div class="text-center py-8 bg-white rounded-lg shadow-sm">
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 max-w-md mx-auto">
-                <i class="fas fa-calendar-times text-gray-400 text-4xl mb-4"></i>
-                <h3 class="text-lg font-semibold text-gray-700 mb-2">No Active Renewal Period</h3>
-                <p class="text-sm text-gray-500 mb-4">
-                    @if($settings && $settings->renewal_start_date)
-                        The renewal period for {{ $settings->renewal_semester }} starts on 
-                        <strong>{{ \Carbon\Carbon::parse($settings->renewal_start_date)->format('M d, Y') }}</strong>.
-                    @else
-                        No renewal dates are currently set in the system settings.
-                    @endif
-                </p>
-                <a href="/lydo_admin/settings" class="inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-sm">
-                    <i class="fas fa-cog mr-2"></i>
-                    Configure Renewal Settings
-                </a>
-            </div>
-        </div>
-    @endif
-</div>
-                <!-- Tab Content: Graduating Scholars -->
-                <div id="graduatingContent" class="tab-content hidden">
-                    <div class="note-box mb-4">
-        <h4>🎓 Graduating Scholars Management</h4>
-        <p class="text-sm text-black-600 mb-3">
-            This section displays scholars who are in their final year or semester and approaching graduation.
-        </p>
-        
-        <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
-            <h5 class="font-semibold text-green-800 mb-2">✅ Graduation Process:</h5>
-            <ul class="text-sm text-green-700 space-y-1">
-                <li>• Verify completion of all academic requirements</li>
-                <li>• Mark scholars as graduated once they complete their programs</li>
-                <li>• Generate graduation certificates for completed scholars</li>
-                <li>• Send congratulatory emails or notifications</li>
-            </ul>
-        </div>
+                            <!-- Tab Content: Graduating Scholars -->
+                            <div id="graduatingContent" class="tab-content hidden">
+                                <div class="note-box mb-4">
+                    <h4>🎓 Graduating Scholars Management</h4>
+                    <p class="text-sm text-black-600 mb-3">
+                        This section displays scholars who are in their final year or semester and approaching graduation.
+                    </p>
+                    
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                        <h5 class="font-semibold text-green-800 mb-2">✅ Graduation Process:</h5>
+                        <ul class="text-sm text-green-700 space-y-1">
+                            <li>• Verify completion of all academic requirements</li>
+                            <li>• Mark scholars as graduated once they complete their programs</li>
+                            <li>• Generate graduation certificates for completed scholars</li>
+                            <li>• Send congratulatory emails or notifications</li>
+                        </ul>
+                    </div>
 
-        <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
-            <h5 class="font-semibold text-purple-800 mb-2">📝 Quick Steps:</h5>
-            <ol class="text-sm text-purple-700 space-y-2">
-                <li class="flex items-start">
-                    <span class="bg-purple-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">1</span>
-                    <span>Select graduating scholars using checkboxes</span>
-                </li>
-                <li class="flex items-start">
-                    <span class="bg-purple-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">2</span>
-                    <span>Use "Mark as Graduated" to update their status</span>
-                </li>
-                <li class="flex items-start">
-                    <span class="bg-purple-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">3</span>
-                    <span>Generate certificates and send congratulatory messages</span>
-                </li>
-            </ol>
-        </div>
-    </div>
-
-                    <!-- Filter Section -->
-                <div class="bg-white p-3 rounded-lg shadow-sm mb-4"> <!-- Reduced padding and margin -->
-                    <div class="flex flex-col md:flex-row gap-3" id="filterForm"> <!-- Reduced gap -->
-                        <div class="flex-1">
-                            <input type="text" id="searchInput" placeholder="Search by name..." 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-sm"> <!-- Smaller text -->
-                        </div>
-                        <div class="flex-1">
-                            <select id="barangaySelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"> <!-- Smaller text -->
-                                <option value="">All Barangays</option>
-                                @foreach($barangays as $barangay)
-                                    <option value="{{ $barangay }}">
-                                        {{ $barangay }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                        <h5 class="font-semibold text-purple-800 mb-2">📝 Quick Steps:</h5>
+                        <ol class="text-sm text-purple-700 space-y-2">
+                            <li class="flex items-start">
+                                <span class="bg-purple-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">1</span>
+                                <span>Select graduating scholars using checkboxes</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="bg-purple-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">2</span>
+                                <span>Use "Mark as Graduated" to update their status</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="bg-purple-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">3</span>
+                                <span>Generate certificates and send congratulatory messages</span>
+                            </li>
+                        </ol>
                     </div>
                 </div>
+
+
+            <!-- Graduating Tab - Filter Section -->
+            <div class="bg-white p-3 rounded-lg shadow-sm mb-4">
+                <div class="flex flex-col md:flex-row gap-3">
+                    <div class="flex-1">
+                        <input type="text" id="graduatingSearch" placeholder="Search by name..." 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-sm">
+                    </div>
+                    <div class="flex-1">
+                        <select id="graduatingBarangay" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                            <option value="">All Barangays</option>
+                            @foreach($barangays as $barangay)
+                                <option value="{{ $barangay }}">{{ $barangay }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
                     <!-- Graduating Scholars -->
                     <div class="p-4 bg-white rounded-lg shadow-sm"> <!-- Reduced padding -->
                         <div class="flex justify-between items-center mb-3"> <!-- Reduced margin -->
@@ -781,7 +778,7 @@
 
                             <div class="overflow-x-auto">
                                 <table class="w-full table-auto border-collapse text-[15px] shadow-lg overflow-hidden border border-gray-200"> <!-- Smaller text -->
-                                    <thead class="bg-green-600 to-indigo-600 text-white uppercase text-sm">
+                                    <thead class="bg-green-600 text-white uppercase text-sm">
                                         <tr>
                                             <th class="px-3 py-2 border border-gray-200 text-center"> <!-- Reduced padding -->
                                                 <input type="checkbox" id="graduatingSelectAll" class="rounded border-gray-300">
@@ -820,30 +817,42 @@
                                     </tbody>
                                 </table>
                             </div>
-
-
-                        <div class="px-4 py-3 bg-white border-t border-gray-200">
-                            <div class="flex justify-center">
-                                <div class="pagination-container">
-                                    <div class="pagination-info" id="graduatingPaginationInfo">
-                                        Showing page 1 of 10
-                                    </div>
-                                    <div class="pagination-buttons">
-                                        <button class="pagination-btn" id="graduatingPrevPage" disabled>
-                                            <i class="fas fa-chevron-left"></i>
-                                        </button>
-                                        <div class="pagination-page-info">
-                                            Page 
-                                            <input type="number" class="pagination-page-input" id="graduatingCurrentPage" value="1" min="1">
-                                            of <span id="graduatingTotalPages">1</span>
+                            <div class="px-4 py-3 bg-white border-t border-gray-200">
+                                <div class="flex justify-center">
+                                    <div class="pagination-container">
+                                        <div class="pagination-info" id="graduatingPaginationInfo">
+                                            Showing page {{ $graduatingScholars->currentPage() ?? 1 }} of {{ $graduatingScholars->lastPage() ?? 1 }}
                                         </div>
-                                        <button class="pagination-btn" id="graduatingNextPage">
-                                            <i class="fas fa-chevron-right"></i>
-                                        </button>
+                                        <div class="pagination-buttons">
+                                            @if(isset($graduatingScholars) && $graduatingScholars->onFirstPage())
+                                                <button class="pagination-btn" id="graduatingPrevPage" disabled>
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </button>
+                                            @else
+                                                <a href="{{ $graduatingScholars->previousPageUrl() ?? '#' }}" class="pagination-btn" id="graduatingPrevPage">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </a>
+                                            @endif
+                                            
+                                            <div class="pagination-page-info">
+                                                Page 
+                                                <input type="number" class="pagination-page-input" id="graduatingCurrentPage" value="{{ $graduatingScholars->currentPage() ?? 1 }}" min="1" max="{{ $graduatingScholars->lastPage() ?? 1 }}">
+                                                of <span id="graduatingTotalPages">{{ $graduatingScholars->lastPage() ?? 1 }}</span>
+                                            </div>
+                                            
+                                            @if(isset($graduatingScholars) && $graduatingScholars->hasMorePages())
+                                                <a href="{{ $graduatingScholars->nextPageUrl() ?? '#' }}" class="pagination-btn" id="graduatingNextPage">
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </a>
+                                            @else
+                                                <button class="pagination-btn" id="graduatingNextPage" disabled>
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </button>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
                         </form>
                         @else
                         <div class="text-center py-6 text-gray-500"> <!-- Reduced padding -->
@@ -1455,36 +1464,33 @@ function updateGraduatingButtons() {
 
 // Initialize filtering functionality
 function initializeFiltering() {
-    const searchInput = document.getElementById('searchInput');
-    const barangaySelect = document.getElementById('barangaySelect');
-
-    // Add event listeners with debouncing
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(filterCurrentTab, 300));
+    // Add event listeners for without renewal tab
+    const withoutRenewalSearch = document.getElementById('withoutRenewalSearch');
+    const withoutRenewalBarangay = document.getElementById('withoutRenewalBarangay');
+    
+    if (withoutRenewalSearch) {
+        withoutRenewalSearch.addEventListener('input', debounce(filterWithoutRenewalTable, 300));
     }
-    if (barangaySelect) {
-        barangaySelect.addEventListener('change', filterCurrentTab);
+    if (withoutRenewalBarangay) {
+        withoutRenewalBarangay.addEventListener('change', filterWithoutRenewalTable);
     }
-}
-
-// Filter the currently active tab
-function filterCurrentTab() {
-    const activeTab = document.querySelector('.tab-button.border-blue-500');
-    if (!activeTab) return;
-
-    const tabName = activeTab.getAttribute('data-tab');
-
-    if (tabName === 'withoutRenewal') {
-        filterWithoutRenewalTable();
-    } else if (tabName === 'graduating') {
-        filterGraduatingTable();
+    
+    // Add event listeners for graduating tab
+    const graduatingSearch = document.getElementById('graduatingSearch');
+    const graduatingBarangay = document.getElementById('graduatingBarangay');
+    
+    if (graduatingSearch) {
+        graduatingSearch.addEventListener('input', debounce(filterGraduatingTable, 300));
+    }
+    if (graduatingBarangay) {
+        graduatingBarangay.addEventListener('change', filterGraduatingTable);
     }
 }
 
 // Filter Without Renewal Applications table
 function filterWithoutRenewalTable() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const selectedBarangay = document.getElementById('barangaySelect').value;
+    const searchTerm = document.getElementById('withoutRenewalSearch').value.toLowerCase();
+    const selectedBarangay = document.getElementById('withoutRenewalBarangay').value;
 
     const rows = document.querySelectorAll('#withoutRenewalTableBody .scholar-row');
 
@@ -1513,8 +1519,8 @@ function filterWithoutRenewalTable() {
 
 // Filter Graduating Scholars table
 function filterGraduatingTable() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const selectedBarangay = document.getElementById('barangaySelect').value;
+    const searchTerm = document.getElementById('graduatingSearch').value.toLowerCase();
+    const selectedBarangay = document.getElementById('graduatingBarangay').value;
 
     const rows = document.querySelectorAll('#graduatingTableBody .graduating-scholar-row');
 
@@ -1580,612 +1586,6 @@ window.addEventListener("DOMContentLoaded", () => {
 </script>
  <script src="{{ asset('js/spinner.js') }}"></script>
   <script>
-// Global pagination state for both tabs
-const paginationState = {
-    withoutRenewal: {
-        currentPage: 1,
-        rowsPerPage: 10,
-        allRows: [],
-        filteredRows: []
-    },
-    graduating: {
-        currentPage: 1,
-        rowsPerPage: 10,
-        allRows: [],
-        filteredRows: []
-    }
-};
-
-// Initialize data for both tabs
-function initializeStatusData() {
-    // Without Renewal tab
-    const withoutRenewalRows = Array.from(document.querySelectorAll('#withoutRenewalTableBody .scholar-row'));
-    paginationState.withoutRenewal.allRows = withoutRenewalRows;
-    paginationState.withoutRenewal.filteredRows = [...withoutRenewalRows];
-    
-    // Graduating tab
-    const graduatingRows = Array.from(document.querySelectorAll('#graduatingTableBody .graduating-scholar-row'));
-    paginationState.graduating.allRows = graduatingRows;
-    paginationState.graduating.filteredRows = [...graduatingRows];
-}
-
-// Initialize pagination for both tabs
-function initializeStatusPagination() {
-    updateStatusPagination('withoutRenewal');
-    updateStatusPagination('graduating');
-}
-
-// Update pagination display for specific tab
-function updateStatusPagination(tabType) {
-    const state = paginationState[tabType];
-    const containerId = tabType === 'withoutRenewal' ? 'paginationContainer' : 'graduatingPaginationContainer';
-    const container = document.getElementById(containerId);
-    
-    if (!container) return;
-    
-    // Hide all rows first
-    state.allRows.forEach(row => {
-        row.style.display = 'none';
-    });
-    
-    // Calculate pagination for filtered rows
-    const startIndex = (state.currentPage - 1) * state.rowsPerPage;
-    const endIndex = startIndex + state.rowsPerPage;
-    const pageRows = state.filteredRows.slice(startIndex, endIndex);
-    
-    // Show only rows for current page
-    pageRows.forEach(row => {
-        row.style.display = '';
-    });
-    
-    // Update pagination controls
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    const startItem = state.filteredRows.length === 0 ? 0 : Math.min((state.currentPage - 1) * state.rowsPerPage + 1, state.filteredRows.length);
-    const endItem = Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
-    
-    container.innerHTML = `
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="text-sm text-gray-600">
-                Showing <span class="font-semibold">${startItem}-${endItem}</span> of <span class="font-semibold">${state.filteredRows.length}</span> ${tabType === 'withoutRenewal' ? 'scholars' : 'graduating scholars'}
-            </div>
-            
-            <div class="flex items-center space-x-1">
-                <!-- First Page -->
-                <button onclick="changeStatusPage('${tabType}', 1)" 
-                    class="px-3 py-2 text-sm font-medium rounded-l-md border border-gray-300 ${
-                        state.currentPage === 1 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }"
-                    ${state.currentPage === 1 ? 'disabled' : ''}>
-                    <i class="fas fa-angle-double-left"></i>
-                </button>
-                
-                <!-- Previous Page -->
-                <button onclick="changeStatusPage('${tabType}', ${state.currentPage - 1})" 
-                    class="px-3 py-2 text-sm font-medium border border-gray-300 ${
-                        state.currentPage === 1 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }"
-                    ${state.currentPage === 1 ? 'disabled' : ''}>
-                    <i class="fas fa-angle-left"></i>
-                </button>
-                
-                <!-- Page Info -->
-                <div class="flex items-center px-4 py-2 text-sm text-gray-700 border border-gray-300 bg-white">
-                    Page 
-                    <input type="number" 
-                           class="mx-2 w-12 text-center border border-gray-300 rounded px-1 py-1 text-sm" 
-                           value="${state.currentPage}" 
-                           min="1" 
-                           max="${totalPages}" 
-                           onchange="goToStatusPage('${tabType}', this.value)">
-                    of ${totalPages}
-                </div>
-                
-                <!-- Next Page -->
-                <button onclick="changeStatusPage('${tabType}', ${state.currentPage + 1})" 
-                    class="px-3 py-2 text-sm font-medium border border-gray-300 ${
-                        state.currentPage === totalPages 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }"
-                    ${state.currentPage === totalPages ? 'disabled' : ''}>
-                    <i class="fas fa-angle-right"></i>
-                </button>
-                
-                <!-- Last Page -->
-                <button onclick="changeStatusPage('${tabType}', ${totalPages})" 
-                    class="px-3 py-2 text-sm font-medium rounded-r-md border border-gray-300 ${
-                        state.currentPage === totalPages 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }"
-                    ${state.currentPage === totalPages ? 'disabled' : ''}>
-                    <i class="fas fa-angle-double-right"></i>
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-// Change page for specific tab
-function changeStatusPage(tabType, page) {
-    const state = paginationState[tabType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    if (page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updateStatusPagination(tabType);
-    
-    // Update button states after pagination change
-    if (tabType === 'withoutRenewal') {
-        updateButtons();
-    } else {
-        updateGraduatingButtons();
-    }
-}
-
-// Go to specific page for specific tab
-function goToStatusPage(tabType, page) {
-    const state = paginationState[tabType];
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
-    
-    page = parseInt(page);
-    if (isNaN(page) || page < 1) page = 1;
-    if (page > totalPages) page = totalPages;
-    
-    state.currentPage = page;
-    updateStatusPagination(tabType);
-    
-    // Update button states after pagination change
-    if (tabType === 'withoutRenewal') {
-        updateButtons();
-    } else {
-        updateGraduatingButtons();
-    }
-}
-
-// Initialize filtering functionality for both tabs
-function initializeStatusFiltering() {
-    const searchInput = document.getElementById('searchInput');
-    const barangaySelect = document.getElementById('barangaySelect');
-
-    function filterStatusTable() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedBarangay = barangaySelect.value;
-
-        // Get active tab
-        const activeTab = document.querySelector('.tab-button.border-blue-500');
-        if (!activeTab) return;
-
-        const tabName = activeTab.getAttribute('data-tab');
-        
-        if (tabName === 'withoutRenewal') {
-            filterWithoutRenewalTable(searchTerm, selectedBarangay);
-        } else if (tabName === 'graduating') {
-            filterGraduatingTable(searchTerm, selectedBarangay);
-        }
-    }
-
-    // Add event listeners with debouncing
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(filterStatusTable, 300));
-    }
-    if (barangaySelect) {
-        barangaySelect.addEventListener('change', filterStatusTable);
-    }
-}
-
-// Filter Without Renewal Applications table
-function filterWithoutRenewalTable(searchTerm, selectedBarangay) {
-    const state = paginationState.withoutRenewal;
-    
-    const filteredRows = state.allRows.filter(row => {
-        const nameCell = row.cells[1]; // Name column
-        const barangayCell = row.querySelector('td.barangay-cell'); // Barangay column
-
-        if (!nameCell || !barangayCell) return false;
-
-        const name = nameCell.textContent.toLowerCase();
-        const barangay = barangayCell.textContent.trim();
-
-        const nameMatch = name.includes(searchTerm);
-        const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
-
-        return nameMatch && barangayMatch;
-    });
-
-    // Update filtered rows and reset to page 1
-    state.filteredRows = filteredRows;
-    state.currentPage = 1;
-    updateStatusPagination('withoutRenewal');
-    
-    // Reset select all checkbox
-    const selectAll = document.getElementById('selectAll');
-    if (selectAll) {
-        selectAll.checked = false;
-        selectAll.indeterminate = false;
-    }
-    
-    // Update button states
-    updateButtons();
-}
-
-// Filter Graduating Scholars table
-function filterGraduatingTable(searchTerm, selectedBarangay) {
-    const state = paginationState.graduating;
-    
-    const filteredRows = state.allRows.filter(row => {
-        const nameCell = row.cells[1]; // Name column
-        const barangayCell = row.querySelector('td.graduating-barangay-cell'); // Barangay column
-
-        if (!nameCell || !barangayCell) return false;
-
-        const name = nameCell.textContent.toLowerCase();
-        const barangay = barangayCell.textContent.trim();
-
-        const nameMatch = name.includes(searchTerm);
-        const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
-
-        return nameMatch && barangayMatch;
-    });
-
-    // Update filtered rows and reset to page 1
-    state.filteredRows = filteredRows;
-    state.currentPage = 1;
-    updateStatusPagination('graduating');
-    
-    // Reset select all checkbox
-    const graduatingSelectAll = document.getElementById('graduatingSelectAll');
-    if (graduatingSelectAll) {
-        graduatingSelectAll.checked = false;
-        graduatingSelectAll.indeterminate = false;
-    }
-    
-    // Update button states
-    updateGraduatingButtons();
-}
-
-// Update button states for regular scholars (pagination-aware)
-function updateButtons() {
-    const state = paginationState.withoutRenewal;
-    const currentPageRows = state.filteredRows.slice(
-        (state.currentPage - 1) * state.rowsPerPage,
-        state.currentPage * state.rowsPerPage
-    );
-    
-    const visibleCheckboxes = currentPageRows.map(row => 
-        row.querySelector('.scholar-checkbox')
-    ).filter(checkbox => checkbox !== null);
-    
-    const selectedCount = visibleCheckboxes.filter(cb => cb.checked).length;
-    
-    if (copyNamesBtn) copyNamesBtn.disabled = selectedCount === 0;
-    if (sendEmailBtn) sendEmailBtn.disabled = selectedCount === 0;
-    if (updateStatusBtn) updateStatusBtn.disabled = selectedCount === 0;
-    if (copyNamesBtn) copyNamesBtn.classList.toggle('hidden', selectedCount === 0);
-    if (sendEmailBtn) sendEmailBtn.classList.toggle('hidden', selectedCount === 0);
-    if (updateStatusBtn) updateStatusBtn.classList.toggle('hidden', selectedCount === 0);
-}
-
-// Update button states for graduating scholars (pagination-aware)
-function updateGraduatingButtons() {
-    const state = paginationState.graduating;
-    const currentPageRows = state.filteredRows.slice(
-        (state.currentPage - 1) * state.rowsPerPage,
-        state.currentPage * state.rowsPerPage
-    );
-    
-    const visibleCheckboxes = currentPageRows.map(row => 
-        row.querySelector('.graduating-scholar-checkbox')
-    ).filter(checkbox => checkbox !== null);
-    
-    const selectedCount = visibleCheckboxes.filter(cb => cb.checked).length;
-    
-    if (graduatingCopyNamesBtn) graduatingCopyNamesBtn.disabled = selectedCount === 0;
-    if (graduatingSendEmailBtn) graduatingSendEmailBtn.disabled = selectedCount === 0;
-    if (markAsGraduatedBtn) markAsGraduatedBtn.disabled = selectedCount === 0;
-    if (graduatingCopyNamesBtn) graduatingCopyNamesBtn.classList.toggle('hidden', selectedCount === 0);
-    if (graduatingSendEmailBtn) graduatingSendEmailBtn.classList.toggle('hidden', selectedCount === 0);
-    if (markAsGraduatedBtn) markAsGraduatedBtn.classList.toggle('hidden', selectedCount === 0);
-}
-
-// Debounce function for search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Modified tab switching function to handle pagination
-function switchToTab(tabName) {
-    console.log('Switching to tab:', tabName);
-    
-    // Hide all tab contents
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.add('hidden');
-    });
-    
-    // Remove active state from all tabs
-    document.querySelectorAll('.tab-button').forEach(tab => {
-        tab.classList.remove('border-blue-500', 'text-blue-600');
-        tab.classList.add('border-transparent', 'text-gray-500');
-    });
-    
-    // Show selected tab content
-    const targetContent = document.getElementById(tabName + 'Content');
-    if (targetContent) {
-        targetContent.classList.remove('hidden');
-        console.log('Showing content for:', tabName);
-    }
-    
-    // Activate selected tab
-    const targetTab = document.getElementById(tabName + 'Tab');
-    if (targetTab) {
-        targetTab.classList.add('border-blue-500', 'text-blue-600');
-        targetTab.classList.remove('border-transparent', 'text-gray-500');
-    }
-    
-    // Update button states for the active tab
-    if (tabName === 'withoutRenewal') {
-        updateButtons();
-    } else if (tabName === 'graduating') {
-        updateGraduatingButtons();
-    }
-}
-
-// Initialize everything when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    initializeStatusData();
-    initializeStatusPagination();
-    initializeStatusFiltering();
-    
-    // Your existing initialization code...
-});
-
-// Add this after the existing email modal code
-// Certificate Modal HTML - Add this before the closing body tag
-const certificateModalHTML = `
-<div id="certificateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-2xl rounded-xl bg-white">
-        <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
-            <h3 class="text-lg font-bold text-gray-900 flex items-center">
-                <i class="fas fa-certificate text-purple-600 mr-2"></i>
-                Generate Graduation Certificates
-            </h3>
-            <button type="button" id="closeCertificateModal" class="text-gray-400 hover:text-gray-600 transition-colors">
-                <i class="fas fa-times text-lg"></i>
-            </button>
-        </div>
-
-        <div class="space-y-4">
-            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <div class="flex items-center">
-                    <i class="fas fa-info-circle text-purple-600 mr-2"></i>
-                    <p class="text-purple-800 font-medium">
-                        Generate professional certificates for the recently graduated scholars
-                    </p>
-                </div>
-            </div>
-
-            <div id="certificateScholarList" class="max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-4">
-                <!-- Scholar list will be populated here -->
-            </div>
-
-            <!-- Loading Indicator -->
-            <div id="certificateLoading" class="hidden flex items-center justify-center py-4">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-                <span class="ml-3 text-gray-600 font-medium">Generating certificates...</span>
-            </div>
-
-            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                <button type="button" id="cancelCertificate" class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
-                    Cancel
-                </button>
-                <button type="button" id="generateCertificateBtn" class="px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors shadow-sm">
-                    <i class="fas fa-download mr-2"></i>Generate Certificates
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-`;
-
-// Add the modal HTML to the body
-document.body.insertAdjacentHTML('beforeend', certificateModalHTML);
-
-// Certificate modal functionality
-const certificateModal = document.getElementById('certificateModal');
-const closeCertificateModal = document.getElementById('closeCertificateModal');
-const cancelCertificate = document.getElementById('cancelCertificate');
-const generateCertificateBtn = document.getElementById('generateCertificateBtn');
-const certificateScholarList = document.getElementById('certificateScholarList');
-const certificateLoading = document.getElementById('certificateLoading');
-
-// Function to show certificate modal
-function showCertificateModal() {
-    const visibleCheckboxes = document.querySelectorAll('.graduating-scholar-checkbox:checked');
-    
-    if (visibleCheckboxes.length === 0) {
-        Swal.fire({
-            title: 'No Selection!',
-            text: 'Please select at least one scholar to generate certificates.',
-            icon: 'warning',
-            confirmButtonText: 'OK'
-        });
-        return;
-    }
-
-    // Populate scholar list
-    let scholarListHTML = '<div class="space-y-2">';
-    visibleCheckboxes.forEach((checkbox, index) => {
-        const row = checkbox.closest('tr');
-        const name = row.querySelector('td:nth-child(2)').textContent.trim();
-        const school = row.querySelector('td:nth-child(5)').textContent.trim();
-        const course = row.querySelector('td:nth-child(7)').textContent.trim();
-        
-        scholarListHTML += `
-            <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                <div>
-                    <div class="font-semibold text-gray-800">${name}</div>
-                    <div class="text-sm text-gray-600">${school} - ${course}</div>
-                </div>
-                <div class="text-green-600">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-            </div>
-        `;
-    });
-    scholarListHTML += '</div>';
-    
-    certificateScholarList.innerHTML = scholarListHTML;
-    certificateModal.classList.remove('hidden');
-}
-
-// Close certificate modal
-if (closeCertificateModal) {
-    closeCertificateModal.addEventListener('click', function() {
-        certificateModal.classList.add('hidden');
-    });
-}
-
-if (cancelCertificate) {
-    cancelCertificate.addEventListener('click', function() {
-        certificateModal.classList.add('hidden');
-    });
-}
-
-// Close modal on outside click
-certificateModal.addEventListener('click', function(e) {
-    if (e.target === certificateModal) {
-        certificateModal.classList.add('hidden');
-    }
-});
-
-// Generate certificates
-if (generateCertificateBtn) {
-    generateCertificateBtn.addEventListener('click', function() {
-        generateCertificateBtn.disabled = true;
-        certificateLoading.classList.remove('hidden');
-        
-        // Submit the form first to mark as graduated
-        const form = document.getElementById('graduatingScholarForm');
-        const formData = new FormData(form);
-        
-        fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                // After marking as graduated, generate certificates
-                return fetch('/lydo_admin/generate-graduation-certificates', {
-                    method: 'GET',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                });
-            } else {
-                throw new Error('Failed to mark scholars as graduated');
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.blob();
-            } else {
-                throw new Error('Failed to generate certificates');
-            }
-        })
-        .then(blob => {
-            // Create download link
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'graduation-certificates-' + new Date().toISOString().split('T')[0] + '.pdf';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            
-            certificateModal.classList.add('hidden');
-            
-            Swal.fire({
-                title: 'Success!',
-                text: 'Certificates generated and downloaded successfully!',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                title: 'Error!',
-                text: 'Failed to generate certificates: ' + error.message,
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        })
-        .finally(() => {
-            generateCertificateBtn.disabled = false;
-            certificateLoading.classList.add('hidden');
-        });
-    });
-}
-
-// Update the markAsGraduatedBtn event listener to show certificate modal
-if (markAsGraduatedBtn) {
-    markAsGraduatedBtn.addEventListener('click', function() {
-        const visibleCheckboxes = document.querySelectorAll('.graduating-scholar-checkbox:checked');
-
-        if (visibleCheckboxes.length === 0) {
-            Swal.fire({
-                title: 'No Selection!',
-                text: 'Please select at least one scholar to mark as graduated.',
-                icon: 'warning',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        // Show certificate generation option
-        Swal.fire({
-            title: 'Graduation Options',
-            text: `You are about to mark ${visibleCheckboxes.length} scholar(s) as graduated. Would you like to generate certificates?`,
-            icon: 'question',
-            showDenyButton: true,
-            showCancelButton: true,
-            confirmButtonText: 'Yes, Generate Certificates',
-            denyButtonText: 'Mark as Graduated Only',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Show certificate modal
-                showCertificateModal();
-            } else if (result.isDenied) {
-                // Submit form without certificate generation
-                const form = document.getElementById('graduatingScholarForm');
-                const submitButton = markAsGraduatedBtn;
-
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
-                form.submit();
-            }
-        });
-    });
-}
 // Handle page navigation for without renewal table
 document.addEventListener('DOMContentLoaded', function() {
     const currentPageInput = document.getElementById('currentPage');
@@ -2199,6 +1599,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.href = `${baseUrl}?page=${page}`;
             } else {
                 this.value = {{ $scholarsWithoutRenewal->currentPage() }};
+            }
+        });
+    }
+    
+    // Handle page navigation for graduating table
+    const graduatingCurrentPageInput = document.getElementById('graduatingCurrentPage');
+    if (graduatingCurrentPageInput) {
+        graduatingCurrentPageInput.addEventListener('change', function() {
+            const page = parseInt(this.value);
+            const totalPages = parseInt(document.getElementById('graduatingTotalPages').textContent);
+            const baseUrl = window.location.href.split('?')[0];
+            
+            if (page >= 1 && page <= totalPages) {
+                window.location.href = `${baseUrl}?graduating_page=${page}`;
+            } else {
+                this.value = {{ $graduatingScholars->currentPage() ?? 1 }};
             }
         });
     }
