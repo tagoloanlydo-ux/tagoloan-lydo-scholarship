@@ -327,10 +327,10 @@
                                     </div>
                                 </td>
                                 <td style="border: none; vertical-align: top; padding-left: 10px;">
-                                    <div style="font-size: 11px; font-weight: bold;">Republic of the Philippines</div> <!-- Changed from 20px to 11px -->
-                                    <div style="font-size: 11px; font-weight: bold;">Province of Misamis Oriental</div> <!-- Changed from 15px to 11px -->
-                                    <div style="font-size: 11px; font-weight: bold;">Municipality of Tagoloan</div> <!-- Changed from 15px to 11px -->
-                                    <div style="font-size: 9px; font-weight: bold;">
+                                    <div style="font-size: 15px; font-weight: bold;">Republic of the Philippines</div> <!-- Changed from 20px to 11px -->
+                                    <div style="font-size: 15px; font-weight: bold;">Province of Misamis Oriental</div> <!-- Changed from 15px to 11px -->
+                                    <div style="font-size: 15px; font-weight: bold;">Municipality of Tagoloan</div> <!-- Changed from 15px to 11px -->
+                                    <div style="font-size: 13px; font-weight: bold;">
                                         MUNICIPAL SOCIAL WELFARE AND DEVELOPMENT OFFICE
                                     </div>
                                 </td>
