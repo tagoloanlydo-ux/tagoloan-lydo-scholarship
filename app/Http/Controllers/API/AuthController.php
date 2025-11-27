@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Scholar;
 use App\Models\Applicant;
+use App\Models\Application;
 use App\Models\Lydopers;
 
 class AuthController extends Controller
@@ -98,8 +99,13 @@ class AuthController extends Controller
      */
     private function scholarLogin(Request $request)
     {
-        // Find scholar by username
-        $scholar = Scholar::where('scholar_username', $request->email)->first();
+        // Find scholar by username or email
+        $scholar = Scholar::where('scholar_username', $request->email)
+            ->orWhereHas('application.applicant', function($query) use ($request) {
+                $query->where('applicant_email', $request->email);
+            })
+            ->with(['application.applicant'])
+            ->first();
 
         if (!$scholar) {
             return $this->errorResponse('Invalid credentials', 401);
@@ -116,7 +122,7 @@ class AuthController extends Controller
         }
 
         // Get applicant data
-        $applicant = $scholar->applicant;
+        $applicant = $scholar->application->applicant;
 
         // Create Sanctum token for scholar
         $token = $scholar->createToken('mobile-app')->plainTextToken;
@@ -126,6 +132,7 @@ class AuthController extends Controller
                 'id' => $scholar->scholar_id,
                 'username' => $scholar->scholar_username,
                 'status' => $scholar->scholar_status,
+                'date_activated' => $scholar->date_activated,
                 'applicant' => $applicant,
             ],
             'token' => $token,
@@ -161,12 +168,13 @@ class AuthController extends Controller
 
         // Check if it's a scholar
         if ($user instanceof Scholar) {
-            $user->load('applicant');
+            $user->load('applicant.application');
             return $this->successResponse([
                 'scholar' => [
                     'scholar_id' => $user->scholar_id,
                     'scholar_username' => $user->scholar_username,
                     'scholar_status' => $user->scholar_status,
+                    'date_activated' => $user->date_activated,
                     'applicant' => $user->applicant,
                 ],
                 'type' => 'scholar'
@@ -321,6 +329,7 @@ class AuthController extends Controller
                 return $this->sendUserOtp($request->email);
             }
         } catch (\Exception $e) {
+            \Log::error('Send OTP Error: ' . $e->getMessage());
             return $this->errorResponse('Failed to send OTP: ' . $e->getMessage(), 500);
         }
     }
@@ -333,7 +342,18 @@ class AuthController extends Controller
         $applicant = Applicant::where('applicant_email', $email)->first();
 
         if (!$applicant) {
-            return $this->errorResponse('Email not found', 404);
+            return $this->errorResponse('Email not found in our scholar records.', 404);
+        }
+
+        // Check if there's an application and scholar account
+        $application = Application::where('applicant_id', $applicant->applicant_id)->first();
+        if (!$application) {
+            return $this->errorResponse('No application found for this email.', 404);
+        }
+
+        $scholar = Scholar::where('application_id', $application->application_id)->first();
+        if (!$scholar) {
+            return $this->errorResponse('No scholar account found for this email.', 404);
         }
 
         // Generate OTP
@@ -345,6 +365,7 @@ class AuthController extends Controller
             [
                 'email' => $email,
                 'otp' => $otp,
+                'user_type' => 'scholar',
                 'created_at' => Carbon::now()
             ]
         );
@@ -356,10 +377,11 @@ class AuthController extends Controller
                 $message->subject('LYDO Scholarship Password Reset OTP');
             });
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to send email', 500);
+            \Log::error('OTP Email Error: ' . $e->getMessage());
+            return $this->errorResponse('Failed to send OTP email. Please try again.', 500);
         }
 
-        return $this->successResponse(null, 'OTP sent to your email');
+        return $this->successResponse(null, 'OTP sent to your email successfully!');
     }
 
     /**
@@ -385,6 +407,7 @@ class AuthController extends Controller
             [
                 'email' => $email,
                 'otp' => $otp,
+                'user_type' => 'user',
                 'created_at' => Carbon::now()
             ]
         );
@@ -410,6 +433,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'otp' => 'required|string|size:6',
+            'user_type' => 'required|in:user,scholar',
         ]);
 
         if ($validator->fails()) {
@@ -419,6 +443,7 @@ class AuthController extends Controller
         $otpRecord = DB::table('password_otps')
             ->where('email', $request->email)
             ->where('otp', $request->otp)
+            ->where('user_type', $request->user_type)
             ->where('created_at', '>', Carbon::now()->subMinutes(10))
             ->first();
 
@@ -436,6 +461,7 @@ class AuthController extends Controller
             [
                 'email' => $request->email,
                 'token' => $token,
+                'user_type' => $request->user_type,
                 'created_at' => Carbon::now()
             ]
         );
@@ -449,7 +475,8 @@ class AuthController extends Controller
     public function resetPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'token' => 'required',
+            'email' => 'required|email',
+            'otp' => 'required|string|size:6',
             'password' => 'required|string|min:8|confirmed',
             'user_type' => 'required|in:user,scholar',
         ]);
@@ -458,26 +485,31 @@ class AuthController extends Controller
             return $this->validationErrorResponse($validator);
         }
 
-        $reset = DB::table('password_resets')
-            ->where('token', $request->token)
-            ->first();
-
-        if (!$reset) {
-            return $this->errorResponse('Invalid or expired reset token', 400);
-        }
-
         try {
-            if ($request->user_type === 'scholar') {
-                $this->resetScholarPassword($reset->email, $request->password);
-            } else {
-                $this->resetUserPassword($reset->email, $request->password);
+            // Verify OTP first
+            $otpRecord = DB::table('password_otps')
+                ->where('email', $request->email)
+                ->where('otp', $request->otp)
+                ->where('user_type', $request->user_type)
+                ->where('created_at', '>', Carbon::now()->subMinutes(10))
+                ->first();
+
+            if (!$otpRecord) {
+                return $this->errorResponse('Invalid or expired OTP', 400);
             }
 
-            // Delete token
-            DB::table('password_resets')->where('email', $reset->email)->delete();
+            if ($request->user_type === 'scholar') {
+                $this->resetScholarPassword($request->email, $request->password);
+            } else {
+                $this->resetUserPassword($request->email, $request->password);
+            }
+
+            // Delete OTP after successful reset
+            DB::table('password_otps')->where('email', $request->email)->delete();
 
             return $this->successResponse(null, 'Password reset successfully');
         } catch (\Exception $e) {
+            \Log::error('Reset Password Error: ' . $e->getMessage());
             return $this->errorResponse('Failed to reset password: ' . $e->getMessage(), 500);
         }
     }
@@ -525,6 +557,32 @@ class AuthController extends Controller
         }
 
         throw new \Exception('User not found');
+    }
+
+    /**
+     * Resend OTP
+     */
+    public function resendOtp(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'user_type' => 'required|in:user,scholar',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator);
+        }
+
+        try {
+            if ($request->user_type === 'scholar') {
+                return $this->sendScholarOtp($request->email);
+            } else {
+                return $this->sendUserOtp($request->email);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Resend OTP Error: ' . $e->getMessage());
+            return $this->errorResponse('Failed to resend OTP: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
