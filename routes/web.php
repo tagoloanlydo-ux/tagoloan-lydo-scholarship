@@ -155,6 +155,10 @@ Route::middleware(['role:lydo_staff'])->group(function () {
 
 // Mayor Staff Routes - Only accessible by mayor_staff role
 Route::middleware(['role:mayor_staff'])->group(function () {
+    // Auto-refresh routes
+Route::get('/mayor_staff/refresh-table-view', [MayorStaffController::class, 'refreshTableView'])->name('mayor_staff.refresh_table_view');
+Route::get('/mayor_staff/refresh-list-view', [MayorStaffController::class, 'refreshListView'])->name('mayor_staff.refresh_list_view');
+Route::get('/mayor_staff/refresh-notifications', [MayorStaffController::class, 'refreshNotifications'])->name('mayor_staff.refresh_notifications');
     Route::get('/mayor_staff/notification-count', [StatusController::class, 'getNotificationCount']);Route::get('/mayor_staff/get-table-data', [MayorStaffController::class, 'getTableData'])->name('mayor_staff.table.data');
     Route::get('/mayor_staff/get-list-data', [MayorStaffController::class, 'getListData'])->name('mayor_staff.list.data');
     Route::post('/mayor_staff/store-application', [MayorStaffController::class, 'storeApplication'])->name('mayor_staff.store_application');

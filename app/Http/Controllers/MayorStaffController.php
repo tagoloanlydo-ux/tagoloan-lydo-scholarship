@@ -2242,4 +2242,118 @@ public function submitIntakeSheet(Request $request)
         'message' => 'Family intake sheet submitted successfully!'
     ]);
 }
+public function refreshTableView()
+{
+    try {
+        // Get updated table data (pending applications)
+        $tableApplicants = ApplicationPersonnel::with('applicant')
+            ->where('initial_screening', 'Initial Screening')
+            ->whereHas('applicant')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Get barangays
+        $barangays = Applicant::distinct('applicant_brgy')
+            ->whereNotNull('applicant_brgy')
+            ->where('applicant_brgy', '!=', '')
+            ->pluck('applicant_brgy')
+            ->sort()
+            ->values()
+            ->toArray();
+
+        $html = view('mayor_staff.partials.table_view', compact('tableApplicants', 'barangays'))->render();
+        
+        $pagination = '';
+        if (method_exists($tableApplicants, 'links')) {
+            $pagination = $tableApplicants->links()->render();
+        }
+
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'pagination' => $pagination,
+            'count' => $tableApplicants->count()
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+public function refreshListView()
+{
+    try {
+        // Get updated list data (approved/rejected applications)
+        $listApplicants = ApplicationPersonnel::with('applicant')
+            ->whereIn('initial_screening', ['Approved', 'Rejected'])
+            ->whereHas('applicant')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Get barangays
+        $barangays = Applicant::distinct('applicant_brgy')
+            ->whereNotNull('applicant_brgy')
+            ->where('applicant_brgy', '!=', '')
+            ->pluck('applicant_brgy')
+            ->sort()
+            ->values()
+            ->toArray();
+
+        // Get updated documents for badges
+        $updatedDocuments = ApplicationPersonnel::whereHas('documentStatuses', function($query) {
+            $query->where('status', 'New');
+        })->pluck('application_personnel_id')->toArray();
+
+        $html = view('mayor_staff.partials.list_view', compact('listApplicants', 'barangays'))->render();
+        
+        $pagination = '';
+        if (method_exists($listApplicants, 'links')) {
+            $pagination = $listApplicants->links()->render();
+        }
+
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'pagination' => $pagination,
+            'updatedDocuments' => $updatedDocuments,
+            'count' => $listApplicants->count()
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+public function refreshNotifications()
+{
+    try {
+        $notifications = Notification::where('user_type', 'mayor_staff')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        $showBadge = $notifications->count() > 0;
+
+        $html = view('mayor_staff.partials.notifications', compact('notifications', 'showBadge'))->render();
+
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'count' => $notifications->count(),
+            'newNotifications' => $notifications->where('created_at', '>=', now()->subMinutes(5))->count() > 0
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 }

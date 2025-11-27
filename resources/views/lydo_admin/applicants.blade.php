@@ -2230,9 +2230,9 @@ function openIntakeSheetModal(applicantName, data) {
                 <div>
                     <span class="font-medium text-gray-700">Remarks:</span>
                     <span class="ml-2 px-2 py-1 rounded-full text-xs font-semibold 
-                        ${remarks === 'Poor' ? 'bg-orange-100 text-orange-800' : 
-                          remarks === 'Non-Poor' ? 'bg-green-100 text-green-800' : 
-                          remarks === 'Ultra Poor' ? 'bg-red-100 text-red-800' : 
+                        ${remarks === 'Poor' ? 'bg-yellow-100 text-yellow-800' : 
+                          remarks === 'Non-Poor' ? 'bg-red-100 text-red-800' : 
+                          remarks === 'Ultra Poor' ? 'bg-green-100 text-green-800' : 
                           'bg-gray-100 text-gray-800'}">
                         ${remarks}
                     </span>

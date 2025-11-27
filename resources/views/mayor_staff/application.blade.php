@@ -2090,6 +2090,15 @@ document.head.appendChild(style);
     <script>
     
     </script>
+    <script>
+    // Define routes for auto-refresh
+    window.autoRefreshRoutes = {
+        table: '{{ route("mayor_staff.refresh_table_view") }}',
+        list: '{{ route("mayor_staff.refresh_list_view") }}',
+        notifications: '{{ route("mayor_staff.refresh_notifications") }}'
+    };
+</script>
+<script src="{{ asset('js/application_autorefresh.js') }}"></script>
 <script src="{{ asset('js/app_spinner.js') }}"></script>
 <script src="{{ asset('js/application_paginate.js') }}"></script>
 
