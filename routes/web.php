@@ -45,6 +45,8 @@ Route::post('/verify-otp', [LydopersController::class, 'verifyOtp'])->name('pass
 Route::post('/resend-otp', [LydopersController::class, 'resendOtp'])->name('password.resendOtp');
 Route::get('/reset-password/{token}', [LydopersController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [LydopersController::class, 'resetPassword'])->name('password.update');
+Route::post('/check-duplicate-applicant', [ScholarController::class, 'checkDuplicateApplicant'])->name('check.duplicate.applicant');
+
 
 Route::middleware(['role:lydo_admin'])->group(function () {
     

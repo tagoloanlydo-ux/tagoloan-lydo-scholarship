@@ -175,96 +175,131 @@ public function updateSettings(Request $request)
 }
 
  public function storeApplicantsReg(Request $request)
-    {
-        // ✅ Validation
-        $request->validate([
-            'applicant_fname' => 'required|string|max:255',
-            'applicant_mname' => 'nullable|string|max:255',
-            'applicant_lname' => 'required|string|max:255',
-            'applicant_suffix' => 'nullable|string|max:10',
-            'applicant_gender' => 'required|in:male,female,other',
-            'applicant_bdate' => 'required|date|before:today',
-            'applicant_civil_status' => 'required|in:single,married,widowed,divorced',
-            'applicant_brgy' => 'required|string|max:255',
-            'applicant_email' => 'required|email|unique:tbl_applicant,applicant_email',
-            'applicant_contact_number' => 'required|string|max:15',
-            'applicant_school_name' => 'required|string|max:255',
-            'applicant_school_name_other' => 'nullable|string|max:255',
-            'applicant_year_level' => 'required|string|max:50',
-            'applicant_course' => 'required|string|max:255',
-            'applicant_acad_year' => 'required|string|max:20',
-            'application_letter' => 'required|file|mimes:pdf|max:5120',
-            'certificate_of_registration' => 'required|file|mimes:pdf|max:5120',
-            'grade_slip' => 'required|file|mimes:pdf|max:5120',
-            'barangay_indigency' => 'required|file|mimes:pdf|max:5120',
-            'student_id' => 'required|file|mimes:pdf|max:5120',
-        ]);
+{
+    // ✅ Custom duplicate validator
+    $duplicateValidator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+        'applicant_fname' => [
+            'required',
+            'string',
+            'max:255',
+            function ($attribute, $value, $fail) use ($request) {
+                $exists = Applicant::where('applicant_fname', $request->applicant_fname)
+                    ->where('applicant_lname', $request->applicant_lname)
+                    ->where('applicant_gender', $request->applicant_gender)
+                    ->where('applicant_bdate', $request->applicant_bdate)
+                    ->where('applicant_acad_year', $request->applicant_acad_year)
+                    ->exists();
+                
+                if ($exists) {
+                    $fail('An applicant with the same first name, last name, gender, birth date, and academic year already exists.');
+                }
+            },
+        ],
+    ]);
 
-        // ✅ Determine school name
-        $schoolName = $request->applicant_school_name === 'Others'
-            ? $request->applicant_school_name_other
-            : $request->applicant_school_name;
-
-        // ✅ Create applicant record
-        $applicant = Applicant::create([
-            'applicant_fname' => $request->applicant_fname,
-            'applicant_mname' => $request->applicant_mname,
-            'applicant_lname' => $request->applicant_lname,
-            'applicant_suffix' => $request->applicant_suffix,
-            'applicant_gender' => $request->applicant_gender,
-            'applicant_bdate' => $request->applicant_bdate,
-            'applicant_civil_status' => $request->applicant_civil_status,
-            'applicant_brgy' => $request->applicant_brgy,
-            'applicant_email' => $request->applicant_email,
-            'applicant_contact_number' => $request->applicant_contact_number,
-            'applicant_school_name' => $schoolName,
-            'applicant_year_level' => $request->applicant_year_level,
-            'applicant_course' => $request->applicant_course,
-            'applicant_acad_year' => $request->applicant_acad_year,
-        ]);
-
-        // ✅ Store PDF documents in storage/documents (folder already exists)
-        $applicationData = [
-            'applicant_id' => $applicant->applicant_id,
-            'application_letter' => $this->moveFileToStorage($request->file('application_letter')),
-            'cert_of_reg' => $this->moveFileToStorage($request->file('certificate_of_registration')),
-            'grade_slip' => $this->moveFileToStorage($request->file('grade_slip')),
-            'brgy_indigency' => $this->moveFileToStorage($request->file('barangay_indigency')),
-            'student_id' => $this->moveFileToStorage($request->file('student_id')),
-            'date_submitted' => now(),
-        ];
-
-        // ✅ Create application record
-        $application = Application::create($applicationData);
-
-        // ✅ Assign to Mayor’s staff
-        $mayorStaff = Lydopers::where('lydopers_role', 'mayor_staff')->first();
-        if (!$mayorStaff) {
-            return redirect()->back()->withErrors(['error' => 'Mayor staff not found.']);
-        }
-
-        ApplicationPersonnel::create([
-            'application_id' => $application->application_id,
-            'lydopers_id' => $mayorStaff->lydopers_id,
-            'initial_screening' => 'Pending',
-            'remarks' => 'Waiting',
-            'status' => 'Waiting',
-        ]);
-
-        // Broadcast new applicant registration
-        $currentAcadYear = DB::table("tbl_applicant")
-            ->select("applicant_acad_year")
-            ->orderBy("applicant_acad_year", "desc")
-            ->value("applicant_acad_year");
-
-        $applicantsCurrentYear = $currentAcadYear ? DB::table("tbl_applicant")
-            ->where("applicant_acad_year", $currentAcadYear)
-            ->count() : 0;
-
-        broadcast(new ApplicantRegistered('total_applicants', $applicantsCurrentYear))->toOthers();
-
-        return redirect()->route('home')->with('success', 'Application submitted successfully!');
+    if ($duplicateValidator->fails()) {
+        return redirect()->back()
+            ->withErrors($duplicateValidator)
+            ->withInput();
     }
+
+    // ✅ Rest of your existing validation
+    $request->validate([
+        'applicant_fname' => 'required|string|max:255',
+        'applicant_mname' => 'nullable|string|max:255',
+        'applicant_lname' => 'required|string|max:255',
+        'applicant_suffix' => 'nullable|string|max:10',
+        'applicant_gender' => 'required|in:male,female,other',
+        'applicant_bdate' => 'required|date|before:today',
+        'applicant_civil_status' => 'required|in:single,married,widowed,divorced',
+        'applicant_brgy' => 'required|string|max:255',
+        'applicant_email' => 'required|email|unique:tbl_applicant,applicant_email',
+        'applicant_contact_number' => 'required|string|max:15',
+        'applicant_school_name' => 'required|string|max:255',
+        'applicant_school_name_other' => 'nullable|string|max:255',
+        'applicant_year_level' => 'required|string|max:50',
+        'applicant_course' => 'required|string|max:255',
+        'applicant_acad_year' => 'required|string|max:20',
+        'application_letter' => 'required|file|mimes:pdf|max:5120',
+        'certificate_of_registration' => 'required|file|mimes:pdf|max:5120',
+        'grade_slip' => 'required|file|mimes:pdf|max:5120',
+        'barangay_indigency' => 'required|file|mimes:pdf|max:5120',
+        'student_id' => 'required|file|mimes:pdf|max:5120',
+    ]);
+
+    // ✅ Determine school name
+    $schoolName = $request->applicant_school_name === 'Others'
+        ? $request->applicant_school_name_other
+        : $request->applicant_school_name;
+
+    // ✅ Create applicant record
+    $applicant = Applicant::create([
+        'applicant_fname' => $request->applicant_fname,
+        'applicant_mname' => $request->applicant_mname,
+        'applicant_lname' => $request->applicant_lname,
+        'applicant_suffix' => $request->applicant_suffix,
+        'applicant_gender' => $request->applicant_gender,
+        'applicant_bdate' => $request->applicant_bdate,
+        'applicant_civil_status' => $request->applicant_civil_status,
+        'applicant_brgy' => $request->applicant_brgy,
+        'applicant_email' => $request->applicant_email,
+        'applicant_contact_number' => $request->applicant_contact_number,
+        'applicant_school_name' => $schoolName,
+        'applicant_year_level' => $request->applicant_year_level,
+        'applicant_course' => $request->applicant_course,
+        'applicant_acad_year' => $request->applicant_acad_year,
+    ]);
+
+    // ✅ Store PDF documents in storage/documents (folder already exists)
+    $applicationData = [
+        'applicant_id' => $applicant->applicant_id,
+        'application_letter' => $this->moveFileToStorage($request->file('application_letter')),
+        'cert_of_reg' => $this->moveFileToStorage($request->file('certificate_of_registration')),
+        'grade_slip' => $this->moveFileToStorage($request->file('grade_slip')),
+        'brgy_indigency' => $this->moveFileToStorage($request->file('barangay_indigency')),
+        'student_id' => $this->moveFileToStorage($request->file('student_id')),
+        'date_submitted' => now(),
+    ];
+
+    // ✅ Create application record
+    $application = Application::create($applicationData);
+
+    // ✅ Assign to Mayor's staff
+    $mayorStaff = Lydopers::where('lydopers_role', 'mayor_staff')->first();
+    if (!$mayorStaff) {
+        return redirect()->back()->withErrors(['error' => 'Mayor staff not found.']);
+    }
+
+    ApplicationPersonnel::create([
+        'application_id' => $application->application_id,
+        'lydopers_id' => $mayorStaff->lydopers_id,
+        'initial_screening' => 'Pending',
+        'remarks' => 'Waiting',
+        'status' => 'Waiting',
+    ]);
+
+    // Broadcast new applicant registration
+    $currentAcadYear = DB::table("tbl_applicant")
+        ->select("applicant_acad_year")
+        ->orderBy("applicant_acad_year", "desc")
+        ->value("applicant_acad_year");
+
+    $applicantsCurrentYear = $currentAcadYear ? DB::table("tbl_applicant")
+        ->where("applicant_acad_year", $currentAcadYear)
+        ->count() : 0;
+
+    broadcast(new ApplicantRegistered('total_applicants', $applicantsCurrentYear))->toOthers();
+
+    // If this is an AJAX request, respond with JSON so the frontend can show the success Swal
+    if ($request->ajax() || $request->wantsJson()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Application submitted successfully!'
+        ]);
+    }
+
+    return redirect()->route('home')->with('success', 'Application submitted successfully!');
+}
 
     /**
      * ✅ Helper: Move uploaded files into storage/documents/
@@ -1009,5 +1044,21 @@ public function getRenewalDetails($renewalId)
         'renewal' => $renewal
     ]);
 }
-
+public function checkDuplicateApplicant(Request $request)
+{
+    \Log::info('=== DUPLICATE APPLICANT CHECK ===');
+    \Log::info('Checking duplicate for:', $request->all());
+    
+    $exists = Applicant::where('applicant_fname', $request->fname)
+        ->where('applicant_lname', $request->lname)
+        ->where('applicant_gender', $request->gender)
+        ->where('applicant_bdate', $request->bdate)
+        ->where('applicant_acad_year', $request->acad_year)
+        ->exists();
+    
+    \Log::info('Duplicate exists: ' . ($exists ? 'YES' : 'NO'));
+    \Log::info('============================');
+    
+    return response()->json(['exists' => $exists]);
+}
 }

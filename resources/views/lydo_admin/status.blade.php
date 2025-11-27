@@ -507,126 +507,202 @@
                     </div>
                 </div>
 
-                <!-- Tab Content: Without Renewal Applications -->
-                <div id="withoutRenewalContent" class="tab-content">
-                   <div class="note-box mb-4">
-        <h4>📋 Scholars Without Renewal Applications</h4>
-        <p class="text-sm text-black-600 mb-3">
-            This section displays active scholars who haven't submitted their renewal applications for the current academic period.
-        </p>
-        
-        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
-            <h5 class="font-semibold text-amber-800 mb-2">⚠️ Required Actions:</h5>
-            <ul class="text-sm text-amber-700 space-y-1">
-                <li>• Send reminder emails to scholars about pending renewal applications</li>
-                <li>• Update status to inactive for scholars who fail to renew</li>
-                <li>• Copy names for reporting or follow-up purposes</li>
-            </ul>
-        </div>
-
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <h5 class="font-semibold text-blue-800 mb-2">📝 Quick Steps:</h5>
-            <ol class="text-sm text-blue-700 space-y-2">
-                <li class="flex items-start">
-                    <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">1</span>
-                    <span>Select scholars using checkboxes</span>
-                </li>
-                <li class="flex items-start">
-                    <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">2</span>
-                    <span>Use "Email" to send renewal reminders</span>
-                </li>
-                <li class="flex items-start">
-                    <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">3</span>
-                    <span>Use "Update Status" to set as inactive if needed</span>
-                </li>
-            </ol>
-        </div>
-    </div>
-                    <!-- Scholars without renewal applications -->
-                    <div class="p-4 bg-white rounded-lg shadow-sm"> <!-- Reduced padding -->
-                        <div class="flex justify-between items-center mb-3"> <!-- Reduced margin -->
-                            <h3 class="text-md font-semibold">Active Scholars Without Renewal Applications</h3> <!-- Smaller text -->
-                            <div class="flex space-x-2">
-                                <button type="button" id="copyNamesBtn" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm"> <!-- Smaller button -->
-                                    Copy Names
-                                </button>
-                                <button type="button" id="sendEmailBtn" class="bg-violet-600 text-white px-3 py-1 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm"> <!-- Smaller button -->
-                                    Email
-                                </button>
-                                <button type="button" id="updateStatusBtn" class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm"> <!-- Smaller button -->
-                                    Update Status
-                                </button>
-                            </div>
-                        </div>
-
-                        @if($scholarsWithoutRenewal->count() > 0)
-                        <form id="scholarForm" action="{{ route('LydoAdmin.updateScholarStatus') }}" method="POST">
-                            @csrf
-
-                            <div class="overflow-x-auto">
-                                <table class="w-full table-auto border-collapse text-[15px] shadow-lg overflow-hidden border border-gray-200"> <!-- Smaller text -->
-                                    <thead class="bg-gradient-to-r from-violet-600 to-teal-600 text-white uppercase text-sm">
-                                        <tr>
-                                            <th class="px-3 py-2 border border-gray-200 text-center"> <!-- Reduced padding -->
-                                                <input type="checkbox" id="selectAll" class="rounded border-gray-300">
-                                            </th>
-                                            <th class="px-3 py-2 border align-middle border-gray-200 text-center">Full Name</th>
-                                            <th class="px-3 py-2 border border-gray-200 align-middle text-center">Barangay</th>
-                                            <th class="px-3 py-2 border border-gray-200 align-middle text-center">Email</th>
-                                            <th class="px-3 py-2 border border-gray-200 align-middle text-center">School</th>
-                                            <th class="px-3 py-2 border border-gray-200 align-middle text-center">Year Level</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="withoutRenewalTableBody">
-                                        @foreach($scholarsWithoutRenewal as $scholar)
-                                        <tr class="scholar-row hover:bg-gray-50 border-b">
-                                            <td class="px-3 border border-gray-200 py-1 text-center"> <!-- Reduced padding -->
-                                                <input type="checkbox" name="selected_scholars[]" value="{{ $scholar->scholar_id }}" data-scholar-id="{{ $scholar->scholar_id }}" class="scholar-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                            </td>
-                                            <td class="px-3 border border-gray-200 py-1 text-center"> <!-- Reduced padding -->
-                                                {{ $scholar->full_name }}
-                                            </td>
-                                            <td class="px-3 border border-gray-200 py-1 text-center barangay-cell">{{ $scholar->applicant_brgy }}</td>
-                                            <td class="px-3 border border-gray-200 py-1 text-center">{{ $scholar->applicant_email }}</td>
-                                            <td class="px-3 border border-gray-200 py-1 text-center">{{ $scholar->applicant_school_name }}</td>
-                                            <td class="px-3 border border-gray-200 py-1 text-center">{{ $scholar->applicant_year_level }}</td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="px-4 py-3 bg-white border-t border-gray-200 ">
-                                <div class="flex justify-center">
-                                    <div class="pagination-container">
-                                        <div class="pagination-info" id="paginationInfo">
-                                            Showing page 1 of 10
-                                        </div>
-                                        <div class="pagination-buttons">
-                                            <button class="pagination-btn" id="prevPage" disabled>
-                                                <i class="fas fa-chevron-left"></i>
-                                            </button>
-                                            <div class="pagination-page-info">
-                                                Page 
-                                                <input type="number" class="pagination-page-input" id="currentPage" value="1" min="1">
-                                                of <span id="totalPages">1</span>
-                                            </div>
-                                            <button class="pagination-btn" id="nextPage">
-                                                <i class="fas fa-chevron-right"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                        @else
-                        <div class="text-center py-6 text-gray-500"> <!-- Reduced padding -->
-                            <p>No active scholars found without renewal applications.</p>
-                        </div>
-                        @endif
-                    </div>
+   <!-- Tab Content: Without Renewal Applications -->
+<div id="withoutRenewalContent" class="tab-content">
+    @if($showRenewalSection)
+        <div class="note-box mb-4">
+            <h4>📋 Scholars Without Renewal Applications</h4>
+            <p class="text-sm text-black-600 mb-3">
+                This section displays active scholars who haven't submitted their renewal applications for 
+                <strong>{{ $renewalInfo['semester'] }}</strong>. 
+                Renewal period: 
+                <strong>{{ $renewalInfo['start_date']->format('M d, Y') }}</strong> to 
+                <strong>{{ $renewalInfo['deadline']->format('M d, Y') }}</strong>.
+            </p>
+            
+            @if($renewalInfo['is_after_grace_period'])
+                <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                    <h5 class="font-semibold text-red-800 mb-2">✅ Automatic Status Update Completed</h5>
+                    <p class="text-sm text-red-700">
+                        The grace period ended on <strong>{{ $renewalInfo['grace_period_end']->format('M d, Y') }}</strong>. 
+                        Scholars who haven't submitted renewal applications have been automatically set to inactive status.
+                    </p>
+                    @if(session('auto_update_info'))
+                        <p class="text-sm text-green-700 mt-2">
+                            <i class="fas fa-check-circle"></i> {{ session('auto_update_info') }}
+                        </p>
+                    @endif
+                </div>
+            @elseif($renewalInfo['is_grace_period'])
+                @php
+                    $daysRemaining = now()->diffInDays($renewalInfo['grace_period_end'], false);
+                @endphp
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
+                    <h5 class="font-semibold text-orange-800 mb-2">⏰ Grace Period Active</h5>
+                    <p class="text-sm text-orange-700">
+                        Renewal deadline has passed. Scholars have 
+                        <strong>{{ $daysRemaining }} {{ str_plural('day', $daysRemaining) }}</strong> 
+                        remaining in the grace period (until {{ $renewalInfo['grace_period_end']->format('M d, Y') }}) 
+                        before automatic status update to inactive.
+                    </p>
+                </div>
+            @else
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
+                    <h5 class="font-semibold text-amber-800 mb-2">⚠️ Required Actions:</h5>
+                    <ul class="text-sm text-amber-700 space-y-1">
+                        <li>• Send reminder emails to scholars about pending renewal applications</li>
+                        <li>• Update status to inactive for scholars who fail to renew</li>
+                        <li>• Copy names for reporting or follow-up purposes</li>
+                    </ul>
                 </div>
 
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <h5 class="font-semibold text-blue-800 mb-2">📝 Quick Steps:</h5>
+                    <ol class="text-sm text-blue-700 space-y-2">
+                        <li class="flex items-start">
+                            <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">1</span>
+                            <span>Select scholars using checkboxes</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">2</span>
+                            <span>Use "Email" to send renewal reminders</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">3</span>
+                            <span>Use "Update Status" to set as inactive if needed</span>
+                        </li>
+                    </ol>
+                </div>
+            @endif
+        </div>
+
+        <!-- Scholars without renewal applications -->
+        <div class="p-4 bg-white rounded-lg shadow-sm">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-md font-semibold">
+                    Active Scholars Without Renewal Applications
+                    @if($scholarsWithoutRenewal->count() > 0)
+                        <span class="text-sm font-normal text-gray-500">({{ $scholarsWithoutRenewal->total() }} total)</span>
+                    @endif
+                </h3>
+                <div class="flex space-x-2">
+                    <button type="button" id="copyNamesBtn" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm">
+                        Copy Names
+                    </button>
+                    <button type="button" id="sendEmailBtn" class="bg-violet-600 text-white px-3 py-1 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm">
+                        Email
+                    </button>
+                    <button type="button" id="updateStatusBtn" class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-400 disabled:cursor-not-allowed hidden text-sm">
+                        Update Status
+                    </button>
+                </div>
+            </div>
+
+            @if($scholarsWithoutRenewal->count() > 0)
+            <form id="scholarForm" action="{{ route('LydoAdmin.updateScholarStatus') }}" method="POST">
+                @csrf
+
+                <div class="overflow-x-auto">
+                    <table class="w-full table-auto border-collapse text-[15px] shadow-lg overflow-hidden border border-gray-200">
+                        <thead class="bg-gradient-to-r from-violet-600 to-teal-600 text-white uppercase text-sm">
+                            <tr>
+                                <th class="px-3 py-2 border border-gray-200 text-center">
+                                    <input type="checkbox" id="selectAll" class="rounded border-gray-300">
+                                </th>
+                                <th class="px-3 py-2 border align-middle border-gray-200 text-center">Full Name</th>
+                                <th class="px-3 py-2 border border-gray-200 align-middle text-center">Barangay</th>
+                                <th class="px-3 py-2 border border-gray-200 align-middle text-center">Email</th>
+                                <th class="px-3 py-2 border border-gray-200 align-middle text-center">School</th>
+                                <th class="px-3 py-2 border border-gray-200 align-middle text-center">Year Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="withoutRenewalTableBody">
+                            @foreach($scholarsWithoutRenewal as $scholar)
+                            <tr class="scholar-row hover:bg-gray-50 border-b">
+                                <td class="px-3 border border-gray-200 py-1 text-center">
+                                    <input type="checkbox" name="selected_scholars[]" value="{{ $scholar->scholar_id }}" data-scholar-id="{{ $scholar->scholar_id }}" class="scholar-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                </td>
+                                <td class="px-3 border border-gray-200 py-1 text-center">
+                                    {{ $scholar->full_name }}
+                                </td>
+                                <td class="px-3 border border-gray-200 py-1 text-center barangay-cell">{{ $scholar->applicant_brgy }}</td>
+                                <td class="px-3 border border-gray-200 py-1 text-center">{{ $scholar->applicant_email }}</td>
+                                <td class="px-3 border border-gray-200 py-1 text-center">{{ $scholar->applicant_school_name }}</td>
+                                <td class="px-3 border border-gray-200 py-1 text-center">{{ $scholar->applicant_year_level }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="px-4 py-3 bg-white border-t border-gray-200 ">
+                    <div class="flex justify-center">
+                        <div class="pagination-container">
+                            <div class="pagination-info" id="paginationInfo">
+                                Showing page {{ $scholarsWithoutRenewal->currentPage() }} of {{ $scholarsWithoutRenewal->lastPage() }}
+                            </div>
+                            <div class="pagination-buttons">
+                                @if($scholarsWithoutRenewal->onFirstPage())
+                                    <button class="pagination-btn" id="prevPage" disabled>
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                @else
+                                    <a href="{{ $scholarsWithoutRenewal->previousPageUrl() }}" class="pagination-btn">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                @endif
+                                
+                                <div class="pagination-page-info">
+                                    Page 
+                                    <input type="number" class="pagination-page-input" id="currentPage" value="{{ $scholarsWithoutRenewal->currentPage() }}" min="1" max="{{ $scholarsWithoutRenewal->lastPage() }}">
+                                    of <span id="totalPages">{{ $scholarsWithoutRenewal->lastPage() }}</span>
+                                </div>
+                                
+                                @if($scholarsWithoutRenewal->hasMorePages())
+                                    <a href="{{ $scholarsWithoutRenewal->nextPageUrl() }}" class="pagination-btn">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                @else
+                                    <button class="pagination-btn" id="nextPage" disabled>
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            @else
+            <div class="text-center py-6 text-gray-500">
+                @if($renewalInfo['is_after_grace_period'])
+                    <p>All scholars without renewal applications have been automatically set to inactive status.</p>
+                @else
+                    <p>No active scholars found without renewal applications for {{ $renewalInfo['semester'] }}.</p>
+                @endif
+            </div>
+            @endif
+        </div>
+    @else
+        <div class="text-center py-8 bg-white rounded-lg shadow-sm">
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 max-w-md mx-auto">
+                <i class="fas fa-calendar-times text-gray-400 text-4xl mb-4"></i>
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">No Active Renewal Period</h3>
+                <p class="text-sm text-gray-500 mb-4">
+                    @if($settings && $settings->renewal_start_date)
+                        The renewal period for {{ $settings->renewal_semester }} starts on 
+                        <strong>{{ \Carbon\Carbon::parse($settings->renewal_start_date)->format('M d, Y') }}</strong>.
+                    @else
+                        No renewal dates are currently set in the system settings.
+                    @endif
+                </p>
+                <a href="/lydo_admin/settings" class="inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-sm">
+                    <i class="fas fa-cog mr-2"></i>
+                    Configure Renewal Settings
+                </a>
+            </div>
+        </div>
+    @endif
+</div>
                 <!-- Tab Content: Graduating Scholars -->
                 <div id="graduatingContent" class="tab-content hidden">
                     <div class="note-box mb-4">
@@ -2091,6 +2167,23 @@ if (markAsGraduatedBtn) {
         });
     });
 }
+// Handle page navigation for without renewal table
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPageInput = document.getElementById('currentPage');
+    if (currentPageInput) {
+        currentPageInput.addEventListener('change', function() {
+            const page = parseInt(this.value);
+            const totalPages = parseInt(document.getElementById('totalPages').textContent);
+            const baseUrl = window.location.href.split('?')[0];
+            
+            if (page >= 1 && page <= totalPages) {
+                window.location.href = `${baseUrl}?page=${page}`;
+            } else {
+                this.value = {{ $scholarsWithoutRenewal->currentPage() }};
+            }
+        });
+    }
+});
 </script>
 </body>
 

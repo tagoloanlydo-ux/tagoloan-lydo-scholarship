@@ -327,38 +327,83 @@ public function mayor()
 
 public function status()
 {
-    // Fetch active scholars without renewal applications
-    $scholarsWithoutRenewal = DB::table('tbl_scholar as s')
-        ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
-        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-        ->leftJoin('tbl_renewal as r', 's.scholar_id', '=', 'r.scholar_id')
-        ->select(
-            's.scholar_id',
-            's.scholar_status',
-            'a.applicant_fname',
-            'a.applicant_mname',
-            'a.applicant_lname',
-            'a.applicant_suffix',
-            'a.applicant_email',
-            'a.applicant_contact_number',
-            'a.applicant_school_name',
-            'a.applicant_course',
-            'a.applicant_year_level',
-            'a.applicant_brgy',
-            DB::raw("CONCAT(
-                UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)), 
-                ', ', 
-                UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
-                IF(a.applicant_mname IS NOT NULL AND a.applicant_mname != '', CONCAT(' ', UPPER(LEFT(a.applicant_mname, 1)), '.'), ''),
-                IF(a.applicant_suffix IS NOT NULL AND a.applicant_suffix != '', CONCAT(' ', a.applicant_suffix), '')
-            ) as full_name")
-        )
-        ->where('s.scholar_status', 'active')
-        ->whereNull('r.renewal_id')
-        // ✅ Alphabetical
-        ->orderBy('a.applicant_lname', 'asc')
-        ->orderBy('a.applicant_fname', 'asc')
-        ->paginate(15);
+    // Get current renewal settings
+    $settings = Settings::first();
+    $currentDate = now();
+    
+    // Initialize variables
+    $scholarsWithoutRenewal = collect();
+    $showRenewalSection = false;
+    $renewalInfo = [
+        'semester' => null,
+        'start_date' => null,
+        'deadline' => null,
+        'grace_period_end' => null,
+        'is_grace_period' => false,
+        'is_after_grace_period' => false
+    ];
+    
+    // Check if we're within renewal period or grace period
+    if ($settings && $settings->renewal_start_date && $settings->renewal_deadline) {
+        $renewalStartDate = \Carbon\Carbon::parse($settings->renewal_start_date);
+        $renewalDeadline = \Carbon\Carbon::parse($settings->renewal_deadline);
+        $gracePeriodEnd = $renewalDeadline->copy()->addDays(10);
+        
+        $renewalInfo = [
+            'semester' => $settings->renewal_semester,
+            'start_date' => $renewalStartDate,
+            'deadline' => $renewalDeadline,
+            'grace_period_end' => $gracePeriodEnd,
+            'is_grace_period' => $currentDate->greaterThan($renewalDeadline) && $currentDate->lessThanOrEqualTo($gracePeriodEnd),
+            'is_after_grace_period' => $currentDate->greaterThan($gracePeriodEnd)
+        ];
+        
+        // Show renewal section if current date is after renewal start date
+        if ($currentDate->greaterThanOrEqualTo($renewalStartDate)) {
+            $showRenewalSection = true;
+            
+            // Fetch active scholars without renewal applications for current semester
+            $scholarsWithoutRenewal = DB::table('tbl_scholar as s')
+                ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+                ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+                ->leftJoin('tbl_renewal as r', function($join) use ($settings) {
+                    $join->on('s.scholar_id', '=', 'r.scholar_id')
+                         ->where('r.renewal_semester', $settings->renewal_semester);
+                })
+                ->select(
+                    's.scholar_id',
+                    's.scholar_status',
+                    'a.applicant_fname',
+                    'a.applicant_mname',
+                    'a.applicant_lname',
+                    'a.applicant_suffix',
+                    'a.applicant_email',
+                    'a.applicant_contact_number',
+                    'a.applicant_school_name',
+                    'a.applicant_course',
+                    'a.applicant_year_level',
+                    'a.applicant_brgy',
+                    DB::raw("CONCAT(
+                        UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)), 
+                        ', ', 
+                        UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
+                        IF(a.applicant_mname IS NOT NULL AND a.applicant_mname != '', CONCAT(' ', UPPER(LEFT(a.applicant_mname, 1)), '.'), ''),
+                        IF(a.applicant_suffix IS NOT NULL AND a.applicant_suffix != '', CONCAT(' ', a.applicant_suffix), '')
+                    ) as full_name")
+                )
+                ->where('s.scholar_status', 'active')
+                ->whereNull('r.renewal_id')
+                ->orderBy('a.applicant_lname', 'asc')
+                ->orderBy('a.applicant_fname', 'asc')
+                ->paginate(15);
+            
+            // Auto-update status for scholars who missed the deadline + grace period
+            if ($currentDate->greaterThan($gracePeriodEnd)) {
+                $updatedCount = $this->autoUpdateInactiveScholars($settings->renewal_semester);
+                session()->flash('auto_update_info', "Automatically updated {$updatedCount} scholars to inactive status for missing renewal deadline.");
+            }
+        }
+    }
 
     // Fetch graduating scholars (4th Year and 5th Year)
     $graduatingScholars = DB::table('tbl_scholar as s')
@@ -387,7 +432,6 @@ public function status()
         )
         ->where('s.scholar_status', 'active')
         ->whereIn('a.applicant_year_level', ['4th Year', '5th Year'])
-        // ✅ Alphabetical
         ->orderBy('a.applicant_lname', 'asc')
         ->orderBy('a.applicant_fname', 'asc')
         ->paginate(15);
@@ -399,7 +443,53 @@ public function status()
         ->orderBy('applicant_brgy', 'asc')
         ->pluck('applicant_brgy');
 
-    return view('lydo_admin.status', compact('scholarsWithoutRenewal', 'graduatingScholars', 'barangays'));
+    return view('lydo_admin.status', compact(
+        'scholarsWithoutRenewal', 
+        'graduatingScholars', 
+        'barangays',
+        'showRenewalSection',
+        'settings',
+        'renewalInfo'
+    ));
+}
+
+/**
+ * Automatically update scholar status to inactive for those who missed renewal deadline
+ */
+private function autoUpdateInactiveScholars($renewalSemester)
+{
+    try {
+        $scholarsToUpdate = DB::table('tbl_scholar as s')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->leftJoin('tbl_renewal as r', function($join) use ($renewalSemester) {
+                $join->on('s.scholar_id', '=', 'r.scholar_id')
+                     ->where('r.renewal_semester', $renewalSemester);
+            })
+            ->where('s.scholar_status', 'active')
+            ->whereNull('r.renewal_id')
+            ->pluck('s.scholar_id')
+            ->toArray();
+
+        $updatedCount = 0;
+
+        if (!empty($scholarsToUpdate)) {
+            $updatedCount = DB::table('tbl_scholar')
+                ->whereIn('scholar_id', $scholarsToUpdate)
+                ->update([
+                    'scholar_status' => 'inactive',
+                    'updated_at' => now()
+                ]);
+
+            \Log::info("Automatically updated {$updatedCount} scholars to inactive status for missing renewal deadline for {$renewalSemester}.");
+        }
+
+        return $updatedCount;
+        
+    } catch (\Exception $e) {
+        \Log::error('Error in autoUpdateInactiveScholars: ' . $e->getMessage());
+        return 0;
+    }
 }
 
 public function markAsGraduated(Request $request)

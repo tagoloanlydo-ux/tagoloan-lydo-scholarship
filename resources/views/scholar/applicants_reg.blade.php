@@ -14,6 +14,13 @@
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <title>Personal Information Form</title>
     <style>
+    .duplicate-message {
+    font-size: 12px;
+    margin-top: 5px;
+    padding: 5px;
+    border-radius: 4px;
+    text-align: center;
+}
     /* Simple left-aligned back button */
     .header-simple {
         display: flex;
@@ -1103,6 +1110,104 @@ const submitBtn = document.getElementById('submitBtn');
 let currentTab = 0;
 let select2Initialized = false;
 
+// Enhanced duplicate applicant check function
+function checkDuplicateApplicant() {
+    const fname = document.getElementById('fname').value.trim();
+    const lname = document.getElementById('lname').value.trim();
+    const gender = document.getElementById('gender').value;
+    const bdate = document.getElementById('bdate').value;
+    const acadYear = document.getElementById('acad_year').value;
+
+    // Only check if all required fields are filled
+    if (!fname || !lname || !gender || !bdate || !acadYear) {
+        // Clear duplicate message if fields are incomplete
+        const personalTab = document.getElementById('personal');
+        let duplicateMessage = personalTab.querySelector('.duplicate-message');
+        if (duplicateMessage) {
+            duplicateMessage.innerHTML = '';
+        }
+        return;
+    }
+
+    // Show checking state
+    const personalTab = document.getElementById('personal');
+    let duplicateMessage = personalTab.querySelector('.duplicate-message');
+    if (!duplicateMessage) {
+        duplicateMessage = document.createElement('div');
+        duplicateMessage.className = 'duplicate-message';
+        // Insert after the birthdate field or at the end of personal tab
+        personalTab.appendChild(duplicateMessage);
+    }
+
+    duplicateMessage.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Checking for existing applications...';
+    duplicateMessage.style.color = '#3b82f6';
+    duplicateMessage.style.fontSize = '12px';
+    duplicateMessage.style.marginTop = '5px';
+    duplicateMessage.style.padding = '5px';
+    duplicateMessage.style.borderRadius = '4px';
+    duplicateMessage.style.textAlign = 'center';
+
+    fetch('/check-duplicate-applicant', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            fname: fname,
+            lname: lname,
+            gender: gender,
+            bdate: bdate,
+            acad_year: acadYear
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.exists) {
+            duplicateMessage.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-1"></i>An applicant with the same name, gender, birth date, and academic year already exists.';
+            duplicateMessage.style.color = '#ef4444';
+            duplicateMessage.style.backgroundColor = '#fef2f2';
+            duplicateMessage.style.border = '1px solid #fecaca';
+            
+            // Disable form submission
+            nextBtn.disabled = true;
+            submitBtn.disabled = true;
+        } else {
+            duplicateMessage.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i>No duplicate application found for this academic year.';
+            duplicateMessage.style.color = '#10b981';
+            duplicateMessage.style.backgroundColor = '#f0fdf4';
+            duplicateMessage.style.border = '1px solid #bbf7d0';
+            
+            // Re-enable buttons if no other errors
+            toggleButton();
+        }
+    })
+    .catch(error => {
+        console.error('Error checking duplicate applicant:', error);
+        duplicateMessage.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-1"></i>Error checking for duplicates. Please try again.';
+        duplicateMessage.style.color = '#ef4444';
+        duplicateMessage.style.backgroundColor = '#fef2f2';
+        duplicateMessage.style.border = '1px solid #fecaca';
+    });
+}
+
+// Add event listeners for duplicate applicant check
+function initializeDuplicateChecking() {
+    const fieldsToCheck = ['fname', 'lname', 'gender', 'bdate', 'acad_year'];
+    
+    fieldsToCheck.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('change', checkDuplicateApplicant);
+            field.addEventListener('blur', checkDuplicateApplicant);
+            // For academic year, also check on input since it's readonly but might be auto-filled
+            if (fieldId === 'acad_year') {
+                field.addEventListener('input', checkDuplicateApplicant);
+            }
+        }
+    });
+}
+
 function showTab(index) {
   tabContents.forEach(content => content.classList.remove('active'));
   tabButtons.forEach(button => button.classList.remove('active'));
@@ -1507,6 +1612,17 @@ function initializeEventListeners() {
       }
     });
   });
+
+  // Add event listeners for duplicate applicant check
+  const fieldsToCheck = ['fname', 'lname', 'gender', 'bdate', 'acad_year'];
+  
+  fieldsToCheck.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (field) {
+      field.addEventListener('change', checkDuplicateApplicant);
+      field.addEventListener('blur', checkDuplicateApplicant);
+    }
+  });
 }
 
 // Attach events to all inputs
@@ -1543,55 +1659,125 @@ if (acadYearInput) {
 
 // Form submission handler
 applicationForm.addEventListener("submit", function (e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  // Final validation before submission
-  let hasErrors = false;
-  const requiredInputs = applicationForm.querySelectorAll("input[required], select[required]");
-  
-  // Validate all fields first
-  requiredInputs.forEach(input => {
-    if (input.type === "file") {
-      validateFile(input);
-    } else {
-      validateInput(input);
-    }
-    
-    if (input.id === 'email') {
-      checkDuplicate(input);
-    }
-    
-    if (input.classList.contains("error") || !input.value.trim()) {
-      hasErrors = true;
-    }
-  });
+    // Final validation before submission
+    let hasErrors = false;
+    const requiredInputs = applicationForm.querySelectorAll("input[required], select[required]");
 
-  if (hasErrors) {
-    Swal.fire({
-      icon: "error",
-      title: "Validation Error",
-      text: "Please complete all required fields and fix any errors before submitting.",
+    // Validate all fields first
+    requiredInputs.forEach(input => {
+      if (input.type === "file") {
+        validateFile(input);
+      } else {
+        validateInput(input);
+      }
+
+      if (input.id === 'email') {
+        checkDuplicate(input);
+      }
+
+      if (input.classList.contains("error") || (input.type !== "file" && !input.value.trim()) || (input.type === "file" && input.files.length === 0)) {
+        hasErrors = true;
+      }
     });
-    return;
-  }
 
-  // Show confirmation dialog
-  Swal.fire({
-    title: "Are you sure?",
-    text: "Do you want to submit your application?",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonColor: "#6d53d3",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "Yes, submit it!"
-  }).then((result) => {
-    if (result.isConfirmed) {
-      submitBtn.disabled = true;
-      submitBtnText.textContent = 'Submitting...';
-      submitBtnSpinner.classList.remove('hidden');
-      applicationForm.submit();
+    if (hasErrors) {
+      Swal.fire({
+        icon: "error",
+        title: "Validation Error",
+        text: "Please complete all required fields and fix any errors before submitting.",
+      });
+      return;
     }
-  });
+
+    // Show confirmation dialog
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to submit your application?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#6d53d3",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, submit it!"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Disable UI and show spinner
+        submitBtn.disabled = true;
+        submitBtnText.textContent = 'Submitting...';
+        submitBtnSpinner.classList.remove('hidden');
+
+        // Send AJAX request with form data (including files)
+        const formData = new FormData(applicationForm);
+
+        fetch(applicationForm.action, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+          },
+          credentials: 'same-origin'
+        })
+        .then(response => {
+          // If server returns JSON (AJAX), parse it. If it returned a redirect (non-AJAX), the page will still handle it, but for AJAX we expect JSON.
+          if (response.ok) {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.indexOf('application/json') !== -1) {
+              return response.json();
+            }
+            // If it returns html (redirect), treat as success
+            return { success: true };
+          } else {
+            return response.json().catch(() => { throw new Error('Server error') });
+          }
+        })
+        .then(data => {
+          // Handle success or error response
+          if (data.success) {
+            // Success message
+            Swal.fire({
+              icon: 'success',
+              title: 'Your application has been forwarded to the Mayors Office Staff.',
+              text: 'Please wait for an email from the Mayor Staff where you will receive an intake sheet that you need to fill out. Note: Check your email regularly including spam folder.',
+              confirmButtonColor: '#6d53d3'
+            }).then(() => {
+              // Redirect or perform any other action
+              window.location.href = '/'; // Redirect to home or desired page
+            });
+          } else {
+            // Error message (server-side validation errors)
+            let errorMessage = 'Please fix the following errors:<ul>';
+            for (const [key, value] of Object.entries(data.errors)) {
+              errorMessage += `<li>${value.join(', ')}</li>`;
+            }
+            errorMessage += '</ul>';
+
+            Swal.fire({
+              icon: 'error',
+              title: 'Submission Error',
+              html: errorMessage,
+              confirmButtonColor: '#6d53d3'
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error submitting form:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Submission Error',
+            text: 'An error occurred while submitting your application. Please try again later.',
+            confirmButtonColor: '#6d53d3'
+          });
+        })
+        .finally(() => {
+          // Re-enable the submit button and hide spinner after completion
+          submitBtn.disabled = false;
+          submitBtnText.textContent = 'Submit';
+          submitBtnSpinner.classList.add('hidden');
+        });
+      }
+    });
 });
 
 // Success message
@@ -1599,7 +1785,7 @@ applicationForm.addEventListener("submit", function (e) {
 Swal.fire({
   icon: 'success',
   title: 'You successfully submitted the Application',
-  text: 'Stay tuned for the Announcement!',
+  text: 'Please wait for an email from the Mayor Staff where you will receive an intake sheet that you need to fill out.',
   confirmButtonColor: '#6d53d3'
 });
 @endif
@@ -1614,49 +1800,44 @@ applicationForm.addEventListener("keydown", function (e) {
 // Initialize everything when page loads
 document.addEventListener('DOMContentLoaded', function() {
   initializeEventListeners();
+  initializeDuplicateChecking();
   toggleButton(); // Set initial button state
-});
 
-// Add this script to automatically capitalize first letters
-document.addEventListener('DOMContentLoaded', function() {
-    // Function to capitalize first letter of each word
-    function capitalizeWords(str) {
-        return str.replace(/\b\w/g, function(char) {
-            return char.toUpperCase();
-        });
-    }
+  // Add this script to automatically capitalize first letters
+  function capitalizeWords(str) {
+      return str.replace(/\b\w/g, function(char) {
+          return char.toUpperCase();
+      });
+  }
 
-    // Function to handle input capitalization
-    function handleInputCapitalization(event) {
-        const input = event.target;
-        const cursorPosition = input.selectionStart;
-        
-        // Only process if there's a value
-        if (input.value) {
-            // Capitalize the input value
-            input.value = capitalizeWords(input.value);
-            
-            // Restore cursor position
-            input.setSelectionRange(cursorPosition, cursorPosition);
-        }
-    }
+  // Function to handle input capitalization
+  function handleInputCapitalization(event) {
+      const input = event.target;
+      const cursorPosition = input.selectionStart;
+      
+      // Only process if there's a value
+      if (input.value) {
+          // Capitalize the input value
+          input.value = capitalizeWords(input.value);
+          
+          // Restore cursor position
+          input.setSelectionRange(cursorPosition, cursorPosition);
+      }
+  }
 
-    // Apply to all text inputs
-    const textInputs = document.querySelectorAll('input[type="text"]');
-    
-    textInputs.forEach(input => {
-        // Capitalize on blur (when user leaves the field)
-        input.addEventListener('blur', handleInputCapitalization);
-        
-        // Optional: Capitalize as user types (real-time)
-        // input.addEventListener('input', handleInputCapitalization);
-    });
+  // Apply to all text inputs
+  const textInputs = document.querySelectorAll('input[type="text"]');
+  
+  textInputs.forEach(input => {
+      // Capitalize on blur (when user leaves the field)
+      input.addEventListener('blur', handleInputCapitalization);
+  });
 
-    // Also apply to the course input field specifically
-    const courseInput = document.getElementById('course');
-    if (courseInput) {
-        courseInput.addEventListener('blur', handleInputCapitalization);
-    }
+  // Also apply to the course input field specifically
+  const courseInput = document.getElementById('course');
+  if (courseInput) {
+      courseInput.addEventListener('blur', handleInputCapitalization);
+  }
 });
 
 // Contact number validation - only numbers and max 12 digits

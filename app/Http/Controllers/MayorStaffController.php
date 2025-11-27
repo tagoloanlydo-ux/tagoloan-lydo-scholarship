@@ -338,7 +338,7 @@ public function application(Request $request)
         ->pluck("applicant_brgy")
         ->unique();
 
-     // Get the current logged-in mayor staff ID
+    // Get the current logged-in mayor staff ID
     $currentStaffId = session('lydopers')->lydopers_id;
 
     // Get NEW applications that need initial screening by this staff
@@ -407,12 +407,15 @@ public function application(Request $request)
             "app.brgy_indigency",
             "app.student_id",
             "a.applicant_school_name",
-            "a.applicant_acad_year",
+            "a.applicant_acad_year", // Include academic year
             "a.applicant_year_level",
             "a.applicant_course",
-            "app.created_at" // Add this for potential sorting
+            "ap.initial_screening", // Include initial screening status
+            "ap.remarks", // Include remarks
+            "ap.status", // Include status
+            "app.created_at"
         )
-        ->orderBy("app.created_at", "desc") // Add this to sort applications by newest first
+        ->orderBy("app.created_at", "desc")
         ->get()
         ->map(function ($app) {
             return [
@@ -428,10 +431,96 @@ public function application(Request $request)
                 "academic_year" => $app->applicant_acad_year,
                 "year_level" => $app->applicant_year_level,
                 "course" => $app->applicant_course,
-                "created_at" => $app->created_at // Include creation date
+                "initial_screening" => $app->initial_screening,
+                "remarks" => $app->remarks,
+                "status" => $app->status,
+                "created_at" => $app->created_at
             ];
         })
         ->groupBy("applicant_id");
+
+    // NEW: Identify repeat applicants and get their previous applications
+    $repeatApplicants = [];
+    $documentComparison = [];
+    
+    foreach ($tableApplicants as $currentApp) {
+        // Look for previous applications with same name, gender, and birthdate
+        $previousApps = DB::table("tbl_applicant as a")
+            ->join("tbl_application as app", "a.applicant_id", "=", "app.applicant_id")
+            ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
+            ->where("a.applicant_fname", $currentApp->applicant_fname)
+            ->where("a.applicant_lname", $currentApp->applicant_lname)
+            ->where("a.applicant_gender", $currentApp->applicant_gender)
+            ->where("a.applicant_bdate", $currentApp->applicant_bdate)
+            ->where("a.applicant_acad_year", "!=", now()->format("Y") . "-" . now()->addYear()->format("Y"))
+            ->where("ap.lydopers_id", $currentStaffId)
+            ->select(
+                "a.*",
+                "app.application_id",
+                "ap.application_personnel_id",
+                "ap.status",
+                "ap.initial_screening",
+                "ap.remarks",
+                "a.applicant_acad_year",
+                "app.application_letter",
+                "app.cert_of_reg",
+                "app.grade_slip",
+                "app.brgy_indigency",
+                "app.student_id"
+            )
+            ->orderBy("a.applicant_acad_year", "desc")
+            ->get();
+
+        if ($previousApps->isNotEmpty()) {
+            $repeatApplicants[$currentApp->application_personnel_id] = $previousApps;
+            
+            // Get the latest previous application for comparison
+            $latestPrevious = $previousApps->first();
+            
+            // Compare document statuses if available
+            $documentComparison[$currentApp->application_personnel_id] = [
+                'has_previous' => true,
+                'previous_year' => $latestPrevious->applicant_acad_year,
+                'current_status' => $currentApp->initial_screening,
+                'previous_status' => $latestPrevious->initial_screening,
+                'previous_remarks' => $latestPrevious->remarks,
+                'documents_changed' => $this->checkDocumentChanges($currentApp, $latestPrevious)
+            ];
+        }
+    }
+
+    // Also check for repeat applicants in the list (approved/rejected)
+    foreach ($listApplicants as $currentApp) {
+        $previousApps = DB::table("tbl_applicant as a")
+            ->join("tbl_application as app", "a.applicant_id", "=", "app.applicant_id")
+            ->join("tbl_application_personnel as ap", "app.application_id", "=", "ap.application_id")
+            ->where("a.applicant_fname", $currentApp->applicant_fname)
+            ->where("a.applicant_lname", $currentApp->applicant_lname)
+            ->where("a.applicant_gender", $currentApp->applicant_gender)
+            ->where("a.applicant_bdate", $currentApp->applicant_bdate)
+            ->where("a.applicant_acad_year", "!=", now()->format("Y") . "-" . now()->addYear()->format("Y"))
+            ->where("ap.lydopers_id", $currentStaffId)
+            ->select(
+                "a.*",
+                "app.application_id",
+                "ap.application_personnel_id",
+                "ap.status",
+                "ap.initial_screening",
+                "ap.remarks",
+                "a.applicant_acad_year",
+                "app.application_letter",
+                "app.cert_of_reg",
+                "app.grade_slip",
+                "app.brgy_indigency",
+                "app.student_id"
+            )
+            ->orderBy("a.applicant_acad_year", "desc")
+            ->get();
+
+        if ($previousApps->isNotEmpty()) {
+            $repeatApplicants[$currentApp->application_personnel_id] = $previousApps;
+        }
+    }
 
     $showBadge = !session('notifications_viewed');
 
@@ -442,6 +531,8 @@ public function application(Request $request)
     $notifications = $notifications ?? collect();
     $applications = $applications ?? [];
     $showBadge = $showBadge ?? false;
+    $repeatApplicants = $repeatApplicants ?? [];
+    $documentComparison = $documentComparison ?? [];
 
     return view(
         "mayor_staff.application",
@@ -452,8 +543,48 @@ public function application(Request $request)
             "notifications",
             "applications",
             "showBadge",
+            "repeatApplicants", // NEW
+            "documentComparison" // NEW
         ),
     );
+}
+
+// NEW: Helper method to check document changes
+private function checkDocumentChanges($currentApp, $previousApp)
+{
+    $changes = [];
+    
+    // Check if documents are different (you can enhance this with file hash comparison)
+    $currentDocs = [
+        'application_letter' => $currentApp->application_letter ?? null,
+        'cert_of_reg' => $currentApp->cert_of_reg ?? null,
+        'grade_slip' => $currentApp->grade_slip ?? null,
+        'brgy_indigency' => $currentApp->brgy_indigency ?? null,
+        'student_id' => $currentApp->student_id ?? null,
+    ];
+    
+    $previousDocs = [
+        'application_letter' => $previousApp->application_letter ?? null,
+        'cert_of_reg' => $previousApp->cert_of_reg ?? null,
+        'grade_slip' => $previousApp->grade_slip ?? null,
+        'brgy_indigency' => $previousApp->brgy_indigency ?? null,
+        'student_id' => $previousApp->student_id ?? null,
+    ];
+    
+    foreach ($currentDocs as $docType => $currentDoc) {
+        $previousDoc = $previousDocs[$docType] ?? null;
+        
+        // Simple check - if both exist but filenames are different
+        if ($currentDoc && $previousDoc && $currentDoc !== $previousDoc) {
+            $changes[$docType] = 'updated';
+        } elseif ($currentDoc && !$previousDoc) {
+            $changes[$docType] = 'new';
+        } elseif (!$currentDoc && $previousDoc) {
+            $changes[$docType] = 'removed';
+        }
+    }
+    
+    return $changes;
 }
 
     public function updateInitialScreening(Request $request, $id)

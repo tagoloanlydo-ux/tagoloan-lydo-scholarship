@@ -992,7 +992,7 @@
                                         class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
                                     <option value="">All Remarks</option>
                                     <option value="Poor">Poor</option>
-                                    <option value="Non-Poor">Non-Poor</option>
+                                    <option value="Non Poor">Non-Poor</option>
                                     <option value="Ultra Poor">Ultra Poor</option>
                                 </select>
                             </div>
