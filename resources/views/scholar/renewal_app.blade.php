@@ -12,7 +12,82 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
+          <style>
+ .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 1s ease forwards;
+}
+
+.spinner {
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.spinner img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-out {
+    animation: fadeOut 1s ease forwards;
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+/* Responsive spinner size */
+@media (max-width: 768px) {
+    .spinner {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .spinner {
+        width: 60px;
+        height: 60px;
+    }
+}
+   
+    </style>
 </head>
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner">
+                            <img src="{{ asset('images/LYDO.png') }}" alt="Loading..." />
+    </div>
+</div>
 <body class="bg-gray-50">
     <div class="dashboard-grid">
 <header class="bg-gradient-to-r from-[#4c1d95] to-[#7e22ce] shadow-sm p-4 flex justify-between items-center font-sans">
@@ -700,5 +775,7 @@ function checkRenewalDeadline() {
 // Check every 2 seconds
 setInterval(checkRenewalDeadline, 2000);
 </script>
+<script src="{{ asset('js/spinner.js') }}"></script>
+
 </body>
 </html>
