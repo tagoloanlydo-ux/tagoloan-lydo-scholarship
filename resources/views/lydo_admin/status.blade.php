@@ -487,6 +487,74 @@
                     </div>
                 </div>
 
+        <!-- Tab Content: Without Renewal Applications -->
+        <div id="withoutRenewalContent" class="tab-content">
+            @if($showRenewalSection)
+                <div class="note-box mb-4">
+                    <h4>📋 Scholars Without Renewal Applications</h4>
+                    <p class="text-sm text-black-600 mb-3">
+                        This section displays active scholars who haven't submitted their renewal applications for 
+                        <strong>{{ $renewalInfo['semester'] }}</strong>. 
+                        Renewal period: 
+                        <strong>{{ $renewalInfo['start_date']->format('M d, Y') }}</strong> to 
+                        <strong>{{ $renewalInfo['deadline']->format('M d, Y') }}</strong>.
+                    </p>
+                    
+                    @if($renewalInfo['is_after_grace_period'])
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                            <h5 class="font-semibold text-red-800 mb-2">✅ Automatic Status Update Completed</h5>
+                            <p class="text-sm text-red-700">
+                                The grace period ended on <strong>{{ $renewalInfo['grace_period_end']->format('M d, Y') }}</strong>. 
+                                Scholars who haven't submitted renewal applications have been automatically set to inactive status.
+                            </p>
+                            @if(session('auto_update_info'))
+                                <p class="text-sm text-green-700 mt-2">
+                                    <i class="fas fa-check-circle"></i> {{ session('auto_update_info') }}
+                                </p>
+                            @endif
+                        </div>
+                    @elseif($renewalInfo['is_grace_period'])
+                        @php
+                            $daysRemaining = now()->diffInDays($renewalInfo['grace_period_end'], false);
+                        @endphp
+                        <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
+                            <h5 class="font-semibold text-orange-800 mb-2">⏰ Grace Period Active</h5>
+                            <p class="text-sm text-orange-700">
+                                Renewal deadline has passed. Scholars have 
+                                <strong>{{ $daysRemaining }} {{ str_plural('day', $daysRemaining) }}</strong> 
+                                remaining in the grace period (until {{ $renewalInfo['grace_period_end']->format('M d, Y') }}) 
+                                before automatic status update to inactive.
+                            </p>
+                        </div>
+                    @else
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
+                            <h5 class="font-semibold text-amber-800 mb-2">⚠️ Required Actions:</h5>
+                            <ul class="text-sm text-amber-700 space-y-1">
+                                <li>• Send reminder emails to scholars about pending renewal applications</li>
+                                <li>• Update status to inactive for scholars who fail to renew</li>
+                                <li>• Copy names for reporting or follow-up purposes</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <h5 class="font-semibold text-blue-800 mb-2">📝 Quick Steps:</h5>
+                            <ol class="text-sm text-blue-700 space-y-2">
+                                <li class="flex items-start">
+                                    <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">1</span>
+                                    <span>Select scholars using checkboxes</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">2</span>
+                                    <span>Use "Email" to send renewal reminders</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">3</span>
+                                    <span>Use "Update Status" to set as inactive if needed</span>
+                                </li>
+                            </ol>
+                        </div>
+                    @endif
+                </div>
                 <!-- Filter Section -->
                 <div class="bg-white p-3 rounded-lg shadow-sm mb-4"> <!-- Reduced padding and margin -->
                     <div class="flex flex-col md:flex-row gap-3" id="filterForm"> <!-- Reduced gap -->
@@ -506,76 +574,7 @@
                         </div>
                     </div>
                 </div>
-
-   <!-- Tab Content: Without Renewal Applications -->
-<div id="withoutRenewalContent" class="tab-content">
-    @if($showRenewalSection)
-        <div class="note-box mb-4">
-            <h4>📋 Scholars Without Renewal Applications</h4>
-            <p class="text-sm text-black-600 mb-3">
-                This section displays active scholars who haven't submitted their renewal applications for 
-                <strong>{{ $renewalInfo['semester'] }}</strong>. 
-                Renewal period: 
-                <strong>{{ $renewalInfo['start_date']->format('M d, Y') }}</strong> to 
-                <strong>{{ $renewalInfo['deadline']->format('M d, Y') }}</strong>.
-            </p>
-            
-            @if($renewalInfo['is_after_grace_period'])
-                <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
-                    <h5 class="font-semibold text-red-800 mb-2">✅ Automatic Status Update Completed</h5>
-                    <p class="text-sm text-red-700">
-                        The grace period ended on <strong>{{ $renewalInfo['grace_period_end']->format('M d, Y') }}</strong>. 
-                        Scholars who haven't submitted renewal applications have been automatically set to inactive status.
-                    </p>
-                    @if(session('auto_update_info'))
-                        <p class="text-sm text-green-700 mt-2">
-                            <i class="fas fa-check-circle"></i> {{ session('auto_update_info') }}
-                        </p>
-                    @endif
-                </div>
-            @elseif($renewalInfo['is_grace_period'])
-                @php
-                    $daysRemaining = now()->diffInDays($renewalInfo['grace_period_end'], false);
-                @endphp
-                <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
-                    <h5 class="font-semibold text-orange-800 mb-2">⏰ Grace Period Active</h5>
-                    <p class="text-sm text-orange-700">
-                        Renewal deadline has passed. Scholars have 
-                        <strong>{{ $daysRemaining }} {{ str_plural('day', $daysRemaining) }}</strong> 
-                        remaining in the grace period (until {{ $renewalInfo['grace_period_end']->format('M d, Y') }}) 
-                        before automatic status update to inactive.
-                    </p>
-                </div>
-            @else
-                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
-                    <h5 class="font-semibold text-amber-800 mb-2">⚠️ Required Actions:</h5>
-                    <ul class="text-sm text-amber-700 space-y-1">
-                        <li>• Send reminder emails to scholars about pending renewal applications</li>
-                        <li>• Update status to inactive for scholars who fail to renew</li>
-                        <li>• Copy names for reporting or follow-up purposes</li>
-                    </ul>
-                </div>
-
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <h5 class="font-semibold text-blue-800 mb-2">📝 Quick Steps:</h5>
-                    <ol class="text-sm text-blue-700 space-y-2">
-                        <li class="flex items-start">
-                            <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">1</span>
-                            <span>Select scholars using checkboxes</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">2</span>
-                            <span>Use "Email" to send renewal reminders</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs mr-2 flex-shrink-0">3</span>
-                            <span>Use "Update Status" to set as inactive if needed</span>
-                        </li>
-                    </ol>
-                </div>
-            @endif
-        </div>
-
+                
         <!-- Scholars without renewal applications -->
         <div class="p-4 bg-white rounded-lg shadow-sm">
             <div class="flex justify-between items-center mb-3">
@@ -739,6 +738,26 @@
             </ol>
         </div>
     </div>
+
+                    <!-- Filter Section -->
+                <div class="bg-white p-3 rounded-lg shadow-sm mb-4"> <!-- Reduced padding and margin -->
+                    <div class="flex flex-col md:flex-row gap-3" id="filterForm"> <!-- Reduced gap -->
+                        <div class="flex-1">
+                            <input type="text" id="searchInput" placeholder="Search by name..." 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-sm"> <!-- Smaller text -->
+                        </div>
+                        <div class="flex-1">
+                            <select id="barangaySelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"> <!-- Smaller text -->
+                                <option value="">All Barangays</option>
+                                @foreach($barangays as $barangay)
+                                    <option value="{{ $barangay }}">
+                                        {{ $barangay }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
                     <!-- Graduating Scholars -->
                     <div class="p-4 bg-white rounded-lg shadow-sm"> <!-- Reduced padding -->
                         <div class="flex justify-between items-center mb-3"> <!-- Reduced margin -->

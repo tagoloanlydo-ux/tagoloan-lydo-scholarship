@@ -258,21 +258,21 @@ class SmsController extends Controller
             $scheduleDetails = "\n\nSchedule Details:\n";
             
             if ($request->schedule_what) {
-                $scheduleDetails .= "📅 " . $request->schedule_what . "\n";
+                $scheduleDetails .= "\n\nWhat:\n " . $request->schedule_what . "\n";
             }
             
             if ($request->schedule_where) {
-                $scheduleDetails .= "📍 " . $request->schedule_where . "\n";
+                $scheduleDetails .= "\n\nWhere:\n" . $request->schedule_where . "\n";
             }
             
             if ($request->schedule_date) {
                 $formattedDate = \Carbon\Carbon::parse($request->schedule_date)->format('M d, Y');
-                $scheduleDetails .= "🗓️ " . $formattedDate . "\n";
+                $scheduleDetails .= "\n\nDate:\n " . $formattedDate . "\n";
             }
             
             if ($request->schedule_time) {
                 $formattedTime = \Carbon\Carbon::parse($request->schedule_time)->format('h:i A');
-                $scheduleDetails .= "⏰ " . $formattedTime . "\n";
+                $scheduleDetails .= "   " . $formattedTime . "\n";
             }
 
             $message .= $scheduleDetails;
