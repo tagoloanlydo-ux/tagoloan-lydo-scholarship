@@ -39,33 +39,78 @@ function initializeScholarPagination() {
     updateScholarPagination();
 }
 
-// Update pagination display
+// Helper: Ensure there is a no-results row in the table body
+function getNoResultsRow() {
+    const tbody = document.querySelector('table tbody');
+    if (!tbody) return null;
+
+    // Prefer an existing server-side no-results row (td[colspan]) if present
+    let existing = tbody.querySelector('tr td[colspan]')?.parentElement;
+    if (existing) return existing;
+
+    // Otherwise, look for our custom marker row
+    let marker = tbody.querySelector('tr[data-no-results]');
+    if (marker) return marker;
+
+    // Create a new no-results row (colspan based on table header length)
+    const colCount = document.querySelectorAll('table thead th').length || 10;
+    const row = document.createElement('tr');
+    row.setAttribute('data-no-results', 'true');
+
+    const td = document.createElement('td');
+    td.setAttribute('colspan', String(colCount));
+    td.className = 'text-center py-4 border border-gray-200 text-gray-500';
+    td.textContent = 'No scholars found.';
+
+    row.appendChild(td);
+    tbody.appendChild(row);
+    return row;
+}
+
+// Update pagination display - FIXED VERSION (with no results row handling)
 function updateScholarPagination() {
     const state = paginationState;
     const container = document.getElementById('paginationContainer');
-    
+
     if (!container) return;
-    
-    // Hide all rows first
+
+    // Ensure no-results row exists
+    const noResultsRow = getNoResultsRow();
+
+    // Hide all selectable rows first
     state.allRows.forEach(row => {
         row.style.display = 'none';
     });
-    
+
     // Calculate pagination for filtered rows
+    const totalPages = Math.max(1, Math.ceil(state.filteredRows.length / state.rowsPerPage));
     const startIndex = (state.currentPage - 1) * state.rowsPerPage;
     const endIndex = startIndex + state.rowsPerPage;
     const pageRows = state.filteredRows.slice(startIndex, endIndex);
-    
+
     // Show only rows for current page
     pageRows.forEach(row => {
         row.style.display = '';
     });
-    
-    // Update pagination controls
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+
+    // Show or hide the no-results row
+    if (state.filteredRows.length === 0) {
+        if (noResultsRow) {
+            noResultsRow.style.display = '';
+            // update text to be clear for users when filtering
+            const td = noResultsRow.querySelector('td[colspan]') || noResultsRow.querySelector('td');
+            if (td) td.textContent = 'No scholars found.';
+        }
+    } else {
+        if (noResultsRow) {
+            noResultsRow.style.display = 'none';
+        }
+    }
+
+    // Calculate display range - FIXED: Handle 0 results case
     const startItem = state.filteredRows.length === 0 ? 0 : Math.min((state.currentPage - 1) * state.rowsPerPage + 1, state.filteredRows.length);
-    const endItem = Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
-    
+    const endItem = state.filteredRows.length === 0 ? 0 : Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
+
     container.innerHTML = `
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="text-sm text-gray-600">
@@ -76,22 +121,22 @@ function updateScholarPagination() {
                 <!-- First Page -->
                 <button onclick="changeScholarPage(1)"
                     class="px-3 py-2 text-sm font-medium rounded-l-md border border-gray-300 ${
-                        state.currentPage === 1
+                        state.currentPage === 1 || state.filteredRows.length === 0
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                     }"
-                    ${state.currentPage === 1 ? 'disabled' : ''}>
+                    ${state.currentPage === 1 || state.filteredRows.length === 0 ? 'disabled' : ''}>
                     <i class="fas fa-angle-double-left"></i>
                 </button>
 
                 <!-- Previous Page -->
                 <button onclick="changeScholarPage(${state.currentPage - 1})"
                     class="px-3 py-2 text-sm font-medium border border-gray-300 ${
-                        state.currentPage === 1
+                        state.currentPage === 1 || state.filteredRows.length === 0
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                     }"
-                    ${state.currentPage === 1 ? 'disabled' : ''}>
+                    ${state.currentPage === 1 || state.filteredRows.length === 0 ? 'disabled' : ''}>
                     <i class="fas fa-angle-left"></i>
                 </button>
 
@@ -103,40 +148,44 @@ function updateScholarPagination() {
                            value="${state.currentPage}"
                            min="1"
                            max="${totalPages}"
-                           onchange="goToScholarPage(this.value)">
+                           onchange="goToScholarPage(this.value)"
+                           ${state.filteredRows.length === 0 ? 'disabled' : ''}>
                     of ${totalPages}
                 </div>
 
                 <!-- Next Page -->
                 <button onclick="changeScholarPage(${state.currentPage + 1})"
                     class="px-3 py-2 text-sm font-medium border border-gray-300 ${
-                        state.currentPage === totalPages
+                        state.currentPage === totalPages || state.filteredRows.length === 0
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                     }"
-                    ${state.currentPage === totalPages ? 'disabled' : ''}>
+                    ${state.currentPage === totalPages || state.filteredRows.length === 0 ? 'disabled' : ''}>
                     <i class="fas fa-angle-right"></i>
                 </button>
 
                 <!-- Last Page -->
                 <button onclick="changeScholarPage(${totalPages})"
                     class="px-3 py-2 text-sm font-medium rounded-r-md border border-gray-300 ${
-                        state.currentPage === totalPages
+                        state.currentPage === totalPages || state.filteredRows.length === 0
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             : 'bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                     }"
-                    ${state.currentPage === totalPages ? 'disabled' : ''}>
+                    ${state.currentPage === totalPages || state.filteredRows.length === 0 ? 'disabled' : ''}>
                     <i class="fas fa-angle-double-right"></i>
                 </button>
             </div>
         </div>
     `;
+
+    // Reinitialize checkbox/listener states and buttons
+    updateCheckboxStates();
 }
 
 // Change page
 function changeScholarPage(page) {
     const state = paginationState;
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    const totalPages = Math.max(1, Math.ceil(state.filteredRows.length / state.rowsPerPage));
     
     if (page < 1) page = 1;
     if (page > totalPages) page = totalPages;
@@ -149,7 +198,7 @@ function changeScholarPage(page) {
 // Go to specific page
 function goToScholarPage(page) {
     const state = paginationState;
-    const totalPages = Math.ceil(state.filteredRows.length / state.rowsPerPage);
+    const totalPages = Math.max(1, Math.ceil(state.filteredRows.length / state.rowsPerPage));
     
     page = parseInt(page);
     if (isNaN(page) || page < 1) page = 1;
@@ -160,112 +209,70 @@ function goToScholarPage(page) {
     updateCheckboxStates();
 }
 
-// Initialize filtering functionality
+// Initialize filtering functionality - FIXED VERSION
 function initializeScholarFiltering() {
     const searchInput = document.getElementById('searchInput');
     const barangaySelect = document.getElementById('barangaySelect');
     const academicYearSelect = document.getElementById('academicYearSelect');
     const statusSelect = document.getElementById('statusSelect');
 
-    // New helper: fetch filtered rows from server and replace table body.
-    async function fetchAndReplaceScholars() {
-        try {
-            const params = new URLSearchParams();
-            if (searchInput && searchInput.value) params.set('search', searchInput.value);
-            if (barangaySelect && barangaySelect.value) params.set('barangay', barangaySelect.value);
-            if (academicYearSelect && academicYearSelect.value) params.set('academic_year', academicYearSelect.value);
-            if (statusSelect && statusSelect.value) params.set('status', statusSelect.value);
+    function filterScholarTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedBarangay = barangaySelect.value;
+        const selectedAcademicYear = academicYearSelect.value;
+        const selectedStatus = statusSelect.value.toLowerCase();
 
-            const resp = await fetch(`/lydo_admin/scholar?${params.toString()}`, {
-                method: 'GET',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
+        const filteredRows = paginationState.allRows.filter(row => {
+            const nameCell = row.cells[1];
+            const barangayCell = row.cells[2];
+            const academicYearCell = row.cells[6];
+            const statusCell = row.cells[9]; // Status is in column 9 (0-based index)
 
-            if (!resp.ok) throw new Error('Failed to load scholars from server');
+            if (!nameCell || !barangayCell || !academicYearCell || !statusCell) return false;
 
-            const html = await resp.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newTbody = doc.querySelector('table tbody');
+            const name = nameCell.textContent.toLowerCase();
+            const barangay = barangayCell.textContent.trim();
+            const academicYear = academicYearCell.textContent.trim();
+            
+            // Get status from the badge text
+            const statusBadge = statusCell.querySelector('span');
+            const status = statusBadge ? statusBadge.textContent.trim().toLowerCase() : '';
 
-            if (newTbody) {
-                const tbody = document.querySelector('table tbody');
-                tbody.innerHTML = newTbody.innerHTML;
-
-                // Re-initialize client-side state after replacing rows
-                initializeScholarData();
-                paginationState.currentPage = 1;
-                updateScholarPagination();
-                initializeCheckboxSelection();
-                updateCheckboxStates();
-                updateSendButton();
-
-                // Re-attach other handlers that rely on DOM (documents modal buttons, etc.)
-                initializeEmailFunctionality();
-                initializeAnnouncementFunctionality();
-                initializeDocumentsModal();
+            const nameMatch = !searchTerm || name.includes(searchTerm);
+            const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+            const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
+            
+            // Status matching logic - FIXED
+            let statusMatch = true;
+            if (selectedStatus === 'active') {
+                statusMatch = status === 'active';
+            } else if (selectedStatus === 'inactive') {
+                statusMatch = status === 'inactive';
+            } else if (selectedStatus === 'graduated') {
+                statusMatch = status === 'graduated';
             }
-        } catch (err) {
-            console.error('Error fetching scholars:', err);
-        }
+            // If 'all' is selected or no status filter, statusMatch remains true
+
+            return nameMatch && barangayMatch && academicYearMatch && statusMatch;
+        });
+
+        // Sort filtered results alphabetically
+        const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
+
+        // Update filtered rows and reset to page 1
+        paginationState.filteredRows = sortedFilteredRows;
+        paginationState.currentPage = 1;
+        updateScholarPagination();
+        updateCheckboxStates();
+        
+        // Update URL without reloading (optional)
+        updateURLParams({
+            search: searchTerm,
+            barangay: selectedBarangay,
+            academic_year: selectedAcademicYear,
+            status: selectedStatus
+        });
     }
-function filterScholarTable() {
-    const searchTerm = searchInput.value.toLowerCase();
-    const selectedBarangay = barangaySelect.value;
-    const selectedAcademicYear = academicYearSelect.value;
-    const selectedStatus = statusSelect.value.toLowerCase();
-
-    const filteredRows = paginationState.allRows.filter(row => {
-        const nameCell = row.cells[1];
-        const barangayCell = row.cells[2];
-        const academicYearCell = row.cells[6];
-        const statusCell = row.cells[9]; // Status is in column 9 (0-based index)
-
-        if (!nameCell || !barangayCell || !academicYearCell || !statusCell) return false;
-
-        const name = nameCell.textContent.toLowerCase();
-        const barangay = barangayCell.textContent.trim();
-        const academicYear = academicYearCell.textContent.trim();
-        
-        // Get status from the badge text
-        const statusBadge = statusCell.querySelector('span');
-        const status = statusBadge ? statusBadge.textContent.trim().toLowerCase() : '';
-
-        const nameMatch = !searchTerm || name.includes(searchTerm);
-        const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
-        const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
-        
-        // Status matching logic - FIXED
-        let statusMatch = true;
-        if (selectedStatus === 'active') {
-            statusMatch = status === 'active';
-        } else if (selectedStatus === 'inactive') {
-            statusMatch = status === 'inactive';
-        } else if (selectedStatus === 'graduated') {
-            statusMatch = status === 'graduated';
-        }
-        // If 'all' is selected or no status filter, statusMatch remains true
-
-        return nameMatch && barangayMatch && academicYearMatch && statusMatch;
-    });
-
-    // Sort filtered results alphabetically
-    const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
-
-    // Update filtered rows and reset to page 1
-    paginationState.filteredRows = sortedFilteredRows;
-    paginationState.currentPage = 1;
-    updateScholarPagination();
-    updateCheckboxStates();
-    
-    // Update URL without reloading (optional)
-    updateURLParams({
-        search: searchTerm,
-        barangay: selectedBarangay,
-        academic_year: selectedAcademicYear,
-        status: selectedStatus
-    });
-}
 
     // Add event listeners with debouncing
     if (searchInput) {
@@ -277,16 +284,12 @@ function filterScholarTable() {
     if (academicYearSelect) {
         academicYearSelect.addEventListener('change', filterScholarTable);
     }
-if (statusSelect) {
-    // When status changes, ask server for rows with that status, then apply client filters.
-    statusSelect.addEventListener('change', function() {
-        // Fetch server-side filtered rows (so graduated rows exist in DOM) then run client filter
-        fetchAndReplaceScholars().then(() => {
-            // after server rows are in DOM, apply client side filters (search/barangay/academicyear)
-            filterScholarTable();
-        });
-    });
-}
+    if (statusSelect) {
+        statusSelect.addEventListener('change', filterScholarTable);
+    }
+
+    // Apply initial filters if any
+    setTimeout(filterScholarTable, 100);
 }
 
 // Update URL parameters without reloading
@@ -866,16 +869,16 @@ function initializeScholarPage() {
         document.getElementById('academicYearSelect')) {
         
         // Trigger filter to apply URL parameters
-        const filterFunction = initializeScholarFiltering.toString().match(/function[^{]+\{([\s\S]*)\}$/)[1];
-        if (filterFunction) {
-            // This will trigger the filtering based on URL parameters
-            setTimeout(() => {
+        setTimeout(() => {
+            const filterFunction = initializeScholarFiltering.toString().match(/function[^{]+\{([\s\S]*)\}$/)[1];
+            if (filterFunction) {
+                // This will trigger the filtering based on URL parameters
                 const event = new Event('change');
                 if (document.getElementById('statusSelect')) {
                     document.getElementById('statusSelect').dispatchEvent(event);
                 }
-            }, 100);
-        }
+            }
+        }, 100);
     }
 }
 

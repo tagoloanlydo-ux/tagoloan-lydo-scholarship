@@ -436,15 +436,15 @@
                                     @endforeach
                                 </select>
                             </div>
-                                <!-- Status Filter Dropdown -->
-                                <div class="flex-1">
-                                    <select id="statusSelect" name="status" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                                        <option value="active" {{ $statusFilter == 'active' ? 'selected' : '' }}>Active Scholars</option>
-                                        <option value="inactive" {{ $statusFilter == 'inactive' ? 'selected' : '' }}>Inactive Scholars</option>
-                                        <option value="graduated" {{ $statusFilter == 'graduated' ? 'selected' : '' }}>Graduated Scholars</option>
-                                        <option value="all" {{ $statusFilter == 'all' ? 'selected' : '' }}>All Scholars</option>
-                                    </select>
-                                </div>
+                        <!-- Status Filter Dropdown -->
+                        <div class="flex-1">
+                            <select id="statusSelect" name="status" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                <option value="all" selected>All Scholars</option>
+                                <option value="active">Active Scholars</option>
+                                <option value="inactive">Inactive Scholars</option>
+                                <option value="graduated">Graduated Scholars</option>
+                            </select>
+                        </div>
                             
                             <!-- Print to PDF Button -->
                             <div class="flex-1">
@@ -984,9 +984,40 @@
         updateScholarPagination();
     }
 
+    // Helper: Ensure there is a no-results row in the table body
+function getNoResultsRow() {
+    const tbody = document.querySelector('table tbody');
+    if (!tbody) return null;
+
+    // Prefer an existing server-side no-results row (td[colspan]) if present
+    let existing = tbody.querySelector('tr td[colspan]')?.parentElement;
+    if (existing) return existing;
+
+    // Otherwise, look for our custom marker row
+    let marker = tbody.querySelector('tr[data-no-results]');
+    if (marker) return marker;
+
+    // Create a new no-results row (colspan based on table header length)
+    const colCount = document.querySelectorAll('table thead th').length || 10;
+    const row = document.createElement('tr');
+    row.setAttribute('data-no-results', 'true');
+
+    const td = document.createElement('td');
+    td.setAttribute('colspan', String(colCount));
+    td.className = 'text-center py-4 border border-gray-200 text-gray-500';
+    td.textContent = 'No scholars found.';
+
+    row.appendChild(td);
+    tbody.appendChild(row);
+    return row;
+}
+
     function updateScholarPagination() {
         const state = paginationState;
         
+        // Ensure no-results row exists
+        const noResultsRow = getNoResultsRow();
+
         // Hide all rows first
         state.allRows.forEach(row => {
             row.style.display = 'none';
@@ -1001,11 +1032,22 @@
         pageRows.forEach(row => {
             row.style.display = '';
         });
+
+        // Show or hide the no-results row
+        if (state.filteredRows.length === 0) {
+            if (noResultsRow) {
+                noResultsRow.style.display = '';
+                const td = noResultsRow.querySelector('td[colspan]') || noResultsRow.querySelector('td');
+                if (td) td.textContent = 'No scholars found.';
+            }
+        } else if (noResultsRow) {
+            noResultsRow.style.display = 'none';
+        }
         
         // Update pagination controls
         const totalPages = Math.max(1, Math.ceil(state.filteredRows.length / state.rowsPerPage));
         const startItem = state.filteredRows.length === 0 ? 0 : Math.min((state.currentPage - 1) * state.rowsPerPage + 1, state.filteredRows.length);
-        const endItem = Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
+        const endItem = state.filteredRows.length === 0 ? 0 : Math.min(state.currentPage * state.rowsPerPage, state.filteredRows.length);
         
         // Update pagination info
         const paginationInfo = document.getElementById('paginationInfo');
@@ -1015,12 +1057,13 @@
         const nextPageBtn = document.getElementById('nextPage');
         
         if (paginationInfo) {
-            paginationInfo.textContent = `Showing page ${state.currentPage} of ${totalPages}`;
+            paginationInfo.textContent = `Showing ${startItem}-${endItem} of ${state.filteredRows.length} scholars`;
         }
         
         if (currentPageInput) {
             currentPageInput.value = state.currentPage;
             currentPageInput.max = totalPages;
+            currentPageInput.disabled = state.filteredRows.length === 0;
         }
         
         if (totalPagesSpan) {
@@ -1028,11 +1071,11 @@
         }
         
         if (prevPageBtn) {
-            prevPageBtn.disabled = state.currentPage === 1;
+            prevPageBtn.disabled = state.currentPage === 1 || state.filteredRows.length === 0;
         }
         
         if (nextPageBtn) {
-            nextPageBtn.disabled = state.currentPage === totalPages || totalPages === 0;
+            nextPageBtn.disabled = state.currentPage === totalPages || state.filteredRows.length === 0;
         }
         
         // Reinitialize checkbox listeners and update button/select-all states
@@ -1066,89 +1109,59 @@
         updateScholarPagination();
     }
 
-// Initialize filtering functionality - CORRECTED VERSION
-function initializeScholarFiltering() {
-    const searchInput = document.getElementById('searchInput');
-    const barangaySelect = document.getElementById('barangaySelect');
-    const academicYearSelect = document.getElementById('academicYearSelect');
-    const statusSelect = document.getElementById('statusSelect');
+    // Initialize filtering functionality - FIXED VERSION
+    function initializeScholarFiltering() {
+        const searchInput = document.getElementById('searchInput');
+        const barangaySelect = document.getElementById('barangaySelect');
+        const academicYearSelect = document.getElementById('academicYearSelect');
+        const statusSelect = document.getElementById('statusSelect');
 
-    function filterScholarTable() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedBarangay = barangaySelect.value;
-        const selectedAcademicYear = academicYearSelect.value;
-        const selectedStatus = statusSelect.value.toLowerCase();
+        function filterScholarTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedBarangay = barangaySelect.value;
+            const selectedAcademicYear = academicYearSelect.value;
+            const selectedStatus = statusSelect.value.toLowerCase();
 
-        const filteredRows = paginationState.allRows.filter(row => {
-            const nameCell = row.cells[1];
-            const barangayCell = row.cells[2];
-            const academicYearCell = row.cells[6];
-            const statusCell = row.cells[9]; // Status is in column 9 (0-based index)
+            const filteredRows = paginationState.allRows.filter(row => {
+                const nameCell = row.cells[1];
+                const barangayCell = row.cells[2];
+                const academicYearCell = row.cells[6];
+                const statusCell = row.cells[9]; // Status is in column 9 (0-based index)
 
-            if (!nameCell || !barangayCell || !academicYearCell || !statusCell) return false;
+                if (!nameCell || !barangayCell || !academicYearCell || !statusCell) return false;
 
-            const name = nameCell.textContent.toLowerCase();
-            const barangay = barangayCell.textContent.trim();
-            const academicYear = academicYearCell.textContent.trim();
+                const name = nameCell.textContent.toLowerCase();
+                const barangay = barangayCell.textContent.trim();
+                const academicYear = academicYearCell.textContent.trim();
+                const statusSpan = statusCell.querySelector('span');
+                const status = statusSpan ? statusSpan.textContent.trim().toLowerCase() : '';
+
+                const nameMatch = !searchTerm || name.includes(searchTerm);
+                const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+                const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
+                const statusMatch = selectedStatus === 'all' || status === selectedStatus;
+
+                return nameMatch && barangayMatch && academicYearMatch && statusMatch;
+            });
+
+            // Sort filtered results alphabetically
+            const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
+
+            // Update filtered rows and reset to page 1
+            paginationState.filteredRows = sortedFilteredRows;
+            paginationState.currentPage = 1;
+            updateScholarPagination();
             
-            // Get status from the badge text
-            const statusBadge = statusCell.querySelector('span');
-            const status = statusBadge ? statusBadge.textContent.trim().toLowerCase() : '';
-
-            const nameMatch = !searchTerm || name.includes(searchTerm);
-            const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
-            const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
-            
-            // Status matching logic - CORRECTED
-            let statusMatch = true;
-            if (selectedStatus === 'active') {
-                statusMatch = status === 'active';
-            } else if (selectedStatus === 'inactive') {
-                statusMatch = status === 'inactive';
-            } else if (selectedStatus === 'graduated') {
-                statusMatch = status === 'graduated';
+            // Reset select all checkbox
+            const selectAllCheckbox = document.getElementById('selectAll');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
             }
-            // If 'all' is selected, statusMatch remains true
-
-            return nameMatch && barangayMatch && academicYearMatch && statusMatch;
-        });
-
-        // Sort filtered results alphabetically
-        const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
-
-        // Update filtered rows and reset to page 1
-        paginationState.filteredRows = sortedFilteredRows;
-        paginationState.currentPage = 1;
-        updateScholarPagination();
-        
-        // Reset select all checkbox
-        const selectAllCheckbox = document.getElementById('selectAll');
-        if (selectAllCheckbox) {
-            selectAllCheckbox.checked = false;
-            selectAllCheckbox.indeterminate = false;
+            
+            // Update button states
+            updateButtonStates();
         }
-        
-        // Update button states
-        updateButtonStates();
-    }
-
-    // Add event listeners with debouncing
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(filterScholarTable, 300));
-    }
-    if (barangaySelect) {
-        barangaySelect.addEventListener('change', filterScholarTable);
-    }
-    if (academicYearSelect) {
-        academicYearSelect.addEventListener('change', filterScholarTable);
-    }
-    if (statusSelect) {
-        statusSelect.addEventListener('change', filterScholarTable);
-    }
-
-    // Apply initial filters if any
-    setTimeout(filterScholarTable, 100);
-}
 
         // Add event listeners with debouncing
         if (searchInput) {
@@ -2201,7 +2214,6 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 
     <script src="{{ asset('js/filter_paginate.js') }}"></script>
-    <script src="{{ asset('js/scholar.js') }}"></script>
     <script src="{{ asset('js/spinner.js') }}"></script>
     <script src="{{ asset('js/scholar_logout.js') }}"></script>
     <script src="{{ asset('js/toggle_dropdown.js') }}"></script>
