@@ -272,7 +272,7 @@ class SmsController extends Controller
             
             if ($request->schedule_time) {
                 $formattedTime = \Carbon\Carbon::parse($request->schedule_time)->format('h:i A');
-                $scheduleDetails .= "   " . $formattedTime . "\n";
+                $scheduleDetails .= "\n\nDate:\n" . $formattedTime . "\n";
             }
 
             $message .= $scheduleDetails;
