@@ -2733,5 +2733,27 @@ private function safeConvertToFloat($value)
     
     return 0;
 }
+// In your LydoAdminController or wherever you send schedule emails
+private function sendScheduleNotification($applicantEmail, $applicantName, $scheduleData)
+{
+    try {
+        $emailData = [
+            'applicantName' => $applicantName, // ADD THIS LINE
+            'scheduleData' => $scheduleData
+        ];
+
+        Mail::send('emails.schedule-notification', $emailData, function ($message) use ($applicantEmail, $applicantName) {
+            $message->to($applicantEmail)
+                    ->subject('Schedule Notification - LYDO Scholarship Program');
+        });
+
+        \Log::info("Schedule notification email sent to: {$applicantEmail}");
+        return true;
+        
+    } catch (\Exception $e) {
+        \Log::error("Failed to send schedule email to {$applicantEmail}: " . $e->getMessage());
+        return false;
+    }
+}
 }
 

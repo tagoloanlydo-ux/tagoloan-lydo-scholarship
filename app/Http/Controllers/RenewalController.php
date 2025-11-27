@@ -349,8 +349,7 @@ class RenewalController extends Controller
 
         return response()->json(["success" => true]);
     }
-
- public function renewal(Request $request)
+public function renewal(Request $request)
 {
     $currentAcadYear = DB::table("tbl_applicant")
         ->select("applicant_acad_year")
@@ -437,6 +436,7 @@ class RenewalController extends Controller
             "r.renewal_semester",
             "ap.application_id",
             "s.scholar_id",
+            "r.created_at" // Added for ordering
         )
         ->where("r.renewal_status", "Pending")
         ->where("r.renewal_acad_year", $currentAcadYear)
@@ -452,6 +452,7 @@ class RenewalController extends Controller
         ->when($request->barangay, function ($query, $barangay) {
             $query->where("a.applicant_brgy", $barangay);
         })
+        ->orderBy("r.created_at", "desc") // NEWLY ADDED - show newest first
         ->paginate();
 
     $renewals = DB::table("tbl_renewal")
@@ -466,6 +467,7 @@ class RenewalController extends Controller
             "date_submitted",
             "renewal_status",
         )
+        ->orderBy("created_at", "desc") // NEWLY ADDED - show newest first
         ->get()
         ->groupBy("scholar_id");
 
@@ -527,7 +529,8 @@ class RenewalController extends Controller
             "r.renewal_status",
             "r.renewal_semester",
             "r.renewal_acad_year",
-            "ap.application_id"
+            "ap.application_id",
+            "r.created_at" // Added for ordering
         )
         ->whereIn("r.renewal_status", ["Approved", "Rejected"])
         ->where("r.renewal_acad_year", $currentAcadYear)
@@ -540,6 +543,7 @@ class RenewalController extends Controller
         ->when($request->barangay, function ($query, $barangay) {
             $query->where("a.applicant_brgy", $barangay);
         })
+        ->orderBy("r.created_at", "desc") // NEWLY ADDED - show newest first
         ->paginate()
         ->appends($request->all());
 
@@ -558,7 +562,6 @@ class RenewalController extends Controller
         ),
     );
 }
-
     public function getApplicantDetails($applicant_id)
     {
         $applicant = DB::table('tbl_applicant')

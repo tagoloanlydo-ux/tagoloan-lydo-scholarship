@@ -18,9 +18,9 @@ use Illuminate\Http\Request;
 
 class StatusController extends Controller
 {
-    public function status(Request $request)
-    {
-         // Get the current logged-in mayor staff ID
+public function status(Request $request)
+{
+    // Get the current logged-in mayor staff ID
     $currentStaffId = session('lydopers')->lydopers_id;
 
     // Get NEW applications that need initial screening by this staff
@@ -71,92 +71,97 @@ class StatusController extends Controller
                 "created_at" => $item->created_at,
             ];
         });
-        $notifications = $newApplications
-            ->merge($newRemarks)
-            ->sortByDesc("created_at");
+    
+    $notifications = $newApplications
+        ->merge($newRemarks)
+        ->sortByDesc("created_at");
 
-        // MAIN TABLE: Pending + Approved applications (Poor and Ultra Poor only)
-        $query = DB::table('tbl_application_personnel as ap')
-            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-            ->select(
-                'ap.application_personnel_id',
-                'app.applicant_fname as fname',
-                'app.applicant_mname as mname',
-                'app.applicant_lname as lname',
-                'app.applicant_suffix as suffix',
-                'app.applicant_brgy as barangay',
-                'app.applicant_school_name as school',
-                'ap.initial_screening as screening',
-                'ap.remarks as remarks',
-                'ap.status as status'
-            )
-            ->where('ap.initial_screening', 'Reviewed')
-            ->where('ap.status', 'Pending')
-            ->whereIn('ap.remarks', ['Poor', 'Ultra Poor']);
+    // MAIN TABLE: Pending + Approved applications (Poor and Ultra Poor only)
+    $query = DB::table('tbl_application_personnel as ap')
+        ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+        ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+        ->select(
+            'ap.application_personnel_id',
+            'app.applicant_fname as fname',
+            'app.applicant_mname as mname',
+            'app.applicant_lname as lname',
+            'app.applicant_suffix as suffix',
+            'app.applicant_brgy as barangay',
+            'app.applicant_school_name as school',
+            'ap.initial_screening as screening',
+            'ap.remarks as remarks',
+            'ap.status as status',
+            'ap.created_at' // Added for ordering
+        )
+        ->where('ap.initial_screening', 'Reviewed')
+        ->where('ap.status', 'Pending')
+        ->whereIn('ap.remarks', ['Poor', 'Ultra Poor'])
+        ->orderBy('ap.created_at', 'desc'); // NEWLY ADDED - show newest first
 
-        // SEARCH filter
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('app.applicant_fname', 'like', "%$search%")
-                  ->orWhere('app.applicant_lname', 'like', "%$search%");
-            });
-        }
-
-        // BARANGAY filter
-        if ($request->filled('barangay')) {
-            $query->where('app.applicant_brgy', $request->barangay);
-        }
-
-        $applications = $query->paginate(100000);
-
-        $barangays = DB::table('tbl_applicant')->distinct()->pluck('applicant_brgy');
-
-        // LIST: Approved or Rejected
-        $listQuery = DB::table('tbl_application_personnel as ap')
-            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
-            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
-            ->join('tbl_lydopers as lydo', 'ap.lydopers_id', '=', 'lydo.lydopers_id')
-            ->select(
-                'ap.application_personnel_id',
-                'app.applicant_fname as fname',
-                'app.applicant_mname as mname',
-                'app.applicant_lname as lname',
-                'app.applicant_suffix as suffix',
-                'app.applicant_brgy as barangay',
-                'app.applicant_school_name as school',
-                'ap.remarks as remarks',
-                'ap.status as status'
-            )
-            ->whereIn('ap.status', ['Approved', 'Rejected'])
-            ->where('lydo.lydopers_role', 'mayor_staff');
-
-        $listApplications = $listQuery->paginate(10000000, ['*'], 'list');
-
-        $showBadge = !session('notifications_viewed');
-        $tableApplicants = $applications;
-
-        // AJAX response for frontend
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'tableApplicants' => $tableApplicants->items(),
-                'listApplications' => $listApplications->items(),
-                'tablePagination' => $tableApplicants->appends(request()->query())->links()->toHtml(),
-                'listPagination' => $listApplications->appends(request()->query())->links()->toHtml(),
-            ]);
-        }
-
-        return view('mayor_staff.status', compact(
-            'tableApplicants',
-            'barangays',
-            'notifications',
-            'newApplications',
-            'newRemarks',
-            'listApplications',
-            'showBadge'
-        ));
+    // SEARCH filter
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('app.applicant_fname', 'like', "%$search%")
+              ->orWhere('app.applicant_lname', 'like', "%$search%");
+        });
     }
+
+    // BARANGAY filter
+    if ($request->filled('barangay')) {
+        $query->where('app.applicant_brgy', $request->barangay);
+    }
+
+    $applications = $query->paginate(100000);
+
+    $barangays = DB::table('tbl_applicant')->distinct()->pluck('applicant_brgy');
+
+    // LIST: Approved or Rejected
+    $listQuery = DB::table('tbl_application_personnel as ap')
+        ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+        ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+        ->join('tbl_lydopers as lydo', 'ap.lydopers_id', '=', 'lydo.lydopers_id')
+        ->select(
+            'ap.application_personnel_id',
+            'app.applicant_fname as fname',
+            'app.applicant_mname as mname',
+            'app.applicant_lname as lname',
+            'app.applicant_suffix as suffix',
+            'app.applicant_brgy as barangay',
+            'app.applicant_school_name as school',
+            'ap.remarks as remarks',
+            'ap.status as status',
+            'ap.created_at' // Added for ordering
+        )
+        ->whereIn('ap.status', ['Approved', 'Rejected'])
+        ->where('lydo.lydopers_role', 'mayor_staff')
+        ->orderBy('ap.created_at', 'desc'); // NEWLY ADDED - show newest first
+
+    $listApplications = $listQuery->paginate(10000000, ['*'], 'list');
+
+    $showBadge = !session('notifications_viewed');
+    $tableApplicants = $applications;
+
+    // AJAX response for frontend
+    if ($request->ajax() || $request->wantsJson()) {
+        return response()->json([
+            'tableApplicants' => $tableApplicants->items(),
+            'listApplications' => $listApplications->items(),
+            'tablePagination' => $tableApplicants->appends(request()->query())->links()->toHtml(),
+            'listPagination' => $listApplications->appends(request()->query())->links()->toHtml(),
+        ]);
+    }
+
+    return view('mayor_staff.status', compact(
+        'tableApplicants',
+        'barangays',
+        'notifications',
+        'newApplications',
+        'newRemarks',
+        'listApplications',
+        'showBadge'
+    ));
+}
 public function getIntakeSheet($applicationPersonnelId)
 {
     try {

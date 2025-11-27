@@ -471,7 +471,7 @@ public function sendSmsToScholars(Request $request)
             usleep(500000); // 0.5 second delay
         }
 
-        $summary = "SMS sending completed. Sent: {$sentCount}, Failed: {$failedCount}";
+        $summary = "SMS sending completed. ";
         
         // Add email notification info if schedule type
         if ($smsType === 'schedule') {

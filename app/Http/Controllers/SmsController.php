@@ -89,7 +89,7 @@ class SmsController extends Controller
             }
 
             $summary = "SMS sending completed. ";
-            $summary .= "SMS: {$sentSmsCount} sent, {$failedSmsCount} failed. ";
+          
             
             if ($smsType === 'schedule') {
                 $summary .= "Emails: {$sentEmailCount} sent, {$failedEmailCount} failed.";
