@@ -1,71 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>{{ $subject }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
             color: #333;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        .email-container {
             max-width: 600px;
             margin: 0 auto;
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
         }
         .header {
+            background: linear-gradient(135deg, #4c1d95 0%, #7e22ce 100%);
+            color: white;
+            padding: 20px;
             text-align: center;
-            margin-bottom: 30px;
-        }
-        .header img {
-            max-width: 150px;
-            height: auto;
+            border-radius: 8px 8px 0 0;
         }
         .content {
-            margin-bottom: 30px;
-        }
-        .content p {
-            margin: 0 0 15px 0;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            border: 1px solid #e5e7eb;
         }
         .footer {
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
             text-align: center;
-            font-size: 14px;
-            color: #666;
-        }
-        .button {
-            display: inline-block;
-            background-color: #7c3aed;
-            color: #ffffff;
-            padding: 12px 24px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
-        .button:hover {
-            background-color: #6d28d9;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
-    <div class="email-container">
-        <div class="header">
-            <img src="{{ asset('images/LYDO.png') }}" alt="LYDO Scholarship Team" />
-            <h2 style="color: #7c3aed; margin-top: 10px;">{{ $subject }}</h2>
-        </div>
-        <div class="content">
-            {!! nl2br(e($emailMessage)) !!}
-        </div>
-        <div class="footer">
-            <p>Best regards,<br>LYDO Scholarship Team</p>
-        </div>
+    <div class="header">
+        <h1>Lydo Scholarship</h1>
+        <h2>{{ $subject }}</h2>
+    </div>
+    
+    <div class="content">
+        {!! nl2br(e($emailMessage)) !!}
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated message from Lydo Scholarship Management System.</p>
+        <p>Please do not reply to this email.</p>
     </div>
 </body>
 </html>

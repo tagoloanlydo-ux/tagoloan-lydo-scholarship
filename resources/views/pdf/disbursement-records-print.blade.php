@@ -285,6 +285,15 @@
             tbody { 
                 display: table-row-group;
             }
+
+            /* Hide filters on subsequent pages */
+            .filters-info {
+                display: none;
+            }
+            
+            .page:first-child .filters-info {
+                display: block;
+            }
         }
 
         .no-data {
@@ -298,7 +307,7 @@
 
 <body>
     @php
-        $perPage = 48;
+        $perPage = 30;
         $chunks = $unsignedDisbursements->chunk($perPage);
         $totalPages = $chunks->count();
         $totalDisbursements = $unsignedDisbursements->count();
@@ -367,7 +376,7 @@
                             <td class="text-center">{{ $disburse->disburse_semester }}</td>
                             <td class="text-center">{{ $disburse->disburse_acad_year }}</td>
                             <td class="text-center">Php {{ number_format($disburse->disburse_amount, 0) }}</td>
-                            <td class="text-center status-pending">Pending</td>
+                            <td class="text-center status-pending"> </td>
                         </tr>
                         @endforeach
                     </tbody>

@@ -436,15 +436,15 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <!-- Status Filter Dropdown -->
-                            <div class="flex-1">
-                                <select id="statusSelect" name="status" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
-                                    <option value="active" {{ $statusFilter == 'active' ? 'selected' : '' }}>Active Scholars</option>
-                                    <option value="inactive" {{ $statusFilter == 'inactive' ? 'selected' : '' }}>Inactive Scholars</option>
-                                    <option value="graduated" {{ $statusFilter == 'graduated' ? 'selected' : '' }}>Graduated Scholars</option>
-                                    <option value="all" {{ $statusFilter == 'all' ? 'selected' : '' }}>All Scholars</option>
-                                </select>
-                            </div>
+                                <!-- Status Filter Dropdown -->
+                                <div class="flex-1">
+                                    <select id="statusSelect" name="status" class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
+                                        <option value="active" {{ $statusFilter == 'active' ? 'selected' : '' }}>Active Scholars</option>
+                                        <option value="inactive" {{ $statusFilter == 'inactive' ? 'selected' : '' }}>Inactive Scholars</option>
+                                        <option value="graduated" {{ $statusFilter == 'graduated' ? 'selected' : '' }}>Graduated Scholars</option>
+                                        <option value="all" {{ $statusFilter == 'all' ? 'selected' : '' }}>All Scholars</option>
+                                    </select>
+                                </div>
                             
                             <!-- Print to PDF Button -->
                             <div class="flex-1">
@@ -1066,59 +1066,89 @@
         updateScholarPagination();
     }
 
-    // Initialize filtering functionality - FIXED VERSION
-    function initializeScholarFiltering() {
-        const searchInput = document.getElementById('searchInput');
-        const barangaySelect = document.getElementById('barangaySelect');
-        const academicYearSelect = document.getElementById('academicYearSelect');
-        const statusSelect = document.getElementById('statusSelect');
+// Initialize filtering functionality - CORRECTED VERSION
+function initializeScholarFiltering() {
+    const searchInput = document.getElementById('searchInput');
+    const barangaySelect = document.getElementById('barangaySelect');
+    const academicYearSelect = document.getElementById('academicYearSelect');
+    const statusSelect = document.getElementById('statusSelect');
 
-        function filterScholarTable() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const selectedBarangay = barangaySelect.value;
-            const selectedAcademicYear = academicYearSelect.value;
-            const selectedStatus = statusSelect.value.toLowerCase();
+    function filterScholarTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedBarangay = barangaySelect.value;
+        const selectedAcademicYear = academicYearSelect.value;
+        const selectedStatus = statusSelect.value.toLowerCase();
 
-            const filteredRows = paginationState.allRows.filter(row => {
-                const nameCell = row.cells[1];
-                const barangayCell = row.cells[2];
-                const academicYearCell = row.cells[6];
-                const statusCell = row.cells[9]; // Status is in column 9 (0-based index)
+        const filteredRows = paginationState.allRows.filter(row => {
+            const nameCell = row.cells[1];
+            const barangayCell = row.cells[2];
+            const academicYearCell = row.cells[6];
+            const statusCell = row.cells[9]; // Status is in column 9 (0-based index)
 
-                if (!nameCell || !barangayCell || !academicYearCell || !statusCell) return false;
+            if (!nameCell || !barangayCell || !academicYearCell || !statusCell) return false;
 
-                const name = nameCell.textContent.toLowerCase();
-                const barangay = barangayCell.textContent.trim();
-                const academicYear = academicYearCell.textContent.trim();
-                const statusSpan = statusCell.querySelector('span');
-                const status = statusSpan ? statusSpan.textContent.trim().toLowerCase() : '';
-
-                const nameMatch = !searchTerm || name.includes(searchTerm);
-                const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
-                const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
-                const statusMatch = selectedStatus === 'all' || status === selectedStatus;
-
-                return nameMatch && barangayMatch && academicYearMatch && statusMatch;
-            });
-
-            // Sort filtered results alphabetically
-            const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
-
-            // Update filtered rows and reset to page 1
-            paginationState.filteredRows = sortedFilteredRows;
-            paginationState.currentPage = 1;
-            updateScholarPagination();
+            const name = nameCell.textContent.toLowerCase();
+            const barangay = barangayCell.textContent.trim();
+            const academicYear = academicYearCell.textContent.trim();
             
-            // Reset select all checkbox
-            const selectAllCheckbox = document.getElementById('selectAll');
-            if (selectAllCheckbox) {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = false;
+            // Get status from the badge text
+            const statusBadge = statusCell.querySelector('span');
+            const status = statusBadge ? statusBadge.textContent.trim().toLowerCase() : '';
+
+            const nameMatch = !searchTerm || name.includes(searchTerm);
+            const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
+            const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
+            
+            // Status matching logic - CORRECTED
+            let statusMatch = true;
+            if (selectedStatus === 'active') {
+                statusMatch = status === 'active';
+            } else if (selectedStatus === 'inactive') {
+                statusMatch = status === 'inactive';
+            } else if (selectedStatus === 'graduated') {
+                statusMatch = status === 'graduated';
             }
-            
-            // Update button states
-            updateButtonStates();
+            // If 'all' is selected, statusMatch remains true
+
+            return nameMatch && barangayMatch && academicYearMatch && statusMatch;
+        });
+
+        // Sort filtered results alphabetically
+        const sortedFilteredRows = sortRowsAlphabetically(filteredRows);
+
+        // Update filtered rows and reset to page 1
+        paginationState.filteredRows = sortedFilteredRows;
+        paginationState.currentPage = 1;
+        updateScholarPagination();
+        
+        // Reset select all checkbox
+        const selectAllCheckbox = document.getElementById('selectAll');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
         }
+        
+        // Update button states
+        updateButtonStates();
+    }
+
+    // Add event listeners with debouncing
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(filterScholarTable, 300));
+    }
+    if (barangaySelect) {
+        barangaySelect.addEventListener('change', filterScholarTable);
+    }
+    if (academicYearSelect) {
+        academicYearSelect.addEventListener('change', filterScholarTable);
+    }
+    if (statusSelect) {
+        statusSelect.addEventListener('change', filterScholarTable);
+    }
+
+    // Apply initial filters if any
+    setTimeout(filterScholarTable, 100);
+}
 
         // Add event listeners with debouncing
         if (searchInput) {

@@ -324,8 +324,8 @@
                                                                         <td class="px-4 border border-gray-200 py-2 text-center">
                                         <span class="px-2 py-1 text-sm rounded-lg
                                             @if($app->remarks == 'Poor') bg-yellow-100 text-yellow-800
-                                            @elseif($app->remarks == 'Non Poor') bg-green-100 text-green-800
-                                            @elseif($app->remarks == 'Ultra Poor') bg-red-100 text-red-800
+                                            @elseif($app->remarks == 'Non Poor') bg-red-100 text-green-800
+                                            @elseif($app->remarks == 'Ultra Poor') bg-green-100 text-red-800
                                             @else bg-gray-100 text-gray-800
                                             @endif">
                                             {{ $app->remarks }}
@@ -870,7 +870,7 @@
         <input type="number" id="number_of_family_members" class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 text-gray-600" readonly>
     </div>
     <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Per CapitaL Income</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Per Person</label>
         <input type="number" step="0.01" id="per_capita_income" class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 text-gray-600" readonly>
     </div>
 </div>
@@ -920,7 +920,7 @@
                 <td class="px-3 py-2">
                     <span class="inline-flex items-center">
                         <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                        <span class="font-medium text-red-700">Ultra Poor</span>
+                        <span class="font-medium text-green-700">Ultra Poor</span>
                     </span>
                 </td>
                 <td class="px-3 py-2 text-center font-mono text-red-600">Below ₱1,910</td>
@@ -940,7 +940,7 @@
                 <td class="px-3 py-2">
                     <span class="inline-flex items-center">
                         <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                        <span class="font-medium text-green-700">Non-Poor</span>
+                        <span class="font-medium text-red-700">Non-Poor</span>
                     </span>
                 </td>
                 <td class="px-3 py-2 text-center font-mono text-green-600">Above ₱2,759</td>
@@ -957,7 +957,7 @@
                 Previous
             </button>
             <div class="flex gap-3">
-                <button type="button" onclick="saveAsDraft()" class="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-xl font-medium transition-all duration-200">
+                <button type="button" onclick="saveAsDraft()" class=" hidden px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-xl font-medium transition-all duration-200">
                     Save as Draft
                 </button>
                 <button type="button" id="submitFormBtn" onclick="confirmSubmitForm()" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center" disabled>

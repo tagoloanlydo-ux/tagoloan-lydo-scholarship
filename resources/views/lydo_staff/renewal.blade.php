@@ -21,6 +21,46 @@
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <style>
+  /* A4 Exact Proportion */
+#documentViewer {
+    width: 794px; /* A4 width in pixels (210mm) */
+    height: 1122px; /* A4 height in pixels (297mm) */
+    min-height: 1122px;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin: 0 auto; /* Center the document */
+}
+
+#documentViewerModal .bg-white {
+    max-width: 900px; /* Allow some padding */
+    max-height: 95vh;
+}
+
+/* Responsive A4 */
+@media (max-width: 900px) {
+    #documentViewer {
+        width: 100%;
+        height: calc(100vw * 1.414); /* Maintain A4 ratio (1:1.414) */
+        min-height: auto;
+        max-height: 80vh;
+    }
+}
+
+@media (max-width: 768px) {
+    #documentViewer {
+        height: calc(95vw * 1.414);
+        max-height: 75vh;
+    }
+}
+
+@media (max-width: 480px) {
+    #documentViewer {
+        height: calc(90vw * 1.414);
+        max-height: 70vh;
+    }
+}
   .animate-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

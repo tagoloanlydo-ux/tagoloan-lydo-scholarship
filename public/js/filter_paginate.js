@@ -209,18 +209,17 @@ function initializeScholarFiltering() {
             console.error('Error fetching scholars:', err);
         }
     }
-
-   function filterScholarTable() {
+function filterScholarTable() {
     const searchTerm = searchInput.value.toLowerCase();
     const selectedBarangay = barangaySelect.value;
     const selectedAcademicYear = academicYearSelect.value;
-    const selectedStatus = statusSelect.value;
+    const selectedStatus = statusSelect.value.toLowerCase();
 
     const filteredRows = paginationState.allRows.filter(row => {
         const nameCell = row.cells[1];
         const barangayCell = row.cells[2];
         const academicYearCell = row.cells[6];
-        const statusCell = row.cells[7];
+        const statusCell = row.cells[9]; // Status is in column 9 (0-based index)
 
         if (!nameCell || !barangayCell || !academicYearCell || !statusCell) return false;
 
@@ -232,11 +231,11 @@ function initializeScholarFiltering() {
         const statusBadge = statusCell.querySelector('span');
         const status = statusBadge ? statusBadge.textContent.trim().toLowerCase() : '';
 
-        const nameMatch = name.includes(searchTerm);
+        const nameMatch = !searchTerm || name.includes(searchTerm);
         const barangayMatch = !selectedBarangay || barangay === selectedBarangay;
         const academicYearMatch = !selectedAcademicYear || academicYear === selectedAcademicYear;
         
-        // Status matching logic - UPDATED TO INCLUDE GRADUATED
+        // Status matching logic - FIXED
         let statusMatch = true;
         if (selectedStatus === 'active') {
             statusMatch = status === 'active';
@@ -245,7 +244,7 @@ function initializeScholarFiltering() {
         } else if (selectedStatus === 'graduated') {
             statusMatch = status === 'graduated';
         }
-        // If 'all' is selected, statusMatch remains true
+        // If 'all' is selected or no status filter, statusMatch remains true
 
         return nameMatch && barangayMatch && academicYearMatch && statusMatch;
     });

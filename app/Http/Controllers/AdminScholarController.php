@@ -12,9 +12,10 @@ use Illuminate\Support\Facades\Log;
 
 class AdminScholarController extends Controller
 {
+
 public function scholar(Request $request)
 {
-    // Get scholars with applicant information - include both active and inactive
+    // Get scholars with applicant information
     $query = DB::table('tbl_scholar as s')
         ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
         ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
@@ -36,20 +37,24 @@ public function scholar(Request $request)
             'a.applicant_acad_year'
         );
 
-    // Apply status filter - default to active
+    // Apply status filter - FIXED VERSION
     $statusFilter = $request->get('status', 'active');
+    
     if ($statusFilter === 'active') {
         $query->where('s.scholar_status', 'active');
     } elseif ($statusFilter === 'inactive') {
         $query->where('s.scholar_status', 'inactive');
+    } elseif ($statusFilter === 'graduated') {
+        $query->where('s.scholar_status', 'graduated');
     }
-    // If 'all' is selected, show both active and inactive
+    // If 'all' is selected, show all statuses (no where clause)
 
     // Apply other filters
     if ($request->has('search') && !empty($request->search)) {
         $query->where(function($q) use ($request) {
             $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
-              ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%');
+              ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%')
+              ->orWhere('a.applicant_mname', 'like', '%' . $request->search . '%');
         });
     }
 
@@ -61,7 +66,7 @@ public function scholar(Request $request)
         $query->where('a.applicant_acad_year', $request->academic_year);
     }
 
-   $scholars = $query->get();
+    $scholars = $query->get();
 
     // Get distinct barangays for filter dropdown
     $barangays = DB::table('tbl_applicant')
@@ -77,8 +82,9 @@ public function scholar(Request $request)
         ->orderBy('applicant_acad_year', 'desc')
         ->pluck('applicant_acad_year');
 
-    return view('lydo_admin.scholar', compact( 'scholars', 'barangays', 'academicYears', 'statusFilter'));
+    return view('lydo_admin.scholar', compact('scholars', 'barangays', 'academicYears', 'statusFilter'));
 }
+    
 public function getScholarDocuments($scholar_id)
 {
     try {
@@ -471,7 +477,7 @@ public function sendSmsToScholars(Request $request)
             usleep(500000); // 0.5 second delay
         }
 
-        $summary = "SMS sending completed. Sent: {$sentCount}, Failed: {$failedCount}";
+        $summary = "SMS sending completed. ";
         
         // Add email notification info if schedule type
         if ($smsType === 'schedule') {
@@ -611,21 +617,21 @@ private function buildScholarSmsMessage($baseMessage, $scholar, Request $request
         $scheduleDetails = "\n\nSchedule Details:\n";
         
         if ($request->schedule_what) {
-            $scheduleDetails .= "📅 " . $request->schedule_what . "\n";
+            $scheduleDetails .= "\nWhat:" . $request->schedule_what . "\n";
         }
         
         if ($request->schedule_where) {
-            $scheduleDetails .= "📍 " . $request->schedule_where . "\n";
+            $scheduleDetails .= "\nWhere:" . $request->schedule_where . "\n";
         }
         
         if ($request->schedule_date) {
             $formattedDate = \Carbon\Carbon::parse($request->schedule_date)->format('M d, Y');
-            $scheduleDetails .= "🗓️ " . $formattedDate . "\n";
+            $scheduleDetails .= "\nDate:" . $formattedDate . "\n";
         }
         
         if ($request->schedule_time) {
             $formattedTime = \Carbon\Carbon::parse($request->schedule_time)->format('h:i A');
-            $scheduleDetails .= "⏰ " . $formattedTime . "\n";
+            $scheduleDetails .= "\nTime:" . $formattedTime . "\n";
         }
 
         $message .= $scheduleDetails;

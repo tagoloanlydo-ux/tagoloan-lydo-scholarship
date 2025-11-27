@@ -324,41 +324,99 @@ public function mayor()
             return response()->json(['success' => false, 'message' => 'Failed to send email: ' . $e->getMessage()]);
         }
     }
-
 public function status()
 {
-    // Fetch active scholars without renewal applications
-    $scholarsWithoutRenewal = DB::table('tbl_scholar as s')
-        ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
-        ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
-        ->leftJoin('tbl_renewal as r', 's.scholar_id', '=', 'r.scholar_id')
-        ->select(
-            's.scholar_id',
-            's.scholar_status',
-            'a.applicant_fname',
-            'a.applicant_mname',
-            'a.applicant_lname',
-            'a.applicant_suffix',
-            'a.applicant_email',
-            'a.applicant_contact_number',
-            'a.applicant_school_name',
-            'a.applicant_course',
-            'a.applicant_year_level',
-            'a.applicant_brgy',
-            DB::raw("CONCAT(
-                UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)), 
-                ', ', 
-                UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
-                IF(a.applicant_mname IS NOT NULL AND a.applicant_mname != '', CONCAT(' ', UPPER(LEFT(a.applicant_mname, 1)), '.'), ''),
-                IF(a.applicant_suffix IS NOT NULL AND a.applicant_suffix != '', CONCAT(' ', a.applicant_suffix), '')
-            ) as full_name")
-        )
-        ->where('s.scholar_status', 'active')
-        ->whereNull('r.renewal_id')
-        // ✅ Alphabetical
-        ->orderBy('a.applicant_lname', 'asc')
-        ->orderBy('a.applicant_fname', 'asc')
-        ->paginate(15);
+    // Get current renewal settings
+    $settings = Settings::first();
+    $currentDate = now();
+    
+    // Initialize variables
+    $scholarsWithoutRenewal = collect();
+    $showRenewalSection = false;
+    $renewalInfo = [
+        'semester' => null,
+        'start_date' => null,
+        'deadline' => null,
+        'grace_period_end' => null,
+        'is_grace_period' => false,
+        'is_after_grace_period' => false
+    ];
+    
+    // Get current academic year from applicants
+    $currentAcademicYear = DB::table('tbl_applicant')
+        ->select('applicant_acad_year')
+        ->orderBy('applicant_acad_year', 'desc')
+        ->value('applicant_acad_year');
+
+    if (!$currentAcademicYear) {
+        $currentAcademicYear = date('Y') . '-' . (date('Y') + 1);
+    }
+    
+    // Check if we're within renewal period or grace period
+    if ($settings && $settings->renewal_start_date && $settings->renewal_deadline) {
+        $renewalStartDate = \Carbon\Carbon::parse($settings->renewal_start_date);
+        $renewalDeadline = \Carbon\Carbon::parse($settings->renewal_deadline);
+        $gracePeriodEnd = $renewalDeadline->copy()->addDays(10);
+        
+        $renewalInfo = [
+            'semester' => $settings->renewal_semester,
+            'start_date' => $renewalStartDate,
+            'deadline' => $renewalDeadline,
+            'grace_period_end' => $gracePeriodEnd,
+            'is_grace_period' => $currentDate->greaterThan($renewalDeadline) && $currentDate->lessThanOrEqualTo($gracePeriodEnd),
+            'is_after_grace_period' => $currentDate->greaterThan($gracePeriodEnd)
+        ];
+        
+        // Show renewal section if current date is after renewal start date
+        if ($currentDate->greaterThanOrEqualTo($renewalStartDate)) {
+            $showRenewalSection = true;
+            
+            // Fetch active scholars without renewal applications for current semester
+            // EXCLUDING scholars from the current academic year (new scholars)
+            $scholarsWithoutRenewal = DB::table('tbl_scholar as s')
+                ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+                ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+                ->leftJoin('tbl_renewal as r', function($join) use ($settings) {
+                    $join->on('s.scholar_id', '=', 'r.scholar_id')
+                         ->where('r.renewal_semester', $settings->renewal_semester);
+                })
+                ->select(
+                    's.scholar_id',
+                    's.scholar_status',
+                    'a.applicant_fname',
+                    'a.applicant_mname',
+                    'a.applicant_lname',
+                    'a.applicant_suffix',
+                    'a.applicant_email',
+                    'a.applicant_contact_number',
+                    'a.applicant_school_name',
+                    'a.applicant_course',
+                    'a.applicant_year_level',
+                    'a.applicant_brgy',
+                    'a.applicant_acad_year', // Include academic year for debugging
+                    DB::raw("CONCAT(
+                        UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)), 
+                        ', ', 
+                        UPPER(LEFT(a.applicant_fname,1)), LOWER(SUBSTRING(a.applicant_fname,2)),
+                        IF(a.applicant_mname IS NOT NULL AND a.applicant_mname != '', CONCAT(' ', UPPER(LEFT(a.applicant_mname, 1)), '.'), ''),
+                        IF(a.applicant_suffix IS NOT NULL AND a.applicant_suffix != '', CONCAT(' ', a.applicant_suffix), '')
+                    ) as full_name")
+                )
+                ->where('s.scholar_status', 'active')
+                ->whereNull('r.renewal_id')
+                // EXCLUDE scholars from the current academic year - they don't need renewal yet
+                ->where('a.applicant_acad_year', '!=', $currentAcademicYear)
+                ->orderBy('a.applicant_lname', 'asc')
+                ->orderBy('a.applicant_fname', 'asc')
+                ->paginate(15);
+            
+            // Auto-update status for scholars who missed the deadline + grace period
+            if ($currentDate->greaterThan($gracePeriodEnd)) {
+                $updatedCount = $this->autoUpdateInactiveScholars($settings->renewal_semester, $currentAcademicYear);
+                session()->flash('auto_update_info', "Automatically updated {$updatedCount} scholars to inactive status for missing renewal deadline.");
+            }
+        }
+    }
 
     // Fetch graduating scholars (4th Year and 5th Year)
     $graduatingScholars = DB::table('tbl_scholar as s')
@@ -377,6 +435,7 @@ public function status()
             'a.applicant_course',
             'a.applicant_year_level',
             'a.applicant_brgy',
+            'a.applicant_acad_year',
             DB::raw("CONCAT(
                 UPPER(LEFT(a.applicant_lname,1)), LOWER(SUBSTRING(a.applicant_lname,2)), 
                 ', ', 
@@ -387,7 +446,6 @@ public function status()
         )
         ->where('s.scholar_status', 'active')
         ->whereIn('a.applicant_year_level', ['4th Year', '5th Year'])
-        // ✅ Alphabetical
         ->orderBy('a.applicant_lname', 'asc')
         ->orderBy('a.applicant_fname', 'asc')
         ->paginate(15);
@@ -399,7 +457,56 @@ public function status()
         ->orderBy('applicant_brgy', 'asc')
         ->pluck('applicant_brgy');
 
-    return view('lydo_admin.status', compact('scholarsWithoutRenewal', 'graduatingScholars', 'barangays'));
+    return view('lydo_admin.status', compact(
+        'scholarsWithoutRenewal', 
+        'graduatingScholars', 
+        'barangays',
+        'showRenewalSection',
+        'settings',
+        'renewalInfo',
+        'currentAcademicYear' // Pass for debugging if needed
+    ));
+}
+
+/**
+ * Automatically update scholar status to inactive for those who missed renewal deadline
+ */
+private function autoUpdateInactiveScholars($renewalSemester, $currentAcademicYear)
+{
+    try {
+        $scholarsToUpdate = DB::table('tbl_scholar as s')
+            ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
+            ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
+            ->leftJoin('tbl_renewal as r', function($join) use ($renewalSemester) {
+                $join->on('s.scholar_id', '=', 'r.scholar_id')
+                     ->where('r.renewal_semester', $renewalSemester);
+            })
+            ->where('s.scholar_status', 'active')
+            ->whereNull('r.renewal_id')
+            // EXCLUDE current academic year scholars from auto-update
+            ->where('a.applicant_acad_year', '!=', $currentAcademicYear)
+            ->pluck('s.scholar_id')
+            ->toArray();
+
+        $updatedCount = 0;
+
+        if (!empty($scholarsToUpdate)) {
+            $updatedCount = DB::table('tbl_scholar')
+                ->whereIn('scholar_id', $scholarsToUpdate)
+                ->update([
+                    'scholar_status' => 'inactive',
+                    'updated_at' => now()
+                ]);
+
+            \Log::info("Automatically updated {$updatedCount} scholars to inactive status for missing renewal deadline for {$renewalSemester}. Excluded current academic year: {$currentAcademicYear}");
+        }
+
+        return $updatedCount;
+        
+    } catch (\Exception $e) {
+        \Log::error('Error in autoUpdateInactiveScholars: ' . $e->getMessage());
+        return 0;
+    }
 }
 
 public function markAsGraduated(Request $request)
@@ -1391,55 +1498,39 @@ private function createDisbursementAnnouncement($disbursementDate, $location, $t
             $announcementTitle .= " - {$selectedBarangay}";
         }
         
-        // Build the announcement content with proper barangay inclusion
+        // Build the announcement content with proper formatting
         $barangaySection = "";
         if ($selectedBarangay) {
-            $barangaySection = "<li><strong>Barangay:</strong> {$selectedBarangay}</li>";
+            $barangaySection = "Barangay: {$selectedBarangay}\n";
         }
 
         $filteredAcademicYearSection = "";
         if ($selectedAcademicYear && $selectedAcademicYear !== $academicYear) {
-            $filteredAcademicYearSection = "<li><strong>Filtered Academic Year:</strong> {$selectedAcademicYear}</li>";
+            $filteredAcademicYearSection = "Filtered Academic Year: {$selectedAcademicYear}\n";
         }
 
-        $announcementContent = "
-        <p><strong>ATTENTION ALL SCHOLARS!</strong></p>
-        
-        <p>We are pleased to announce the upcoming disbursement schedule for the {$semester} of Academic Year {$academicYear}.</p>
-        
-        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;'>
-            <p><strong>📅 Disbursement Details:</strong></p>
-            <ul>
-                <li><strong>Date:</strong> {$formattedDate}</li>
-                <li><strong>Time:</strong> {$formattedTime}</li>
-                <li><strong>Location:</strong> {$location}</li>
-                <li><strong>Amount:</strong> ₱{$formattedAmount}</li>
-                <li><strong>Number of Scholars:</strong> {$scholarCount}</li>
-                <li><strong>Semester:</strong> {$semester}</li>
-                <li><strong>Academic Year:</strong> {$academicYear}</li>
-                {$barangaySection}
-                {$filteredAcademicYearSection}
-            </ul>
-        </div>
-
-        <p><strong>📋 Important Reminders:</strong></p>
-        <ul>
-            <li>Please bring your valid school ID and any required documents</li>
-            <li>Be on time to avoid long queues</li>
-            <li>Wear proper attire</li>
-            <li>Prepare your signature for the disbursement receipt</li>
-        </ul>
-
-        <p><strong>ℹ️ Additional Information:</strong></p>
-        <p>This disbursement covers your scholarship stipend for the {$semester}. If you have any questions or concerns, please contact the LYDO office during office hours.</p>
-
-        <p style='color: #666; font-style: italic; margin-top: 20px;'>
-            Thank you for your cooperation and continue to strive for academic excellence!
-        </p>
-
-        <p><strong>LYDO Scholarship Program</strong><br>
-        City Government</p>
-        ";
+        $announcementContent = "ATTENTION ALL SCHOLARS!\n\n"
+            . "We are pleased to announce the upcoming disbursement schedule for the {$semester} of Academic Year {$academicYear}.\n\n"
+            . "DISBURSEMENT DETAILS:\n"
+            . "• Date: {$formattedDate}\n"
+            . "• Time: {$formattedTime}\n"
+            . "• Location: {$location}\n"
+            . "• Amount: ₱{$formattedAmount}\n"
+            . "• Number of Scholars: {$scholarCount}\n"
+            . "• Semester: {$semester}\n"
+            . "• Academic Year: {$academicYear}\n"
+            . ($barangaySection ? "• {$barangaySection}" : "")
+            . ($filteredAcademicYearSection ? "• {$filteredAcademicYearSection}" : "") . "\n"
+            . "IMPORTANT REMINDERS:\n"
+            . "• Please bring your valid school ID and any required documents\n"
+            . "• Be on time to avoid long queues\n"
+            . "• Wear proper attire\n"
+            . "• Prepare your signature for the disbursement receipt\n\n"
+            . "ADDITIONAL INFORMATION:\n"
+            . "This disbursement covers your scholarship stipend for the {$semester}. If you have any questions or concerns, please contact the LYDO office during office hours.\n\n"
+            . "Thank you for your cooperation and continue to strive for academic excellence!\n\n"
+            . "LYDO Scholarship Program\n"
+            . "City Government";
 
         Announce::create([
             'lydopers_id' => session('lydopers')->lydopers_id,
@@ -2642,6 +2733,28 @@ private function safeConvertToFloat($value)
     }
     
     return 0;
+}
+// In your LydoAdminController or wherever you send schedule emails
+private function sendScheduleNotification($applicantEmail, $applicantName, $scheduleData)
+{
+    try {
+        $emailData = [
+            'applicantName' => $applicantName, // ADD THIS LINE
+            'scheduleData' => $scheduleData
+        ];
+
+        Mail::send('emails.schedule-notification', $emailData, function ($message) use ($applicantEmail, $applicantName) {
+            $message->to($applicantEmail)
+                    ->subject('Schedule Notification - LYDO Scholarship Program');
+        });
+
+        \Log::info("Schedule notification email sent to: {$applicantEmail}");
+        return true;
+        
+    } catch (\Exception $e) {
+        \Log::error("Failed to send schedule email to {$applicantEmail}: " . $e->getMessage());
+        return false;
+    }
 }
 }
 

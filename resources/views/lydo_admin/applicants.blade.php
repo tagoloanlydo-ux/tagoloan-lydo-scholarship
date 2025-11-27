@@ -992,7 +992,7 @@
                                         class="w-full px-4 py-2 border border-black rounded-lg focus:ring-2 focus:ring-black-500 placeholder-black">
                                     <option value="">All Remarks</option>
                                     <option value="Poor">Poor</option>
-                                    <option value="Non-Poor">Non-Poor</option>
+                                    <option value="Non Poor">Non-Poor</option>
                                     <option value="Ultra Poor">Ultra Poor</option>
                                 </select>
                             </div>
@@ -1959,27 +1959,28 @@
             }
         }
 
-        // Email modal
-        function openEmailModal(tab) {
-            const modal = document.getElementById('emailModal');
-            const preview = document.getElementById('recipientsPreview');
+function openEmailModal(tab) {
+    const modal = document.getElementById('emailModal');
+    const preview = document.getElementById('recipientsPreview');
 
-            const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
-            const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
-            
-            if (selectedApplicants.length === 0) {
-                preview.textContent = 'No recipients selected';
-            } else {
-                const items = selectedApplicants.map(applicant => {
-                    const name = formatName(applicant);
-                    const email = applicant.applicant_email || 'N/A';
-                    return `<div class="mb-1"><strong>${escapeHtml(name)}</strong> — ${escapeHtml(email)}</div>`;
-                }).join('');
-                preview.innerHTML = `<div class="mb-2 text-sm font-semibold">Selected: ${selectedApplicants.length} applicants</div>${items}`;
-            }
+    const filteredApplicants = tab === 'mayor' ? filteredMayorApplicants : filteredLydoApplicants;
+    const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
+    
+    if (selectedApplicants.length === 0) {
+        preview.textContent = 'No recipients selected';
+    } else {
+        const items = selectedApplicants.map(applicant => {
+            const name = formatName(applicant);
+            const email = applicant.applicant_email || 'N/A';
+            return `<div class="mb-1"><strong>${escapeHtml(name)}</strong> — ${escapeHtml(email)}</div>`;
+        }).join('');
+        preview.innerHTML = `<div class="mb-2 text-sm font-semibold">Selected: ${selectedApplicants.length} applicants</div>${items}`;
+    }
 
-            modal.classList.remove('hidden');
-        }
+    // Reset form
+    document.getElementById('emailForm').reset();
+    modal.classList.remove('hidden');
+}
 
         // SMS modal
         function openSmsModal(tab) {
@@ -2229,9 +2230,9 @@ function openIntakeSheetModal(applicantName, data) {
                 <div>
                     <span class="font-medium text-gray-700">Remarks:</span>
                     <span class="ml-2 px-2 py-1 rounded-full text-xs font-semibold 
-                        ${remarks === 'Poor' ? 'bg-orange-100 text-orange-800' : 
-                          remarks === 'Non-Poor' ? 'bg-green-100 text-green-800' : 
-                          remarks === 'Ultra Poor' ? 'bg-red-100 text-red-800' : 
+                        ${remarks === 'Poor' ? 'bg-yellow-100 text-yellow-800' : 
+                          remarks === 'Non-Poor' ? 'bg-red-100 text-red-800' : 
+                          remarks === 'Ultra Poor' ? 'bg-green-100 text-green-800' : 
                           'bg-gray-100 text-gray-800'}">
                         ${remarks}
                     </span>
@@ -2911,6 +2912,115 @@ if (serviceRecordsTable) {
             });
         }
 
+// Email Form Submission
+document.getElementById('emailForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
+    const sendEmailText = document.getElementById('sendEmailText');
+    const sendEmailLoading = document.getElementById('sendEmailLoading');
+    
+    // Get the active tab to determine which applicants are selected
+    const activeTab = document.querySelector('.tab-button.active').getAttribute('data-tab');
+    const filteredApplicants = activeTab === 'mayor-applicants' ? filteredMayorApplicants : filteredLydoApplicants;
+    const selectedApplicants = filteredApplicants.filter(applicant => applicant.selected);
+    
+    if (selectedApplicants.length === 0) {
+        Swal.fire('Error', 'Please select at least one applicant', 'error');
+        return;
+    }
+
+    // Prepare recipients in the EXACT format expected by the backend
+    const recipients = selectedApplicants.map(applicant => ({
+        id: applicant.applicant_id.toString(), // Ensure it's a string
+        name: formatName(applicant),
+        email: applicant.applicant_email
+    }));
+
+    const subject = document.getElementById('emailSubject').value;
+    const message = document.getElementById('emailMessage').value;
+
+    // Validate required fields
+    if (!subject.trim()) {
+        Swal.fire('Error', 'Please enter an email subject', 'error');
+        return;
+    }
+    
+    if (!message.trim()) {
+        Swal.fire('Error', 'Please enter an email message', 'error');
+        return;
+    }
+
+    // Show loading state
+    sendEmailText.classList.add('hidden');
+    sendEmailLoading.classList.remove('hidden');
+    sendEmailBtn.disabled = true;
+
+    // Debug: Log the data being sent
+    console.log('Sending email data:', {
+        recipients: recipients,
+        subject: subject,
+        message: message
+    });
+
+    // Send the request
+    fetch('/lydo_admin/send-email-to-applicants', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            recipients: recipients,
+            subject: subject,
+            message: message
+        })
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            // If it's a 422 error, get the validation errors
+            if (response.status === 422) {
+                return response.json().then(errors => {
+                    throw new Error('Validation failed: ' + JSON.stringify(errors));
+                });
+            }
+            throw new Error('Network response was not ok: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Success response:', data);
+        if (data.success) {
+            Swal.fire('Success', data.message, 'success');
+            document.getElementById('emailModal').classList.add('hidden');
+            document.getElementById('emailForm').reset();
+            
+            // Clear selections after successful send
+            selectedApplicants.forEach(applicant => {
+                applicant.selected = false;
+            });
+            renderMayorApplicantsTable();
+            renderLydoApplicantsTable();
+            updateButtonVisibility('mayor');
+            updateButtonVisibility('lydo');
+        } else {
+            Swal.fire('Error', data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Failed to send email: ' + error.message, 'error');
+    })
+    .finally(() => {
+        // Reset button state
+        sendEmailText.classList.remove('hidden');
+        sendEmailLoading.classList.add('hidden');
+        sendEmailBtn.disabled = false;
+    });
+});
+
         // Print PDF functions
         function printMayorApplicantsPdf() {
             showLoadingOverlay();
@@ -2997,5 +3107,7 @@ function formatBirthdate(dateString) {
     }
 }
     </script>
+    <script src="{{ asset('js/spinner.js') }}"></script>
+
 </body>
 </html>

@@ -1300,5 +1300,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
   <script src="{{ asset('js/disburserefresh.js') }}"></script>
+  <script src="{{ asset('js/spinner.js') }}"></script>
+
 </body>
 </html>

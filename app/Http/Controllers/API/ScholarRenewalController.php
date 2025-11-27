@@ -225,13 +225,13 @@ class ScholarRenewalController extends Controller
 
             $scholarId = $user->scholar_id ?? $user->id; // Adjust as needed
 
+            // OPTION 1: Update validation to match database field names
             $validator = Validator::make($request->all(), [
-                'semester' => 'required|string|max:20',
-                'academic_year' => 'required|string|max:20',
+                'renewal_semester' => 'required|string|max:20',
+                'renewal_acad_year' => 'required|string|max:20',
                 'year_level' => 'required|string|max:20',
                 'document_types' => 'required|array',
                 'document_types.*' => 'string',
-                // Files will be handled separately
             ]);
 
             if ($validator->fails()) {
@@ -242,11 +242,11 @@ class ScholarRenewalController extends Controller
             $uploadedFiles = [];
             $documentTypes = $request->input('document_types', []);
 
-            // Map document types to file fields (adjust based on your needs)
+            // Map document types to file fields and request field names
             $fileFields = [
-                'cert_of_reg' => 'cor_file',
-                'grade_slip' => 'grade_slip_file',
-                'brgy_indigency' => 'indigency_file',
+                'cert_of_reg' => 'renewal_cert_of_reg',
+                'grade_slip' => 'renewal_grade_slip', 
+                'brgy_indigency' => 'renewal_brgy_indigency',
             ];
 
             foreach ($documentTypes as $type) {
@@ -258,14 +258,14 @@ class ScholarRenewalController extends Controller
                 }
             }
 
-            // Create renewal record
+            // Create renewal record - field names now match database
             $renewal = Renewal::create([
                 'scholar_id' => $scholarId,
                 'renewal_cert_of_reg' => $uploadedFiles['cert_of_reg'] ?? null,
                 'renewal_grade_slip' => $uploadedFiles['grade_slip'] ?? null,
                 'renewal_brgy_indigency' => $uploadedFiles['brgy_indigency'] ?? null,
-                'renewal_semester' => $request->input('semester'),
-                'renewal_acad_year' => $request->input('academic_year'),
+                'renewal_semester' => $request->input('renewal_semester'),
+                'renewal_acad_year' => $request->input('renewal_acad_year'),
                 'renewal_year_level' => $request->input('year_level'),
                 'date_submitted' => now(),
                 'renewal_status' => 'Pending',

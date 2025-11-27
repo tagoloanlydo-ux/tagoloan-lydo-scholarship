@@ -45,6 +45,8 @@ Route::post('/verify-otp', [LydopersController::class, 'verifyOtp'])->name('pass
 Route::post('/resend-otp', [LydopersController::class, 'resendOtp'])->name('password.resendOtp');
 Route::get('/reset-password/{token}', [LydopersController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [LydopersController::class, 'resetPassword'])->name('password.update');
+Route::post('/check-duplicate-applicant', [ScholarController::class, 'checkDuplicateApplicant'])->name('check.duplicate.applicant');
+
 
 Route::middleware(['role:lydo_admin'])->group(function () {
     
@@ -153,6 +155,7 @@ Route::middleware(['role:lydo_staff'])->group(function () {
 
 // Mayor Staff Routes - Only accessible by mayor_staff role
 Route::middleware(['role:mayor_staff'])->group(function () {
+    
     Route::get('/mayor_staff/notification-count', [StatusController::class, 'getNotificationCount']);Route::get('/mayor_staff/get-table-data', [MayorStaffController::class, 'getTableData'])->name('mayor_staff.table.data');
     Route::get('/mayor_staff/get-list-data', [MayorStaffController::class, 'getListData'])->name('mayor_staff.list.data');
     Route::post('/mayor_staff/store-application', [MayorStaffController::class, 'storeApplication'])->name('mayor_staff.store_application');
