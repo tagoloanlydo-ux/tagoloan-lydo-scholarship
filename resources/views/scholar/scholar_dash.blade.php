@@ -136,7 +136,7 @@
                                         <span class="text-xs text-gray-400 mt-2 block">📅 {{ $announcement->date_posted->format('M d, Y') }}</span>
                                     </div>
                                     <div class="announcement-content hidden mt-4">
-                                        <p class="text-gray-600">{{ $announcement->announce_content }}</p>
+                                        <p class="text-gray-600 whitespace-pre-line">{{ $announcement->announce_content }}</p>
                                     </div>
                                 </div>
                             </div>

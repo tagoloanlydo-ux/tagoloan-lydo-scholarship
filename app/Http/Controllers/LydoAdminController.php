@@ -1481,55 +1481,39 @@ private function createDisbursementAnnouncement($disbursementDate, $location, $t
             $announcementTitle .= " - {$selectedBarangay}";
         }
         
-        // Build the announcement content with proper barangay inclusion
+        // Build the announcement content with proper formatting
         $barangaySection = "";
         if ($selectedBarangay) {
-            $barangaySection = "<li><strong>Barangay:</strong> {$selectedBarangay}</li>";
+            $barangaySection = "Barangay: {$selectedBarangay}\n";
         }
 
         $filteredAcademicYearSection = "";
         if ($selectedAcademicYear && $selectedAcademicYear !== $academicYear) {
-            $filteredAcademicYearSection = "<li><strong>Filtered Academic Year:</strong> {$selectedAcademicYear}</li>";
+            $filteredAcademicYearSection = "Filtered Academic Year: {$selectedAcademicYear}\n";
         }
 
-        $announcementContent = "
-        <p><strong>ATTENTION ALL SCHOLARS!</strong></p>
-        
-        <p>We are pleased to announce the upcoming disbursement schedule for the {$semester} of Academic Year {$academicYear}.</p>
-        
-        <div style='background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;'>
-            <p><strong>📅 Disbursement Details:</strong></p>
-            <ul>
-                <li><strong>Date:</strong> {$formattedDate}</li>
-                <li><strong>Time:</strong> {$formattedTime}</li>
-                <li><strong>Location:</strong> {$location}</li>
-                <li><strong>Amount:</strong> ₱{$formattedAmount}</li>
-                <li><strong>Number of Scholars:</strong> {$scholarCount}</li>
-                <li><strong>Semester:</strong> {$semester}</li>
-                <li><strong>Academic Year:</strong> {$academicYear}</li>
-                {$barangaySection}
-                {$filteredAcademicYearSection}
-            </ul>
-        </div>
-
-        <p><strong>📋 Important Reminders:</strong></p>
-        <ul>
-            <li>Please bring your valid school ID and any required documents</li>
-            <li>Be on time to avoid long queues</li>
-            <li>Wear proper attire</li>
-            <li>Prepare your signature for the disbursement receipt</li>
-        </ul>
-
-        <p><strong>ℹ️ Additional Information:</strong></p>
-        <p>This disbursement covers your scholarship stipend for the {$semester}. If you have any questions or concerns, please contact the LYDO office during office hours.</p>
-
-        <p style='color: #666; font-style: italic; margin-top: 20px;'>
-            Thank you for your cooperation and continue to strive for academic excellence!
-        </p>
-
-        <p><strong>LYDO Scholarship Program</strong><br>
-        City Government</p>
-        ";
+        $announcementContent = "ATTENTION ALL SCHOLARS!\n\n"
+            . "We are pleased to announce the upcoming disbursement schedule for the {$semester} of Academic Year {$academicYear}.\n\n"
+            . "DISBURSEMENT DETAILS:\n"
+            . "• Date: {$formattedDate}\n"
+            . "• Time: {$formattedTime}\n"
+            . "• Location: {$location}\n"
+            . "• Amount: ₱{$formattedAmount}\n"
+            . "• Number of Scholars: {$scholarCount}\n"
+            . "• Semester: {$semester}\n"
+            . "• Academic Year: {$academicYear}\n"
+            . ($barangaySection ? "• {$barangaySection}" : "")
+            . ($filteredAcademicYearSection ? "• {$filteredAcademicYearSection}" : "") . "\n"
+            . "IMPORTANT REMINDERS:\n"
+            . "• Please bring your valid school ID and any required documents\n"
+            . "• Be on time to avoid long queues\n"
+            . "• Wear proper attire\n"
+            . "• Prepare your signature for the disbursement receipt\n\n"
+            . "ADDITIONAL INFORMATION:\n"
+            . "This disbursement covers your scholarship stipend for the {$semester}. If you have any questions or concerns, please contact the LYDO office during office hours.\n\n"
+            . "Thank you for your cooperation and continue to strive for academic excellence!\n\n"
+            . "LYDO Scholarship Program\n"
+            . "City Government";
 
         Announce::create([
             'lydopers_id' => session('lydopers')->lydopers_id,
