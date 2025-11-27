@@ -15,8 +15,8 @@ class AdminScholarController extends Controller
 
 public function scholar(Request $request)
 {
-    // Get scholars with applicant information
-    $query = DB::table('tbl_scholar as s')
+    // Get all scholars with applicant information (no filters)
+    $scholars = DB::table('tbl_scholar as s')
         ->join('tbl_application as app', 's.application_id', '=', 'app.application_id')
         ->join('tbl_applicant as a', 'app.applicant_id', '=', 'a.applicant_id')
         ->select(
@@ -35,56 +35,25 @@ public function scholar(Request $request)
             'a.applicant_course',
             'a.applicant_year_level',
             'a.applicant_acad_year'
-        );
+        )
+        ->get();
 
-    // Apply status filter - FIXED VERSION
-    $statusFilter = $request->get('status', 'active');
-    
-    if ($statusFilter === 'active') {
-        $query->where('s.scholar_status', 'active');
-    } elseif ($statusFilter === 'inactive') {
-        $query->where('s.scholar_status', 'inactive');
-    } elseif ($statusFilter === 'graduated') {
-        $query->where('s.scholar_status', 'graduated');
-    }
-    // If 'all' is selected, show all statuses (no where clause)
-
-    // Apply other filters
-    if ($request->has('search') && !empty($request->search)) {
-        $query->where(function($q) use ($request) {
-            $q->where('a.applicant_fname', 'like', '%' . $request->search . '%')
-              ->orWhere('a.applicant_lname', 'like', '%' . $request->search . '%')
-              ->orWhere('a.applicant_mname', 'like', '%' . $request->search . '%');
-        });
-    }
-
-    if ($request->has('barangay') && !empty($request->barangay)) {
-        $query->where('a.applicant_brgy', $request->barangay);
-    }
-
-    if ($request->has('academic_year') && !empty($request->academic_year)) {
-        $query->where('a.applicant_acad_year', $request->academic_year);
-    }
-
-    $scholars = $query->get();
-
-    // Get distinct barangays for filter dropdown
+    // Get distinct barangays for dropdown (if still needed for other purposes)
     $barangays = DB::table('tbl_applicant')
         ->select('applicant_brgy')
         ->distinct()
         ->orderBy('applicant_brgy', 'asc')
         ->pluck('applicant_brgy');
 
-    // Get distinct academic years for filter dropdown
+    // Get distinct academic years for dropdown (if still needed for other purposes)
     $academicYears = DB::table('tbl_applicant')
         ->select('applicant_acad_year')
         ->distinct()
         ->orderBy('applicant_acad_year', 'desc')
         ->pluck('applicant_acad_year');
 
-    return view('lydo_admin.scholar', compact('scholars', 'barangays', 'academicYears', 'statusFilter'));
-}
-    
+    return view('lydo_admin.scholar', compact('scholars', 'barangays', 'academicYears'));
+} 
 public function getScholarDocuments($scholar_id)
 {
     try {
