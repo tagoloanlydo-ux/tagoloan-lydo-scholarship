@@ -617,21 +617,21 @@ private function buildScholarSmsMessage($baseMessage, $scholar, Request $request
         $scheduleDetails = "\n\nSchedule Details:\n";
         
         if ($request->schedule_what) {
-            $scheduleDetails .= "\n\nWhat:\n" . $request->schedule_what . "\n";
+            $scheduleDetails .= "\nWhat:" . $request->schedule_what . "\n";
         }
         
         if ($request->schedule_where) {
-            $scheduleDetails .= "\n\nWhere:\n" . $request->schedule_where . "\n";
+            $scheduleDetails .= "\nWhere:" . $request->schedule_where . "\n";
         }
         
         if ($request->schedule_date) {
             $formattedDate = \Carbon\Carbon::parse($request->schedule_date)->format('M d, Y');
-            $scheduleDetails .= "\n\nDate:\n" . $formattedDate . "\n";
+            $scheduleDetails .= "\nDate:" . $formattedDate . "\n";
         }
         
         if ($request->schedule_time) {
             $formattedTime = \Carbon\Carbon::parse($request->schedule_time)->format('h:i A');
-            $scheduleDetails .= "\n\nTime:\n" . $formattedTime . "\n";
+            $scheduleDetails .= "\nTime:" . $formattedTime . "\n";
         }
 
         $message .= $scheduleDetails;

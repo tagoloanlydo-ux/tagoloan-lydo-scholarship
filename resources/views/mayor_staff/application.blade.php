@@ -2090,8 +2090,7 @@ document.head.appendChild(style);
     <script>
     
     </script>
-<script src="{{ asset('js/app_spinner.js') }}"></script>
+<script src="{{ asset('js/spinner.js') }}"></script>
 <script src="{{ asset('js/application_paginate.js') }}"></script>
-
     </body>
     </html>

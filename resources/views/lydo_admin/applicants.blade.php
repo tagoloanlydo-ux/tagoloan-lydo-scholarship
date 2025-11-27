@@ -3107,5 +3107,7 @@ function formatBirthdate(dateString) {
     }
 }
     </script>
+    <script src="{{ asset('js/spinner.js') }}"></script>
+
 </body>
 </html>

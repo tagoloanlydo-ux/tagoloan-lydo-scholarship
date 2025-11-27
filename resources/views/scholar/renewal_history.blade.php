@@ -356,10 +356,6 @@
                                             <label class="block text-sm font-medium text-gray-600">Semester</label>
                                             <p class="text-gray-800 font-semibold">${renewal.renewal_semester}</p>
                                         </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-600">Year Level</label>
-                                            <p class="text-gray-800 font-semibold">${renewal.applicant_year_level || 'N/A'}</p>
-                                        </div>
                                     </div>
                                 </div>
                                 

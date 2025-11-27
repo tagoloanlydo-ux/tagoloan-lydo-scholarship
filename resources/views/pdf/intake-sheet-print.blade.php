@@ -13,7 +13,7 @@
         
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 20px;
+            font-size: 11px; /* Changed from 20px to 11px */
             color: #000;
             margin: 0;
             padding: 0;
@@ -51,13 +51,13 @@
         }
         
         .org-info h1 {
-            font-size: 15px;
+            font-size: 11px; /* Changed from 15px to 11px */
             margin: 0;
             font-weight: bold;
         }
         
         .org-info h2 {
-            font-size: 15px;
+            font-size: 11px; /* Changed from 15px to 11px */
             margin: 0;
             font-weight: bold;
         }
@@ -99,7 +99,7 @@
         
         .section-title {
             font-weight: bold;
-            font-size: 15px;
+            font-size: 11px; /* Changed from 15px to 11px */
             margin-bottom: 6px;
             text-align: center;
             background: #f0f0f0;
@@ -109,7 +109,7 @@
         /* SOCIAL SERVICES - LARGER STYLES */
         .social-services-title {
             font-weight: bold;
-            font-size: 14px !important;
+            font-size: 11px !important; /* Changed from 14px to 11px */
             margin-bottom: 8px;
             text-align: center;
             background: #ffffffff;
@@ -142,7 +142,7 @@
             width: 100%;
             border-collapse: collapse;
             margin: 4px 0;
-            font-size: 15px;
+            font-size: 11px; /* Changed from 15px to 11px */
         }
         
         .data-table th,
@@ -159,12 +159,12 @@
         }
         
         .family-table th {
-            font-size: 15px;
+            font-size: 11px; /* Changed from 15px to 11px */
             padding: 2px;
         }
         
         .family-table td {
-            font-size: 15px;
+            font-size: 11px; /* Changed from 15px to 11px */
             padding: 2px;
         }
         
@@ -172,7 +172,7 @@
         .services-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 15px !important;
+            font-size: 11px !important; /* Changed from 15px to 11px */
             margin: 6px 0;
         }
         
@@ -188,12 +188,12 @@
             background: #e8e8e8;
             font-weight: bold;
             text-align: center;
-            font-size: 15px;
+            font-size: 11px; /* Changed from 15px to 11px */
         }
         
         .services-table td {
             background: #fff;
-            font-size: 15px;
+            font-size: 11px; /* Changed from 15px to 11px */
         }
         
         /* Input Fields */
@@ -233,7 +233,7 @@
         .code-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 15px;
+            font-size: 11px; /* Changed from 15px to 11px */
             margin: 8px 0;
         }
         
@@ -269,7 +269,7 @@
         /* Estimated Cost - Larger */
         .estimated-cost {
             font-weight: bold;
-            font-size: 15px !important;
+            font-size: 11px !important; /* Changed from 15px to 11px */
             margin: 10px 0;
             padding: 6px;
             background: #f0f0f0;
@@ -282,7 +282,7 @@
             margin-top: 12px;
             padding: 8px;
             border-top: 2px solid #000;
-            font-size: 15px;
+            font-size: 11px; /* Changed from 15px to 11px */
         }
         
         /* Print Styles */
@@ -327,9 +327,9 @@
                                     </div>
                                 </td>
                                 <td style="border: none; vertical-align: top; padding-left: 10px;">
-                                    <div style="font-size: 20px; font-weight: bold;">Republic of the Philippines</div>
-                                    <div style="font-size: 15px; font-weight: bold;">Province of Misamis Oriental</div>
-                                    <div style="font-size: 15px; font-weight: bold;">Municipality of Tagoloan</div>
+                                    <div style="font-size: 11px; font-weight: bold;">Republic of the Philippines</div> <!-- Changed from 20px to 11px -->
+                                    <div style="font-size: 11px; font-weight: bold;">Province of Misamis Oriental</div> <!-- Changed from 15px to 11px -->
+                                    <div style="font-size: 11px; font-weight: bold;">Municipality of Tagoloan</div> <!-- Changed from 15px to 11px -->
                                     <div style="font-size: 9px; font-weight: bold;">
                                         MUNICIPAL SOCIAL WELFARE AND DEVELOPMENT OFFICE
                                     </div>
@@ -338,7 +338,7 @@
                         </table>
                     </td>
                     <td style="border: none; vertical-align: middle; padding: 5px; text-align: center; width: 25%;">
-                        <div style="font-size: 15px; font-weight: bold;">
+                        <div style="font-size: 11px; font-weight: bold;"> <!-- Changed from 15px to 11px -->
                             FAMILY INTAKE SHEET
                         </div>
                     </td>
@@ -367,30 +367,30 @@
                             </table>
 
                                         <!-- Header -->
-                                        <div style="text-align: center; font-weight: bold; font-size: 15px; margin-bottom: 8px; padding: 3px 0;">HEAD OF THE FAMILY:</div>
+                                        <div style="text-align: center; font-weight: bold; font-size: 11px; margin-bottom: 8px; padding: 3px 0;">HEAD OF THE FAMILY:</div> <!-- Changed from 15px to 11px -->
 
                                         <!-- Name and Personal Info -->
                                     <table style="width: 100%; border: none; margin-bottom: 8px;">
                                 <tr>
                                     <td style="border: none; width: 20%; vertical-align: top; padding: 3px;">
-                                        <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">SURNAME</div>
+                                        <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">SURNAME</div> <!-- Changed from 15px to 11px -->
                                         <div style="border-bottom: 1px solid #000; padding: 4px 0; min-height: 20px;">{{ $head['lname'] ?? '&nbsp;' }}</div>
                                     </td>
                                     <td style="border: none; width: 20%; vertical-align: top; padding: 3px;">
-                                        <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">FIRST NAME</div>
+                                        <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">FIRST NAME</div> <!-- Changed from 15px to 11px -->
                                         <div style="border-bottom: 1px solid #000; padding: 4px 0; min-height: 20px;">{{ $head['fname'] ?? '&nbsp;' }}</div>
                                     </td>
                                     <td style="border: none; width: 20%; vertical-align: top; padding: 3px;">
-                                        <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">MIDDLE NAME</div>
+                                        <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">MIDDLE NAME</div> <!-- Changed from 15px to 11px -->
                                         <div style="border-bottom: 1px solid #000; padding: 4px 0; min-height: 20px;">{{ $head['mname'] ?? '&nbsp;' }}</div>
                                     </td>
                                     <td style="border: none; width: 10%; vertical-align: top; padding: 3px;">
-                                        <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">Suffix</div>
+                                        <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">Suffix</div> <!-- Changed from 15px to 11px -->
                                         <div style="border-bottom: 1px solid #000; padding: 4px 0; min-height: 20px;">{{ $head['suffix'] ?? '&nbsp;' }}</div>
                                     </td>
 
                                     <td style="border: none; width: 25%; vertical-align: top; padding: 3px;">
-                                        <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">Sex / Age</div>
+                                        <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">Sex / Age</div> <!-- Changed from 15px to 11px -->
                                         <table style="width: 100%; border: none;">
                                             <tr>
                                                 <td style="border: 1px solid #000; padding: 4px; text-align: center; width: 50%;">
@@ -412,19 +412,19 @@
                         <table style="width: 100%; border: none; margin-bottom: 8px;">
                             <tr>
                                 <td style="border: none; width: 50%; vertical-align: top; padding: 3px;">
-                                    <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">Address</div>
+                                    <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">Address</div> <!-- Changed from 15px to 11px -->
                                     <div style="border-bottom: 1px solid #000; padding: 4px 0;">{{ $head['address'] ?? '-' }}</div>
                                 </td>
                                 <td style="border: none; width: 25%; vertical-align: top; padding: 3px;">
-                                    <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">Zone</div>
+                                    <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">Zone</div> <!-- Changed from 15px to 11px -->
                                     <div style="border-bottom: 1px solid #000; padding: 4px 0;">{{ $head['zone'] ?? '-' }}</div>
                                 </td>
                                 <td style="border: none; width: 25%; vertical-align: top; padding: 3px;">
-                                    <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">Barangay</div>
+                                    <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">Barangay</div> <!-- Changed from 15px to 11px -->
                                     <div style="border-bottom: 1px solid #000; padding: 4px 0;">{{ $head['barangay'] ?? '-' }}</div>
                                 </td>
                                 <td style="border: none; width: 25%; vertical-align: top; padding: 3px;">
-                                    <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">Contact Number</div>
+                                    <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">Contact Number</div> <!-- Changed from 15px to 11px -->
                                     <div style="border-bottom: 1px solid #000; padding: 4px 0;">{{ $head['contact'] ?? '-' }}</div>
                                 </td>
                             </tr>
@@ -434,17 +434,17 @@
                         <table style="width: 100%; border: none; margin-bottom: 8px;">
                             <tr>
                                 <td style="border: none; width: 33%; vertical-align: top; padding: 3px;">
-                                    <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">Date of Birth</div>
+                                    <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">Date of Birth</div> <!-- Changed from 15px to 11px -->
                                     <div style="border-bottom: 1px solid #000; padding: 4px 0;">
                                         @if(!empty($head['dob'])){{ \Carbon\Carbon::parse($head['dob'])->format('F d Y') }}@else - @endif
                                     </div>
                                 </td>
                                 <td style="border: none; width: 33%; vertical-align: top; padding: 3px;">
-                                    <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">Place of Birth</div>
+                                    <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">Place of Birth</div> <!-- Changed from 15px to 11px -->
                                     <div style="border-bottom: 1px solid #000; padding: 4px 0;">{{ $head['pob'] ?? '-' }}</div>
                                 </td>
                                 <td style="border: none; width: 33%; vertical-align: top; padding: 3px;">
-                                    <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">Civil Status</div>
+                                    <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">Civil Status</div> <!-- Changed from 15px to 11px -->
                                     <div style="border-bottom: 1px solid #000; padding: 4px 0;">{{ $head['civil'] ?? '-' }}</div>
                                 </td>
                             </tr>
@@ -454,15 +454,15 @@
                         <table style="width: 100%; border: none; margin-bottom: 8px;">
                             <tr>
                                 <td style="border: none; width: 33%; vertical-align: top; padding: 3px;">
-                                    <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">Educational Attainment</div>
+                                    <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">Educational Attainment</div> <!-- Changed from 15px to 11px -->
                                     <div style="border-bottom: 1px solid #000; padding: 4px 0;">{{ $head['educ'] ?? '-' }}</div>
                                 </td>
                                 <td style="border: none; width: 33%; vertical-align: top; padding: 3px;">
-                                    <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">Occupation</div>
+                                    <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">Occupation</div> <!-- Changed from 15px to 11px -->
                                     <div style="border-bottom: 1px solid #000; padding: 4px 0;">{{ $head['occ'] ?? '-' }}</div>
                                 </td>
                                 <td style="border: none; width: 33%; vertical-align: top; padding: 3px;">
-                                    <div style="font-weight: bold; font-size: 15px; margin-bottom: 2px;">Religion</div>
+                                    <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">Religion</div> <!-- Changed from 15px to 11px -->
                                     <div style="border-bottom: 1px solid #000; padding: 4px 0;">{{ $head['religion'] ?? '-' }}</div>
                                 </td>
                             </tr>
@@ -476,7 +476,7 @@
         <td>
             <div class="section-title">FAMILY COMPOSITION</div>
             
-            <table class="data-table family-table" style="font-size: 10px; width: 100%; border-collapse: collapse;">
+            <table class="data-table family-table" style="font-size: 11px; width: 100%; border-collapse: collapse;"> <!-- Changed from 10px to 11px -->
                 <thead>
                     <tr style="height: 70px; background-color: #f8f9fa;">
                         <th style="width: 4%; text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">#</th>
@@ -595,7 +595,7 @@
 
                                 <!-- INCOME AND HOUSING INFORMATION -->
                           <div style="margin-top: 8px;">
-                                <table style="width: 100%; border: none; font-family: Arial, sans-serif; font-size: 15px;">
+                                <table style="width: 100%; border: none; font-family: Arial, sans-serif; font-size: 11px;"> <!-- Changed from 15px to 11px -->
                                     <tr>
                                         <td style="width: 25%; border: none; padding: 4px; vertical-align: top;">
                                             <strong>Other Source of Income:</strong><u>{{ $house['net_income'] ?? '__________' }}</u>
@@ -660,7 +660,7 @@
                                             <td style="width: 48%; padding-top: 15px;">
                                                 <div class="signature-line"></div>
                                                 <div><strong>Worker: {{ $worker_info['worker_name'] ?? '' }}</strong></div>
-                                                <div style="font-size: 15px; margin-top: 2px;">Program Staff Position/Designation</div>
+                                                <div style="font-size: 11px; margin-top: 2px;">Program Staff Position/Designation</div> <!-- Changed from 15px to 11px -->
                                             </td>
                                             <td style="width: 4%;"></td>
                                             <td style="width: 48%; padding-top: 15px;">
@@ -680,7 +680,7 @@
                         <div class="social-services-title">SOCIAL SERVICES RECORD</div>
                         
                         <!-- Social Services Table -->
-                        <table class="services-table" style="font-size: 15px;">
+                        <table class="services-table" style="font-size: 11px;"> <!-- Changed from 15px to 11px -->
                             <thead>
                                 <tr>
                                     <th style="width: 20%; text-align: center; vertical-align: middle;">Date</th>
@@ -736,7 +736,7 @@
 
                         <!-- CLASSIFICATION CODES -->
                         <div style="margin-top: 12px;">
-                            <div style="font-weight: bold; margin-bottom: 6px; font-size: 15px;">CLASSIFICATION CODES</div>
+                            <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px;">CLASSIFICATION CODES</div> <!-- Changed from 15px to 11px -->
                             <table class="code-table">
                                 <thead>
                                     <tr>

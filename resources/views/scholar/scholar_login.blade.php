@@ -267,5 +267,54 @@
         feather.replace();
       });
     </script>
+    <script>
+  @if (session('success'))
+    Swal.fire({
+      title: 'Success!',
+      text: "{{ session('success') }}",
+      icon: 'success',
+      confirmButtonText: 'OK'
+    });
+  @endif
+
+  @if (session('error'))
+    Swal.fire({
+      title: 'Error!',
+      text: "{{ session('error') }}",
+      icon: 'error',
+      confirmButtonText: 'Try Again'
+    });
+  @endif
+
+  @if ($errors->any() && ($errors->has('error') || $errors->count() > 1 || (!$errors->has('scholar_username') && !$errors->has('scholar_pass'))))
+    Swal.fire({
+      title: 'Validation Error',
+      html: "{!! implode('<br>', $errors->all()) !!}",
+      icon: 'warning',
+      confirmButtonText: 'OK'
+    });
+  @endif
+
+  // Add this new condition for graduated status
+  @if (session('showGraduatedAlert'))
+    Swal.fire({
+      title: 'Account Graduated',
+      text: 'Your account has been graduated. Thank you for being part of the LYDO Scholarship program!',
+      icon: 'info',
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#4c1d95'
+    });
+  @endif
+
+  // Keep the existing inactive alert
+  @if (session('showInactiveAlert'))
+    Swal.fire({
+      title: 'Account Inactive',
+      text: 'That account is inactive.',
+      icon: 'warning',
+      confirmButtonText: 'OK'
+    });
+  @endif
+</script>
   </body>
 </html>

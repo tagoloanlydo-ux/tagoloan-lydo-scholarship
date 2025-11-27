@@ -109,34 +109,39 @@ public function updateSettings(Request $request)
         return view('scholar.scholar_login');
     }
 
-    public function login(Request $request)
-    {
-        $request->validate([
-            'scholar_username' => 'required|string|regex:/^[a-zA-Z0-9]+$/',
-            'scholar_pass' => 'required|string',
-        ]);
+public function login(Request $request)
+{
+    $request->validate([
+        'scholar_username' => 'required|string|regex:/^[a-zA-Z0-9]+$/',
+        'scholar_pass' => 'required|string',
+    ]);
 
-        $scholar = Scholar::where('scholar_username', '=', $request->input('scholar_username'))->first();
+    $scholar = Scholar::where('scholar_username', '=', $request->input('scholar_username'))->first();
 
-        if (!$scholar) {
-            return back()->withInput()->withErrors(['scholar_username' => 'Invalid username.']);
-        }
-
-        if (!Hash::check($request->scholar_pass, $scholar->scholar_pass)) {
-            return back()->withInput()->withErrors(['scholar_pass' => 'Incorrect password.']);
-        }
-
-        if ($scholar->scholar_status !== 'Active') {
-            return back()->withInput()->withErrors(['error' => 'That account is inactive.'])->with('showInactiveAlert', true);
-        }
-
-        // Store scholar in session with relationships
-        $scholar->load('applicant');
-        session(['scholar' => $scholar]);
-
-        // Redirect to scholar dashboard
-        return redirect()->route('scholar.dashboard')->with('success', 'Login successful.');
+    if (!$scholar) {
+        return back()->withInput()->withErrors(['scholar_username' => 'Invalid username.']);
     }
+
+    if (!Hash::check($request->scholar_pass, $scholar->scholar_pass)) {
+        return back()->withInput()->withErrors(['scholar_pass' => 'Incorrect password.']);
+    }
+
+    // Check if scholar status is 'Graduated'
+    if ($scholar->scholar_status === 'Graduated') {
+        return back()->withInput()->withErrors(['error' => 'Your account has been graduated.'])->with('showGraduatedAlert', true);
+    }
+
+    if ($scholar->scholar_status !== 'Active') {
+        return back()->withInput()->withErrors(['error' => 'That account is inactive.'])->with('showInactiveAlert', true);
+    }
+
+    // Store scholar in session with relationships
+    $scholar->load('applicant');
+    session(['scholar' => $scholar]);
+
+    // Redirect to scholar dashboard
+    return redirect()->route('scholar.dashboard')->with('success', 'Login successful.');
+}
     public function showScholarRegistration(Request $request)
 {
     // Get scholar ID from signed URL parameters
