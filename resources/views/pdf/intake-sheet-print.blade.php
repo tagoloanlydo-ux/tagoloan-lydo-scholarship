@@ -569,11 +569,6 @@
                                 <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
                                 <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
                                 <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
                             </tr>
                         @endfor
                         
@@ -582,11 +577,6 @@
                         @for($i = 1; $i <= 5; $i++)
                             <tr style="height: 60px;">
                                 <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;">{{ $i }}</td>
-                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
-                                <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
                                 <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
                                 <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
                                 <td style="text-align: center; vertical-align: middle; border: 1px solid #000000ff; padding: 12px;"></td>
@@ -728,10 +718,6 @@
                                             <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
                                             <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
                                             <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
                                         </tr>
                                     @endfor
                                 @else
@@ -739,10 +725,6 @@
                                     @for($r = 1; $r <= 5; $r++)
                                         <tr>
                                             <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                            <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
-                                                                                        <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
                                             <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
                                             <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
                                             <td style="height: 60px; text-align: center; vertical-align: middle;"></td>
