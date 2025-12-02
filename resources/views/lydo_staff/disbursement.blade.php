@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{{ asset('css/staff.css') }}" />
     <audio id="notificationSound" src="{{ asset('notification/blade.wav') }}" preload="auto"></audio>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
 </head>
   <style>
@@ -99,18 +100,6 @@
     background-color: #fef3c7;
     color: #92400e;
     border: 1px solid #fde68a;
-}
-
-.status-received {
-    background-color: #dbeafe;
-    color: #1e40af;
-    border: 1px solid #93c5fd;
-}
-
-.status-signed {
-    background-color: #10b981;
-    color: #ffffff;
-    border: 1px solid #059669;
 }
  .loading-overlay {
     position: fixed;
@@ -424,20 +413,20 @@
                         <!-- Tab Navigation -->
                         <div class="flex gap-2 mb-6">
                             <div onclick="showUnsignedTab()" class="tab active" id="tab-unsigned">
-                                <i class="fas fa-clock mr-1"></i> Pending
+                                <i class="fas fa-table mr-1"></i> Pending Signature
                                 @if($unsignedDisbursements->count() > 0)
                                     <span class="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ $unsignedDisbursements->count() }}</span>
                                 @endif
                             </div>
                             <div onclick="showSignedTab()" class="tab" id="tab-signed">
-                                <i class="fas fa-check-circle mr-1"></i> Completed
+                                <i class="fas fa-list mr-1"></i> Signed
                                 @if($signedDisbursements->count() > 0)
                                     <span class="ml-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">{{ $signedDisbursements->count() }}</span>
                                 @endif
                             </div>
                         </div>
 
-                        <!-- Pending Tab -->
+                        <!-- Pending Signature Tab -->
                         <div id="unsignedTabContent" class="tab-content">
                             <!-- Search and Filter Section for Unsigned Tab -->
                             <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
@@ -495,8 +484,8 @@
                                                         <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">₱{{ number_format($disburse->disburse_amount, 2) }}</td>
 
                                                         <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">
-                                                            <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm" onclick="markAsReceived({{ $disburse->disburse_id }})">
-                                                                <i class="fas fa-check-circle mr-1"></i> Mark as Received
+                                                            <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm" onclick="openSignatureModal({{ $disburse->disburse_id }})">
+                                                                Sign Application
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -509,14 +498,14 @@
 
                             @else
                                 <div class="text-center py-8">
-                                    <p class="text-gray-500 text-lg">No pending disbursement records found.</p>
+                                    <p class="text-gray-500 text-lg">No unsigned disbursement records found.</p>
                                 </div>
                             @endif
                         </div>
 
-                        <!-- Completed Tab -->
+                        <!-- Signed Tab -->
                     <div id="signedTabContent" class="tab-content" style="display: none;">
-                        <!-- Search and Filter Section for Completed Tab -->
+                        <!-- Search and Filter Section for Signed Tab -->
                         <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
                             <div class="flex gap-4 items-end">
                                 <div class="flex gap-4">
@@ -552,15 +541,14 @@
                             <div class="overflow-hidden border border-gray-200 shadow-lg">
                                 <div class="overflow-y-auto">
                                     <table class="w-full table-fixed border-collapse text-[17px]">
-                                        <thead class="bg-green-600 text-white uppercase text-sm sticky top-0 z-10">
+                                        <thead class="bg-green-600 to-teal-600 text-white uppercase text-sm sticky top-0 z-10">
                                             <tr>
                                                 <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Full Name</th>
                                                 <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Barangay</th>
                                                 <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Semester</th>
                                                 <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Academic Year</th>
                                                 <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Amount</th>
-                                                <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Status</th>
-                                                <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Date Completed</th>
+                                                <th class="w-1/6 px-4 py-3 border border-gray-200 text-left">Signature</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -573,18 +561,11 @@
                                                     <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">₱{{ number_format($disburse->disburse_amount, 2) }}</td>
                                                     <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">
                                                         @if($disburse->disburse_signature)
-                                                            <span class="status-badge status-signed">Signed</span>
+                                                            <img src="{{ $disburse->disburse_signature }}" 
+                                                                alt="Signature" 
+                                                                class="max-w-20 max-h-12 mx-auto border border-gray-300 rounded">
                                                         @else
-                                                            <span class="status-badge status-received">Received</span>
-                                                        @endif
-                                                    </td>
-                                                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">
-                                                        @if($disburse->disburse_received_at)
-                                                            {{ \Carbon\Carbon::parse($disburse->disburse_received_at)->format('M d, Y') }}
-                                                        @elseif($disburse->updated_at)
-                                                            {{ \Carbon\Carbon::parse($disburse->updated_at)->format('M d, Y') }}
-                                                        @else
-                                                            -
+                                                            <span class="text-gray-400 text-sm">No signature</span>
                                                         @endif
                                                     </td>
                                                 </tr>
@@ -596,7 +577,7 @@
                             </div>
                         @else
                             <div class="text-center py-8">
-                                <p class="text-gray-500 text-lg">No completed disbursement records found.</p>
+                                <p class="text-gray-500 text-lg">No signed disbursement records found.</p>
                             </div>
                         @endif
                     </div>
@@ -685,74 +666,125 @@
 </script>
 @endif
 
-<script>
-function markAsReceived(disburseId) {
-    Swal.fire({
-        title: 'Mark as Received?',
-        text: 'This will mark the disbursement as received. This action cannot be undone.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#10b981',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, mark as received',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Show loading overlay
+    <!-- Signature Modal -->
+    <div id="signatureModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md max-h-full overflow-y-auto">
+            <div class="p-5">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Sign Application</h3>
+                <div class="border-2 border-gray-300 rounded-lg p-4 mb-4">
+                    <canvas id="signatureCanvas" width="400" height="300" class="border border-gray-300 w-full"></canvas>
+                </div>
+                <div class="flex justify-between">
+                    <button id="clearSignature" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Clear</button>
+                    <div>
+                        <button id="cancelSignature" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 mr-2">Cancel</button>
+                        <button id="saveSignature" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Save Signature</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Signature Modal -->
+    <div id="viewSignatureModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">View Signature</h3>
+                <div class="border-2 border-gray-300 rounded-lg p-4 text-center">
+                    <img id="signatureImage" src="" alt="Signature" class="max-w-full h-auto">
+                </div>
+                <div class="flex justify-end mt-4">
+                    <button id="closeViewSignature" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let signaturePad;
+        let currentDisburseId;
+
+        function openSignatureModal(disburseId) {
+            currentDisburseId = disburseId;
+            document.getElementById('signatureModal').classList.remove('hidden');
+
+            const canvas = document.getElementById('signatureCanvas');
+            signaturePad = new SignaturePad(canvas);
+        }
+
+        document.getElementById('clearSignature').addEventListener('click', function() {
+            signaturePad.clear();
+        });
+
+        document.getElementById('cancelSignature').addEventListener('click', function() {
+            signaturePad.clear();
+            document.getElementById('signatureModal').classList.add('hidden');
+        });
+
+        document.getElementById('saveSignature').addEventListener('click', function() {
+            if (signaturePad.isEmpty()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Signature',
+                    text: 'Please provide a signature before saving.',
+                });
+                return;
+            }
+
+            const signatureData = signaturePad.toDataURL();
+
+            // Create a form to submit the signature
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/lydo_staff/sign-disbursement/' + currentDisburseId;
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (csrfToken) {
+                const csrfInput = document.createElement('input'); // ✅ Fixed variable name
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken.getAttribute('content');
+                form.appendChild(csrfInput); // ✅ Fixed variable name
+            }
+
+            const signatureInput = document.createElement('input');
+            signatureInput.type = 'hidden';
+            signatureInput.name = 'signature';
+            signatureInput.value = signatureData;
+            form.appendChild(signatureInput);
+
+            document.body.appendChild(form);
+            
+            // Show loading state
             const loadingOverlay = document.getElementById('loadingOverlay');
             if (loadingOverlay) {
                 loadingOverlay.style.display = 'flex';
             }
             
-            // Send AJAX request
-            fetch(`/lydo_staff/mark-received/${disburseId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({ _method: 'POST' })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        title: 'Success!',
-                        text: data.message || 'Disbursement marked as received successfully.',
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        // Reload the page to update the list
-                        window.location.reload();
-                    });
-                } else {
-                    throw new Error(data.message || 'Failed to mark as received');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: error.message || 'Failed to mark disbursement as received. Please try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            })
-            .finally(() => {
-                // Hide loading overlay
-                if (loadingOverlay) {
-                    loadingOverlay.style.display = 'none';
-                }
-            });
-        }
+            form.submit();
+        });
+    </script>
+    <script>
+    // Handle "View Signature" button clicks
+    document.querySelectorAll('.view-sig-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const signatureUrl = this.getAttribute('data-signature');
+            const imgElement = document.getElementById('signatureImage');
+
+            if (signatureUrl) {
+                imgElement.src = signatureUrl;
+            } else {
+                imgElement.src = '';
+            }
+
+            document.getElementById('viewSignatureModal').classList.remove('hidden');
+        });
     });
-}
+
+    // Close the view signature modal
+    document.getElementById('closeViewSignature').addEventListener('click', function () {
+        document.getElementById('viewSignatureModal').classList.add('hidden');
+    });
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -851,7 +883,7 @@ const disbursementPagination = {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="6" class="text-center py-4 border border-gray-200 text-gray-500">
-                        No pending disbursement records found.
+                        No unsigned disbursement records found.
                     </td>
                 </tr>
             `;
@@ -866,8 +898,8 @@ const disbursementPagination = {
                 <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">${disburse.disburse_acad_year}</td>
                 <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">₱${parseFloat(disburse.disburse_amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">
-                    <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 text-sm" onclick="markAsReceived(${disburse.disburse_id})">
-                        <i class="fas fa-check-circle mr-1"></i> Mark as Received
+                    <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm" onclick="openSignatureModal(${disburse.disburse_id})">
+                        Sign Application
                     </button>
                 </td>
             </tr>
@@ -917,8 +949,8 @@ const disbursementPagination = {
             if (data.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center py-4 border border-gray-200 text-gray-500">
-                            No completed disbursement records found.
+                        <td colspan="6" class="text-center py-4 border border-gray-200 text-gray-500">
+                            No signed disbursement records found.
                         </td>
                     </tr>
                 `;
@@ -934,17 +966,8 @@ const disbursementPagination = {
                     <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">₱${parseFloat(disburse.disburse_amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                     <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">
                         ${disburse.disburse_signature ? 
-                            '<span class="status-badge status-signed">Signed</span>' : 
-                            '<span class="status-badge status-received">Received</span>'
-                        }
-                    </td>
-                    <td class="w-1/6 px-4 border border-gray-200 py-2 text-center">
-                        ${disburse.disburse_received_at ? 
-                            new Date(disburse.disburse_received_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 
-                            (disburse.updated_at ? 
-                                new Date(disburse.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 
-                                '-'
-                            )
+                            `<img src="${disburse.disburse_signature}" alt="Signature" class="max-w-20 max-h-12 mx-auto border border-gray-300 rounded">` : 
+                            `<span class="text-gray-400 text-sm">No signature</span>`
                         }
                     </td>
                 </tr>
@@ -964,6 +987,7 @@ const disbursementPagination = {
     },
 
     // Common Pagination Functions
+ // Common Pagination Functions
 createPaginationHTML(currentPage, totalPages, type) {
     let html = '<div class="flex justify-center items-center space-x-2 mt-4">';
     
@@ -1027,6 +1051,23 @@ createPaginationHTML(currentPage, totalPages, type) {
             this.currentSignedPage = page;
             this.renderSignedPage();
         }
+    },
+
+    attachSignatureViewListeners() {
+        document.querySelectorAll('.view-sig-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const signatureUrl = this.getAttribute('data-signature');
+                const imgElement = document.getElementById('signatureImage');
+
+                if (signatureUrl) {
+                    imgElement.src = signatureUrl;
+                } else {
+                    imgElement.src = '';
+                }
+
+                document.getElementById('viewSignatureModal').classList.remove('hidden');
+            });
+        });
     }
 };
 
@@ -1265,7 +1306,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
   <script src="{{ asset('js/disburserefresh.js') }}"></script>
-  <script src="{{ asset('js/spinner.js') }}"></script>
-
 </body>
 </html>
