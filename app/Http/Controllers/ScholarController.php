@@ -1066,4 +1066,164 @@ public function checkDuplicateApplicant(Request $request)
     
     return response()->json(['exists' => $exists]);
 }
+public function showWalkInForm()
+{
+    // If you need to pass data later, add it to the compact() array.
+    if (view()->exists('lydo_staff.walk_in_applicants')) {
+        return view('lydo_staff.walk_in_applicants');
+    }
+
+    // Fallback: if the lydo_staff view doesn't exist, try the scholar one to avoid breaking code.
+    if (view()->exists('scholar.walk_in_applicants')) {
+        return view('scholar.walk_in_applicants');
+    }
+
+    // If neither view exists, throw a 404 with a helpful message
+    abort(404, 'Walk-in applicants view not found.');
+}
+
+public function storeWalkInApplicant(Request $request)
+{
+    $scholar = session('lydopers');
+    if (!$scholar) {
+        return redirect()->route('lydo_staff.login')->withErrors(['error' => 'Please login to submit walk-in form.']);
+    }
+
+    // Validate the form data including file uploads
+    $request->validate([
+        'applicant_fname' => 'required|string|max:255',
+        'applicant_mname' => 'nullable|string|max:255',
+        'applicant_lname' => 'required|string|max:255',
+        'applicant_suffix' => 'nullable|string|max:10',
+        'applicant_gender' => 'required|in:male,female',
+        'applicant_bdate' => 'required|date|before:today',
+        'applicant_civil_status' => 'required|in:single,married,widowed,divorced',
+        'applicant_brgy' => 'required|string|max:255',
+        'applicant_email' => 'required|email',
+        'applicant_contact_number' => 'required|string|max:15',
+        'applicant_school_name' => 'required|string|max:255',
+        'applicant_school_name_other' => 'nullable|string|max:255',
+        'applicant_year_level' => 'required|string|max:50',
+        'applicant_course' => 'required|string|max:255',
+        'applicant_acad_year' => 'required|string|max:20',
+        'application_letter' => 'required|file|mimes:pdf|max:5120',
+        'certificate_of_registration' => 'required|file|mimes:pdf|max:5120',
+        'grade_slip' => 'required|file|mimes:pdf|max:5120',
+        'barangay_indigency' => 'required|file|mimes:pdf|max:5120',
+        'student_id' => 'required|file|mimes:pdf|max:5120',
+    ]);
+
+    // Determine school name
+    $schoolName = $request->applicant_school_name === 'Others'
+        ? $request->applicant_school_name_other
+        : $request->applicant_school_name;
+
+    // Process file uploads and store them temporarily
+    $documents = [];
+    
+    // Store each document temporarily
+    $documentFields = [
+        'application_letter',
+        'certificate_of_registration', 
+        'grade_slip',
+        'barangay_indigency',
+        'student_id'
+    ];
+    
+    foreach ($documentFields as $field) {
+        if ($request->hasFile($field)) {
+            $file = $request->file($field);
+            // Store temporarily in session storage
+            $fileName = 'walkin_' . time() . '_' . $field . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('temp_walkin_docs', $fileName, 'public');
+            $documents[$field] = [
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+                'mime_type' => $file->getMimeType()
+            ];
+        }
+    }
+
+    // Create walk-in data array (NO DATABASE ENTRY)
+    $walkInData = [
+        'applicant_fname' => $request->applicant_fname,
+        'applicant_mname' => $request->applicant_mname,
+        'applicant_lname' => $request->applicant_lname,
+        'applicant_suffix' => $request->applicant_suffix,
+        'applicant_gender' => $request->applicant_gender,
+        'applicant_bdate' => $request->applicant_bdate,
+        'applicant_civil_status' => $request->applicant_civil_status,
+        'applicant_brgy' => $request->applicant_brgy,
+        'applicant_email' => $request->applicant_email,
+        'applicant_contact_number' => $request->applicant_contact_number,
+        'applicant_school_name' => $schoolName,
+        'applicant_year_level' => $request->applicant_year_level,
+        'applicant_course' => $request->applicant_course,
+        'applicant_acad_year' => $request->applicant_acad_year,
+        'submitted_by' => $scholar->lydopers_id,
+        'submitted_by_name' => $scholar->lydopers_fname . ' ' . $scholar->lydopers_lname,
+        'submitted_at' => now()->format('Y-m-d H:i:s'),
+        'submission_type' => 'walk_in',
+        'documents' => $documents,
+        'documents_info' => [
+            'application_letter' => 'Application Letter uploaded',
+            'certificate_of_registration' => 'Certificate of Registration uploaded',
+            'grade_slip' => 'Grade Slip uploaded',
+            'barangay_indigency' => 'Barangay Indigency uploaded',
+            'student_id' => 'Student ID uploaded'
+        ]
+    ];
+    
+    // Store in session
+    session(['walk_in_data' => $walkInData]);
+    
+    // Log for tracking (optional)
+    \Log::info('Walk-in Applicant Information with Documents:', [
+        'submitted_by' => $scholar->lydopers_id,
+        'applicant_name' => $request->applicant_fname . ' ' . $request->applicant_lname,
+        'documents_count' => count($documents),
+        'documents' => array_keys($documents)
+    ]);
+
+    // Clean up old temporary files (older than 1 hour)
+    $this->cleanupOldTempFiles();
+
+    return redirect()->route('walk.in.form')
+        ->with('success', 'Walk-in applicant information has been recorded successfully! (No database entry made)')
+        ->with('walk_in_data', $walkInData);
+}
+
+/**
+ * Clean up old temporary walk-in files
+ */
+private function cleanupOldTempFiles()
+{
+    try {
+        $storage = Storage::disk('public');
+        $tempDir = 'temp_walkin_docs';
+        
+        if ($storage->exists($tempDir)) {
+            $files = $storage->files($tempDir);
+            $now = time();
+            
+            foreach ($files as $file) {
+                $lastModified = $storage->lastModified($file);
+                // Delete files older than 1 hour (3600 seconds)
+                if ($now - $lastModified > 3600) {
+                    $storage->delete($file);
+                }
+            }
+        }
+    } catch (\Exception $e) {
+        \Log::error('Error cleaning up temp walk-in files: ' . $e->getMessage());
+    }
+}
+
+
+
+
+
+
+
 }
