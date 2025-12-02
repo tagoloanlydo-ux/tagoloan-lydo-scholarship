@@ -443,12 +443,12 @@
                         <button onclick="openTab('inactiveLydo')"
                             id="tab-inactiveLydo"
                             class="px-4 py-2 text-blue-600 border-b-2 border-blue-600 focus:outline-none">
-                            Inactive LYDO Staff
+                            Inactive Mayor Staff
                         </button>
                         <button onclick="openTab('activeLydo')"
                             id="tab-activeLydo"
                             class="px-4 py-2 text-black-600 hover:text-blue-600 focus:outline-none">
-                            Active LYDO Staff
+                            Active Mayor Staff
                         </button>
                     </div>
 
