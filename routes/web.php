@@ -112,6 +112,13 @@ Route::get('/lydo_admin/intake-sheet/{applicationPersonnelId}', [LydoAdminContro
 });
 
 Route::middleware(['role:lydo_staff'])->group(function () {
+        Route::get('/lydo_staff/walk_in', [ScholarController::class, 'showWalkInForm'])->name('walk.in.form');
+    Route::post('/lydo_staff/walk_in/store', [ScholarController::class, 'storeWalkInApplicant'])->name('walk.in.store');
+
+    // Compatibility: also accept hyphenated URLs used elsewhere so GET works
+    Route::get('/lydo_staff/walk-in-applicants', [ScholarController::class, 'showWalkInForm']);
+    Route::post('/lydo_staff/walk-in-applicants/store', [ScholarController::class, 'storeWalkInApplicant']);
+Route::post('/lydo_staff/mark-received/{disburseId}', [LydoStaffController::class, 'markAsReceived'])->name('lydo_staff.mark_received');
     Route::get('/lydo_staff/notification-counts', [LydoStaffController::class, 'getNotificationCounts'])->name('lydo_staff.notification_counts');    
     Route::post('/lydo_staff/mark-notifications-read', [LydoStaffController::class, 'markNotificationsAsRead'])->name('lydo_staff.mark_notifications_read');
     Route::get('/lydo_staff/dashboard/card-data', [LydoStaffController::class, 'getCardData'])->name('lydo_staff.card-data');

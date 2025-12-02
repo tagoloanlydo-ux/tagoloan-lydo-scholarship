@@ -232,6 +232,12 @@
                                 </div>
                             </a>
                         </li>
+                  <li>
+                            <a href="/lydo_staff/walk_in" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                                <i class="fas fa-walking text-center mx-auto md:mx-0 text-xl"></i>
+                                <span class="ml-4 hidden md:block text-lg">Walk-in Applicants</span>
+                            </a>
+                        </li>
                     </ul>
                     <ul class="side-menu space-y-1">
                         <li>
