@@ -434,7 +434,7 @@
             
             <div class="flex-1 overflow-hidden p-4 md:p-5 text-[17px]">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-3xl font-bold text-gray-800">Lydo Staff Management</h2>
+                    <h2 class="text-3xl font-bold text-gray-800">Mayor Staff Management</h2>
                 </div>
 
                 <div class="p-5">
@@ -454,9 +454,9 @@
 
                     <div id="inactiveLydo" class="tab-content hidden">
                             <div class="note-boxs">
-                                <h4>📋 Inactive LYDO Staff</h4>
+                                <h4>📋 Inactive Mayor Staff</h4>
                                 <p class="text-sm text-black-600 mb-4">
-                                    This slideshow displays all LYDO staff members who are currently inactive. 
+                                    This slideshow displays all Mayor staff members who are currently inactive. 
                                     These staff members cannot access the Scholarship Management Account. 
                                     Click the 'Activate' button to grant account access. 
                                     You can also click any column to view the staff member's personal information.

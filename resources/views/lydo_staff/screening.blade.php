@@ -395,7 +395,7 @@
             <button type="button" id="tab-health" class="tab-button flex-shrink-0 px-5 py-3 text-sm font-medium text-gray-600 hover:text-violet-600 border-b-2 border-transparent hover:border-violet-400 transition-all duration-200">
                 <span class="flex items-center">
                     <i class="fas fa-file-signature mr-2"></i>
-                    Health & Signatures
+                    Lydo Staff
                 </span>
             </button>
             <button type="button" id="tab-remarks" class="tab-button flex-shrink-0 px-5 py-3 text-sm font-medium text-gray-600 hover:text-violet-600 border-b-2 border-transparent hover:border-violet-400 transition-all duration-200">
@@ -800,7 +800,7 @@
                 <div class="mb-8">
                     <h3 class="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
                         <i class="fas fa-file-signature mr-2 text-violet-600"></i>
-                        Health & Signatures
+                        Lydo Staff
                     </h3>
                     
                     <!-- Worker Name and Officer Name in one line -->
