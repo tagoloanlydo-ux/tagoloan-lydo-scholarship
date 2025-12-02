@@ -814,6 +814,7 @@ function openApplicationModal(applicationPersonnelId, source = 'pending') {
 
         contentDiv.innerHTML += `
             <div class="border border-gray-200 rounded-xl shadow-lg bg-white p-6 mb-6">
+             
                 <!-- Academic Details Row -->
                 <div class="mb-6">
                     <h4 class="text-gray-800 font-semibold mb-4 flex items-center">
