@@ -277,7 +277,7 @@ public function index(Request $request)
             $q->where(
                 "tbl_application_personnel.initial_screening",
                 "Approved",
-            )->orWhere("tbl_application_personnel.status", "Renewed");
+            )->orWhere("tbl_application_personnel.status", "Pending");
         })
         ->orderBy("tbl_application_personnel.created_at", "desc")
         ->limit(5)
