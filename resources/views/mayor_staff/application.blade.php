@@ -739,223 +739,353 @@ table tbody {
                             // ✅ Application Modal Functions
                             const applications = @json($applications);
 
-                            function openApplicationModal(applicationPersonnelId, source = 'pending') {
-                                // Store the current source globally
-                                currentSource = source;
-                                
-                                const contentDiv = document.getElementById('applicationContent');
-                                contentDiv.innerHTML = '';
+                       function openApplicationModal(applicationPersonnelId, source = 'pending') {
+    // Store the current source globally
+    currentSource = source;
+    
+    const contentDiv = document.getElementById('applicationContent');
+    contentDiv.innerHTML = '';
 
-                                // Store the current application ID globally for approve/reject functions
-                                currentApplicationId = applicationPersonnelId;
+    // Store the current application ID globally for approve/reject functions
+    currentApplicationId = applicationPersonnelId;
 
-                                // Find the application by application_personnel_id
-                                let foundApp = null;
-                                for (let applicantId in applications) {
-                                    if (applications[applicantId]) {
-                                        foundApp = applications[applicantId].find(app => app.application_personnel_id == applicationPersonnelId);
-                                        if (foundApp) break;
-                                    }
-                                }
+    // Find the application by application_personnel_id
+    let foundApp = null;
+    for (let applicantId in applications) {
+        if (applications[applicantId]) {
+            foundApp = applications[applicantId].find(app => app.application_personnel_id == applicationPersonnelId);
+            if (foundApp) break;
+        }
+    }
 
-                                if(foundApp) {
-                                    contentDiv.innerHTML += `
-                                        <div class="border border-gray-200 rounded-xl shadow-lg bg-white p-6 mb-6">
-                                            <!-- Academic Details Row -->
-                                            <div class="mb-6">
-                                                <h4 class="text-gray-800 font-semibold mb-4 flex items-center">
-                                                    <i class="fas fa-graduation-cap text-indigo-600 mr-2"></i>
-                                                    Academic Information
-                                                </h4>
-                                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                                                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
-                                                    <div class="flex items-center">
-                                                        <i class="fas fa-school text-blue-600 text-xl mr-3"></i>
-                                                        <div>
-                                                            <h3 class="text-lg font-semibold text-gray-800">School Name</h3>
-                                                            <p class="text-gray-700 font-medium">${foundApp.school_name || 'Not specified'}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-                                                        <div class="flex items-center mb-2">
-                                                            <i class="fas fa-calendar-alt text-green-600 mr-2"></i>
-                                                            <span class="text-sm font-semibold text-green-800">Academic Year</span>
-                                                        </div>
-                                                        <p class="text-gray-700 font-medium">${foundApp.academic_year || 'Not specified'}</p>
-                                                    </div>
-                                                    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-lg border border-blue-200">
-                                                        <div class="flex items-center mb-2">
-                                                            <i class="fas fa-layer-group text-blue-600 mr-2"></i>
-                                                            <span class="text-sm font-semibold text-blue-800">Year Level</span>
-                                                        </div>
-                                                        <p class="text-gray-700 font-medium">${foundApp.year_level || 'Not specified'}</p>
-                                                    </div>
-                                                    <div class="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
-                                                        <div class="flex items-center mb-2">
-                                                            <i class="fas fa-book text-purple-600 mr-2"></i>
-                                                            <span class="text-sm font-semibold text-purple-800">Course</span>
-                                                        </div>
-                                                        <p class="text-gray-700 font-medium">${foundApp.course || 'Not specified'}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <hr class="my-6 border-gray-300">
-
-                                            <!-- Documents Section -->
-                                            <h4 class="text-gray-800 font-semibold mb-4 flex items-center">
-                                                <i class="fas fa-folder-open text-gray-600 mr-2"></i>
-                                                Submitted Documents
-                                            </h4>
-                                                                <p class="text-sm text-gray-600 mb-6 bg-white p-3 rounded-lg border-l-4 border-indigo-400">
-                                                    <i class="fas fa-info-circle text-indigo-500 mr-2"></i>
-                                                    Click one of the documents to view and review
-                                                </p>
-                            <div class="grid grid-cols-1 md:grid-cols-5 gap-4" id="documentsContainer">
-                                <!-- Documents will be dynamically generated here -->
-                            </div>
-
-                                        </div>
-                                    `;
-                                    
-                                    // Generate document items with status badges
-                                    generateDocumentItems(foundApp);
-                                } else {
-                                    contentDiv.innerHTML = `<p class="text-gray-500">No applications found for this scholar.</p>`;
-                                }
-
-                                // Initially hide action buttons for pending applications
-                                const footerDiv = document.querySelector('.flex.justify-end.gap-3.px-6.py-4.border-t.bg-gray-50.rounded-b-2xl');
-                                if (source === 'pending') {
-                                    footerDiv.innerHTML = `
-                                    <div id="actionButtons" class="flex flex-row items-center gap-3 hidden">
-
-                                <!-- APPROVE BUTTON -->
-                                <button id="approveBtn" onclick="approveApplication()"
-                                    class="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2">
-                                    <i class="fas fa-check"></i>
-                                    <span id="approveBtnText">Approved for Interview</span>
-                                    <div id="approveBtnSpinner" class="hidden ml-2">
-                                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2
-                                                5.291A7.962 7.962 0 014 12H0c0
-                                                3.042 1.135 5.824 3 7.938l3-2.647z">
-                                            </path>
-                                        </svg>
-                                    </div>
-                                </button>
-
-                                <!-- REJECT BUTTON -->
-                                <button id="rejectBtn" onclick="rejectApplication()"
-                                    class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
-                                    <i class="fas fa-times"></i>
-                                    <span id="rejectBtnText">Reject for Interview</span>
-                                    <div id="rejectBtnSpinner" class="hidden ml-2">
-                                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0
-                                                5.373 0 12h4zm2 5.291A7.962 7.962 0
-                                                014 12H0c0 3.042 1.135 5.824 3
-                                                7.938l3-2.647z">
-                                            </path>
-                                        </svg>
-                                    </div>
-                                </button>
-
-                                <!-- SEND EMAIL BUTTON -->
-                                <button id="sendEmailBtn" onclick="sendDocumentEmail()"
-                                    class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-2">
-                                    <i class="fas fa-envelope"></i>
-                                    <span id="sendEmailBtnText">Send Email</span>
-                                    <div id="sendEmailBtnSpinner" class="hidden ml-2">
-                                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                            </path>
-                                        </svg>
-                                    </div>
-                                </button>
-                            </div>
-
-                                        <div id="reviewMessage" class="text-gray-600 text-sm">
-                                            <i class="fas fa-info-circle mr-2"></i>Please review all 5 documents before making a decision.
-                                        </div>
-                                    `;
-                } else {
-                    footerDiv.innerHTML = `
-                        <div class="modal-footer">
-                            <button id="sendEmailBtn" onclick="sendDocumentEmail()" class="btn btn-primary">
-                                <i class="fas fa-envelope"></i>
-                                <span id="sendEmailBtnText">Send Email</span>
-                                <div id="sendEmailBtnSpinner" class="hidden ml-2">
-                                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                </div>
-                            </button>
-                        </div>
-                    `;
-                }
-                document.getElementById('applicationModal').classList.remove('hidden');
-
-                // Load existing comments and statuses
-                loadDocumentComments(applicationPersonnelId, source);
-                
-                // NEW: Check for document updates to show NEW badges
-                trackDocumentUpdates(applicationPersonnelId);
-
-                // Ensure send email button is hidden when modal is opened from List view (or any non-pending source)
-                // Small timeout to ensure DOM elements rendered before toggling
-                setTimeout(() => {
-                    const sendEmailBtn = document.getElementById('sendEmailBtn');
-                    if (sendEmailBtn) {
-                        if (currentSource !== 'pending') {
-                            sendEmailBtn.style.display = 'none';
-                        } else {
-                            sendEmailBtn.style.display = '';
-                        }
-                    }
-                }, 50);
+    if(foundApp) {
+        // Get applicant ID to find previous applications
+        const applicantId = foundApp.applicant_id;
+        
+        // Find all applications for this applicant
+        const allApplicantApplications = [];
+        for (let appId in applications) {
+            if (applications[appId]) {
+                const applicantApps = applications[appId].filter(app => app.applicant_id === applicantId);
+                allApplicantApplications.push(...applicantApps);
             }
+        }
 
-            // NEW: Function to generate document items with status badges
-            function generateDocumentItems(foundApp) {
-                const documentsContainer = document.getElementById('documentsContainer');
-                const documentTypes = [
-                    { type: 'application_letter', name: 'Application Letter', url: foundApp.application_letter },
-                    { type: 'cert_of_reg', name: 'Certificate of Registration', url: foundApp.cert_of_reg },
-                    { type: 'grade_slip', name: 'Grade Slip', url: foundApp.grade_slip },
-                    { type: 'brgy_indigency', name: 'Barangay Indigency', url: foundApp.brgy_indigency },
-                    { type: 'student_id', name: 'Student ID', url: foundApp.student_id }
-                ];
+        // Sort applications by academic year (newest first)
+        const sortedApplications = allApplicantApplications.sort((a, b) => {
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
 
-                documentsContainer.innerHTML = '';
-                
-                documentTypes.forEach(doc => {
-                    documentsContainer.innerHTML += `
-                        <div class="document-item-wrapper">
-                            <div class="document-item bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200" 
-                                data-document-type="${doc.type}" 
-                                data-document-url="${doc.url}">
-                                <div class="flex flex-col items-center justify-center">
-                                    <a href="#" onclick="openDocumentModal('${doc.url}', '${doc.name}', '${doc.type}')" class="flex flex-col items-center cursor-pointer w-full">
-                                        <i class="fas fa-file-alt text-purple-600 text-3xl mb-3 document-icon" id="icon-${doc.type}"></i>
-                                        <span class="text-sm font-medium text-gray-700 text-center">${doc.name}</span>
-                                    </a>
+        // Current application (the one being reviewed)
+        const currentApplication = sortedApplications.find(app => 
+            app.application_personnel_id == applicationPersonnelId
+        );
+
+        // Previous applications (excluding current)
+        const previousApplications = sortedApplications.filter(app => 
+            app.application_personnel_id != applicationPersonnelId
+        );
+
+        contentDiv.innerHTML += `
+            <div class="border border-gray-200 rounded-xl shadow-lg bg-white p-6 mb-6">
+                <!-- Academic Details Row -->
+                <div class="mb-6">
+                    <h4 class="text-gray-800 font-semibold mb-4 flex items-center">
+                        <i class="fas fa-graduation-cap text-indigo-600 mr-2"></i>
+                        Academic Information
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-school text-blue-600 text-xl mr-3"></i>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">School Name</h3>
+                                    <p class="text-gray-700 font-medium">${foundApp.school_name || 'Not specified'}</p>
                                 </div>
                             </div>
-                            <div class="document-status-badge hidden" id="badge-${doc.type}"></div>
                         </div>
-                    `;
-                });
-            }
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-calendar-alt text-green-600 mr-2"></i>
+                                <span class="text-sm font-semibold text-green-800">Academic Year</span>
+                            </div>
+                            <p class="text-gray-700 font-medium">${foundApp.academic_year || 'Not specified'}</p>
+                        </div>
+                        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-lg border border-blue-200">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-layer-group text-blue-600 mr-2"></i>
+                                <span class="text-sm font-semibold text-blue-800">Year Level</span>
+                            </div>
+                            <p class="text-gray-700 font-medium">${foundApp.year_level || 'Not specified'}</p>
+                        </div>
+                        <div class="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-lg border border-purple-200">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-book text-purple-600 mr-2"></i>
+                                <span class="text-sm font-semibold text-purple-800">Course</span>
+                            </div>
+                            <p class="text-gray-700 font-medium">${foundApp.course || 'Not specified'}</p>
+                        </div>
+                    </div>
+                </div>
 
+                ${previousApplications.length > 0 ? `
+                <!-- Previous Applications Section -->
+                <div class="mb-6">
+                    <h4 class="text-gray-800 font-semibold mb-4 flex items-center">
+                        <i class="fas fa-history text-orange-600 mr-2"></i>
+                        Previous Application History
+                    </h4>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p class="text-sm text-yellow-800 mb-3">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            This applicant has ${previousApplications.length} previous application(s).
+                        </p>
+                        
+                        <div class="space-y-3">
+                            ${previousApplications.map((prevApp, index) => `
+                                <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h5 class="font-semibold text-gray-700">Application ${index + 1}</h5>
+                                        <span class="text-sm px-2 py-1 rounded-full ${getStatusBadgeClass(prevApp.initial_screening)}">
+                                            ${prevApp.initial_screening || 'N/A'}
+                                        </span>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                                        <div>
+                                            <span class="font-medium">Academic Year:</span>
+                                            <span class="text-gray-600">${prevApp.academic_year || 'N/A'}</span>
+                                        </div>
+                                        <div>
+                                            <span class="font-medium">Remarks:</span>
+                                            <span class="text-gray-600">${prevApp.remarks || 'N/A'}</span>
+                                        </div>
+                                        <div>
+                                            <span class="font-medium">Status:</span>
+                                            <span class="text-gray-600">${prevApp.status || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                    ${prevApp.initial_screening === 'Approved' ? `
+                                    <div class="mt-2">
+                                        <button type="button" 
+                                            onclick="viewPreviousApplication(${prevApp.application_personnel_id})"
+                                            class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                                            <i class="fas fa-eye mr-1"></i>
+                                            View Previous Documents
+                                        </button>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+
+                <hr class="my-6 border-gray-300">
+
+                <!-- Current Documents Section -->
+                <h4 class="text-gray-800 font-semibold mb-4 flex items-center">
+                    <i class="fas fa-folder-open text-gray-600 mr-2"></i>
+                    Submitted Documents (Current Application)
+                </h4>
+                <p class="text-sm text-gray-600 mb-6 bg-white p-3 rounded-lg border-l-4 border-indigo-400">
+                    <i class="fas fa-info-circle text-indigo-500 mr-2"></i>
+                    Click one of the documents to view and review
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4" id="documentsContainer">
+                    <!-- Documents will be dynamically generated here -->
+                </div>
+            </div>
+        `;
+        
+        // Generate document items with status badges
+        generateDocumentItems(foundApp);
+    } else {
+        contentDiv.innerHTML = `<p class="text-gray-500">No applications found for this scholar.</p>`;
+    }
+
+    // Initially hide action buttons for pending applications
+    const footerDiv = document.querySelector('.flex.justify-end.gap-3.px-6.py-4.border-t.bg-gray-50.rounded-b-2xl');
+    if (source === 'pending') {
+        footerDiv.innerHTML = `
+        <div id="actionButtons" class="flex flex-row items-center gap-3 hidden">
+
+            <!-- APPROVE BUTTON -->
+            <button id="approveBtn" onclick="approveApplication()"
+                class="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2">
+                <i class="fas fa-check"></i>
+                <span id="approveBtnText">Approved for Interview</span>
+                <div id="approveBtnSpinner" class="hidden ml-2">
+                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2
+                            5.291A7.962 7.962 0 014 12H0c0
+                            3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                </div>
+            </button>
+
+            <!-- REJECT BUTTON -->
+            <button id="rejectBtn" onclick="rejectApplication()"
+                class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center gap-2">
+                <i class="fas fa-times"></i>
+                <span id="rejectBtnText">Reject for Interview</span>
+                <div id="rejectBtnSpinner" class="hidden ml-2">
+                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0
+                            5.373 0 12h4zm2 5.291A7.962 7.962 0
+                            014 12H0c0 3.042 1.135 5.824 3
+                            7.938l3-2.647z">
+                        </path>
+                    </svg>
+                </div>
+            </button>
+
+            <!-- SEND EMAIL BUTTON -->
+            <button id="sendEmailBtn" onclick="sendDocumentEmail()"
+                class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-2">
+                <i class="fas fa-envelope"></i>
+                <span id="sendEmailBtnText">Send Email</span>
+                <div id="sendEmailBtnSpinner" class="hidden ml-2">
+                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                </div>
+            </button>
+        </div>
+
+        <div id="reviewMessage" class="text-gray-600 text-sm">
+            <i class="fas fa-info-circle mr-2"></i>Please review all 5 documents before making a decision.
+        </div>
+        `;
+    } else {
+        footerDiv.innerHTML = `
+            <div class="modal-footer">
+                <button id="sendEmailBtn" onclick="sendDocumentEmail()" class="btn btn-primary">
+                    <i class="fas fa-envelope"></i>
+                    <span id="sendEmailBtnText">Send Email</span>
+                    <div id="sendEmailBtnSpinner" class="hidden ml-2">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </button>
+            </div>
+        `;
+    }
+    document.getElementById('applicationModal').classList.remove('hidden');
+
+    // Load existing comments and statuses
+    loadDocumentComments(applicationPersonnelId, source);
+    
+    // NEW: Check for document updates to show NEW badges
+    trackDocumentUpdates(applicationPersonnelId);
+
+    // Ensure send email button is hidden when modal is opened from List view (or any non-pending source)
+    // Small timeout to ensure DOM elements rendered before toggling
+    setTimeout(() => {
+        const sendEmailBtn = document.getElementById('sendEmailBtn');
+        if (sendEmailBtn) {
+            if (currentSource !== 'pending') {
+                sendEmailBtn.style.display = 'none';
+            } else {
+                sendEmailBtn.style.display = '';
+            }
+        }
+    }, 50);
+}
+
+// Helper function for status badge styling
+function getStatusBadgeClass(status) {
+    switch(status) {
+        case 'Approved':
+            return 'bg-green-100 text-green-800';
+        case 'Rejected':
+            return 'bg-red-100 text-red-800';
+        case 'Pending':
+            return 'bg-yellow-100 text-yellow-800';
+        default:
+            return 'bg-gray-100 text-gray-800';
+    }
+}
+
+// Function to view previous application documents
+function viewPreviousApplication(previousApplicationPersonnelId) {
+    // Find the previous application
+    let previousApp = null;
+    for (let applicantId in applications) {
+        if (applications[applicantId]) {
+            previousApp = applications[applicantId].find(app => 
+                app.application_personnel_id == previousApplicationPersonnelId
+            );
+            if (previousApp) break;
+        }
+    }
+
+    if (previousApp) {
+        Swal.fire({
+            title: 'Previous Application Documents',
+            html: `
+                <div class="text-left">
+                    <p class="mb-4"><strong>Academic Year:</strong> ${previousApp.academic_year || 'N/A'}</p>
+                    <div class="space-y-2">
+                        ${previousApp.application_letter ? `
+                            <div>
+                                <a href="${previousApp.application_letter}" target="_blank" 
+                                   class="text-blue-600 hover:text-blue-800 flex items-center">
+                                    <i class="fas fa-file-pdf mr-2"></i>Application Letter
+                                </a>
+                            </div>
+                        ` : ''}
+                        ${previousApp.cert_of_reg ? `
+                            <div>
+                                <a href="${previousApp.cert_of_reg}" target="_blank" 
+                                   class="text-blue-600 hover:text-blue-800 flex items-center">
+                                    <i class="fas fa-file-pdf mr-2"></i>Certificate of Registration
+                                </a>
+                            </div>
+                        ` : ''}
+                        ${previousApp.grade_slip ? `
+                            <div>
+                                <a href="${previousApp.grade_slip}" target="_blank" 
+                                   class="text-blue-600 hover:text-blue-800 flex items-center">
+                                    <i class="fas fa-file-pdf mr-2"></i>Grade Slip
+                                </a>
+                            </div>
+                        ` : ''}
+                        ${previousApp.brgy_indigency ? `
+                            <div>
+                                <a href="${previousApp.brgy_indigency}" target="_blank" 
+                                   class="text-blue-600 hover:text-blue-800 flex items-center">
+                                    <i class="fas fa-file-pdf mr-2"></i>Barangay Indigency
+                                </a>
+                            </div>
+                        ` : ''}
+                        ${previousApp.student_id ? `
+                            <div>
+                                <a href="${previousApp.student_id}" target="_blank" 
+                                   class="text-blue-600 hover:text-blue-800 flex items-center">
+                                    <i class="fas fa-file-pdf mr-2"></i>Student ID
+                                </a>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `,
+            icon: 'info',
+            confirmButtonText: 'Close',
+            width: '600px'
+        });
+    }
+}
 // NEW: Function to update document status badges
 function updateDocumentBadges(documentType, status, isNew = false) {
     const badge = document.getElementById(`badge-${documentType}`);
