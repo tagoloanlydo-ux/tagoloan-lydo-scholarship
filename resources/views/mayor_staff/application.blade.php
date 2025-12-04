@@ -737,7 +737,6 @@ function showList() {
 
 // Application Modal Functions
 const applications = @json($applications ?? []);
-console.log('applications (JS):', applications); // debug to inspect structure
 
 function openApplicationModal(applicationPersonnelId, source = 'pending') {
     console.log('Opening application modal for:', applicationPersonnelId, 'Source:', source);
@@ -763,56 +762,58 @@ function openApplicationModal(applicationPersonnelId, source = 'pending') {
     if (applications) {
         for (let applicantId in applications) {
             if (applications[applicantId]) {
-                // The group might be an array of apps or a single object; make robust
-                const arr = Array.isArray(applications[applicantId]) ? applications[applicantId] : [applications[applicantId]];
-                foundApp = arr.find(app => {
-                    // Try to match by numeric/string id (defensive)
-                    return String(app.application_personnel_id) === String(applicationPersonnelId)
-                        || String(app.application_personnel_id) === String(applicationPersonnelId);
-                });
+                foundApp = applications[applicantId].find(app => app.application_personnel_id == applicationPersonnelId);
                 if (foundApp) break;
             }
         }
     }
 
-    console.log('foundApp:', foundApp);
-
     if (foundApp) {
-        // Normalized properties with fallbacks
-        const lname = foundApp.applicant_lname || foundApp.last_name || foundApp.lname || 'N/A';
-        const fname = foundApp.applicant_fname || foundApp.first_name || foundApp.fname || 'N/A';
-        const mnameRaw = foundApp.applicant_mname || foundApp.middle_name || foundApp.mname || '';
-        const midInitial = mnameRaw ? (mnameRaw.charAt(0).toUpperCase() + '.') : 'N/A';
-        const suffix = foundApp.applicant_suffix || foundApp.suffix || 'N/A';
+        // Get applicant ID to find previous applications
+        const applicantId = foundApp.applicant_id;
+        
+        // Find all applications for this applicant
+        const allApplicantApplications = [];
+        if (applications) {
+            for (let appId in applications) {
+                if (applications[appId]) {
+                    const applicantApps = applications[appId].filter(app => app.applicant_id === applicantId);
+                    allApplicantApplications.push(...applicantApps);
+                }
+            }
+        }
 
-        // ...then use those variables when building the modal HTML:
+        // Sort applications by academic year (newest first)
+        const sortedApplications = allApplicantApplications.sort((a, b) => {
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
+
+        // Current application (the one being reviewed)
+        const currentApplication = sortedApplications.find(app => 
+            app.application_personnel_id == applicationPersonnelId
+        );
+
+        // Get current year and previous year
+        const currentYear = new Date().getFullYear();
+        const nextYear = currentYear + 1;
+        const currentAcadYear = `${currentYear}-${nextYear}`;
+        const lastAcadYear = `${currentYear - 1}-${currentYear}`;
+        
+        // Previous year application (last academic year)
+        const previousYearApplication = sortedApplications.find(app => 
+            app.application_personnel_id != applicationPersonnelId && 
+            app.academic_year === lastAcadYear
+        );
+
+        // Other previous applications (excluding current and last year)
+        const otherPreviousApplications = sortedApplications.filter(app => 
+            app.application_personnel_id != applicationPersonnelId && 
+            app.academic_year !== lastAcadYear &&
+            app.academic_year !== currentAcadYear
+        );
+
         contentDiv.innerHTML += `
             <div class="border border-gray-200 rounded-xl shadow-lg bg-white p-6 mb-6">
-                <div class="mb-4">
-                    <h4 class="text-gray-800 font-semibold mb-2 flex items-center">
-                        <i class="fas fa-user text-indigo-600 mr-2"></i>
-                        Applicant Information
-                    </h4>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                        <div class="p-3 bg-gray-50 rounded-lg border">
-                            <div class="text-xs text-gray-600">Last Name</div>
-                            <div class="text-sm font-medium text-gray-800">${lname}</div>
-                        </div>
-                        <div class="p-3 bg-gray-50 rounded-lg border">
-                            <div class="text-xs text-gray-600">First Name</div>
-                            <div class="text-sm font-medium text-gray-800">${fname}</div>
-                        </div>
-                        <div class="p-3 bg-gray-50 rounded-lg border">
-                            <div class="text-xs text-gray-600">Middle Initial</div>
-                            <div class="text-sm font-medium text-gray-800">${midInitial}</div>
-                        </div>
-                        <div class="p-3 bg-gray-50 rounded-lg border">
-                            <div class="text-xs text-gray-600">Suffix</div>
-                            <div class="text-sm font-medium text-gray-800">${suffix}</div>
-                        </div>
-                    </div>
-                </div>
                 <!-- Academic Details Row -->
                 <div class="mb-6">
                     <h4 class="text-gray-800 font-semibold mb-4 flex items-center">
