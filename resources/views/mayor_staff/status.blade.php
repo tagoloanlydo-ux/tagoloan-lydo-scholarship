@@ -313,6 +313,7 @@
                                 <th class="px-4 py-3 border border-gray-200 text-center">School Name</th>
                                 <th class="px-4 py-3 border border-gray-200 text-center">Scholar Status</th>
                                 <th class="px-4 py-3 border border-gray-200 text-center">Application</th>
+                                <th class="px-4 py-3 border border-gray-200 text-center">Remarks</th>
 
                             </tr
                         </thead>
