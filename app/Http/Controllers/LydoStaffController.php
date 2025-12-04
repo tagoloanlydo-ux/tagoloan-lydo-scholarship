@@ -249,7 +249,7 @@ public function index(Request $request)
     );
 }
 
- public function screening(Request $request)
+public function screening(Request $request)
 {
     $notifications = DB::table("tbl_application_personnel")
         ->join(
@@ -386,7 +386,8 @@ public function index(Request $request)
         ->orderBy("applicant_brgy", "asc")
         ->pluck("applicant_brgy");
 
-    // Applicants with intake sheets but without remarks (pending screening)
+    // ✅ FIXED: Applicants with initial screening approved and waiting remarks
+    // Tanggalin ang whereNotNull para maipakita ang lahat ng pending interviews
     $tableApplicants = DB::table("tbl_applicant")
         ->join(
             "tbl_application",
@@ -425,7 +426,8 @@ public function index(Request $request)
         })
         ->where("tbl_application_personnel.initial_screening", "Approved")
         ->where("tbl_application_personnel.remarks", "waiting")
-        ->whereNotNull("family_intake_sheets.application_personnel_id")
+        // ❌ TANGGALIN ITO para maipakita ang lahat ng pending interviews:
+        // ->whereNotNull("family_intake_sheets.application_personnel_id")
         ->get();
 
     $currentAcadYear = DB::table("tbl_applicant")
