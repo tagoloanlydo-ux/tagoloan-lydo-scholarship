@@ -8,131 +8,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="{{ asset('css/mayor_settings.css') }}" />
     <link rel="stylesheet" href="{{ asset('css/staff.css') }}" />
     <link rel="icon" type="image/x-icon" href="/img/LYDO.png">
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="{{ asset('js/notification-refresh.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        #passwordRequirements div,
-        #passwordMatchError,
-        #passwordMatchSuccess {
-            transition: all 0.3s ease;
-        }
-        
-        /* Style for requirement items */
-        .requirement-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2px;
-        }
-        
-        /* Success state colors */
-        .text-green-500 {
-            color: #10b981;
-        }
-        
-        .text-red-500 {
-            color: #ef4444;
-        }
-        
-        /* Toggle Password Button Styles */
-        .toggle-password {
-            transition: color 0.3s ease;
-        }
-        
-        .toggle-password:hover {
-            color: #7c3aed;
-        }
-        
-        .toggle-password.active {
-            color: #7c3aed;
-        }
-        
-        /* Loading Spinner Styles */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            animation: fadeIn 1s ease forwards;
-        }
-        
-        .spinner {
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-        }
-        
-        .spinner img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-        }
-        
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-        
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        
-        .fade-out {
-            animation: fadeOut 1s ease forwards;
-        }
-        
-        @keyframes fadeOut {
-            to {
-                opacity: 0;
-                visibility: hidden;
-            }
-        }
-        
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .spinner {
-                width: 80px;
-                height: 80px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .spinner {
-                width: 60px;
-                height: 60px;
-            }
-        }
-        
-        /* Make content area scrollable */
-        .main-content-area {
-            overflow-y: auto;
-            height: calc(100vh - 80px); /* Adjust based on header height */
-        }
-    </style>
+
 </head>
 
 <body class="bg-gray-50">
@@ -151,7 +34,7 @@
     </div>
     <div class="flex items-center space-x-4">
         <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
-        <div class="relative">
+        <div class="relative hidden">
             <!-- 🔔 Bell Icon -->
             <button id="notifBell" class="relative focus:outline-none">
                 <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>

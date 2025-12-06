@@ -21,6 +21,7 @@
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <style>
+
   /* A4 Exact Proportion */
 #documentViewer {
     width: 794px; /* A4 width in pixels (210mm) */
@@ -65,13 +66,15 @@
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
+/* Kung gusto mo rin i-update ang updated badge sa loob ng modal */
+.badge-updated {
+    background-color: #dc2626; /* Red background */
+    color: white;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 8px;
+    /* Remove animation if present */
+    animation: none !important;
 }
 
 .scale-0 {
@@ -265,7 +268,7 @@
                 </div>
                 
                 <!-- Notification Bell with Improved System -->
-                <div class="relative">
+                <div class="relative hidden">
                     <button id="notifBell" class="relative focus:outline-none">
                         <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
                         @if($badgeCount > 0)
@@ -397,7 +400,51 @@
                             📋 Pending Renewal Applications: Review and process new renewal submissions from scholars
                             </h3>
                         </div>
-                        
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <!-- Card 1: Pending Renewals -->
+            <div id="pendingRenewalCountCard" class="bg-gradient-to-r from-orange-200 to-orange-400 rounded-xl shadow-lg p-6 cursor-pointer transform transition-all duration-300 hover:scale-102 hover:shadow-2xl" onclick="showPendingRenewals()">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-800 text-sm font-medium mb-1">Pending Renewals</p>
+                        <div class="flex items-end">
+                            <h3 id="pendingRenewalCountValue" class="text-3xl font-bold text-gray-900">0</h3>
+                            <span class="text-gray-700 text-sm ml-2 mb-1">applications</span>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-500 bg-opacity-30 p-3 rounded-full">
+                        <i class="fas fa-clock text-white text-2xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-yellow-400 border-opacity-40">
+                    <p class="text-gray-700 text-xs">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Click to see all pending renewal applications
+                    </p>
+                </div>
+            </div>
+
+            <!-- Card 2: Updated Documents in Renewals -->
+            <div id="updatedRenewalCountCard" class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 cursor-pointer transform transition-all duration-300 hover:scale-102 hover:shadow-2xl" onclick="showUpdatedRenewalDocuments()">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white text-sm font-medium mb-1">Updated Renewal Documents</p>
+                        <div class="flex items-end">
+                            <h3 id="updatedRenewalCountValue" class="text-3xl font-bold text-white">0</h3>
+                            <span class="text-purple-200 text-sm ml-2 mb-1">applications</span>
+                        </div>
+                    </div>
+                    <div class="bg-purple-700 bg-opacity-30 p-3 rounded-full">
+                        <i class="fas fa-sync-alt text-white text-2xl"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-purple-400 border-opacity-40">
+                    <p class="text-purple-100 text-xs">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Click to see renewals with new/updated documents
+                    </p>
+                </div>
+            </div>
+        </div>
                         <!-- Search and Filter Section -->
                         <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
                             <div class="flex gap-4 items-end">
@@ -599,6 +646,7 @@
                 <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                     <i class="fas fa-folder-open text-blue-600"></i>
                     Renewal Requirements
+                    <span id="renewalApplicantName" class="ml-3 text-black-600 text-base font-medium">-</span>
                 </h2>
                 <button onclick="closeApplicationModal()" 
                         class="p-2 rounded-full hover:bg-gray-100 transition">

@@ -59,7 +59,7 @@
             </div>
             <div class="flex items-center space-x-4">
                 <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
-                <div class="relative">
+                <div class="relative hidden">
                     <!-- 🔔 Bell Icon -->
                     <button id="notifBell" class="relative focus:outline-none">
                         <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
@@ -114,30 +114,31 @@
                                 <span class="ml-4 hidden md:block text-lg">Dashboard</span>
                             </a>
                         </li>
-                        <li class="relative">
-                            <button onclick="toggleDropdown('scholarMenu')"
-                                class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
-                                <div class="flex items-center">
-                                    <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
-                                    <span class="ml-4 hidden md:block text-lg">Applicants</span>
-                                </div>
-                                <i class="bx bx-chevron-down ml-2"></i>
-                            </button>
+                    <li class="relative">
+                        <button onclick="toggleDropdown('scholarMenu')"
+                            class="w-full flex items-center justify-between p-3 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white focus:outline-none">
+                            <div class="flex items-center">
+                                <i class="bx bxs-graduation text-center mx-auto md:mx-0 text-xl"></i>
+                                <span class="ml-4 hidden md:block text-lg">Applicants</span>
+                            </div>
+                            <!-- ✅ DAGDAG: I-ADD ANG CHEVRON ICON DITO -->
+                            <i class="bx bx-chevron-down ml-2 transition-transform duration-300"></i>
+                        </button>
 
-                            <!-- Dropdown Menu -->
-                            <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
-                                <li>
-                                    <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
-                                        <i class="bx bx-search-alt mr-2"></i> Review Applications
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="/mayor_staff/status" class="flex items-center p-2 rounded-lg text-gray-700 bg-violet-600 text-white">
-                                        <i class="bx bx-check-circle mr-2"></i> Scholarship Approval
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                        <!-- Dropdown Menu -->
+                        <ul id="scholarMenu" class="ml-10 mt-2 space-y-2 hidden">
+                            <li>
+                                <a href="/mayor_staff/application" class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-violet-600 hover:text-white">
+                                    <i class="bx bx-search-alt mr-2"></i> Review Applications
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/mayor_staff/status" class="flex items-center p-2 rounded-lg text-gray-700 bg-violet-600 text-white">
+                                    <i class="bx bx-check-circle mr-2"></i> Scholarship Approval
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                     </ul>
                     <ul class="side-menu space-y-1">
                         <li>
@@ -181,12 +182,63 @@
 
                     <!-- Pending Status Tab -->
                     <div id="tableView" class="overflow-x-auto">
+                    
                         <div class="mb-4">
+                        
                             <h3 class="text-lg font-semibold text-gray-700 bg-violet-50 p-3 rounded-lg border border-violet-200">
                             📋 Pending Status: View applicants awaiting status assignment.
                             </h3>
                         </div>
-                        
+                        <!-- ✅ DAGDAG: Statistics Cards for Remarks -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <!-- Card 1: Poor Applications -->
+                            <div class="bg-gradient-to-r from-orange-200 to-orange-400 rounded-xl shadow-lg p-6 cursor-pointer transform transition-all duration-300 hover:scale-102 hover:shadow-2xl" onclick="filterByRemarks('Poor')">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-black-100 text-sm font-medium mb-1">Poor Remarks</p>
+                                        <div class="flex items-end">
+                                            <h3 id="poorCountValue" class="text-3xl font-bold text-black">
+                                                {{ $filteredApplications->where('remarks', 'Poor')->count() }}
+                                            </h3>
+                                            <span class="text-black-200 text-sm ml-2 mb-1">applications</span>
+                                        </div>
+                                    </div>
+                                    <div class="bg-black-400 bg-opacity-30 p-3 rounded-full">
+                                        <i class="fas fa-info-circle text-white text-2xl"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-t border-black-400 border-opacity-40">
+                                    <p class="text-black-100 text-xs">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Click to show only Poor remarks
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Card 2: Ultra Poor Applications -->
+                            <div class="bg-gradient-to-r from-green-200 to-green-400 rounded-xl shadow-lg p-6 cursor-pointer transform transition-all duration-300 hover:scale-102 hover:shadow-2xl" onclick="filterByRemarks('Ultra Poor')">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-black-100 text-sm font-medium mb-1">Ultra Poor Remarks</p>
+                                        <div class="flex items-end">
+                                            <h3 id="ultraPoorCountValue" class="text-3xl font-bold text-black">
+                                                {{ $filteredApplications->where('remarks', 'Ultra Poor')->count() }}
+                                            </h3>
+                                            <span class="text-black-200 text-sm ml-2 mb-1">applications</span>
+                                        </div>
+                                    </div>
+                                    <div class="bg-black-400 bg-opacity-30 p-3 rounded-full">
+                                        <i class="fas fa-info-circle text-white text-2xl"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-t border-green-400 border-opacity-40">
+                                    <p class="text-black-100 text-xs">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Click to show only Ultra Poor remarks
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                         <!-- Filters -->
                         <div class="filter-container">
                             <div class="filter-group">
@@ -625,18 +677,27 @@ document.addEventListener('DOMContentLoaded', function() {
 function toggleDropdown(menuId) {
     const menu = document.getElementById(menuId);
     const button = event.currentTarget;
-    const icon = button.querySelector('.bx-chevron-down');
+    // ✅ CORRECTED: Hanapin ang chevron icon sa loob ng button
+    const chevronIcon = button.querySelector('.bx-chevron-down');
     
-    // Toggle the dropdown menu
-    const isHidden = menu.classList.toggle('hidden');
-    
-    // Rotate the chevron icon
-    if (icon) {
-        icon.classList.toggle('rotate-180');
+    if (!menu || !chevronIcon) {
+        console.error('Dropdown elements not found:', { menuId, menu, chevronIcon });
+        return;
     }
     
+    // Toggle the dropdown menu visibility
+    menu.classList.toggle('hidden');
+    
+    // Rotate the chevron icon
+    chevronIcon.classList.toggle('rotate-180');
+    
     // Save the state to localStorage for persistence across pages
-    localStorage.setItem(`dropdown_${menuId}`, !isHidden);
+    const isOpen = !menu.classList.contains('hidden');
+    try {
+        localStorage.setItem(`dropdown_${menuId}`, isOpen);
+    } catch (e) {
+        console.warn('Failed to save to localStorage:', e);
+    }
 }
 
 // Initialize dropdown states on page load
@@ -645,17 +706,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const dropdownMenus = document.querySelectorAll('[id$="Menu"]');
     
     dropdownMenus.forEach(menu => {
-        const isOpen = localStorage.getItem(`dropdown_${menu.id}`) === 'true';
-        const parentButton = menu.parentElement.querySelector('button');
-        const icon = parentButton ? parentButton.querySelector('.bx-chevron-down') : null;
-        
-        if (isOpen) {
-            menu.classList.remove('hidden');
-            if (icon) {
-                icon.classList.add('rotate-180');
+        try {
+            const isOpen = localStorage.getItem(`dropdown_${menu.id}`) === 'true';
+            const parentButton = menu.parentElement.querySelector('button');
+            const chevronIcon = parentButton ? parentButton.querySelector('.bx-chevron-down') : null;
+            
+            if (isOpen) {
+                menu.classList.remove('hidden');
+                if (chevronIcon) {
+                    chevronIcon.classList.add('rotate-180');
+                }
             }
+        } catch (e) {
+            console.warn('Error restoring dropdown state:', e);
         }
     });
+});
+
+// CSS for smooth rotation - dapat naka-inline sa <style> tag
+document.addEventListener('DOMContentLoaded', function() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .bx-chevron-down {
+            transition: transform 0.3s ease;
+        }
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        
+        /* Ensure dropdowns have proper z-index */
+        #notifDropdown {
+            z-index: 1000;
+        }
+        
+        /* Sidebar dropdown styling */
+        [id$="Menu"] {
+            z-index: 999;
+        }
+        
+        /* Prevent dropdown from closing when clicking inside */
+        [id$="Menu"] a {
+            display: block;
+        }
+    `;
+    document.head.appendChild(style);
 });
 
 // Add CSS for smooth rotation
@@ -684,6 +778,69 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+</script>
+<script>
+// ✅ DAGDAG: Function to filter by remarks
+function filterByRemarks(remarkType) {
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    let filteredCount = 0;
+    
+    rows.forEach(row => {
+        const remarksCell = row.querySelector('td:nth-child(6)');
+        const remarksText = remarksCell ? remarksCell.textContent.trim() : '';
+        
+        // Show only rows matching the selected remark type
+        if (remarksText === remarkType) {
+            row.style.display = '';
+            filteredCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Determine button color based on remark type
+    let buttonColor;
+    if (remarkType === 'Poor') {
+        buttonColor = '#f59e0b'; // Yellow
+    } else if (remarkType === 'Ultra Poor') {
+        buttonColor = '#10b981'; // Green
+    } else {
+        buttonColor = '#7c3aed'; // Default purple
+    }
+    
+    // Show appropriate message
+    if (filteredCount > 0) {
+        Swal.fire({
+            title: `${filteredCount} ${remarkType} Applications`,
+            html: `Showing <b>${filteredCount}</b> applications with <b>${remarkType}</b> remarks.`,
+            icon: 'info',
+            confirmButtonText: 'Show All',
+            confirmButtonColor: buttonColor,
+            showCancelButton: true,
+            cancelButtonText: 'Keep Filtered'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show all rows again
+                rows.forEach(row => {
+                    row.style.display = '';
+                });
+            }
+        });
+    } else {
+        Swal.fire({
+            title: 'No Applications Found',
+            text: `There are no applications with ${remarkType} remarks.`,
+            icon: 'info',
+            confirmButtonText: 'Show All',
+            confirmButtonColor: buttonColor
+        }).then(() => {
+            // Show all rows
+            rows.forEach(row => {
+                row.style.display = '';
+            });
+        });
+    }
+}
 </script>
 <script src="{{ asset('js/status-script.js') }}"></script>
 <script src="{{ asset('js/spinner.js') }}"></script>

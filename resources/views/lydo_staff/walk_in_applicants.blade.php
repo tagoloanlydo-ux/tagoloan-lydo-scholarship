@@ -16,6 +16,11 @@
     <link rel="icon" type="image/png" href="{{ asset('/images/LYDO.png') }}">
     
     <style>
+            .dashboard-grid {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            height: 100vh;
+        }
         .select2-container--default .select2-selection--single {
             border: 1px solid #000000 !important;
             border-radius: 8px !important;
@@ -229,7 +234,7 @@
                 </div>
                 
                 <!-- Notification Bell -->
-                <div class="relative">
+                <div class="relative hidden">
                     <button id="notifBell" class="relative focus:outline-none">
                         <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
                         @if($badgeCount > 0)

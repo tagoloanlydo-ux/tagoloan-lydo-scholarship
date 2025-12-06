@@ -176,9 +176,17 @@
             @enderror
           </div>
 
-          <a href="{{ route('scholar.forgot-password') }}" class="text-sm text-purple-600 hover:underline mt-3 block text-right">
-            Forgot Password?
-          </a>
+          <div class="flex items-center justify-between mt-4">
+            <div class="flex items-center">
+              <input type="checkbox" name="remember_me" id="remember_me" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded cursor-pointer">
+              <label for="remember_me" class="ml-2 block text-sm text-gray-700 cursor-pointer">
+                Remember me
+              </label>
+            </div>
+            <a href="{{ route('scholar.forgot-password') }}" class="text-sm text-purple-600 hover:underline">
+              Forgot Password?
+            </a>
+          </div>
           <button type="submit" id="loginBtn" class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700 transition shadow-md text-lg mt-4 flex justify-center items-center">
             <span id="btnText">Log In</span>
             <svg id="btnSpinner" class="hidden animate-spin h-5 w-5 ml-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" >
@@ -315,6 +323,43 @@
       confirmButtonText: 'OK'
     });
   @endif
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const rememberMeCheckbox = document.getElementById('remember_me');
+    const usernameInput = document.getElementById('scholar_username');
+    const passwordInput = document.getElementById('scholar_pass');
+
+    // Load username and password from local storage if they exist
+    const savedUsername = localStorage.getItem('rememberedUsername');
+    const savedPassword = localStorage.getItem('rememberedPassword');
+    if (savedUsername) {
+      usernameInput.value = savedUsername;
+      rememberMeCheckbox.checked = true;
+    }
+    if (rememberMeCheckbox.checked && savedPassword) {
+      passwordInput.value = savedPassword;
+    }
+
+    // Save username and password to local storage when checkbox is checked
+    rememberMeCheckbox.addEventListener('change', function() {
+      if (this.checked) {
+        localStorage.setItem('rememberedUsername', usernameInput.value);
+        localStorage.setItem('rememberedPassword', passwordInput.value);
+      } else {
+        localStorage.removeItem('rememberedUsername');
+        localStorage.removeItem('rememberedPassword');
+      }
+    });
+
+    // Save password when the form is submitted
+    const loginForm = document.querySelector("form");
+    loginForm.addEventListener("submit", function() {
+      if (rememberMeCheckbox.checked) {
+        localStorage.setItem('rememberedPassword', passwordInput.value);
+      }
+    });
+  });
 </script>
   </body>
 </html>

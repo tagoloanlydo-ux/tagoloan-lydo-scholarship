@@ -742,30 +742,115 @@ public function renewal(Request $request)
         }
     }
 
-    public function markDocumentAsUpdated(Request $request, $renewalId)
-    {
-        try {
-            $request->validate([
-                'document_type' => 'required|in:cert_of_reg,grade_slip,brgy_indigency'
-            ]);
+// Sa RenewalController.php, add this method:
+public function sendDocumentApprovedNotification(Request $request)
+{
+    try {
+        $request->validate([
+            'renewal_id' => 'required|exists:tbl_renewal,renewal_id',
+            'document_type' => 'required|in:cert_of_reg,grade_slip,brgy_indigency'
+        ]);
 
-            // Reset status to null and clear comment to indicate new document
-            $updateData = [
-                $request->document_type . '_status' => null,
-                $request->document_type . '_comment' => null,
-                'updated_at' => now()
-            ];
+        // Get renewal and scholar info
+        $renewalInfo = DB::table('tbl_renewal as r')
+            ->join('tbl_scholar as s', 'r.scholar_id', '=', 's.scholar_id')
+            ->join('tbl_application as ap', 's.application_id', '=', 'ap.application_id')
+            ->join('tbl_applicant as a', 'ap.applicant_id', '=', 'a.applicant_id')
+            ->where('r.renewal_id', $request->renewal_id)
+            ->select(
+                'a.applicant_email',
+                'a.applicant_fname',
+                'a.applicant_lname',
+                'r.renewal_acad_year',
+                'r.renewal_semester'
+            )
+            ->first();
 
-            DB::table('tbl_renewal')
-                ->where('renewal_id', $renewalId)
-                ->update($updateData);
-
-            return response()->json(['success' => true, 'message' => 'Document marked as updated']);
-        } catch (\Exception $e) {
-            \Log::error('Mark document as updated error: '.$e->getMessage());
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        if (!$renewalInfo) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Scholar information not found'
+            ], 404);
         }
+
+        // Get document type name
+        $documentTypeName = $this->getDocumentTypeName($request->document_type);
+
+        // Send approval email
+        $emailService = new EmailService();
+        $emailResult = $emailService->sendDocumentApprovedEmail(
+            $renewalInfo->applicant_email,
+            [
+                'applicant_fname' => $renewalInfo->applicant_fname,
+                'applicant_lname' => $renewalInfo->applicant_lname,
+                'document_type' => $documentTypeName,
+                'academic_year' => $renewalInfo->renewal_acad_year,
+                'semester' => $renewalInfo->renewal_semester
+            ]
+        );
+
+        if ($emailResult) {
+            \Log::info("Document approval email sent to {$renewalInfo->applicant_email} for {$documentTypeName}");
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Approval notification sent successfully'
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send approval notification'
+            ], 500);
+        }
+
+    } catch (\Exception $e) {
+        \Log::error('Send document approved notification error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to send approval notification: ' . $e->getMessage()
+        ], 500);
     }
+}
+
+// Also update the markDocumentAsUpdated method to send email:
+public function markDocumentAsUpdated(Request $request, $renewalId)
+{
+    try {
+        $request->validate([
+            'document_type' => 'required|in:cert_of_reg,grade_slip,brgy_indigency'
+        ]);
+
+        // Reset status to null and clear comment to indicate new document
+        $updateData = [
+            $request->document_type . '_status' => 'new', // Set to 'new' instead of null
+            $request->document_type . '_comment' => null,
+            'updated_at' => now()
+        ];
+
+        $result = DB::table('tbl_renewal')
+            ->where('renewal_id', $renewalId)
+            ->update($updateData);
+
+        // Get scholar info for potential email
+        $scholarInfo = DB::table('tbl_renewal as r')
+            ->join('tbl_scholar as s', 'r.scholar_id', '=', 's.scholar_id')
+            ->join('tbl_application as ap', 's.application_id', '=', 'ap.application_id')
+            ->join('tbl_applicant as a', 'ap.applicant_id', '=', 'a.applicant_id')
+            ->where('r.renewal_id', $renewalId)
+            ->select('a.applicant_email', 'a.applicant_fname', 'a.applicant_lname')
+            ->first();
+
+        if ($scholarInfo) {
+            \Log::info("Document marked as updated for scholar: {$scholarInfo->applicant_email}");
+        }
+
+        return response()->json(['success' => true, 'message' => 'Document marked as updated']);
+
+    } catch (\Exception $e) {
+        \Log::error('Mark document as updated error: '.$e->getMessage());
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
+}
 
     private function getDocumentTypeName($documentType)
     {
@@ -873,4 +958,76 @@ public function renewal(Request $request)
             ], 500);
         }
     }
+public function checkNewDocuments()
+{
+    try {
+        // Get current academic year
+        $currentAcadYear = DB::table("tbl_applicant")
+            ->select("applicant_acad_year")
+            ->orderBy("applicant_acad_year", "desc")
+            ->value("applicant_acad_year");
+
+        // Find renewals with new documents
+        $renewalsWithNewDocs = DB::table('tbl_renewal as r')
+            ->join('tbl_scholar as s', 'r.scholar_id', '=', 's.scholar_id')
+            ->join('tbl_application as ap', 's.application_id', '=', 'ap.application_id')
+            ->join('tbl_applicant as a', 'ap.applicant_id', '=', 'a.applicant_id')
+            ->where('r.renewal_acad_year', $currentAcadYear)
+            ->where('r.renewal_status', 'Pending')
+            ->where(function ($query) {
+                $query->where('r.cert_of_reg_status', 'new')
+                      ->orWhere('r.grade_slip_status', 'new')
+                      ->orWhere('r.brgy_indigency_status', 'new');
+            })
+            ->select(
+                'r.renewal_id',
+                's.scholar_id',
+                'a.applicant_fname',
+                'a.applicant_lname',
+                'r.cert_of_reg_status',
+                'r.grade_slip_status',
+                'r.brgy_indigency_status',
+                DB::raw("CONCAT(
+                    a.applicant_fname, ' ',
+                    COALESCE(a.applicant_mname, ''), ' ',
+                    a.applicant_lname,
+                    IFNULL(CONCAT(' ', a.applicant_suffix), '')
+                ) as full_name")
+            )
+            ->get()
+            ->map(function ($item) {
+                // Count how many documents are new
+                $newCount = 0;
+                if ($item->cert_of_reg_status === 'new') $newCount++;
+                if ($item->grade_slip_status === 'new') $newCount++;
+                if ($item->brgy_indigency_status === 'new') $newCount++;
+                
+                $item->new_document_count = $newCount;
+                return $item;
+            });
+
+        return response()->json([
+            'success' => true,
+            'renewals_with_new_docs' => $renewalsWithNewDocs,
+            'count' => $renewalsWithNewDocs->count()
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Check new documents error: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
+}
+// App\Http\Controllers\RenewalController.php
+public function getDocumentsStatus($scholarId)
+{
+    // Kunin ang renewal documents para sa scholar na ito
+    $documents = RenewalDocument::where('scholar_id', $scholarId)
+        ->whereIn('document_type', ['grades', 'registration', 'good_moral'])
+        ->select('id', 'document_type', 'document_status', 'updated_at')
+        ->get();
+    
+    return response()->json([
+        'success' => true,
+        'documents' => $documents
+    ]);
+}
 }

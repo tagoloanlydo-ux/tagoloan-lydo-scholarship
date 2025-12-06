@@ -186,7 +186,134 @@ function clearRenewalRatingsFromStorage(renewalId) {
     localStorage.removeItem(storageKey);
 }
 
+// Function to check for new documents and update badges
+function checkNewDocuments() {
+    console.log('Checking for new documents...');
+    
+    fetch('/lydo_staff/check-new-documents', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.renewals_with_new_docs.length > 0) {
+            console.log('Found renewals with new documents:', data.renewals_with_new_docs);
+            updateTableButtonsWithBadges(data.renewals_with_new_docs);
+        } else {
+            console.log('No new documents found');
+            // Remove all badges if no new documents
+            removeAllButtonBadges();
+        }
+    })
+    .catch(error => {
+        console.error('Error checking new documents:', error);
+    });
+}
 
+// I-update ang updateTableButtonsWithBadges function:
+function updateTableButtonsWithBadges(renewalsWithNewDocs) {
+    // Create a map for quick lookup
+    const newDocsMap = {};
+    renewalsWithNewDocs.forEach(renewal => {
+        newDocsMap[renewal.scholar_id] = {
+            new_count: renewal.new_document_count,
+            renewal_id: renewal.renewal_id
+        };
+    });
+
+    // Find all review buttons in the table
+    const tableRows = document.querySelectorAll('#tableView tbody tr');
+    
+    tableRows.forEach(row => {
+        const scholarId = row.getAttribute('data-id');
+        if (!scholarId) return;
+
+        const newDocInfo = newDocsMap[parseInt(scholarId)];
+        
+        // Add or remove highlight class
+        if (newDocInfo && newDocInfo.new_count > 0) {
+            row.classList.add('has-new-docs');
+            
+            const buttonCell = row.querySelector('td:last-child');
+            if (buttonCell) {
+                const button = buttonCell.querySelector('button');
+                if (button) {
+                    // Remove existing badge if any
+                    const existingBadge = button.querySelector('.new-docs-badge');
+                    if (existingBadge) {
+                        existingBadge.remove();
+                    }
+
+                    // Add new badge WITH RED BACKGROUND AND NO ANIMATION
+                    const badge = document.createElement('span');
+                    badge.className = 'new-docs-badge';
+                    badge.textContent = 'NEW UPDATED DOCS';
+                    badge.style.cssText = `
+                        position: absolute;
+                        top: -8px;
+                        right: -8px;
+                        background-color: #dc2626; /* Red background */
+                        color: white;
+                        font-size: 0.65rem;
+                        font-weight: bold;
+                        padding: 3px 10px;
+                        border-radius: 12px;
+                        border: 2px solid white;
+                        z-index: 10;
+                        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+                        white-space: nowrap;
+                        /* REMOVED ANIMATION: animation: pulse 1.5s infinite; */
+                    `;
+                    
+                    // Make button position relative
+                    button.style.position = 'relative';
+                    button.appendChild(badge);
+                    
+                    // Also add tooltip on hover
+                    button.title = `${newDocInfo.new_count} document(s) updated/uploaded`;
+                }
+            }
+        } else {
+            // Remove highlight and badge if no new documents
+            row.classList.remove('has-new-docs');
+            
+            const buttonCell = row.querySelector('td:last-child');
+            if (buttonCell) {
+                const button = buttonCell.querySelector('button');
+                if (button) {
+                    const existingBadge = button.querySelector('.new-docs-badge');
+                    if (existingBadge) {
+                        existingBadge.remove();
+                    }
+                    button.removeAttribute('title');
+                }
+            }
+        }
+    });
+}
+
+// Function to remove all badges
+function removeAllButtonBadges() {
+    const badges = document.querySelectorAll('.new-docs-badge');
+    badges.forEach(badge => badge.remove());
+}
+
+// Call this function on page load and periodically
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial check
+    checkNewDocuments();
+    
+    // Check every 30 seconds
+    setInterval(checkNewDocuments, 30000);
+    
+    // Also check when table view is shown
+    document.getElementById('tab-renewal')?.addEventListener('click', function() {
+        setTimeout(checkNewDocuments, 500);
+    });
+});
 
 // Fallback function using only localStorage
 function fallbackToLocalStorage(renewalId) {
@@ -213,6 +340,20 @@ function fallbackToLocalStorage(renewalId) {
 function openRenewalModal(scholarId) {
     const contentDiv = document.getElementById('applicationContent');
     contentDiv.innerHTML = '';
+
+     try {
+        // try to find the name cell in the tableView first
+        let nameCell = document.querySelector(`#tableView tbody tr[data-id="${scholarId}"] td:nth-child(2)`);
+        if (!nameCell) {
+            // fallback to listView (in case layout or caller differs)
+            nameCell = document.querySelector(`#listView tbody tr[data-id="${scholarId}"] td:nth-child(2)`);
+        }
+        const nameText = nameCell ? nameCell.textContent.trim() : 'Unknown Applicant';
+        const nameSpan = document.getElementById('renewalApplicantName');
+        if (nameSpan) nameSpan.textContent = `- ${nameText}`;
+    } catch (err) {
+        console.error('Failed to populate applicant name in modal header', err);
+    }
 
     // Reset tracking
     window.documentsClicked = 0;
@@ -465,40 +606,115 @@ function refreshDocumentStatuses(renewalId) {
     // Reload from database
     loadRenewalDocumentStatuses(renewalId);
 }
+
 function checkAllRenewalDocumentsRated() {
     const documentTypes = ['cert_of_reg', 'grade_slip', 'brgy_indigency'];
 
     // Count documents by status
     let goodCount = 0;
     let badCount = 0;
-    let newCount = 0;
+    let ratedCount = 0;
     let unratedCount = 0;
 
     documentTypes.forEach(docType => {
         const status = renewalDocumentStatuses[docType] ? renewalDocumentStatuses[docType].toString().toLowerCase() : '';
 
-        if (status === 'good') goodCount++;
-        else if (status === 'bad') badCount++;
-        else if (status === 'new') newCount++;
-        else unratedCount++;
+        if (status === 'good') {
+            goodCount++;
+            ratedCount++;
+        }
+        else if (status === 'bad') {
+            badCount++;
+            ratedCount++;
+        }
+        else if (status === 'new') {
+            // New documents don't count as rated
+            unratedCount++;
+        }
+        else {
+            unratedCount++;
+        }
     });
 
-    console.log(`Status counts - Good: ${goodCount}, Bad: ${badCount}, New: ${newCount}, Unrated: ${unratedCount}`);
+    console.log(`Status counts - Good: ${goodCount}, Bad: ${badCount}, Rated: ${ratedCount}, Unrated: ${unratedCount}`);
 
     const actionButtons = document.getElementById('actionButtons');
+    const totalDocuments = 3;
+    const allDocumentsHaveStatus = ratedCount === totalDocuments; // All 3 docs have good or bad status
+    const hasBadDocuments = badCount > 0;
 
-    // SHOW BUTTONS if there are bad documents (even with new/unrated documents) OR if all documents are rated
-    if (badCount > 0 || (newCount === 0 && goodCount + badCount === 3)) {
+    // SHOW buttons ONLY if:
+    // 1. All documents have a status (good or bad) AND
+    // 2. There's at least one bad document
+    if (allDocumentsHaveStatus && hasBadDocuments) {
         actionButtons.style.display = 'flex';
-        updateRenewalActionButtons(goodCount, badCount, newCount);
-        console.log('Showing buttons - Bad documents found or all documents rated');
-    } else {
-        // HIDE BUTTONS if no bad documents and not all documents are rated
+        updateRenewalActionButtons(goodCount, badCount, 0);
+        console.log('Showing buttons - All documents rated AND has bad documents');
+    } 
+    // ALSO show approve button if ALL documents are good
+    else if (allDocumentsHaveStatus && goodCount === totalDocuments) {
+        actionButtons.style.display = 'flex';
+        updateRenewalActionButtons(goodCount, badCount, 0);
+        console.log('Showing buttons - All documents are good');
+    }
+    else {
+        // HIDE buttons if not all documents have status or no bad documents
         actionButtons.style.display = 'none';
-        console.log('Hiding buttons - No bad documents and not all rated');
+        console.log('Hiding buttons - Not all documents rated or no bad documents');
     }
 }
 
+// Add this function to renewal.js
+function sendDocumentApprovedNotification(documentType) {
+    if (!currentRenewalId) {
+        console.error('No renewal ID available');
+        return;
+    }
+
+    console.log('Sending document approved notification for:', documentType);
+
+    // Show loading
+    Swal.fire({
+        title: 'Sending Notification',
+        text: 'Informing scholar that their document has been approved...',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    fetch('/lydo_staff/send-document-approved-notification', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken()
+        },
+        body: JSON.stringify({
+            renewal_id: currentRenewalId,
+            document_type: documentType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        Swal.close();
+        if (data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Scholar has been notified that their document is approved.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+        } else {
+            Swal.fire('Error', data.message || 'Failed to send notification', 'error');
+        }
+    })
+    .catch(error => {
+        Swal.close();
+        console.error('Error sending approval notification:', error);
+        Swal.fire('Error', 'Failed to send approval notification', 'error');
+    });
+}
 
 function updateRenewalActionButtons(goodCount, badCount, newCount = 0) {
     console.log(`Good: ${goodCount}, Bad: ${badCount}, New: ${newCount}`);
@@ -508,15 +724,9 @@ function updateRenewalActionButtons(goodCount, badCount, newCount = 0) {
     const approveBtn = document.getElementById('approveBtn');
     const rejectBtn = document.getElementById('rejectBtn');
 
-    actionButtons.style.display = 'flex';
-
     const totalDocuments = 3;
     const allGood = goodCount === totalDocuments;
     const hasBadDocuments = badCount > 0;
-    const hasNewDocuments = newCount > 0;
-    
-    // This function should only be called when there are NO NEW documents
-    // and at least one document is rated (good or bad)
     
     if (allGood) {
         // ALL DOCUMENTS ARE GOOD - Show ONLY APPROVE button
@@ -524,18 +734,20 @@ function updateRenewalActionButtons(goodCount, badCount, newCount = 0) {
         approveBtn.style.display = 'flex';
         rejectBtn.style.display = 'none';
         console.log('All documents good - showing ONLY Approve button');
-    } else if (hasBadDocuments) {
-        // HAS BAD DOCUMENTS - Show Send Email and Reject buttons
+    } 
+    else if (hasBadDocuments) {
+        // HAS BAD DOCUMENTS - Show Send Email and Reject buttons ONLY (no Approve)
         sendEmailBtn.style.display = 'flex';
         approveBtn.style.display = 'none';
         rejectBtn.style.display = 'flex';
         console.log('Bad documents found - showing Send Email and Reject buttons');
-    } else {
-        // MIXED STATUS (some good, some unrated) - Show both Approve and Reject buttons
+    } 
+    else {
+        // SHOULDN'T REACH HERE, but hide all buttons as safety
         sendEmailBtn.style.display = 'none';
-        approveBtn.style.display = 'flex';
-        rejectBtn.style.display = 'flex';
-        console.log('Mixed status - showing both Approve and Reject buttons');
+        approveBtn.style.display = 'none';
+        rejectBtn.style.display = 'none';
+        console.log('No valid state - hiding all buttons');
     }
 }
 
@@ -694,6 +906,232 @@ function sendEmailForBadDocuments() {
     });
 }
 
+// ADD THESE FUNCTIONS TO YOUR renewal.js FILE
+
+// Function to count pending renewals
+function countPendingRenewals() {
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    let pendingCount = 0;
+    
+    rows.forEach(row => {
+        const nameCell = row.querySelector('td:nth-child(2)');
+        const isVisible = row.style.display !== 'none';
+        
+        // Skip the "no renewals found" row
+        if (nameCell && !nameCell.textContent.includes('No renewals found') && isVisible) {
+            pendingCount++;
+        }
+    });
+    
+    document.getElementById('pendingRenewalCountValue').textContent = pendingCount;
+    return pendingCount;
+}
+
+// Function to count renewals with updated documents
+function countUpdatedRenewalDocuments() {
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    let updatedCount = 0;
+    
+    rows.forEach(row => {
+        const reviewBtn = row.querySelector('button[onclick*="openRenewalModal"]');
+        if (reviewBtn) {
+            const rowId = row.getAttribute('data-id');
+            const badge = row.querySelector('.new-docs-badge');
+            
+            // Check if the row has the "has-new-docs" class OR has a visible badge
+            if (row.classList.contains('has-new-docs') || 
+                (badge && !badge.classList.contains('hidden') && badge.offsetParent !== null)) {
+                updatedCount++;
+            }
+        }
+    });
+    
+    document.getElementById('updatedRenewalCountValue').textContent = updatedCount;
+    return updatedCount;
+}
+
+// Function to show only pending renewals
+function showPendingRenewals() {
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    let pendingCount = 0;
+    let hasVisibleRows = false;
+    
+    rows.forEach(row => {
+        const nameCell = row.querySelector('td:nth-child(2)');
+        
+        // Skip if it's the "no renewals found" row
+        if (nameCell && nameCell.textContent.includes('No renewals found')) {
+            row.style.display = 'none';
+            return;
+        }
+        
+        // Show all rows (all are pending in the tableView)
+        if (nameCell) {
+            row.style.display = '';
+            pendingCount++;
+            hasVisibleRows = true;
+        }
+    });
+    
+    // Update the count display
+    document.getElementById('pendingRenewalCountValue').textContent = pendingCount;
+    
+    // Show confirmation message
+    if (pendingCount > 0) {
+        Swal.fire({
+            title: `${pendingCount} Pending Renewals`,
+            html: `Showing <b>${pendingCount}</b> pending renewal applications that need review.`,
+            icon: 'info',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#f59e0b'
+        });
+    } else {
+        Swal.fire({
+            title: 'No Pending Renewals',
+            text: 'There are no pending renewal applications at this time.',
+            icon: 'info',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#f59e0b'
+        });
+    }
+}
+
+// Function to show renewals with updated documents
+function showUpdatedRenewalDocuments() {
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    let updatedCount = 0;
+    let hasVisibleRows = false;
+    
+    rows.forEach(row => {
+        const reviewBtn = row.querySelector('button[onclick*="openRenewalModal"]');
+        const nameCell = row.querySelector('td:nth-child(2)');
+        
+        // Skip if it's the "no renewals found" row
+        if (nameCell && nameCell.textContent.includes('No renewals found')) {
+            row.style.display = 'none';
+            return;
+        }
+        
+        if (reviewBtn) {
+            const rowId = row.getAttribute('data-id');
+            const badge = row.querySelector('.new-docs-badge');
+            
+            // Check if the row has new documents (has "has-new-docs" class OR visible badge)
+            const hasNewDocs = row.classList.contains('has-new-docs') || 
+                             (badge && !badge.classList.contains('hidden') && badge.offsetParent !== null);
+            
+            if (hasNewDocs) {
+                row.style.display = '';
+                updatedCount++;
+                hasVisibleRows = true;
+            } else {
+                row.style.display = 'none';
+            }
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Update the count display
+    document.getElementById('updatedRenewalCountValue').textContent = updatedCount;
+    
+    // Show message if no updated documents
+    if (updatedCount === 0 || !hasVisibleRows) {
+        // Show all rows again
+        rows.forEach(row => {
+            const nameCell = row.querySelector('td:nth-child(2)');
+            if (nameCell && nameCell.textContent.includes('No renewals found')) {
+                row.style.display = '';
+            } else if (nameCell && !nameCell.textContent.includes('No renewals found')) {
+                row.style.display = '';
+            }
+        });
+        
+        Swal.fire({
+            title: 'No Updated Documents',
+            text: 'There are no renewal applications with newly updated documents at this time.',
+            icon: 'info',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#8b5cf6'
+        });
+    } else {
+        Swal.fire({
+            title: `${updatedCount} Renewals with Updated Documents`,
+            html: `Showing <b>${updatedCount}</b> renewal applications with new or updated documents that need review.`,
+            icon: 'info',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#8b5cf6'
+        });
+    }
+}
+
+// Function to update counts after checking for new documents
+function updateRenewalCountsAfterDocumentCheck() {
+    countPendingRenewals();
+    countUpdatedRenewalDocuments();
+}
+
+// Update your existing checkNewDocuments function to call update counts
+// In the checkNewDocuments function, add this after updating badges:
+function checkNewDocuments() {
+    console.log('Checking for new documents...');
+    
+    fetch('/lydo_staff/check-new-documents', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.renewals_with_new_docs.length > 0) {
+            console.log('Found renewals with new documents:', data.renewals_with_new_docs);
+            updateTableButtonsWithBadges(data.renewals_with_new_docs);
+            
+            // Update the counts after badges are updated
+            setTimeout(() => {
+                updateRenewalCountsAfterDocumentCheck();
+            }, 500);
+        } else {
+            console.log('No new documents found');
+            removeAllButtonBadges();
+            
+            // Update counts even when no new documents
+            updateRenewalCountsAfterDocumentCheck();
+        }
+    })
+    .catch(error => {
+        console.error('Error checking new documents:', error);
+        // Still update counts even on error
+        updateRenewalCountsAfterDocumentCheck();
+    });
+}
+
+// Initialize counts on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial check for documents
+    checkNewDocuments();
+    
+    // Initial count calculations
+    setTimeout(() => {
+        countPendingRenewals();
+        countUpdatedRenewalDocuments();
+    }, 500);
+    
+    // Check every 30 seconds
+    setInterval(checkNewDocuments, 30000);
+    
+    // Also check when table view is shown
+    document.getElementById('tab-renewal')?.addEventListener('click', function() {
+        setTimeout(() => {
+            checkNewDocuments();
+            countPendingRenewals();
+            countUpdatedRenewalDocuments();
+        }, 500);
+    });
+});
+
 function submitStatusUpdate(renewalId, requestData, status) {
     console.log('Submitting status update:', { renewalId, requestData, status });
     
@@ -777,8 +1215,7 @@ function getCsrfToken() {
     return '';
 }
 
-
-// Fixed markRenewalDocumentAsGood function - success message stays until OK is clicked
+// Update the markRenewalDocumentAsGood function to send notification for new documents
 function markRenewalDocumentAsGood(documentType) {
     Swal.fire({
         title: 'Mark as Good?',
@@ -791,18 +1228,8 @@ function markRenewalDocumentAsGood(documentType) {
         cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Check if this document was previously marked as bad or new
-            const wasPreviouslyBad = documentUpdateTracker[documentType] && 
-                                   documentUpdateTracker[documentType].lastStatus === 'bad';
+            // Check if this document was previously marked as new
             const wasNew = renewalDocumentStatuses[documentType] === 'new';
-            
-            // Update tracking
-            if (documentUpdateTracker[documentType]) {
-                documentUpdateTracker[documentType].lastStatus = 'good';
-                if (wasPreviouslyBad || wasNew) {
-                    documentUpdateTracker[documentType].hasUpdate = true;
-                }
-            }
             
             // Save status to server FIRST
             saveRenewalDocumentStatus(documentType, 'good').then(() => {
@@ -810,49 +1237,60 @@ function markRenewalDocumentAsGood(documentType) {
                 const comment = document.getElementById(`comment_${documentType}`)?.value || '';
                 saveRenewalRatingsToStorage(currentRenewalId, documentType, 'good', comment);
                 
-                // Track that this document has been rated (remove from new status)
+                // Track that this document has been rated
                 ratedRenewalDocuments.add(documentType);
                 renewalDocumentStatuses[documentType] = 'good';
                 
-                // Update the badge - show updated badge if it was previously bad or new
-                if (wasPreviouslyBad || wasNew) {
-                    updateRenewalDocumentBadge(documentType, 'updated');
-                    // Auto-clear the updated status after 5 seconds
-                    setTimeout(() => {
-                        if (renewalDocumentStatuses[documentType] === 'good') {
-                            updateRenewalDocumentBadge(documentType, 'good');
-                        }
-                    }, 5000);
-                } else {
-                    updateRenewalDocumentBadge(documentType, 'good');
-                }
+                // Update the badge
+                updateRenewalDocumentBadge(documentType, 'good');
                 
                 // Handle the status change
                 handleDocumentStatusChange(documentType, 'good');
                 
-                // Check if all documents are rated (including NEW status check)
+                // Check if all documents are rated
                 checkAllRenewalDocumentsRated();
                 
                 // Update modal UI
                 updateRenewalDocumentModalUI(documentType);
                 
-                // Show success message that stays until OK is clicked
-                Swal.fire({
-                    title: 'Success!',
-                    text: wasPreviouslyBad ? 'Document updated and marked as good!' : 
-                          wasNew ? 'New document marked as good!' : 'Document marked as good.',
-                    icon: 'success',
-                    confirmButtonText: 'OK',
-                    showConfirmButton: true,
-                    allowOutsideClick: false,
-                    allowEscapeKey: false
-                }).then((result) => {
-                    // This runs only when OK button is clicked
-                    if (result.isConfirmed) {
-                        // Close document viewer after user clicks OK
+                // If document was new, ask if we should notify the scholar
+                if (wasNew) {
+                    Swal.fire({
+                        title: 'Send Approval Notification?',
+                        html: `
+                            This document was recently updated by the scholar.<br><br>
+                            Would you like to notify them that their document has been approved?
+                        `,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, Send Notification',
+                        cancelButtonText: 'No, Just Approve'
+                    }).then((notificationResult) => {
+                        if (notificationResult.isConfirmed) {
+                            sendDocumentApprovedNotification(documentType);
+                        }
+                        
+                        // Show success message
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Document marked as good.',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            closeDocumentViewerModal();
+                        });
+                    });
+                } else {
+                    // Show success message for existing documents
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Document marked as good.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
                         closeDocumentViewerModal();
-                    }
-                });
+                    });
+                }
             }).catch(error => {
                 console.error('Error saving document status:', error);
                 Swal.fire('Error', 'Failed to save document status.', 'error');
@@ -948,6 +1386,12 @@ function showTable() {
     document.getElementById('listView').classList.add('hidden');
     document.getElementById('tab-renewal').classList.add('active');
     document.getElementById('tab-review').classList.remove('active');
+    
+    // Update counts when showing table view
+    setTimeout(() => {
+        countPendingRenewals();
+        countUpdatedRenewalDocuments();
+    }, 100);
 }
 
 function showList() {

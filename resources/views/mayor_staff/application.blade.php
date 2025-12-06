@@ -11,194 +11,12 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="{{ asset('css/mayor_application.css') }}" />
     <link rel="stylesheet" href="{{ asset('css/application.css') }}" />
-    <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.tailwindcss.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
 
 </head>
-<style>
-/* Document Viewer Modal Styles */
-.document-modal-content {
-    max-height: 80vh;
-    overflow-y: auto;
-}
-/* Smooth transitions for table updates */
-table tbody {
-    transition: opacity 0.3s ease;
-}
-
-/* Ensure pagination updates smoothly */
-.pagination-container {
-    transition: all 0.3s ease;
-}
-
-/* Loading states for better UX */
-.refreshing {
-    opacity: 0.7;
-    pointer-events: none;
-}
-.pagination-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1.5rem;
-    padding: 1rem;
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.pagination-info {
-    color: #6b7280;
-    font-size: 0.875rem;
-}
-
-.pagination-buttons {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.pagination-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    background-color: white;
-    color: #6b7280;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.pagination-btn:hover:not(:disabled) {
-    background-color: #f9fafb;
-    border-color: #9ca3af;
-}
-
-.pagination-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.pagination-page-info {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0 1rem;
-    color: #6b7280;
-    font-size: 0.875rem;
-}
-
-.pagination-page-input {
-    width: 3.5rem;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.25rem;
-    text-align: center;
-}
-
-.pagination-page-input:focus {
-    outline: none;
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
-}
-
-.document-viewer-container {
-    height: calc(100vh - 300px); /* A4 height equivalent */
-    min-height: 800px; /* Minimum A4 height */
-    max-height: 900px; /* Maximum A4 height */
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-    overflow: hidden;
-    background-color: #f9fafb;
-}
-
-.document-viewer {
-    width: 100%;
-    height: 100%;
-    border: none;
-    background-color: white;
-}
-
-/* Review Controls - Maintain current button styles */
-#documentReviewControls {
-    margin-top: 1rem;
-}
-
-#documentReviewControls .mark-good-btn,
-#documentReviewControls .mark-bad-btn {
-    flex: 1;
-    background-color: #10b981; /* Green for good */
-    color: white;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border: none;
-    cursor: pointer;
-}
-
-#documentReviewControls .mark-bad-btn {
-    background-color: #ef4444; /* Red for bad */
-}
-
-#documentReviewControls .mark-good-btn:hover {
-    background-color: #059669;
-}
-
-#documentReviewControls .mark-bad-btn:hover {
-    background-color: #dc2626;
-}
-
-#documentReviewControls .mark-good-btn:disabled,
-#documentReviewControls .mark-bad-btn:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .document-viewer-container {
-        height: calc(100vh - 250px);
-        min-height: 600px;
-        max-height: 700px;
-    }
-    
-    #documentReviewControls .flex {
-        flex-direction: column;
-       }
-}
-.pagination-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 1.5rem;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-.badge-updated {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background-color: #8b5cf6;
-    color: white;
-    border-radius: 10px;
-    padding: 2px 30px;
-    font-size: 10px;
-    font-weight: bold;
-    z-index: 10;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-</style>
 <body class="bg-gray-50">
 
         <!-- Loading Spinner Overlay -->
@@ -219,7 +37,7 @@ table tbody {
                 </div>
                 <div class="flex items-center space-x-4">
                     <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
-                    <div class="relative">
+                    <div class="relative hidden">
                         <!-- 🔔 Bell Icon -->
                         <button id="notifBell" class="relative focus:outline-none">
                             <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
@@ -334,6 +152,52 @@ table tbody {
                         </div>
                     <div id="tableView">
                         <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+                           
+                    <!-- ADD THIS SECTION: Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <!-- Card 1: Total Pending Applications -->
+                        <div id="pendingCountCard" class="bg-gradient-to-r from-blue-200 to-blue-400 rounded-xl shadow-lg p-6 cursor-pointer transform transition-all duration-300 hover:scale-102 hover:shadow-2xl" onclick="showPendingApplications()">            <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-black-100 text-sm font-medium mb-1">Pending Initial Screening</p>
+                                            <div class="flex items-end">
+                                                <h3 id="pendingCountValue" class="text-3xl font-bold text-black">0</h3>
+                                                <span class="text-black-200 text-sm ml-2 mb-1">applications</span>
+                                            </div>
+                                        </div>
+                                        <div class="bg-black-400 bg-opacity-30 p-3 rounded-full">
+                                            <i class="fas fa-clock text-white text-2xl"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 pt-3 border-t border-black-400 border-opacity-40">
+                                        <p class="text-black-100 text-xs">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            Click to see all pending applications
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Card 2: Updated Documents -->
+                                <div id="updatedCountCard" class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 cursor-pointer transform transition-all duration-300 hover:scale-102 hover:shadow-2xl" onclick="showUpdatedCount()">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-black-100 text-sm font-medium mb-1">Updated Documents</p>
+                                            <div class="flex items-end">
+                                                <h3 id="updatedCountValue" class="text-3xl font-bold text-black">0</h3>
+                                                <span class="text-black-200 text-sm ml-2 mb-1">applications</span>
+                                            </div>
+                                        </div>
+                                        <div class="bg-black-400 bg-opacity-30 p-3 rounded-full">
+                                            <i class="fas fa-sync-alt text-white text-2xl"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 pt-3 border-t border-black-400 border-opacity-40">
+                                        <p class="text-black-100 text-xs">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            Click to see applications with new/updated documents
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="flex gap-4 items-end">
                                 <div class="flex gap-4">
                                     <div>
@@ -366,7 +230,7 @@ table tbody {
                                             </h3>
                                         </div>
                                     <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
-                                        <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white uppercase text-sm">
+                                        <thead class="bg-purple-600 text-white uppercase text-sm">
                                             <tr>
                                                 <th class="px-6 py-4 align-middle text-center">#</th>
                                                 <th class="px-6 py-4 align-middle text-center">Name</th>
@@ -396,11 +260,17 @@ table tbody {
                                                     <td class="px-6 py-4 text-center">{{ $app->applicant_gender }}</td>
                                                     <td class="px-6 py-4 text-center date-format">{{ $app->applicant_bdate }}</td>
                                                     <td class="px-6 py-4 text-center">
-                                                        <button type="button"
-                                                            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
-                                                            onclick="openApplicationModal({{ $app->application_personnel_id }}, 'pending')">
-                                                            Review Applications
-                                                        </button>
+                                                        <div class="relative inline-block">
+                                                            <button type="button"
+                                                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
+                                                                onclick="openApplicationModal({{ $app->application_personnel_id }}, 'pending')"
+                                                                id="reviewBtn-{{ $app->application_personnel_id }}">
+                                                                Review Applications
+                                                            </button>
+                                                            <!-- Updated Badge para sa pending applications -->
+                                                            <span id="updatedBadge-{{ $app->application_personnel_id }}" 
+                                                                class="badge-updateds hidden">New Updated Docs</span>
+                                                        </div>
                                                     </td>
                                                     <td class="px-6 py-4 text-center">
                                                         <!-- I-remove ang inline form at palitan ng button na may confirmDelete function -->
@@ -461,7 +331,7 @@ table tbody {
                                         </h3>
                                     </div>
                                     <table class="w-full table-auto border-collapse text-[17px] shadow-lg rounded-lg overflow-visible border border-gray-200">
-                                <thead class="bg-gradient-to-r from-green-600 to-teal-600 text-white uppercase text-sm">
+                                <thead class="bg-green-600 to-teal-600 text-white uppercase text-sm">
                                     <tr>
                                     <th class="px-6 py-4 align-middle text-center">#</th>
                                         <th class="px-6 py-4 align-middle text-center">Name</th>
@@ -496,12 +366,12 @@ table tbody {
                                             <td class="px-6 py-4 text-center">
                                                 <div class="relative inline-block">
                                                     <button type="button"
-                                                        class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm relative"
+                                                        class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm font-medium transition-colors duration-200 shadow-sm"
                                                         onclick="openApplicationModal({{ $app->application_personnel_id }}, 'reviewed')"
                                                         id="reviewBtn-{{ $app->application_personnel_id }}">
-                                                        Review Requirements
+                                                        Review Applications
                                                     </button>
-                                                    <!-- Updated Badge - will be shown/hidden via JavaScript -->
+                                                    <!-- Updated Badge para sa reviewed applications -->
                                                     <span id="updatedBadge-{{ $app->application_personnel_id }}" 
                                                         class="badge-updated hidden">Updated</span>
                                                 </div>
@@ -534,7 +404,9 @@ table tbody {
                                                     <div class="flex items-center justify-between px-6 py-4 border-b">
                                                         <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                                                             <i class="fas fa-folder-open text-blue-600"></i>
-                                                            Application Requirements</h2>
+                                                            <span>Application Requirements</span>
+                                                            <span id="applicationModalName" class="ml-2 text-black-600 text-base font-large">-</span>
+                                                        </h2>
                                                         <button onclick="closeApplicationModal()" class="p-2 rounded-full hover:bg-gray-100 transition">
                                                             <i class="fas fa-times text-gray-500 text-lg"></i>
                                                         </button>
@@ -756,7 +628,35 @@ function openApplicationModal(applicationPersonnelId, source = 'pending') {
 
     // Store the current application ID globally for approve/reject functions
     currentApplicationId = applicationPersonnelId;
+   
+    // Try to read the applicant name from the table row that opened the modal (fallback if not in `foundApp`)
+    let displayName = '';
+    try {
+        const triggerBtn = document.querySelector(`button[onclick*="openApplicationModal(${applicationPersonnelId}`) || document.querySelector(`button[onclick*="openApplicationModal(${applicationPersonnelId},`);
+        if (triggerBtn) {
+            const row = triggerBtn.closest('tr');
+            if (row) {
+                const nameCell = row.querySelector('td:nth-child(2)');
+                if (nameCell) displayName = nameCell.textContent.trim();
+            }
+        }
+    } catch (e) { console.debug('Could not read name from table row', e); }
 
+    // If we found the name in the table row use it, otherwise try to build from foundApp fields (if available)
+    if (!displayName && foundApp) {
+        const lname = foundApp.applicant_lname || foundApp.lname || '';
+        const fname = foundApp.applicant_fname || foundApp.fname || '';
+        const mname = foundApp.applicant_mname || foundApp.mname || '';
+        const suffix = foundApp.applicant_suffix || foundApp.suffix || '';
+        const mInitial = mname ? (mname.trim().charAt(0).toUpperCase() + '.') : '';
+        displayName = `${lname ? lname + ',' : ''} ${fname}`.trim();
+        if (mInitial) displayName += ` ${mInitial}`;
+        if (suffix) displayName += ` ${suffix}`;
+    }
+
+    const nameSpan = document.getElementById('applicationModalName');
+    if (nameSpan) nameSpan.textContent = displayName ? ` - ${displayName}` : '-';
+    
     // Find the application by application_personnel_id
     let foundApp = null;
     if (applications) {
@@ -1223,6 +1123,7 @@ function markDocumentAsUpdated(documentType) {
     updatedDocuments.add(documentType);
 }
 
+// Update the loadDocumentComments function to properly store previous status
 function loadDocumentComments(applicationPersonnelId) {
     fetch(`/mayor_staff/get-document-comments/${applicationPersonnelId}`)
         .then(response => response.json())
@@ -1238,6 +1139,7 @@ function loadDocumentComments(applicationPersonnelId) {
 
                 documentTypes.forEach(docType => {
                     const status = statuses[`${docType}_status`];
+                    // ✅ DAGDAG: Store the previous status before changing
                     previousDocumentStatus[docType] = status;
                     updateDocumentBadges(docType, status, false);
                     
@@ -1329,9 +1231,14 @@ function markDocumentAsGood(documentType) {
         }
         updateDocumentBadges(documentType, 'good', false);
 
+        // ✅ DAGDAG: Check if document status was previously "New" then send email
+        if (previousDocumentStatus && previousDocumentStatus[documentType] === 'New') {
+            sendDocumentApprovalEmail(documentType);
+        }
+
         Swal.fire({
             title: 'Success!',
-            text: 'Document marked as good.',
+            text: 'Document marked as good.' + (previousDocumentStatus && previousDocumentStatus[documentType] === 'New' ? ' Approval email sent to applicant.' : ''),
             icon: 'success',
             confirmButtonText: 'OK'
         }).then((result) => {
@@ -2087,9 +1994,452 @@ document.head.appendChild(style);
             });
         });
     </script>
-    <script>
     
+<script>
+// Check document updates para sa lahat ng applications sa page load
+document.addEventListener('DOMContentLoaded', function() {
+    const tableRows = document.querySelectorAll('#tableView tbody tr, #listView tbody tr');
+    
+    tableRows.forEach(row => {
+        const reviewBtn = row.querySelector('[id^="reviewBtn-"]');
+        if (reviewBtn) {
+            const btnId = reviewBtn.id;
+            const applicationPersonnelId = btnId.replace('reviewBtn-', '');
+            
+            // Check para sa updated documents
+            fetch(`/mayor_staff/check-document-updates/${applicationPersonnelId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.updated_documents && data.updated_documents.length > 0) {
+                        const badge = document.getElementById(`updatedBadge-${applicationPersonnelId}`);
+                        if (badge) {
+                            badge.classList.remove('hidden');
+                        }
+                    }
+                })
+                .catch(error => console.error('Error checking updates:', error));
+        }
+    });
+});
+
+</script>
+    <script>
     </script>
+    <script>
+// Update existing function: countUpdatedApplications
+function countUpdatedApplications() {
+    let updatedCount = 0;
+    const rows = document.querySelectorAll('#tableView tbody tr:not([style*="display: none"])');
+    
+    rows.forEach(row => {
+        const reviewBtn = row.querySelector('[id^="reviewBtn-"]');
+        if (reviewBtn) {
+            const btnId = reviewBtn.id;
+            const applicationPersonnelId = btnId.replace('reviewBtn-', '');
+            const badge = document.getElementById(`updatedBadge-${applicationPersonnelId}`);
+            
+            // Check if badge exists and is visible
+            if (badge && !badge.classList.contains('hidden')) {
+                updatedCount++;
+            }
+        }
+    });
+    
+    document.getElementById('updatedCountValue').textContent = updatedCount;
+    return updatedCount;
+}
+
+// Palitan ang function na ito:
+function checkAllUpdatedDocumentsOnLoad() {
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    let updatePromises = [];
+    
+    // Limitahan ang concurrent requests at i-batch
+    const batchSize = 5;
+    let updatedCount = 0;
+    
+    for (let i = 0; i < rows.length; i += batchSize) {
+        const batch = Array.from(rows).slice(i, i + batchSize);
+        
+        const batchPromises = batch.map(row => {
+            return new Promise((resolve) => {
+                const reviewBtn = row.querySelector('[id^="reviewBtn-"]');
+                if (reviewBtn) {
+                    const applicationPersonnelId = reviewBtn.id.replace('reviewBtn-', '');
+                    
+                    // Gumamit ng cache para iwasan ang redundant requests
+                    const cacheKey = `doc_update_${applicationPersonnelId}`;
+                    const cachedResult = sessionStorage.getItem(cacheKey);
+                    
+                    if (cachedResult) {
+                        const data = JSON.parse(cachedResult);
+                        if (data.success && data.updated_documents && data.updated_documents.length > 0) {
+                            const badge = document.getElementById(`updatedBadge-${applicationPersonnelId}`);
+                            if (badge) {
+                                badge.classList.remove('hidden');
+                            }
+                            resolve(1);
+                        } else {
+                            resolve(0);
+                        }
+                    } else {
+                        // Gumamit ng timeout para maiwasan ang request flooding
+                        setTimeout(() => {
+                            fetch(`/mayor_staff/check-document-updates/${applicationPersonnelId}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    // I-cache ang result
+                                    sessionStorage.setItem(cacheKey, JSON.stringify(data));
+                                    
+                                    if (data.success && data.updated_documents && data.updated_documents.length > 0) {
+                                        const badge = document.getElementById(`updatedBadge-${applicationPersonnelId}`);
+                                        if (badge) {
+                                            badge.classList.remove('hidden');
+                                        }
+                                        resolve(1);
+                                    } else {
+                                        resolve(0);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error checking updates:', error);
+                                    resolve(0);
+                                });
+                        }, 50 * i); // Stagger requests
+                    }
+                } else {
+                    resolve(0);
+                }
+            });
+        });
+        
+        // Hintayin ang batch bago mag-proceed
+        Promise.all(batchPromises).then(results => {
+            updatedCount += results.reduce((sum, count) => sum + count, 0);
+            document.getElementById('updatedCountValue').textContent = updatedCount;
+        });
+    }
+}
+
+// Dagdag sa DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Format dates
+    document.querySelectorAll('.date-format').forEach(function(element) {
+        const rawDate = element.textContent.trim();
+        if (rawDate) {
+            const formattedDate = moment(rawDate).format('MMMM D, YYYY');
+            element.textContent = formattedDate;
+        }
+    });
+
+    // Restore view mode from localStorage
+    const viewMode = localStorage.getItem('viewMode');
+    if (viewMode === 'list') {
+        showList();
+    } else {
+        showTable();
+    }
+    
+    // Show loading state for counts
+    document.getElementById('pendingCountValue').textContent = '...';
+    document.getElementById('updatedCountValue').textContent = '...';
+    
+    // Initial count calculations with visual feedback
+    setTimeout(() => {
+        countPendingApplications();
+        
+        // Show loading indicator
+        const updatedCard = document.getElementById('updatedCountCard');
+        if (updatedCard) {
+            updatedCard.classList.add('opacity-70');
+            updatedCard.querySelector('#updatedCountValue').innerHTML = 
+                '<i class="fas fa-spinner fa-spin"></i>';
+        }
+        
+        // Start checking for updates
+        checkAllUpdatedDocumentsOnLoad();
+    }, 100);
+});
+
+// Magdagdag ng bagong function para sa batch checking
+function batchCheckUpdatedDocuments() {
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    const applicationIds = [];
+    
+    rows.forEach(row => {
+        const reviewBtn = row.querySelector('[id^="reviewBtn-"]');
+        if (reviewBtn) {
+            const applicationPersonnelId = reviewBtn.id.replace('reviewBtn-', '');
+            applicationIds.push(applicationPersonnelId);
+        }
+    });
+    
+    if (applicationIds.length === 0) {
+        document.getElementById('updatedCountValue').textContent = '0';
+        return;
+    }
+    
+    // Single request para sa lahat ng applications
+    fetch('/mayor_staff/batch-check-document-updates', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+        },
+        body: JSON.stringify({ application_ids: applicationIds })
+    })
+    .then(response => response.json())
+    .then(data => {
+        let updatedCount = 0;
+        
+        if (data.success && data.results) {
+            data.results.forEach(result => {
+                if (result.updated_documents && result.updated_documents.length > 0) {
+                    const badge = document.getElementById(`updatedBadge-${result.application_id}`);
+                    if (badge) {
+                        badge.classList.remove('hidden');
+                        updatedCount++;
+                    }
+                }
+            });
+        }
+        
+        document.getElementById('updatedCountValue').textContent = updatedCount;
+        
+        // Remove loading state
+        const updatedCard = document.getElementById('updatedCountCard');
+        if (updatedCard) {
+            updatedCard.classList.remove('opacity-70');
+        }
+    })
+    .catch(error => {
+        console.error('Error batch checking updates:', error);
+        document.getElementById('updatedCountValue').textContent = '0';
+    });
+}
+
+// Update DOMContentLoaded event
+document.addEventListener('DOMContentLoaded', function() {
+    // Format dates
+    document.querySelectorAll('.date-format').forEach(function(element) {
+        const rawDate = element.textContent.trim();
+        if (rawDate) {
+            const formattedDate = moment(rawDate).format('MMMM D, YYYY');
+            element.textContent = formattedDate;
+        }
+    });
+
+    // Restore view mode from localStorage
+    const viewMode = localStorage.getItem('viewMode');
+    if (viewMode === 'list') {
+        showList();
+    } else {
+        showTable();
+    }
+    
+    // Initial count calculations
+    setTimeout(() => {
+        countPendingApplications();
+        checkAllUpdatedDocumentsOnLoad(); // Use new function instead
+    }, 100);
+});
+
+// Update showUpdatedCount function to properly show/hide rows
+function showUpdatedCount() {
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    let updatedCount = 0;
+    let hasVisibleRows = false;
+    
+    rows.forEach(row => {
+        const reviewBtn = row.querySelector('[id^="reviewBtn-"]');
+        if (reviewBtn) {
+            const btnId = reviewBtn.id;
+            const applicationPersonnelId = btnId.replace('reviewBtn-', '');
+            const badge = document.getElementById(`updatedBadge-${applicationPersonnelId}`);
+            
+            // Skip if it's the "no applications" row
+            const nameCell = row.querySelector('td:nth-child(2)');
+            if (nameCell && nameCell.textContent.includes('No approved or rejected applications found')) {
+                row.style.display = 'none';
+                return;
+            }
+            
+            if (badge && !badge.classList.contains('hidden')) {
+                row.style.display = '';
+                updatedCount++;
+                hasVisibleRows = true;
+            } else {
+                row.style.display = 'none';
+            }
+        } else {
+            // Hide rows without review button
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show message if no updated documents
+    if (updatedCount === 0 || !hasVisibleRows) {
+        // Show all rows again
+        rows.forEach(row => {
+            const nameCell = row.querySelector('td:nth-child(2)');
+            if (nameCell && nameCell.textContent.includes('No approved or rejected applications found')) {
+                row.style.display = '';
+            }
+        });
+        
+        Swal.fire({
+            title: 'No Updated Documents',
+            text: 'There are no applications with newly updated documents at this time.',
+            icon: 'info',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#8b5cf6'
+        });
+    } else {
+        Swal.fire({
+            title: `${updatedCount} Updated Applications`,
+            html: `Showing <b>${updatedCount}</b> applications with new or updated documents that need review.`,
+            icon: 'info',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#8b5cf6'
+        });
+    }
+    
+    // Update the count in the card
+    document.getElementById('updatedCountValue').textContent = updatedCount;
+}
+
+// Add this to your existing filterRows function to update counts after filtering
+// Hanapin ang existing na filterRows function at i-update ito:
+function filterRows(source) {
+    const tableId = source === 'table' ? 'tableView' : 'listView';
+    const searchInputId = source === 'table' ? 'searchInputTable' : 'searchInputList';
+    const barangaySelectId = source === 'table' ? 'barangaySelectTable' : 'barangaySelectList';
+    
+    const searchTerm = document.getElementById(searchInputId).value.toLowerCase();
+    const barangayFilter = document.getElementById(barangaySelectId).value;
+    
+    const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+    
+    rows.forEach(row => {
+        const nameCell = row.querySelector('td:nth-child(2)');
+        const barangayCell = row.querySelector('td:nth-child(3)');
+        
+        // Skip the "no applications" row
+        if (nameCell && nameCell.textContent.includes('No approved or rejected applications found')) {
+            return;
+        }
+        
+        const nameMatch = !searchTerm || nameCell.textContent.toLowerCase().includes(searchTerm);
+        const barangayMatch = !barangayFilter || barangayCell.textContent === barangayFilter;
+        
+        row.style.display = (nameMatch && barangayMatch) ? '' : 'none';
+    });
+    
+    // After filtering, update the counts for table view only
+    if (source === 'table') {
+        setTimeout(() => {
+            countPendingApplications();
+            countUpdatedApplications(); // This will now use the correct count
+        }, 50);
+    }
+}
+
+// Update the existing function to count visible pending applications properly
+function countPendingApplications() {
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    let actualCount = 0;
+    
+    rows.forEach(row => {
+        const nameCell = row.querySelector('td:nth-child(2)');
+        const isVisible = row.style.display !== 'none';
+        
+        if (nameCell && !nameCell.textContent.includes('No approved or rejected applications found') && isVisible) {
+            actualCount++;
+        }
+    });
+    
+    document.getElementById('pendingCountValue').textContent = actualCount;
+    return actualCount;
+}
+// ✅ DAGDAG: Function to send approval email for "New" documents marked as "Good"
+function sendDocumentApprovalEmail(documentType) {
+    const applicationPersonnelId = currentApplicationId;
+    
+    if (!applicationPersonnelId) {
+        console.error('No application personnel ID found');
+        return;
+    }
+
+    fetch('/mayor_staff/send-document-approval-email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+        },
+        body: JSON.stringify({
+            application_personnel_id: applicationPersonnelId,
+            document_type: documentType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Document approval email sent successfully');
+        } else {
+            console.warn('Document approval email might not have been sent:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending approval email:', error);
+    });
+}
+// ✅ DAGDAG: Function to show only pending applications
+function showPendingApplications() {
+    const rows = document.querySelectorAll('#tableView tbody tr');
+    let pendingCount = 0;
+    let hasVisibleRows = false;
+    
+    rows.forEach(row => {
+        const nameCell = row.querySelector('td:nth-child(2)');
+        
+        // Skip if it's the "no applications" row
+        if (nameCell && nameCell.textContent.includes('No approved or rejected applications found')) {
+            row.style.display = 'none';
+            return;
+        }
+        
+        // Show all pending application rows
+        if (nameCell) {
+            row.style.display = '';
+            pendingCount++;
+            hasVisibleRows = true;
+        }
+    });
+    
+    // Update the count display
+    document.getElementById('pendingCountValue').textContent = pendingCount;
+    
+    // Show confirmation message
+    if (pendingCount > 0) {
+        Swal.fire({
+            title: `${pendingCount} Pending Applications`,
+            html: `Showing <b>${pendingCount}</b> pending applications that need initial screening.`,
+            icon: 'info',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#3b82f6'
+        });
+    } else {
+        Swal.fire({
+            title: 'No Pending Applications',
+            text: 'There are no pending applications for initial screening at this time.',
+            icon: 'info',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#3b82f6'
+        });
+    }
+}
+</script>
+
 <script src="{{ asset('js/spinner.js') }}"></script>
 <script src="{{ asset('js/application_paginate.js') }}"></script>
     </body>

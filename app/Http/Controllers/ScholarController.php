@@ -1082,6 +1082,7 @@ public function showWalkInForm()
     abort(404, 'Walk-in applicants view not found.');
 }
 
+
 public function storeWalkInApplicant(Request $request)
 {
     $scholar = session('lydopers');
@@ -1099,7 +1100,7 @@ public function storeWalkInApplicant(Request $request)
         'applicant_bdate' => 'required|date|before:today',
         'applicant_civil_status' => 'required|in:single,married,widowed,divorced',
         'applicant_brgy' => 'required|string|max:255',
-        'applicant_email' => 'required|email',
+        'applicant_email' => 'required|email|unique:tbl_applicant,applicant_email',
         'applicant_contact_number' => 'required|string|max:15',
         'applicant_school_name' => 'required|string|max:255',
         'applicant_school_name_other' => 'nullable|string|max:255',
@@ -1118,35 +1119,8 @@ public function storeWalkInApplicant(Request $request)
         ? $request->applicant_school_name_other
         : $request->applicant_school_name;
 
-    // Process file uploads and store them temporarily
-    $documents = [];
-    
-    // Store each document temporarily
-    $documentFields = [
-        'application_letter',
-        'certificate_of_registration', 
-        'grade_slip',
-        'barangay_indigency',
-        'student_id'
-    ];
-    
-    foreach ($documentFields as $field) {
-        if ($request->hasFile($field)) {
-            $file = $request->file($field);
-            // Store temporarily in session storage
-            $fileName = 'walkin_' . time() . '_' . $field . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('temp_walkin_docs', $fileName, 'public');
-            $documents[$field] = [
-                'path' => $path,
-                'original_name' => $file->getClientOriginalName(),
-                'size' => $file->getSize(),
-                'mime_type' => $file->getMimeType()
-            ];
-        }
-    }
-
-    // Create walk-in data array (NO DATABASE ENTRY)
-    $walkInData = [
+    // ✅ CREATE APPLICANT RECORD IN DATABASE
+    $applicant = Applicant::create([
         'applicant_fname' => $request->applicant_fname,
         'applicant_mname' => $request->applicant_mname,
         'applicant_lname' => $request->applicant_lname,
@@ -1161,69 +1135,71 @@ public function storeWalkInApplicant(Request $request)
         'applicant_year_level' => $request->applicant_year_level,
         'applicant_course' => $request->applicant_course,
         'applicant_acad_year' => $request->applicant_acad_year,
-        'submitted_by' => $scholar->lydopers_id,
-        'submitted_by_name' => $scholar->lydopers_fname . ' ' . $scholar->lydopers_lname,
-        'submitted_at' => now()->format('Y-m-d H:i:s'),
-        'submission_type' => 'walk_in',
-        'documents' => $documents,
-        'documents_info' => [
-            'application_letter' => 'Application Letter uploaded',
-            'certificate_of_registration' => 'Certificate of Registration uploaded',
-            'grade_slip' => 'Grade Slip uploaded',
-            'barangay_indigency' => 'Barangay Indigency uploaded',
-            'student_id' => 'Student ID uploaded'
-        ]
-    ];
-    
-    // Store in session
-    session(['walk_in_data' => $walkInData]);
-    
-    // Log for tracking (optional)
-    \Log::info('Walk-in Applicant Information with Documents:', [
-        'submitted_by' => $scholar->lydopers_id,
-        'applicant_name' => $request->applicant_fname . ' ' . $request->applicant_lname,
-        'documents_count' => count($documents),
-        'documents' => array_keys($documents)
+        'application_type' => 'walk_in', // Add this field to track walk-in applicants
     ]);
 
-    // Clean up old temporary files (older than 1 hour)
-    $this->cleanupOldTempFiles();
+    // ✅ STORE PDF DOCUMENTS IN storage/documents/ (same as regular applicants)
+    $applicationData = [
+        'applicant_id' => $applicant->applicant_id,
+        'application_letter' => $this->moveFileToStorage($request->file('application_letter')),
+        'cert_of_reg' => $this->moveFileToStorage($request->file('certificate_of_registration')),
+        'grade_slip' => $this->moveFileToStorage($request->file('grade_slip')),
+        'brgy_indigency' => $this->moveFileToStorage($request->file('barangay_indigency')),
+        'student_id' => $this->moveFileToStorage($request->file('student_id')),
+        'date_submitted' => now(),
+    ];
+
+    // ✅ CREATE APPLICATION RECORD IN DATABASE
+    $application = Application::create($applicationData);
+
+    // ✅ ASSIGN TO MAYOR'S STAFF WITH DEFAULT VALUES
+    $mayorStaff = Lydopers::where('lydopers_role', 'mayor_staff')->first();
+    if (!$mayorStaff) {
+        // If mayor staff not found, you might want to handle this differently
+        // For now, we'll use the current logged in staff
+        $mayorStaff = $scholar;
+    }
+
+    // ✅ CREATE APPLICATION PERSONNEL RECORD WITH DEFAULT VALUES
+    ApplicationPersonnel::create([
+        'application_id' => $application->application_id,
+        'lydopers_id' => $mayorStaff->lydopers_id,
+        'initial_screening' => 'Pending', // Default value
+        'remarks' => 'Waiting', // Default value
+        'status' => 'Waiting', // Default value
+        'submitted_by' => $scholar->lydopers_id, // Track who submitted this walk-in
+    ]);
+
+    // ✅ Log for tracking
+    \Log::info('Walk-in Applicant Saved to Database:', [
+        'applicant_id' => $applicant->applicant_id,
+        'application_id' => $application->application_id,
+        'submitted_by' => $scholar->lydopers_id,
+        'applicant_name' => $request->applicant_fname . ' ' . $request->applicant_lname,
+        'documents_saved' => [
+            'application_letter' => $applicationData['application_letter'],
+            'cert_of_reg' => $applicationData['cert_of_reg'],
+            'grade_slip' => $applicationData['grade_slip'],
+            'brgy_indigency' => $applicationData['brgy_indigency'],
+            'student_id' => $applicationData['student_id'],
+        ]
+    ]);
+
+    // ✅ Broadcast event if needed (similar to regular applicants)
+    $currentAcadYear = DB::table("tbl_applicant")
+        ->select("applicant_acad_year")
+        ->orderBy("applicant_acad_year", "desc")
+        ->value("applicant_acad_year");
+
+    $applicantsCurrentYear = $currentAcadYear ? DB::table("tbl_applicant")
+        ->where("applicant_acad_year", $currentAcadYear)
+        ->count() : 0;
+
+    broadcast(new ApplicantRegistered('total_applicants', $applicantsCurrentYear))->toOthers();
 
     return redirect()->route('walk.in.form')
-        ->with('success', 'Walk-in applicant information has been recorded successfully! (No database entry made)')
-        ->with('walk_in_data', $walkInData);
+        ->with('success', 'Walk-in applicant has been successfully Created!')
+        ->with('applicant_id', $applicant->applicant_id);
 }
-
-/**
- * Clean up old temporary walk-in files
- */
-private function cleanupOldTempFiles()
-{
-    try {
-        $storage = Storage::disk('public');
-        $tempDir = 'temp_walkin_docs';
-        
-        if ($storage->exists($tempDir)) {
-            $files = $storage->files($tempDir);
-            $now = time();
-            
-            foreach ($files as $file) {
-                $lastModified = $storage->lastModified($file);
-                // Delete files older than 1 hour (3600 seconds)
-                if ($now - $lastModified > 3600) {
-                    $storage->delete($file);
-                }
-            }
-        }
-    } catch (\Exception $e) {
-        \Log::error('Error cleaning up temp walk-in files: ' . $e->getMessage());
-    }
-}
-
-
-
-
-
-
 
 }
