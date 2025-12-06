@@ -245,5 +245,17 @@ class EmailService
             return false;
         }
     }
-    
+public function sendDocumentApprovedEmail($email, $data = [])
+{
+    try {
+        Mail::send('emails.document_approved', $data, function($message) use ($email, $data) {
+            $message->to($email)
+                    ->subject('Document Approved - ' . ($data['document_type'] ?? 'Document'));
+        });
+        return true;
+    } catch (\Exception $e) {
+        \Log::error('Document approved email error: ' . $e->getMessage());
+        return false;
+    }
+}    
 }

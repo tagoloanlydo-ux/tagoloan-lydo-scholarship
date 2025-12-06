@@ -2242,5 +2242,130 @@ public function submitIntakeSheet(Request $request)
         'message' => 'Family intake sheet submitted successfully!'
     ]);
 }
+public function checkDocumentUpdates($applicationPersonnelId)
+{
+    try {
+        // Get current document statuses
+        $applicationPersonnel = DB::table('tbl_application_personnel')
+            ->where('application_personnel_id', $applicationPersonnelId)
+            ->select([
+                'application_letter_status',
+                'cert_of_reg_status',
+                'grade_slip_status',
+                'brgy_indigency_status',
+                'student_id_status'
+            ])
+            ->first();
+
+        if (!$applicationPersonnel) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Application not found.'
+            ], 404);
+        }
+
+        // Check which documents have been updated (have a status)
+        $updatedDocuments = [];
+        $allDocumentsNew = true; // Flag to check if ALL 5 documents are "New"
+        
+        $documentTypes = [
+            'application_letter',
+            'cert_of_reg', 
+            'grade_slip',
+            'brgy_indigency',
+            'student_id'
+        ];
+
+        foreach ($documentTypes as $docType) {
+            $statusField = $docType . '_status';
+            $status = $applicationPersonnel->$statusField;
+            
+            if ($status === 'New') {
+                $updatedDocuments[] = $docType;
+            } else {
+                // If any document is not "New", set flag to false
+                $allDocumentsNew = false;
+            }
+        }
+
+        // Now we only consider it updated if ALL 5 documents are "New"
+        $hasNewUpdates = $allDocumentsNew && count($updatedDocuments) === 5;
+
+        return response()->json([
+            'success' => true,
+            'updated_documents' => $updatedDocuments,
+            'all_documents_new' => $allDocumentsNew, // New flag
+            'statuses' => [
+                'application_letter_status' => $applicationPersonnel->application_letter_status,
+                'cert_of_reg_status' => $applicationPersonnel->cert_of_reg_status,
+                'grade_slip_status' => $applicationPersonnel->grade_slip_status,
+                'brgy_indigency_status' => $applicationPersonnel->brgy_indigency_status,
+                'student_id_status' => $applicationPersonnel->student_id_status
+            ],
+            'has_new_updates' => $hasNewUpdates,
+            'message' => $allDocumentsNew ? 'All 5 documents have "New" status' : 'Not all documents are "New"'
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Error checking document updates: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to check document updates.'
+        ], 500);
+    }
+}
+// ✅ DAGDAG: Send document approval email
+public function sendDocumentApprovalEmail(Request $request)
+{
+    $request->validate([
+        'application_personnel_id' => 'required|integer',
+        'document_type' => 'required|string'
+    ]);
+
+    try {
+        // Get applicant details
+        $applicant = DB::table('tbl_application_personnel as ap')
+            ->join('tbl_application as a', 'ap.application_id', '=', 'a.application_id')
+            ->join('tbl_applicant as app', 'a.applicant_id', '=', 'app.applicant_id')
+            ->where('ap.application_personnel_id', $request->application_personnel_id)
+            ->select('app.applicant_id', 'app.applicant_fname', 'app.applicant_lname', 'app.applicant_email')
+            ->first();
+
+        if (!$applicant) {
+            return response()->json(['success' => false, 'message' => 'Applicant not found.']);
+        }
+
+        // Get document name
+        $documentNames = [
+            'application_letter' => 'Application Letter',
+            'cert_of_reg' => 'Certificate of Registration',
+            'grade_slip' => 'Grade Slip',
+            'brgy_indigency' => 'Barangay Indigency',
+            'student_id' => 'Student ID'
+        ];
+
+        $documentName = $documentNames[$request->document_type] ?? $request->document_type;
+
+        // Prepare email data
+        $emailData = [
+            'applicant_fname' => $applicant->applicant_fname,
+            'applicant_lname' => $applicant->applicant_lname,
+            'document_name' => $documentName,
+            'date_approved' => now()->format('F d, Y')
+        ];
+
+        // Send approval email
+        Mail::send('emails.document-approval', $emailData, function ($message) use ($applicant, $documentName) {
+            $message->to($applicant->applicant_email)
+                ->subject("Document Approved - {$documentName} - LYDO Scholarship")
+                ->from(config('mail.from.address', 'noreply@lydoscholarship.com'), 'LYDO Scholarship');
+        });
+
+        return response()->json(['success' => true, 'message' => 'Document approval email sent successfully.']);
+        
+    } catch (\Exception $e) {
+        \Log::error('Document approval email error: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Failed to send approval email.'], 500);
+    }
+}  
 
 }

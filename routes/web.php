@@ -112,13 +112,14 @@ Route::get('/lydo_admin/intake-sheet/{applicationPersonnelId}', [LydoAdminContro
 });
 
 Route::middleware(['role:lydo_staff'])->group(function () {
-        Route::get('/lydo_staff/walk_in', [ScholarController::class, 'showWalkInForm'])->name('walk.in.form');
+    Route::post('/lydo_staff/send-document-approved-notification', [RenewalController::class, 'sendDocumentApprovedNotification']);
+    Route::get('/lydo_staff/walk_in', [ScholarController::class, 'showWalkInForm'])->name('walk.in.form');
     Route::post('/lydo_staff/walk_in/store', [ScholarController::class, 'storeWalkInApplicant'])->name('walk.in.store');
-
-    // Compatibility: also accept hyphenated URLs used elsewhere so GET works
+    Route::get('/lydo_staff/check-new-documents', [RenewalController::class, 'checkNewDocuments'])->name('lydo_staff.check_new_documents');
+    Route::get('/lydo_staff/renewal/{scholarId}/documents-status', [RenewalController::class, 'getDocumentsStatus'])->name('renewal.documents.status');
     Route::get('/lydo_staff/walk-in-applicants', [ScholarController::class, 'showWalkInForm']);
     Route::post('/lydo_staff/walk-in-applicants/store', [ScholarController::class, 'storeWalkInApplicant']);
-Route::post('/lydo_staff/mark-received/{disburseId}', [LydoStaffController::class, 'markAsReceived'])->name('lydo_staff.mark_received');
+    Route::post('/lydo_staff/mark-received/{disburseId}', [LydoStaffController::class, 'markAsReceived'])->name('lydo_staff.mark_received');
     Route::get('/lydo_staff/notification-counts', [LydoStaffController::class, 'getNotificationCounts'])->name('lydo_staff.notification_counts');    
     Route::post('/lydo_staff/mark-notifications-read', [LydoStaffController::class, 'markNotificationsAsRead'])->name('lydo_staff.mark_notifications_read');
     Route::get('/lydo_staff/dashboard/card-data', [LydoStaffController::class, 'getCardData'])->name('lydo_staff.card-data');
@@ -163,6 +164,8 @@ Route::post('/lydo_staff/mark-received/{disburseId}', [LydoStaffController::clas
 // Mayor Staff Routes - Only accessible by mayor_staff role
 Route::middleware(['role:mayor_staff'])->group(function () {
     
+    Route::get('/mayor_staff/check-document-updates/{applicationPersonnelId}', [MayorStaffController::class, 'checkDocumentUpdates']);
+    Route::post('/mayor_staff/send-document-approval-email', [MayorStaffController::class, 'sendDocumentApprovalEmail']);
     Route::get('/mayor_staff/notification-count', [StatusController::class, 'getNotificationCount']);Route::get('/mayor_staff/get-table-data', [MayorStaffController::class, 'getTableData'])->name('mayor_staff.table.data');
     Route::get('/mayor_staff/get-list-data', [MayorStaffController::class, 'getListData'])->name('mayor_staff.list.data');
     Route::post('/mayor_staff/store-application', [MayorStaffController::class, 'storeApplication'])->name('mayor_staff.store_application');

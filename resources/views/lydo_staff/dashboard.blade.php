@@ -183,7 +183,7 @@
                 </div>
                 
                 <!-- Notification Bell with Improved System -->
-                <div class="relative">
+                <div class="relative hidden">
                     <button id="notifBell" class="relative focus:outline-none">
                         <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>
                         @if($badgeCount > 0)

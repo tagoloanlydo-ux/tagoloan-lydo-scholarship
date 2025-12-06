@@ -106,7 +106,7 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <span class="text-white font-semibold">{{ session('lydopers')->lydopers_fname }} {{ session('lydopers')->lydopers_lname }} | Mayor Staff</span>
-                    <div class="relative">
+                    <div class="relative hidden">
                         <!-- 🔔 Bell Icon -->
                         <button id="notifBell" class="relative focus:outline-none">
                             <i class="fas fa-bell text-white text-2xl cursor-pointer"></i>

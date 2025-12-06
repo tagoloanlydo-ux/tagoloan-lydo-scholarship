@@ -247,31 +247,25 @@
     const rememberCheckbox = document.querySelector('input[name="remember"]');
     const usernameInput = document.getElementById("lydopers_username");
     const passwordInput = document.getElementById("lydopers_pass");
-    const usernameIcon = document.getElementById("username-icon");
-    const passwordIcon = document.getElementById("password-icon");
 
     // ✅ Load saved credentials if "Remember Me" was checked
     if (localStorage.getItem("rememberMe") === "true") {
       usernameInput.value = localStorage.getItem("savedUsername") || "";
-      // If you want to remember password too, uncomment the next line:
-      // passwordInput.value = localStorage.getItem("savedPassword") || "";
+      passwordInput.value = localStorage.getItem("savedPassword") || "";
       rememberCheckbox.checked = true;
     }
-
-
 
     // ✅ When submitting the form
     document.querySelector("form").addEventListener("submit", function () {
       if (rememberCheckbox.checked) {
         localStorage.setItem("rememberMe", "true");
         localStorage.setItem("savedUsername", usernameInput.value);
-        // If you want to remember password too, uncomment:
-        // localStorage.setItem("savedPassword", passwordInput.value);
+        localStorage.setItem("savedPassword", passwordInput.value);
       } else {
         // ✅ Clear storage if unchecked
         localStorage.removeItem("rememberMe");
         localStorage.removeItem("savedUsername");
-        // localStorage.removeItem("savedPassword");
+        localStorage.removeItem("savedPassword");
       }
     });
   });
