@@ -321,11 +321,6 @@
                                     <i class="bx bxs-file-blank text-center mx-auto md:mx-0 text-xl"></i>
                                     <span class="ml-4 hidden md:block text-lg">Applicant Interview</span>
                                 </div>
-                                @if($pendingScreening > 0)
-                                    <span class="ml-2 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                                        {{ $pendingScreening }}
-                                    </span>
-                                @endif
                             </a>
                         </li>
                         <li>
@@ -334,11 +329,6 @@
                                     <i class="bx bx-refresh text-center mx-auto md:mx-0 text-xl"></i>
                                     <span class="ml-4 hidden md:block text-lg">Renewals</span>
                                 </div>
-                                @if($pendingRenewals > 0)
-                                    <span id="pendingRenewalsBadge" class="ml-2 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                                        {{ $pendingRenewals }}
-                                    </span>
-                                @endif
                             </a>
                         </li>
                         <li>
